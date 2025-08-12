@@ -6,7 +6,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
-namespace ICE.Scheduler.Tasks
+namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskGather
     {
@@ -202,7 +202,7 @@ namespace ICE.Scheduler.Tasks
 
                                 foreach (var item in x.GatheredItems)
                                 {
-                                    if ((!hasAllItems && item.ItemID == itemToGather) || (hasAllItems && item.ItemID != 0))
+                                    if (!hasAllItems && item.ItemID == itemToGather || hasAllItems && item.ItemID != 0)
                                     {
                                         IceLogging.Debug($"[Condition F] Mission is aiming to gather: {itemToGather}");
                                         if (ApplyGatheringBuffs(item, gBuffs, missingDur, Boon1, Boon2, Tidings, Yield1, Yield2, IntegInc, BonusInteg, BYieldII, gather1More))
@@ -269,7 +269,7 @@ namespace ICE.Scheduler.Tasks
         {
             int boonChance = item.BoonChance;
 
-            var buffsToApply = new (uint actionId, System.Func<bool> condition, string debugMessage)[]
+            var buffsToApply = new (uint actionId, Func<bool> condition, string debugMessage)[]
             {
                 (Boon2, () => CanUseGatheringAction("BoonIncrease2", gBuffs, missingDur, boonChance), "Boon 2"),
                 (Boon1, () => CanUseGatheringAction("BoonIncrease1", gBuffs, missingDur, boonChance), "Boon 1"),

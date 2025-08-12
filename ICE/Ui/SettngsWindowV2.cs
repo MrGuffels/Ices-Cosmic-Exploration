@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using ICE.Scheduler.Tasks.OldTask;
 using ICE.Ui.Waypoint_Manager;
 using Lumina.Excel.Sheets;
 using System;

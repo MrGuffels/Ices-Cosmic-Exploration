@@ -1,6 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 
-namespace ICE.Scheduler.Tasks
+namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskAnimationLock
     {

@@ -4,6 +4,9 @@ using Lumina.Excel.Sheets;
 namespace ICE.Utilities;
 internal static class ExcelHelper
 {
+    // Place to keep all the excel sheets that I'm currently grabbing from
+    // Vs having to call it x20 times whenever I need it, it's just right there
+
     internal static ExcelSheet<Item>? ItemSheet;
     internal static ExcelSheet<Recipe>? RecipeSheet;
     internal static ExcelSheet<Weather>? WeatherSheet;

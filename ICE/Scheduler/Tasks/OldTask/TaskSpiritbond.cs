@@ -3,7 +3,7 @@ using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace ICE.Scheduler.Tasks
+namespace ICE.Scheduler.Tasks.OldTask
 {
     public unsafe static class TaskSpiritbond
     {

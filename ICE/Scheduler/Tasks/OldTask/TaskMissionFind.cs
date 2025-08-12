@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using static ECommons.GenericHelpers;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
-namespace ICE.Scheduler.Tasks
+namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskMissionFind
     {
@@ -657,7 +657,7 @@ namespace ICE.Scheduler.Tasks
             for (int i = 0; i < XPTable.Count; i++)
             {
                 var bar = XPTable[i + 1];
-                urgencies[i + 1] = (bar.NeededXP > 0) ? 1f - ((float)bar.CurrentXP / bar.NeededXP) : 0f;
+                urgencies[i + 1] = bar.NeededXP > 0 ? 1f - (float)bar.CurrentXP / bar.NeededXP : 0f;
                 IceLogging.Debug($"XP Type: {i+1} | Urgency: {urgencies[i + 1]}");
             }
 
@@ -754,7 +754,7 @@ namespace ICE.Scheduler.Tasks
             }
 
             IceLogging.Info($"Best relic xp has been completed. Best Relic Mission: {bestIndex}");
-            return (bestIndex > 0) ? bestIndex : null;
+            return bestIndex > 0 ? bestIndex : null;
         }
 
         internal unsafe static bool? GrabMission()
@@ -875,7 +875,7 @@ namespace ICE.Scheduler.Tasks
             if ((isUmbralWind || isMoonDust) && HasWeather)
             {
                 bool hasCorrectWeather = WeatherMissions
-                    .Any(x => (CosmicHelper.MissionInfoDict[x.Id].Weather == CosmicWeather.UmbralWind && isUmbralWind) || (CosmicHelper.MissionInfoDict[x.Id].Weather == CosmicWeather.MoonDust && isMoonDust));
+                    .Any(x => CosmicHelper.MissionInfoDict[x.Id].Weather == CosmicWeather.UmbralWind && isUmbralWind || CosmicHelper.MissionInfoDict[x.Id].Weather == CosmicWeather.MoonDust && isMoonDust);
                 if (hasCorrectWeather)
                     SchedulerMain.State &= ~IceState.Waiting;
             }

@@ -81,7 +81,6 @@ public static class AddonHelper
         var textNode = (AtkTextNode*)node;
         return textNode;
     }
-
     private static unsafe AtkResNode* GetNodeByIDChain(AtkResNode* node, params int[] ids)
     {
         if (node == null || ids.Length <= 0)

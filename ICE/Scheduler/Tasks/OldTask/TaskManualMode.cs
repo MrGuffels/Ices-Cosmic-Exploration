@@ -1,4 +1,4 @@
-﻿namespace ICE.Scheduler.Tasks
+﻿namespace ICE.Scheduler.Tasks.OldTask
 {
     internal class TaskManualMode
     {

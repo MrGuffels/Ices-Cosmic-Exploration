@@ -1,7 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace ICE.Scheduler.Tasks
+namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskRepair
     {

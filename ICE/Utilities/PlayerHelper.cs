@@ -77,7 +77,6 @@ public class PlayerHelper
 
     internal static unsafe float GetDistanceToPlayer(Vector3 v3) => Vector3.Distance(v3, Player.GameObject->Position);
     internal static unsafe float GetDistanceToPlayer(IGameObject gameObject) => GetDistanceToPlayer(gameObject.Position);
-
     public static unsafe bool GetItemCount(int itemID, out int count, bool includeHq = true, bool includeNq = true)
     {
         try
@@ -97,7 +96,6 @@ public class PlayerHelper
             return false;
         }
     }
-
     public static unsafe bool NeedsRepair(float below = 0)
     {
         var im = InventoryManager.Instance();

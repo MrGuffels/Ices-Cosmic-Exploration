@@ -1,7 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
-namespace ICE.Scheduler.Tasks
+namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskScoreCheckCraft
     {
@@ -34,7 +34,7 @@ namespace ICE.Scheduler.Tasks
                     return;
                 }
 
-                if (enoughMain || SchedulerMain.State.HasFlag(IceState.AbortInProgress) || (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Craft) && CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Gather)))
+                if (enoughMain || SchedulerMain.State.HasFlag(IceState.AbortInProgress) || CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Craft) && CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Gather))
                 {
                     uint targetLevel = 0;
                     if (currentMission.TurnInGold)
@@ -48,8 +48,8 @@ namespace ICE.Scheduler.Tasks
                     if (targetLevel == 3)
                     {
                         if (currentScore >= goldScore ||
-                        (SchedulerMain.State.HasFlag(IceState.AbortInProgress) && currentMission.TurnInSilver && currentScore > silverScore) ||
-                        (SchedulerMain.State.HasFlag(IceState.AbortInProgress) && currentMission.TurnInASAP))
+                        SchedulerMain.State.HasFlag(IceState.AbortInProgress) && currentMission.TurnInSilver && currentScore > silverScore ||
+                        SchedulerMain.State.HasFlag(IceState.AbortInProgress) && currentMission.TurnInASAP)
                         {
                             IceLogging.Debug("Gold was enabled, and you also meet gold threshold.");
                             MissionHandler.TurnIn(z);
@@ -59,7 +59,7 @@ namespace ICE.Scheduler.Tasks
                     else if (targetLevel == 2)
                     {
                         if (currentScore >= silverScore ||
-                        (SchedulerMain.State.HasFlag(IceState.AbortInProgress) && currentMission.TurnInASAP))
+                        SchedulerMain.State.HasFlag(IceState.AbortInProgress) && currentMission.TurnInASAP)
                         {
                             IceLogging.Debug("Silver was enabled, and you also meet silver threshold.");
                             MissionHandler.TurnIn(z);

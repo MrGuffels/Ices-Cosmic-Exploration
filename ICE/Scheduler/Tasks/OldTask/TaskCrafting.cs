@@ -3,7 +3,7 @@ using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
-namespace ICE.Scheduler.Tasks
+namespace ICE.Scheduler.Tasks.OldTask
 {
     internal static class TaskCrafting
     {
@@ -63,7 +63,7 @@ namespace ICE.Scheduler.Tasks
                 // Calculate if we need to do more than base amount of crafts
                 int craftsDone = mainCrafts.Sum(main => PlayerHelper.GetItemCount((int)ExcelHelper.RecipeSheet.GetRow(main.Key).ItemResult.Value.RowId, out var count) ? count : 0); // How many mains we made
                 int craftsNeeded = mainCrafts.Sum(main => main.Value); // How many we need for mission
-                int CraftMultipleMissionItems = (craftsDone / craftsNeeded) + 1; // How many whole sets (+1) of crafts we did
+                int CraftMultipleMissionItems = craftsDone / craftsNeeded + 1; // How many whole sets (+1) of crafts we did
                 IceLogging.Debug($"[Crafting] Loop Number: {CraftMultipleMissionItems} | Items Done: {craftsDone} | Items Needed: {craftsNeeded}");
 
                 bool OOMMain = false;
@@ -95,7 +95,7 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"RecipeID: {main.Key}");
                     //IceLogging.Info($"ItemID: {itemId}");
 
-                    if ((currentSubItemAmount / (subItemNeed / mainNeed)) == 0) // This should OOM only if not enough to craft a single Main
+                    if (currentSubItemAmount / (subItemNeed / mainNeed) == 0) // This should OOM only if not enough to craft a single Main
                     {
                         IceLogging.Info($"[OOM] Not enough to craft main item");
                         OOMMain = true; // All current 3x Main items share Sub items
@@ -210,7 +210,7 @@ namespace ICE.Scheduler.Tasks
 
                 if (C.DelayCraft)
                     P.TaskManager.EnqueueDelay(C.DelayCraftIncrease); // Post-craft delay between Synthesis and RecipeLog reopening
-                P.TaskManager.Enqueue(() => Svc.Condition[ConditionFlag.NormalConditions] || (Svc.Condition[ConditionFlag.Crafting] && Svc.Condition[ConditionFlag.PreparingToCraft]));
+                P.TaskManager.Enqueue(() => Svc.Condition[ConditionFlag.NormalConditions] || Svc.Condition[ConditionFlag.Crafting] && Svc.Condition[ConditionFlag.PreparingToCraft]);
                 P.TaskManager.Enqueue(() =>
                 {
                     IceLogging.Debug("Check score and turn in cause crafting is done.");
