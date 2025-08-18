@@ -1,0 +1,163 @@
+﻿using ECommons.UIHelpers.AddonMasterImplementations;
+using Lumina.Excel.Sheets;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+
+namespace ICE.Scheduler.Tasks
+{
+    internal static class Task_FindMission
+    {
+        /// <summary>
+        /// List of all available critical missions
+        /// </summary>
+        private static HashSet<uint> CriticalMissions = new HashSet<uint>();
+        /// <summary>
+        /// List of all the available<br></br>
+        /// -> Timed <br></br>
+        /// -> Weather <br></br>
+        /// -> Sequence <br></br>
+        /// </summary>
+        private static HashSet<uint> WeatherMissions = new HashSet<uint>();
+        private static HashSet<uint> TimedMissions = new HashSet<uint>();
+        private static HashSet<uint> SequenceMissions = new HashSet<uint>();
+        private static HashSet<uint> ExARankMissions = new HashSet<uint>();
+        private static HashSet<uint> ARankMissions = new HashSet<uint>();
+        private static HashSet<uint> BRankMissions = new HashSet<uint>();
+        private static HashSet<uint> CRankMisisons = new HashSet<uint>();
+        private static HashSet<uint> DRankMissions = new HashSet<uint>();
+
+        public static void Enqueue()
+        {
+            P.TaskManager.Enqueue(RefreshMissionUi, "Refreshing Mission UI");
+            P.TaskManager.Enqueue(OpenMissionUi, "Opening it on proper class");
+            P.TaskManager.Enqueue(RefreshSelectedMissions, "Refreshing the list of viable missions");
+        }
+
+        private static bool? RefreshMissionUi()
+        {
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && !hud.IsAddonReady)
+            {
+                return true;
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Closing the hud to make sure it's on the right class"))
+                {
+                    if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                        moonHud.Mission();
+                }
+            }
+
+            return false;
+        }
+        private static bool? OpenMissionUi()
+        {
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
+            {
+                return true;
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Closing the hud to make sure it's on the right class"))
+                {
+                    if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                        moonHud.Mission();
+                }
+            }
+
+            return false;
+        }
+        private static bool? RefreshSelectedMissions()
+        {
+            CriticalMissions.Clear();
+            WeatherMissions.Clear();
+            TimedMissions.Clear();
+            SequenceMissions.Clear();
+            ExARankMissions.Clear();
+            ARankMissions.Clear();
+            BRankMissions.Clear();
+            CRankMisisons.Clear();
+            DRankMissions.Clear();
+            int basicMissionCount = 0;
+            int specialMissionCount = 0;
+            int criticalMissionCount = 0;
+
+            uint? currentJobId = PlayerHelper.GetClassJobId();
+
+            foreach (var mission in C.MissionConfig)
+            {
+                var enabled = mission.Value.Enabled;
+
+                if (C.XPRelicGrind)
+                {
+                    if (!enabled && C.XPRelicOnlyEnabled)
+                        continue;
+                }
+                else if (!enabled)
+                    continue;
+
+                var missionId = mission.Key;
+                var MissionDictionary = CosmicHelper.MissionInfoDict.TryGetValue(missionId, out var missionInfo);
+                if (currentJobId.Value != missionInfo.JobId || currentJobId.Value != missionInfo.JobId2)
+                    continue;
+
+                // Alright, mission was double checked to make sure it was enabled
+                // And also checked to make sure that the current job is on the mission, time to actually add it to the mission info
+
+                if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                    CriticalMissions.Add(missionId);
+                else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                    SequenceMissions.Add(missionId);
+                else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
+                    TimedMissions.Add(missionId);
+                else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
+                    WeatherMissions.Add(missionId);
+                else if (missionInfo.Rank == 5)
+                    ExARankMissions.Add(missionId);
+                else if (missionInfo.Rank == 4)
+                    ARankMissions.Add(missionId);
+                else if (missionInfo.Rank == 3)
+                    BRankMissions.Add(missionId);
+                else if (missionInfo.Rank == 2)
+                    CRankMisisons.Add(missionId);
+                else if (missionInfo.Rank == 1)
+                    DRankMissions.Add(missionId);
+            }
+
+            IceLogging.Info("Mission count has been updated to the following: \n" +
+                $"Critical Count: {CriticalMissions.Count}\n" +
+                $"Sequence Count: {SequenceMissions.Count}\n" +
+                $"Timed Count: {TimedMissions.Count}\n" +
+                $"Weather Count: {WeatherMissions.Count}\n" +
+                $"A Rank: {ARankMissions.Count}" +
+                $"B Rank: {BRankMissions.Count}" +
+                $"C Rank: {CRankMisisons.Count}" +
+                $"D Rank: {DRankMissions.Count}", "Mission Finder Task");
+
+            return true;
+        }
+        private static bool? TabTasksCheck()
+        {
+
+            return false;
+        }
+        private static bool? OpenCriticalTab()
+        {
+            if (CriticalMissions.Count > 0)
+            {
+
+            }
+            return false;
+        }
+        private static bool? CheckCritical()
+        {
+
+
+            return false;
+        }
+    }
+}

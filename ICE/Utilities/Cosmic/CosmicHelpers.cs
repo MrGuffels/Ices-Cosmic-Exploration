@@ -24,7 +24,6 @@ public static partial class CosmicHelper
 
     public static Vector3 RedAlertCollectionPoint = Vector3.Zero;
 
-
     // General use functions used across the codebase, specifically tied to cosmic related functions
     public static void OpenStellarMission()
     {

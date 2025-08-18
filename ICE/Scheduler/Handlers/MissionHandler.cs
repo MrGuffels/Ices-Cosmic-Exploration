@@ -15,7 +15,7 @@ internal static class MissionHandler
 
         if (IsMissionTimedOut())
         {
-            SchedulerMain.State |= IceState.AbortInProgress;
+            SchedulerMain.State |= IceState.ForceTurnin;
             return true;
         }
         else if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Critical))
@@ -43,7 +43,7 @@ internal static class MissionHandler
             if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Limited)
             && SchedulerMain.NodesVisited >= SchedulerMain.CurrentNodeSet.Count)
             {
-                SchedulerMain.State |= IceState.AbortInProgress;
+                SchedulerMain.State |= IceState.ForceTurnin;
                 return true;
             }
             else
@@ -81,7 +81,7 @@ internal static class MissionHandler
         if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var z) && z.IsAddonReady)
         {
             if (IsMissionTimedOut())
-                SchedulerMain.State |= IceState.AbortInProgress;
+                SchedulerMain.State |= IceState.ForceTurnin;
 
             if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Critical))
             {
@@ -232,7 +232,7 @@ internal static class MissionHandler
                 return false;
             }
 
-            if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Critical) && !SchedulerMain.State.HasFlag(IceState.AbortInProgress))
+            if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Critical) && !SchedulerMain.State.HasFlag(IceState.ForceTurnin))
             {
                 if (EzThrottler.Throttle("Interacting with checkpoint", 250))
                 {

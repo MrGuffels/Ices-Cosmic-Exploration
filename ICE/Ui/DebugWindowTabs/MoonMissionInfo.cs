@@ -12,14 +12,20 @@ namespace ICE.Ui.DebugWindowTabs
     internal class MoonMissionInfo
     {
         private static string CraftingTableSearchText = "";
+        private static string AttributeSearchText = "";
+        private static uint RankSearch = 0;
 
         public static unsafe void Draw()
         {
             var itemSheet = ExcelHelper.ItemSheet;
             ImGui.SetNextItemWidth(250);
             ImGui.InputText("Search by Name", ref CraftingTableSearchText, 100);
+            ImGui.SetNextItemWidth(250);
+            ImGui.InputText("Search by Attribute", ref AttributeSearchText, 100);
+            ImGui.SetNextItemWidth(250);
+            ImGui.SliderUInt("Rank ID", ref RankSearch, 0, 6);
 
-            if (ImGui.BeginTable("Mission Info List", 18, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Resizable))
+            if (ImGui.BeginTable("Moon Mission Information Table", 18, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit))
             {
                 ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, -1);
                 ImGui.TableSetupColumn("Jobs", ImGuiTableColumnFlags.WidthFixed, -1);
@@ -58,8 +64,22 @@ namespace ICE.Ui.DebugWindowTabs
 
                 var missionList = CosmicHelper.MissionInfoDict.Where(mission => mission.Value.Name.ToLower().Contains(CraftingTableSearchText.ToLower()));
 
-                foreach (var entry in missionList)
+                foreach (var entry in CosmicHelper.MissionInfoDict)
                 {
+                    // Case-insensitive name search
+                    if (!string.IsNullOrEmpty(CraftingTableSearchText) &&
+                        !entry.Value.Name.ToLower().Contains(CraftingTableSearchText.ToLower()))
+                        continue;
+
+                    // Case-insensitive attribute search
+                    string attributedText = entry.Value.Attributes.ToString().ToLower();
+                    if (!string.IsNullOrEmpty(AttributeSearchText) &&
+                        !attributedText.Contains(AttributeSearchText.ToLower()))
+                        continue;
+
+                    if (RankSearch != 0 && entry.Value.Rank != RankSearch)
+                        continue;
+
                     ImGui.TableNextRow();
 
                     // Mission ID
@@ -102,11 +122,11 @@ namespace ICE.Ui.DebugWindowTabs
                     else if (entry.Value.Rank == 3)
                         rank = "B";
                     else if (entry.Value.Rank == 4)
-                        rank = "A-1";
+                        rank = "A";
                     else if (entry.Value.Rank == 5)
-                        rank = "A-2";
+                        rank = "EX";
                     else if (entry.Value.Rank == 6)
-                        rank = "A-3";
+                        rank = "EX+";
                     else
                     {
                         rank = entry.Value.Rank.ToString();

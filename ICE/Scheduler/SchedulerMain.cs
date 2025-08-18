@@ -58,7 +58,7 @@ namespace ICE.Scheduler
                     case Start:
                         Task_CheckState.Enqueue();
                         break;
-                    case AbortInProgress:
+                    case ForceTurnin:
 
                         break;
                     default:

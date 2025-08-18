@@ -29,7 +29,7 @@ public static unsafe partial class CosmicHelper
     /// Some things to note that I didn't realize until after I really dug into the sheet a bit more/cleaned this up. <br />
     /// Sheet is: WKSMissionUnit <br />
     /// <b>- Row 0:</b> Mission Name <br />
-    /// <b>- Row 2:</b> JobId attached to the quest (so 9 is CRP, 10 is BSM, etc.) <br />
+    /// <b>- Row 2:</b> JobId attached to the quest (so 8 is CRP, 9 is BSM, etc.) <br />
     /// <b>- Row 3:</b> 2nd Required job??? <br />
     /// <b>- Row 4:</b> 3rd Required job??? <br />
     /// <b>- Row 5:</b> Bool → Is it a critical mission? <br />
