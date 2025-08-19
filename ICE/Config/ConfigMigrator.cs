@@ -41,6 +41,7 @@ namespace ICE.Config
 
                 Svc.Log.Information("Migration of the Main Window Settings Complete");
 
+                C.OnlyGrabMission = OldConfig.OnlyGrabMission;
                 C.TargetLevel = OldConfig.TargetLevel;
                 C.StopWhenLevel = OldConfig.StopWhenLevel;
                 C.StopOnceHitCosmoCredits = OldConfig.StopOnceHitCosmoCredits;
@@ -58,10 +59,6 @@ namespace ICE.Config
                 C.TableSortOption = OldConfig.TableSortOption;
                 C.HideUnsupportedMissions = OldConfig.HideUnsupportedMissions;
                 C.AutoPickCurrentJob = OldConfig.AutoPickCurrentJob;
-                C.ShowExpColums = OldConfig.ShowExpColums;
-                C.ShowCreditsColumn = OldConfig.ShowCreditsColumn;
-                C.ShowNotes = OldConfig.ShowNotes;
-                C.IncreaseMiddleColumn = OldConfig.IncreaseMiddleColumn;
 
                 Svc.Log.Information("Migration of the table settings complete");
 
@@ -184,7 +181,7 @@ namespace ICE.Config
                         Enabled = enabled,
                         ManualMode = manualMode,
                         GatherProfileId = gatherProfileId,
-                        AnyTurnin = useAny,
+                        AutoTurnin = useAny,
                         TurninGold = turninGold,
                         TurninSilver = turninSilver,
                         TurninBronze = turninBronze,

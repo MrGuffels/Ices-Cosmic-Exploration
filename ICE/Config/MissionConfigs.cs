@@ -21,6 +21,7 @@ namespace ICE.Config
 
         #region Main Window
 
+        public float MiddleColumnWidth { get; set; } = 1000f;
         public uint SelectedJob { get; set; } = 8;
         public bool XPRelicGrind { get; set; } = false;
         public bool XPRelicIgnoreManual { get; set; } = false;
@@ -38,6 +39,7 @@ namespace ICE.Config
 
         #region MissionSettings
 
+        public bool OnlyGrabMission { get; set; } = false;
         public int TargetLevel { get; set; } = 10;
         public bool StopWhenLevel { get; set; } = false;
         public bool StopOnceHitCosmoCredits { get; set; } = false;
@@ -55,12 +57,9 @@ namespace ICE.Config
         #region Table Settings
 
         public int TableSortOption { get; set; } = 0;
+        public bool ShowManualMode { get; set; } = false;
         public bool HideUnsupportedMissions { get; set; } = false;
         public bool AutoPickCurrentJob { get; set; } = false;
-        public bool ShowExpColums { get; set; } = true;
-        public bool ShowCreditsColumn { get; set; } = true;
-        public bool ShowNotes { get; set; } = true;
-        public bool IncreaseMiddleColumn { get; set; } = true;
 
         #endregion
 
@@ -121,7 +120,7 @@ namespace ICE.Config
         public bool Enabled { get; set; } = false;
         public bool ManualMode { get; set; } = false;
         public int GatherProfileId { get; set; } = 0;
-        public bool AnyTurnin { get; set; } = true;
+        public bool AutoTurnin { get; set; } = true;
         public bool TurninGold { get; set; } = false;
         public bool TurninSilver { get; set; } = false;
         public bool TurninBronze { get; set; } = false;

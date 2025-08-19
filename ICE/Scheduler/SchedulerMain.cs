@@ -17,7 +17,7 @@ namespace ICE.Scheduler
         internal static bool DisablePlugin()
         {
             P.TaskManager.Abort();
-            MissionInfo.StopBeforeGrab = false;
+            Mission_Settings.StopBeforeGrab = false;
             State = Idle;
             StartClassJob = Job.ADV;
             if (P.Navmesh.IsRunning())

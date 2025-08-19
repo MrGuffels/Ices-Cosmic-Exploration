@@ -335,6 +335,9 @@ public sealed partial class ICE
             // Col 13 -> Lv. 3 Type - Unknown 14
             // Col 14 -> Lv. 3 Exp - Unknown 4
 
+            // Something to note here, a mission can only have a max of 3 types of XP at a time.
+            // Which is why there's only 3 entries.
+
             uint Cosmo = ExpSheet.GetRow(keyId).Unknown0;
             uint Lunar = ExpSheet.GetRow(keyId).Unknown1;
 

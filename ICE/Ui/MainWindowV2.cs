@@ -78,65 +78,88 @@ namespace ICE.Ui
 
         private uint? currentJobId => PlayerHelper.GetClassJobId();
         private bool usingSupportedJob => jobOptions.Any(job => job.Id == currentJobId);
-        private uint selectedJob = OldConfig.SelectedJob;
+        private uint selectedJob = C.SelectedJob;
 
         // Left Column Settings
-        private bool onlyGrabMission = OldConfig.OnlyGrabMission;
-        private bool stopCosmic = OldConfig.StopOnceHitCosmoCredits;
-        private int cosmicCap = OldConfig.CosmoCreditsCap;
-        private bool stopLunar = OldConfig.StopOnceHitLunarCredits;
-        private int lunarCap = OldConfig.LunarCreditsCap;
-        private bool stopScore = OldConfig.StopOnceHitCosmicScore;
-        private int scoreCap = OldConfig.CosmicScoreCap;
-        private bool autoPickCurrentJob = OldConfig.AutoPickCurrentJob;
-        private bool stopWhenLevel = OldConfig.StopWhenLevel;
-        private int targetLevel = OldConfig.TargetLevel;
+        private bool onlyGrabMission = C.OnlyGrabMission;
+        private bool stopCosmic = C.StopOnceHitCosmoCredits;
+        private int cosmicCap = C.CosmoCreditsCap;
+        private bool stopLunar = C.StopOnceHitLunarCredits;
+        private int lunarCap = C.LunarCreditsCap;
+        private bool stopScore = C.StopOnceHitCosmicScore;
+        private int scoreCap = C.CosmicScoreCap;
+        private bool autoPickCurrentJob = C.AutoPickCurrentJob;
+        private bool stopWhenLevel = C.StopWhenLevel;
+        private int targetLevel = C.TargetLevel;
 
-        private bool showCritical = OldConfig.showCritical;
-        private bool showSequential = OldConfig.showSequential;
-        private bool showWeather = OldConfig.showWeather;
-        private bool showTimeRestricted = OldConfig.showTimeRestricted;
-        private bool showClassA = OldConfig.showClassA;
-        private bool showClassB = OldConfig.showClassB;
-        private bool showClassC = OldConfig.showClassC;
-        private bool showClassD = OldConfig.showClassD;
+        private bool showCritical = C.ShowCritical;
+        private bool showSequential = C.ShowSequential;
+        private bool showWeather = C.ShowWeather;
+        private bool showTimeRestricted = C.ShowTimeRestricted;
+        private bool showClassA = C.ShowClassA;
+        private bool showClassB = C.ShowClassB;
+        private bool showClassC = C.ShowClassC;
+        private bool showClassD = C.ShowClassD;
 
         // Middle Column stuff
         private Dictionary<string, bool> headerStates = new();
-        private int SortOption = OldConfig.TableSortOption;
-        private bool hideUnsupported = OldConfig.HideUnsupportedMissions;
-        private bool showCredits = OldConfig.ShowCreditsColumn;
-        private bool showExp = OldConfig.ShowExpColums;
-        private bool showNotes = OldConfig.ShowNotes;
-        private bool increaseMiddleColumn = OldConfig.IncreaseMiddleColumn;
+        private int SortOption = C.TableSortOption;
+        private bool hideUnsupported = C.HideUnsupportedMissions;
 
         private bool showTableSetting = false;
-        private string[] modes = ["Gold", "Silver", "Bronze", "Manual"];
-        private bool[] selectedModes = [false, false, false, false];
+
+        private static Dictionary<string, List<(uint id, bool gather)>> missionList = new()
+        {
+            ["Critical"] = new List<(uint id, bool gather)>(),
+            ["Weather"] = new List<(uint id, bool gather)>(),
+            ["Timed"] = new List<(uint id, bool gather)> (),
+            ["Sequence"] = new List<(uint id, bool gather)> (),
+            ["ARank"] = new List<(uint id, bool gather)> (),
+            ["BRank"] = new List<(uint id, bool gather)> (),
+            ["CRank"] = new List<(uint id, bool gather)> (),
+            ["DRank"] = new List<(uint id, bool gather)> ()
+        };
+
+        private string[] missionSortOptions = ["Id", "Name", "Cosmo Credits", "Lunar Credits", "Exp I", "Exp II", "Exp III", "Exp IV", "Map Location"];
+        private int missionSelectedOption = C.TableSortOption;
+        private List<(uint id, bool gather)> SortMissionList(List<(uint id, bool gather)> missions)
+        {
+            int sortOption = missionSelectedOption;
+            var missionInfo = CosmicHelper.MissionInfoDict;
+
+            switch (sortOption)
+            {
+                case 0: // Sorting by Id
+                    return missions.ToList();
+                case 1: // Name 
+                    return missions.OrderBy(m => missionInfo[m.id].Name).ToList();
+                case 2: // Cosmo Credits
+                    return missions.OrderByDescending(m => missionInfo[m.id].CosmoCredit).ToList();
+                case 3: // Lunar Credits
+                    return missions.OrderByDescending(m => missionInfo[m.id].LunarCredit).ToList();
+                case 4: // Exp 1:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
+                case 5: // Exp 2:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
+                case 6: // Exp 3:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
+                case 7: // Exp 4:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
+                case 8: // Map Location
+                    return missions.OrderBy(m => missionInfo[m.id].MarkerId).ToList();
+                default:
+                    return missions.ToList();
+            }
+        }
 
         private string[] missionOptions = ["Current Class", "All Missions", "Currently Enabled"];
         private string selectedOption = "Current Class";
-
-        private List<(uint Id, string SortOptionName, Func<IEnumerable<KeyValuePair<uint, MissionListInfo>>, IEnumerable<KeyValuePair<uint, MissionListInfo>>> SortFunc)> sortOptions = new()
-        {
-            (0, "", missions => missions),
-            (1, "Name", missions => missions.OrderBy(x => x.Value.Name)),
-            (2, "Mission ID", missions => missions),
-            (3, "Cosmocredits", missions => missions.OrderByDescending(x => x.Value.CosmoCredit)),
-            (4, "Lunar Credits", missions => missions.OrderByDescending(x => x.Value.LunarCredit)),
-            (5, "Research I", missions => missions.OrderByDescending(x => x.Value.ExperienceRewards.Where(exp => CosmicHelper.ExpDictionary[exp.Type] == "I").FirstOrDefault().Amount)),
-            (6, "Research II", missions => missions.OrderByDescending(x => x.Value.ExperienceRewards.Where(exp => CosmicHelper.ExpDictionary[exp.Type] == "II").FirstOrDefault().Amount)),
-            (7, "Research III", missions => missions.OrderByDescending(x => x.Value.ExperienceRewards.Where(exp => CosmicHelper.ExpDictionary[exp.Type] == "III").FirstOrDefault().Amount)),
-            (8, "Research IV", missions => missions.OrderByDescending(x => x.Value.ExperienceRewards.Where(exp => CosmicHelper.ExpDictionary[exp.Type] == "IV").FirstOrDefault().Amount)),
-            (9, "Map Marker", missions => missions.OrderByDescending(x => x.Value.MarkerId)),
-        };
 
         // Right Column stuff
         private uint selectedMission = 0;
 
         public override void Draw()
         {
-            /*
             // Calculate scaling factors based on current font size
             float fontScale = ImGui.GetIO().FontGlobalScale;
             float textLineHeight = ImGui.GetTextLineHeight();
@@ -185,8 +208,8 @@ namespace ICE.Ui
 
                 if (ImGui.Checkbox($"Only grab mission", ref onlyGrabMission))
                 {
-                    OldConfig.OnlyGrabMission = onlyGrabMission;
-                    OldConfig.Save();
+                    C.OnlyGrabMission = onlyGrabMission;
+                    C.Save();
                 }
 
                 ImGui.PopStyleVar();
@@ -197,11 +220,11 @@ namespace ICE.Ui
 
                 ImGui.Spacing();
 
-                ImGui.Checkbox("Stop after current mission", ref SchedulerMain.StopBeforeGrab);
+                ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopBeforeGrab);
                 if (ImGui.Checkbox($"Stop at Cosmic Credits", ref stopCosmic))
                 {
-                    OldConfig.StopOnceHitCosmoCredits = stopCosmic;
-                    OldConfig.Save();
+                    C.StopOnceHitCosmoCredits = stopCosmic;
+                    C.Save();
                 }
                 if (stopCosmic)
                 {
@@ -209,16 +232,16 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.SliderInt("##CosmicStop", ref cosmicCap, 0, 30000))
                     {
-                        OldConfig.CosmoCreditsCap = cosmicCap;
-                        OldConfig.Save();
+                        C.CosmoCreditsCap = cosmicCap;
+                        C.Save();
                     }
                     ImGui.Unindent(15);
                 }
 
                 if (ImGui.Checkbox($"Stop at Lunar Credits", ref stopLunar))
                 {
-                    OldConfig.StopOnceHitLunarCredits = stopLunar;
-                    OldConfig.Save();
+                    C.StopOnceHitLunarCredits = stopLunar;
+                    C.Save();
                 }
                 if (stopLunar)
                 {
@@ -226,16 +249,16 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.SliderInt("##LunarStop", ref lunarCap, 0, 10000))
                     {
-                        OldConfig.LunarCreditsCap = lunarCap;
-                        OldConfig.Save();
+                        C.LunarCreditsCap = lunarCap;
+                        C.Save();
                     }
                     ImGui.Unindent(15);
                 }
 
                 if (ImGui.Checkbox($"Stop at Cosmic Score", ref stopScore))
                 {
-                    OldConfig.StopOnceHitCosmicScore = stopScore;
-                    OldConfig.Save();
+                    C.StopOnceHitCosmicScore = stopScore;
+                    C.Save();
                 }
                 if (stopScore)
                 {
@@ -243,16 +266,16 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.InputInt("###ScoreStop", ref scoreCap, 10000, 50000))
                     {
-                        OldConfig.CosmicScoreCap = scoreCap >= 0 ? scoreCap : 0;
-                        OldConfig.Save();
+                        C.CosmicScoreCap = scoreCap >= 0 ? scoreCap : 0;
+                        C.Save();
                     }
                     ImGui.Unindent(15);
                 }
 
                 if (ImGui.Checkbox($"Stop at Level", ref stopWhenLevel))
                 {
-                    OldConfig.StopWhenLevel = stopWhenLevel;
-                    OldConfig.Save();
+                    C.StopWhenLevel = stopWhenLevel;
+                    C.Save();
                 }
                 if (stopWhenLevel)
                 {
@@ -260,8 +283,8 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.SliderInt("##Level", ref targetLevel, 10, 100))
                     {
-                        OldConfig.TargetLevel = targetLevel;
-                        OldConfig.Save();
+                        C.TargetLevel = targetLevel;
+                        C.Save();
                     }
                     ImGui.Unindent(15);
                 }
@@ -272,26 +295,26 @@ namespace ICE.Ui
 
                 ImGui.Dummy(new(0, 10));
 
-                bool EnableRelicXp = OldConfig.XPRelicGrind;
+                bool EnableRelicXp = C.XPRelicGrind;
                 if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))
                 {
-                    OldConfig.XPRelicGrind = EnableRelicXp;
-                    OldConfig.Save();
+                    C.XPRelicGrind = EnableRelicXp;
+                    C.Save();
                 }
                 if (EnableRelicXp)
                 {
-                    bool IgnoreManual = OldConfig.XPRelicIgnoreManual;
+                    bool IgnoreManual = C.XPRelicIgnoreManual;
                     if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
                     {
-                        OldConfig.XPRelicIgnoreManual = IgnoreManual;
-                        OldConfig.Save();
+                        C.XPRelicIgnoreManual = IgnoreManual;
+                        C.Save();
                     }
 
-                    bool OnlySelected = OldConfig.XPRelicOnlyEnabled;
+                    bool OnlySelected = C.XPRelicOnlyEnabled;
                     if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
                     {
-                        OldConfig.XPRelicOnlyEnabled = OnlySelected;
-                        OldConfig.Save();
+                        C.XPRelicOnlyEnabled = OnlySelected;
+                        C.Save();
                     }
                 }
 
@@ -302,8 +325,8 @@ namespace ICE.Ui
                 ImGui.Dummy(new(0, 10));
                 if (ImGui.Checkbox("Auto Pick Current Job", ref autoPickCurrentJob))
                 {
-                    OldConfig.AutoPickCurrentJob = autoPickCurrentJob;
-                    OldConfig.Save();
+                    C.AutoPickCurrentJob = autoPickCurrentJob;
+                    C.Save();
                 }
 
                 if (autoPickCurrentJob && usingSupportedJob)
@@ -311,8 +334,8 @@ namespace ICE.Ui
                     if (currentJobId != selectedJob)
                     {
                         selectedJob = currentJobId.Value;
-                        OldConfig.SelectedJob = selectedJob;
-                        OldConfig.Save();
+                        C.SelectedJob = selectedJob;
+                        C.Save();
                     }
                 }
 
@@ -336,7 +359,7 @@ namespace ICE.Ui
                 // Row 2: LTW, WVR, ALC, CUL
                 ImGui.SetCursorPosX(startX);
 
-                DrawJobSelection(12, "LWT");
+                DrawJobSelection(12, "LTW");
                 ImGui.SameLine(0, iconSpacing);
                 DrawJobSelection(13, "WVR");
                 ImGui.SameLine(0, iconSpacing);
@@ -379,78 +402,26 @@ namespace ICE.Ui
             // ------------------------------------------
             ImGui.NextColumn();
 
-            middlePanelWidth += 250;
-            if (showCredits)
-            {
-                middlePanelWidth += Utils.cosmicLength;
-                middlePanelWidth += Utils.lunarLength;
-            }
-            if (showExp)
-            {
-                middlePanelWidth += Utils.XPLength;
-            }
-            if (showNotes)
-            {
-                middlePanelWidth += Utils.MissionNotesLength + 100;
-            }
             // Buffer room for the scrollbar
-            middlePanelWidth += 100;
-            ImGui.SetColumnWidth(1, middlePanelWidth);
+            ImGui.SetColumnWidth(1, C.MiddleColumnWidth);
 
             if (ImGui.BeginChild("##MissionList", new Vector2(0, childHeight), true))
             {
 
                 if (ImGui.Checkbox("Hide Unsupported Missions", ref hideUnsupported))
                 {
-                    OldConfig.HideUnsupportedMissions = hideUnsupported;
-                    OldConfig.Save();
+                    C.HideUnsupportedMissions = hideUnsupported;
+                    C.Save();
                 }
 
                 ImGui.SameLine();
-
-                if (ImGui.Button("Open Table Settings"))
-                {
-                    ImGui.OpenPopup("Open Table Settings");
-                }
-
-                if (ImGui.BeginPopup("Open Table Settings"))
-                {
-                    ImGui.Text("Toggle Configs");
-                    ImGui.Separator();
-
-                    if (ImGui.Checkbox("Show Credit Column", ref showCredits))
-                    {
-                        OldConfig.ShowCreditsColumn = showCredits;
-                        OldConfig.Save();
-                    }
-                    if (ImGui.Checkbox("Show XP Amounts", ref showExp))
-                    {
-                        OldConfig.ShowExpColums = showExp;
-                        OldConfig.Save();
-                    }
-                    if (ImGui.Checkbox("Show Notes", ref showNotes))
-                    {
-                        OldConfig.ShowNotes = showNotes;
-                        OldConfig.Save();
-                    }
-                    if (ImGui.Checkbox("Increase Middle Column Size", ref increaseMiddleColumn))
-                    {
-                        OldConfig.IncreaseMiddleColumn = increaseMiddleColumn;
-                        OldConfig.Save();
-                    }
-
-                    ImGui.EndPopup();
-                }
-
-                ImGui.SameLine();
-
                 ImGui.SetNextItemWidth(150);
-                if (ImGui.BeginCombo("Sort By", sortOptions[SortOption].SortOptionName))
+                if (ImGui.BeginCombo("Sort By", missionSortOptions[SortOption]))
                 {
-                    for (int i = 0; i < sortOptions.Count; i++)
+                    for (int i = 0; i < missionSortOptions.Length; i++)
                     {
                         bool isSelected = (i == SortOption);
-                        if (ImGui.Selectable(sortOptions[i].SortOptionName, isSelected))
+                        if (ImGui.Selectable(missionSortOptions[i], isSelected))
                         {
                             SortOption = i;
                         }
@@ -458,13 +429,21 @@ namespace ICE.Ui
                         {
                             ImGui.SetItemDefaultFocus();
                         }
-                        if (SortOption != OldConfig.TableSortOption)
+                        if (SortOption != C.TableSortOption)
                         {
-                            OldConfig.TableSortOption = SortOption;
-                            OldConfig.Save();
+                            C.TableSortOption = SortOption;
+                            C.Save();
                         }
                     }
                     ImGui.EndCombo();
+                }
+                ImGui.SameLine();
+                float middleColumnWidth = C.MiddleColumnWidth;
+                ImGui.SetNextItemWidth(75);
+                if (ImGui.DragFloat("Middle Column Width Adjuster", ref middleColumnWidth))
+                {
+                    C.MiddleColumnWidth = middleColumnWidth;
+                    C.Save();
                 }
 
                 ImGui.Dummy(new Vector2(0, 5));
@@ -477,89 +456,116 @@ namespace ICE.Ui
 
                 #region Mission Dropdowns
 
-                IEnumerable<KeyValuePair<uint, MissionListInfo>> criticalMissions =
-                    MissionInfoDict
-                .Where(m => m.Value.JobId == selectedJob)
-                .Where(m => m.Value.Attributes.HasFlag(MissionAttributes.Critical));
-                criticalMissions = sortOptions.FirstOrDefault(s => s.Id == SortOption).SortFunc(criticalMissions);
-                bool criticalGather = criticalMissions.Any(g => GatheringJobList.Contains((int)g.Value.JobId) || GatheringJobList.Contains((int)g.Value.JobId2));
+                foreach (var missionType in missionList)
+                {
+                    missionType.Value.Clear();
+                }
 
-                IEnumerable<KeyValuePair<uint, MissionListInfo>> weatherRestrictedMissions =
-                        MissionInfoDict
-                            .Where(m => m.Value.JobId == selectedJob || m.Value.JobId2 == selectedJob)
-                            .Where(m => m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                            .Where(m => !m.Value.Attributes.HasFlag(MissionAttributes.Critical));
-                bool weatherGather = weatherRestrictedMissions.Any(g => GatheringJobList.Contains((int)g.Value.JobId) || GatheringJobList.Contains((int)g.Value.JobId2));
-                weatherRestrictedMissions = sortOptions.FirstOrDefault(s => s.Id == SortOption).SortFunc(weatherRestrictedMissions);
+                foreach (var mission in CosmicHelper.MissionInfoDict)
+                {
+                    HashSet<uint> Jobs = new HashSet<uint>();
+                    Jobs.Add(mission.Value.JobId, mission.Value.JobId2);
 
-                IEnumerable<KeyValuePair<uint, MissionListInfo>> timeRestrictedMissions =
-                        MissionInfoDict
-                            .Where(m => m.Value.JobId == selectedJob)
-                            .Where(m => m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed));
-                bool timeGather = timeRestrictedMissions.Any(g => GatheringJobList.Contains((int)g.Value.JobId) || GatheringJobList.Contains((int)g.Value.JobId2));
-                timeRestrictedMissions = sortOptions.FirstOrDefault(s => s.Id == SortOption).SortFunc(timeRestrictedMissions);
+                    if (!Jobs.Contains(selectedJob))
+                        continue;
 
-                IEnumerable<KeyValuePair<uint, MissionListInfo>> sequentialMissions =
-                        MissionInfoDict
-                            .Where(m => m.Value.JobId == selectedJob)
-                            .Where(m => m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential));
-                bool sequentialGather = sequentialMissions.Any(g => GatheringJobList.Contains((int)g.Value.JobId) || GatheringJobList.Contains((int)g.Value.JobId2));
-                sequentialMissions = sortOptions.FirstOrDefault(s => s.Id == SortOption).SortFunc(sequentialMissions);
+                    bool isGatherMission = CosmicHelper.GatheringJobList.Contains((int)mission.Value.JobId) || CosmicHelper.GatheringJobList.Contains((int)mission.Value.JobId2);
+                    if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical))
+                        missionList["Critical"].Add((mission.Key, isGatherMission));
+                    else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
+                        missionList["Weather"].Add((mission.Key, isGatherMission));
+                    else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
+                        missionList["Timed"].Add((mission.Key, isGatherMission));
+                    else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                        missionList["Sequence"].Add((mission.Key, isGatherMission));
+                    else if (mission.Value.Rank > 3)
+                        missionList["ARank"].Add((mission.Key, isGatherMission));
+                    else if (mission.Value.Rank == 3)
+                        missionList["BRank"].Add((mission.Key, isGatherMission));
+                    else if (mission.Value.Rank == 2)
+                        missionList["CRank"].Add((mission.Key, isGatherMission));
+                    else if (mission.Value.Rank == 1)
+                        missionList["DRank"].Add((mission.Key, isGatherMission));
+                }
 
 
                 if (showCritical)
                 {
-                    DrawCollapsibleHeader($"Critical Missions", $"Critical Missions - {criticalMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Critical Missions", $"Critical Missions - ");
                     if (headerStates.TryGetValue("Critical Missions", out var isOpen) && isOpen)
                     {
-                        MissionInfo("Critical Missions", criticalMissions, criticalGather);
+                        bool showGathering = missionList["Critical"].Any(mission => mission.gather);
+                        MissionInfoV2("Critical Missions", missionList["Critical"], showGathering);
                     }
                 }
 
                 if (showSequential)
                 {
-                    DrawCollapsibleHeader($"Sequential Missions", $"Sequential Missions - {sequentialMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Sequential Missions", $"Sequential Missions - ");
                     if (headerStates.TryGetValue("Sequential Missions", out var isOpen) && isOpen)
                     {
-                        MissionInfo("Sequential Missions", sequentialMissions, sequentialGather);
+                        bool showGathering = missionList["Sequence"].Any(mission => mission.gather);
+                        MissionInfoV2("Sequence Missions", missionList["Sequence"], showGathering);
                     }
                 }
 
                 if (showWeather)
                 {
-                    DrawCollapsibleHeader($"Weather Missions", $"Weather Missions - {weatherRestrictedMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Weather Missions", $"Weather Missions - ");
                     if (headerStates.TryGetValue("Weather Missions", out var isOpen) && isOpen)
                     {
-                        MissionInfo("Weather Missions", weatherRestrictedMissions, weatherGather);
+                        bool showGathering = missionList["Weather"].Any(mission => mission.gather);
+                        MissionInfoV2("Weather Missions", missionList["Weather"], showGathering);
                     }
                 }
 
                 if (showTimeRestricted)
                 {
-                    DrawCollapsibleHeader($"Time-Restricted Missions", $"Time-Restricted Missions - {timeRestrictedMissions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} Enabled");
+                    DrawCollapsibleHeader($"Time-Restricted Missions", $"Time-Restricted Missions - ");
                     if (headerStates.TryGetValue("Time-Restricted Missions", out var isOpen) && isOpen)
                     {
-                        MissionInfo("Sequential Missions", timeRestrictedMissions, timeGather);
+                        bool showGathering = missionList["Timed"].Any(mission => mission.gather);
+                        MissionInfoV2("Timed Missions", missionList["Timed"], showGathering);
                     }
                 }
 
-                foreach (var rank in rankOptions.OrderBy(r => r.RankName))
+                if (showClassA)
                 {
-                    IEnumerable<KeyValuePair<uint, MissionListInfo>> missions =
-                        MissionInfoDict
-                            .Where(m => m.Value.JobId == selectedJob || m.Value.JobId2 == selectedJob)
-                            .Where(m => (m.Value.Rank == rank.RankId) || (rank.RankName == "A" && ARankIds.Contains(m.Value.Rank)))
-                            .Where(m => !m.Value.Attributes.HasFlag(MissionAttributes.Critical))
-                            .Where(m => !m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                            .Where(m => !m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                            .Where(m => !m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather));
-                    missions = sortOptions.FirstOrDefault(s => s.Id == SortOption).SortFunc(missions);
-
-                    bool missionGather = missions.Any(g => GatheringJobList.Contains((int)g.Value.JobId) || GatheringJobList.Contains((int)g.Value.JobId2));
-                    DrawCollapsibleHeader($"Class {rank.RankName}", $"Class {rank.RankName} - {missions.Count(x => OldConfig.Missions.Any(y => y.Id == x.Key && y.Enabled))} enabled");
-                    if (headerStates.TryGetValue($"Class {rank.RankName}", out var isOpen) && isOpen)
+                    DrawCollapsibleHeader($"A Rank Missions", "A Rank Mission - ");
+                    if (headerStates.TryGetValue("A Rank Missions", out var isOpen) && isOpen)
                     {
-                        MissionInfo($"Class {rank.RankName} Missions", missions, missionGather);
+                        bool showGathering = missionList["ARank"].Any(mission => mission.gather);
+                        MissionInfoV2("A Rank Missions", missionList["ARank"], showGathering);
+                    }
+                }
+
+                if (showClassB)
+                {
+                    DrawCollapsibleHeader($"B Rank Missions", "B Rank Mission - ");
+                    if (headerStates.TryGetValue("B Rank Missions", out var isOpen) && isOpen)
+                    {
+                        bool showGathering = missionList["BRank"].Any(mission => mission.gather);
+                        MissionInfoV2("B Rank Missions", missionList["BRank"], showGathering);
+                    }
+                }
+
+                if (showClassC)
+                {
+                    DrawCollapsibleHeader($"C Rank Missions", "C Rank Mission - ");
+                    if (headerStates.TryGetValue("C Rank Missions", out var isOpen) && isOpen)
+                    {
+                        bool showGathering = missionList["CRank"].Any(mission => mission.gather);
+                        MissionInfoV2("C Rank Missions", missionList["CRank"], showGathering);
+                    }
+                }
+
+                if (showClassD)
+                {
+                    DrawCollapsibleHeader($"D Rank Missions", "D Rank Mission - ");
+                    if (headerStates.TryGetValue("D Rank Missions", out var isOpen) && isOpen)
+                    {
+                        bool showGathering = missionList["DRank"].Any(mission => mission.gather);
+                        MissionInfoV2("D Rank Missions", missionList["DRank"], showGathering);
                     }
                 }
 
@@ -572,6 +578,8 @@ namespace ICE.Ui
             // RIGHT PANEL: MISSION INFO
             // ------------------------------------------
             ImGui.NextColumn();
+            float maxWidthAvail = ImGui.GetContentRegionMax().X;
+            ImGui.SetColumnWidth(2, maxWidthAvail);
 
             if (ImGui.BeginChild("###MissionDetailPanel", new Vector2(0, childHeight), true))
             {
@@ -600,8 +608,8 @@ namespace ICE.Ui
 
                     if (ImGui.BeginTable("Detail##DetailPanelTable", 2))
                     {
-                        ImGui.TableSetupColumn("##Label", ImGuiTableColumnFlags.WidthFixed, infoSize1);
-                        ImGui.TableSetupColumn("##Value", ImGuiTableColumnFlags.WidthFixed, infoSize2);
+                        ImGui.TableSetupColumn("##Label");
+                        ImGui.TableSetupColumn("##Value");
 
                         foreach (var row in MissionInfo)
                         {
@@ -659,7 +667,7 @@ namespace ICE.Ui
                                               .Where(f => f != MissionAttributes.None && flags.HasFlag(f))
                                               .ToList();
 
-                        var entry = OldConfig.Missions.Where(e => e.Id == selectedMission);
+                        var entry = C.MissionConfig.Where(e => e.Key == selectedMission);
 
                         ImGui.Text("Notes:");
                         bool hasPreviousNotes = false;
@@ -751,10 +759,7 @@ namespace ICE.Ui
                 }
             }
             ImGui.EndChild();
-            */
         }
-
-        /*
         public void DrawJobSelection(uint jobId, string tooltip)
         {
             bool state = selectedJob == jobId;
@@ -803,11 +808,11 @@ namespace ICE.Ui
                 if (autoPickCurrentJob)
                 {
                     autoPickCurrentJob = false;
-                    OldConfig.AutoPickCurrentJob = autoPickCurrentJob;
+                    C.AutoPickCurrentJob = autoPickCurrentJob;
                 }
-                OldConfig.SelectedJob = jobId;
+                C.SelectedJob = jobId;
                 selectedJob = jobId;
-                OldConfig.Save();
+                C.Save();
             }
 
             // Pop style variables and colors
@@ -863,381 +868,314 @@ namespace ICE.Ui
 
             ImGui.SetCursorScreenPos(new Vector2(cursorPos.X, cursorPos.Y + bgHeight + spacing));
         }
-
-        private void MissionInfo(string tableName, IEnumerable<KeyValuePair<uint, MissionListInfo>> missions, bool showGatherConfig = false)
+        private void MissionInfoV2(string tableName, List<(uint id, bool ShowGather)> missions, bool showGatherConfig = false)
         {
-            int columnAmount = 4;
-            if (showCredits)
-                columnAmount += 2;
-            if (showExp)
-                columnAmount += 4;
-            if (showGatherConfig)
-                columnAmount += 1;
-            if (showNotes)
-                columnAmount += 1;
+            // Fixed column count - include ALL possible columns
+            int totalColumns = 13; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
 
-            if (ImGui.BeginTable($"MissionList###{tableName}", columnAmount, ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+            ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
+                                        ImGuiTableFlags.Borders |
+                                        ImGuiTableFlags.SizingFixedFit |
+                                        ImGuiTableFlags.Resizable |           // Allow column resizing
+                                        ImGuiTableFlags.Reorderable |         // Allow column reordering
+                                        ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
+
+            if (ImGui.BeginTable($"MissionList###{tableName}_{missions[0].id}", totalColumns, tableFlags))
             {
-                // Push font to get icon width
-                ImGui.PushFont(UiBuilder.IconFont);
-                float iconWidth = ImGui.CalcTextSize(FontAwesomeIcon.Flag.ToIconString()).X;
-                ImGui.PopFont();
+                float padding = 10f;
 
-                // Extra buffer (empirically determined to prevent clipping)
-                float iconBuffer = iconWidth + 10f;
+                // Setup ALL columns - all visible by default, users can hide what they don't want via right-click
+                ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Enabled").X + padding);
+                ImGui.TableSetupColumn("Manual", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Manual").X + padding);
+                ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("99999").X + padding);
+                ImGui.TableSetupColumn("Mission Name", ImGuiTableColumnFlags.WidthFixed, 250f);
+                ImGui.TableSetupColumn("Cosmo", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Cosmo").X + padding);
+                ImGui.TableSetupColumn("Lunar", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Lunar").X + padding);
 
-                float maxMissionNameWidth = 0f;
-                foreach (var entry in missions)
-                {
-                    float nameWidth = ImGui.CalcTextSize(entry.Value.Name).X;
-                    bool hasFlag = MissionInfoDict[entry.Key].MarkerId != 0;
-                    float totalWidth = nameWidth + (hasFlag ? iconBuffer : 0f);
-                    if (totalWidth > maxMissionNameWidth)
-                        maxMissionNameWidth = totalWidth;
-                }
+                // XP columns
+                float xpWidth = ImGui.CalcTextSize("III").X + padding;
+                ImGui.TableSetupColumn("I", ImGuiTableColumnFlags.WidthFixed, xpWidth);
+                ImGui.TableSetupColumn("II", ImGuiTableColumnFlags.WidthFixed, xpWidth);
+                ImGui.TableSetupColumn("III", ImGuiTableColumnFlags.WidthFixed, xpWidth);
+                ImGui.TableSetupColumn("IV", ImGuiTableColumnFlags.WidthFixed, xpWidth);
 
-                float col3Width = maxMissionNameWidth + 20f; // 20f buffer for spacing
+                ImGui.TableSetupColumn("Turnin Mode", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Select Turnin").X + padding + 15);
+                ImGui.TableSetupColumn("Gathering Profile", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Gathering Profile").X + padding + 15);
+                ImGui.TableSetupColumn("Mission Notes", ImGuiTableColumnFlags.WidthFixed, Math.Max(ImGui.CalcTextSize("Mission Notes").X + padding, 75));
 
-                float col1Width = ImGui.CalcTextSize("Enabled").X + 10f;  // Add buffer
-                float col2Width = ImGui.CalcTextSize("ID").X + 10f;       // Add buffer
-                float col4Width = ImGui.CalcTextSize("Cosmo").X + 5f;
-                float col5Width = ImGui.CalcTextSize("Lunar").X + 5f;
-                float colXPWidth = ImGui.CalcTextSize("III").X + 5f;
-
-                // Updating the column lengths based on the text size
-                Utils.enableColumnLength = col1Width;
-                Utils.IDLength = col2Width;
-                Utils.cosmicLength = col4Width;
-                Utils.lunarLength = col5Width;
-                Utils.XPLength = colXPWidth * 4f;
-
-                ImGui.TableSetupColumn("###EnableCheckbox", ImGuiTableColumnFlags.WidthFixed, col1Width);
-                ImGui.TableSetupColumn("###MissionIDs", ImGuiTableColumnFlags.WidthFixed, col2Width);
-                ImGui.TableSetupColumn("Mission Name", ImGuiTableColumnFlags.WidthFixed, maxMissionNameWidth);
-                if (showCredits)
-                {
-                    ImGui.TableSetupColumn("###Cosmo", ImGuiTableColumnFlags.WidthFixed, col4Width);
-                    ImGui.TableSetupColumn("###Lunar", ImGuiTableColumnFlags.WidthFixed, col5Width);
-                }
-                IOrderedEnumerable<KeyValuePair<int, string>> orderedExp = ExpDictionary.ToList().OrderBy(exp => exp.Key);
-                if (showExp)
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        ImGui.TableSetupColumn($"###XPColumn{i}", ImGuiTableColumnFlags.WidthFixed, colXPWidth);
-                    }
-                }
-                // Settings column
-                ImGui.TableSetupColumn("Turn In", ImGuiTableColumnFlags.WidthFixed, 100);
-
-                if (showGatherConfig)
-                {
-                    float columnWidth = ImGui.CalcTextSize("Gather Config").X + 5;
-                    ImGui.TableSetupColumn("Gather Config", ImGuiTableColumnFlags.WidthFixed, columnWidth);
-                }
-
-                if (showNotes)
-                {
-                    ImGui.TableSetupColumn("Mission Notes", ImGuiTableColumnFlags.WidthStretch);
-                }
-
-                // Render the header row (static headers get drawn here)
+                // Render headers with right-click menu
                 ImGui.TableHeadersRow();
 
-                // Setup to make sure the labels are centered
-                ImGui.TableSetColumnIndex(0);
-                CenterText("Enabled");
-
-                ImGui.TableNextColumn();
-                CenterText("ID");
-
-                ImGui.TableSetColumnIndex(2);
-                if (showCredits)
-                {
-                    ImGui.TableNextColumn();
-                    CenterText("Cosmo");
-
-                    ImGui.TableNextColumn();
-                    CenterText("Lunar");
-                }
-                if (showExp)
-                {
-                    ImGui.TableNextColumn();
-                    CenterText("I");
-
-                    ImGui.TableNextColumn();
-                    CenterText("II");
-
-                    ImGui.TableNextColumn();
-                    CenterText("III");
-                    
-                    ImGui.TableNextColumn();
-                    CenterText("IV");
-                }
-
-                // Actual table entries now
                 foreach (var entry in missions)
                 {
-                    bool unsupported = UnsupportedMissions.Ids.Contains(entry.Key);
+                    var Id = entry.id;
+                    var missionConfig = C.MissionConfig[Id];
+                    var missionInfo = CosmicHelper.MissionInfoDict[Id];
 
-                    bool craftMission = entry.Value.Attributes.HasFlag(MissionAttributes.Craft);
-                    bool gatherMission = entry.Value.Attributes.HasFlag(MissionAttributes.Gather);
-                    bool fishMission = entry.Value.Attributes.HasFlag(MissionAttributes.Fish);
-                    bool collectableMission = entry.Value.Attributes.HasFlag(MissionAttributes.Collectables);
-                    bool stellerReductionMission = entry.Value.Attributes.HasFlag(MissionAttributes.ReducedItems);
+                    bool unsupported = UnsupportedMissions.Ids.Contains(Id);
+
+                    bool craftMission = missionInfo.Attributes.HasFlag(MissionAttributes.Craft);
+                    bool gatherMission = missionInfo.Attributes.HasFlag(MissionAttributes.Gather);
+                    bool fishMission = missionInfo.Attributes.HasFlag(MissionAttributes.Fish);
+                    bool collectableMission = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
+                    bool stellerReductionMission = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
 
                     bool dualclass = craftMission && (gatherMission || fishMission);
-
-                    if (fishMission || (gatherMission && (collectableMission || stellerReductionMission)) || (gatherMission && entry.Value.NodeSet == 0))
-                    {
-                        unsupported = true;
-                    }
 
                     if (unsupported && hideUnsupported)
                         continue;
 
                     ImGui.TableNextRow();
 
-                    var mission = OldConfig.Missions.Single(x => x.Id == entry.Key);
-                    var isEnabled = mission.Enabled;
+                    // Mission Enable/Disable Checkbox
+                    ImGui.PushID(Id);
 
-                    Utils.missionLength = Math.Max(Utils.missionLength, ImGui.CalcTextSize(mission.Name).X);
-
-                    // Column 0: Enable checkbox
+                    // Enable | Disable Mission Selection
                     ImGui.TableSetColumnIndex(0);
-                    // Estimate the width of the checkbox (label is invisible, so the box is all that matters)
-                    float cellWidth = ImGui.GetContentRegionAvail().X;
-                    float checkboxWidth = ImGui.GetFrameHeight(); // Width of the square checkbox only
-                    float offset = (cellWidth - checkboxWidth) * 0.5f;
-
-                    if (offset > 0f)
-                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-
-                    // Use an invisible label for the checkbox to avoid text spacing
-                    if (ImGui.Checkbox($"###{entry.Value.Name}_{entry.Key}", ref isEnabled))
+                    bool enabled = missionConfig.Enabled;
+                    if (CenterCheckbox("##EnableMission", ref enabled))
                     {
-                        mission.Enabled = isEnabled;
-                        CosmicMission chain;
-
-                        if (isEnabled)
-                        {
-                            var prevChainList = GetOnlyPreviousMissionsRecursive(mission.Id);
-                            foreach (var missionId in prevChainList)
-                            {
-                                chain = OldConfig.Missions.Single(x => x.Id == missionId);
-                                chain.Enabled = isEnabled;
-                            }
-                        }
-                        else
-                        {
-                            var nextChainList = GetOnlyNextMissionsRecursive(mission.Id);
-                            foreach (var missionId in nextChainList)
-                            {
-                                chain = OldConfig.Missions.Single(x => x.Id == missionId);
-                                chain.Enabled = isEnabled;
-                            }
-                        }
-
-                        OldConfig.Save();
+                        missionConfig.Enabled = enabled;
+                        C.Save();
                     }
+
+                    // Manual mode checkbox
+                    ImGui.TableNextColumn();
+                    bool manualMode = missionConfig.ManualMode;
+                    if (CenterCheckbox("##Manual Mode", ref manualMode))
+                    {
+                        missionConfig.ManualMode = manualMode;
+                        C.Save();
+                    }
+
+                    // Mission ID
+                    ImGui.TableNextColumn();
+                    ImGui.Text(Id.ToString());
+
+                    // Mission Name
+                    ImGui.TableNextColumn();
+                    ImGui.Text(missionInfo.Name);
                     if (ImGui.IsItemClicked())
                     {
-                        selectedMission = entry.Key;
+                        selectedMission = Id;
                     }
-
-                    // Column 1: Mission ID
-                    ImGui.TableNextColumn();
-                    string MissionId = entry.Key.ToString();
-                    col2Width = Math.Max(ImGui.CalcTextSize(MissionId).X + 10, col2Width);
-                    CenterTextInTableCell($"{MissionId}");
-
-                    // Column 2: Mission Name
-                    ImGui.TableNextColumn();
-                    string MissionName = entry.Value.Name;
-                    if (unsupported)
-                    {
-                        ImGui.TextColored(new Vector4(1f, 0f, 0f, 1f), MissionName);
-                        if (ImGui.IsItemHovered())
-                        {
-                            ImGui.SetTooltip("Currently can only be done in manual mode");
-                        }
-                    }
-                    else
-                    {
-                        ImGui.Text($"{MissionName}");
-                    }
-                    if (ImGui.IsItemClicked())
-                    {
-                        selectedMission = entry.Key;
-                    }
-
-                    MissionListInfo info = MissionInfoDict[mission.Id];
-                    if (info.MarkerId != 0)
+                    if (missionInfo.MarkerId != 0)
                     {
                         ImGui.SameLine();
                         ImGui.PushFont(UiBuilder.IconFont);
                         ImGui.Text(FontAwesomeIcon.Flag.ToIconString());
                         ImGui.PopFont();
                         if (ImGui.IsItemClicked())
-                            Utils.SetGatheringRing(info.TerritoryId, info.X, info.Y, info.Radius, info.Name);
+                            Utils.SetGatheringRing(missionInfo.TerritoryId, missionInfo.X, missionInfo.Y, missionInfo.Radius, missionInfo.Name);
                     }
 
-                    // Column 3: Credits
-                    if (showCredits)
-                    {
-                        ImGui.TableNextColumn();
-                        CenterTextInTableCell(entry.Value.CosmoCredit.ToString());
-                        ImGui.TableNextColumn();
-                        CenterTextInTableCell(entry.Value.LunarCredit.ToString());
-                    }
-
-                    // Col 4-7
-                    if (showExp)
-                    {
-                        foreach (var expType in orderedExp)
-                        {
-                            ImGui.TableNextColumn();
-                            var relicXp = entry.Value.ExperienceRewards.Where(exp => exp.Type == expType.Key).FirstOrDefault().Amount.ToString();
-                            if (relicXp == "0")
-                            {
-                                relicXp = "-";
-                            }
-                            CenterTextInTableCell(relicXp);
-                        }
-                    }
-
-                    // Col 8 Turnin Settings
+                    // Cosmo/Lunar Credits
                     ImGui.TableNextColumn();
-                    string[] modes;
-                    bool[] selectedModes;
-                    if (unsupported)
+                    ImGui.Text(missionInfo.CosmoCredit.ToString());
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text(missionInfo.LunarCredit.ToString());
+
+                    // XP Columns
+                    for (int i = 1; i < 5; i++)
                     {
-                        modes = ["Manual"];
-                        selectedModes = [mission.ManualMode];
+                        ImGui.TableNextColumn();
+                        var expReward = missionInfo.ExperienceRewards.Where(exp => exp.Type == i).FirstOrDefault();
+                        var relicXp = expReward.Amount.ToString();
+
+                        if (relicXp == "0")
+                        {
+                            relicXp = "-";
+                        }
+
+                        CenterTextInTableCell(relicXp);
                     }
-                    else if (entry.Value.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining) || entry.Value.Attributes.HasFlag(MissionAttributes.Critical))
+
+                    // Mission Turnin Settings
+                    ImGui.TableNextColumn();
+                    if (missionInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                     {
-                        modes = ["ASAP", "Manual"];
-                        selectedModes = [mission.TurnInASAP, mission.ManualMode];
+                        CenterTextInTableCell("Auto");
+                        if (missionConfig.AutoTurnin == false)
+                        {
+                            missionConfig.AutoTurnin = true;
+                            missionConfig.TurninGold = false;
+                            missionConfig.TurninSilver = false;
+                            missionConfig.TurninBronze = false;
+
+                            C.Save();
+                        }
                     }
                     else
                     {
-                        modes = ["Gold", "Silver", "Bronze", "Manual"];
-                        selectedModes =
-                        [
-                            mission.TurnInGold,
-                                mission.TurnInSilver,
-                                mission.TurnInASAP,
-                                mission.ManualMode
-                        ];
-                    }
-
-                    ImGui.SetNextItemWidth(-1);
-                    bool changed = false;
-                    if (ImGui.BeginCombo($"###{entry.Value.Name}_{entry.Key}_turninMode", string.Join(", ", modes.Where((m, i) => selectedModes[i]))))
-                    {
-                        for (int i = 0; i < modes.Length; i++)
+                        if (CenterButton("Select Turnin"))
                         {
-                            bool selected = selectedModes[i];
-                            if (ImGui.Selectable(modes[i], selected, ImGuiSelectableFlags.DontClosePopups))
+                            ImGui.OpenPopup("Mission Turnin Settings");
+                        }
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            if (missionConfig.AutoTurnin)
+                                ImGui.Text($"Auto Turnin - True");
+                            else
                             {
-                                selectedModes[i] = !selected;
-                                changed = true;
+                                if (missionConfig.TurninGold)
+                                    ImGui.Text($"Gold Enabled");
+                                if (missionConfig.TurninSilver)
+                                    ImGui.Text($"Silver Enabled");
+                                if (missionConfig.TurninBronze)
+                                    ImGui.Text($"Bronze Enabled");
                             }
-                        }
-                        ImGui.EndCombo();
-                    }
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.BeginTooltip();
-                        ImGui.Text("Turnin's Enabled:");
-                        for (int i = 0; i < selectedModes.Length; i++)
-                        {
-                            if (selectedModes[i] == true)
-                                ImGui.Text($"{modes[i]}");
-                        }
-                        ImGui.EndTooltip();
-                    }
-                    if (changed)
-                    {
-                        if (unsupported)
-                        {
-                            mission.ManualMode = true;
-                        }
-                        else if (entry.Value.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining) || entry.Value.Attributes.HasFlag(MissionAttributes.Critical))
-                        {
-                            mission.TurnInASAP = true;
-                            mission.ManualMode = selectedModes[1];
-                        }
-                        else
-                        {
-                            mission.TurnInGold = selectedModes[0];
-                            mission.TurnInSilver = selectedModes[1];
-                            mission.TurnInASAP = selectedModes[2];
-                            mission.ManualMode = selectedModes[3];
-                        }
-                        OldConfig.Save();
-                    }
 
-                    // Column #9
-                    if (showGatherConfig)
-                    {
-                        ImGui.TableNextColumn();
-                        if (GatheringJobList.Contains((int)entry.Value.JobId) || GatheringJobList.Contains((int)entry.Value.JobId2))
+                            ImGui.EndTooltip();
+                        }
+
+                        if (ImGui.BeginPopup("Mission Turnin Settings"))
                         {
-                            ImGui.SetNextItemWidth(-1);
-                            if (ImGui.BeginCombo($"###GatherProfile{entry.Value.Name}_{entry.Key}", mission.GatherSetting.Name))
+                            bool anyTurnin = missionConfig.AutoTurnin;
+                            bool goldTurnin = missionConfig.TurninGold;
+                            bool silverTurnin = missionConfig.TurninSilver;
+                            bool bronzeTurnin = missionConfig.TurninBronze;
+
+                            ImGui.Text("Select Turnin Options");
+                            ImGui.Dummy(new Vector2(0, 2));
+
+                            if (ImGui.Checkbox("Auto", ref anyTurnin))
                             {
-                                foreach (var profile in OldConfig.GatherSettings)
+                                if (anyTurnin)
                                 {
-                                    bool isSelected = mission.GatherSettingId == profile.Id;
-                                    if (ImGui.Selectable(profile.Name, isSelected))
-                                    {
-                                        mission.GatherSettingId = profile.Id;
-                                    }
-                                    if (isSelected)
-                                        ImGui.SetItemDefaultFocus();
+                                    missionConfig.TurninGold = false;
+                                    missionConfig.TurninSilver = false;
+                                    missionConfig.TurninBronze = false;
+
+                                    missionConfig.AutoTurnin = anyTurnin;
                                 }
-                                ImGui.EndCombo();
+                                else
+                                {
+                                    if (!(bronzeTurnin && silverTurnin && goldTurnin))
+                                    {
+                                        missionConfig.AutoTurnin = true;
+                                    }
+                                }
+
+                                C.Save();
                             }
+                            ImGuiEx.HelpMarker("This option will strive to get the best result, but will turn in any result if necessary without stopping.");
+
+                            ImGui.Separator();
+
+                            if (ImGui.Checkbox("Gold", ref goldTurnin))
+                            {
+                                if (anyTurnin && goldTurnin)
+                                    missionConfig.AutoTurnin = false;
+
+                                missionConfig.TurninGold = goldTurnin;
+                                C.Save();
+                            }
+                            if (ImGui.Checkbox("Silver", ref silverTurnin))
+                            {
+                                if (anyTurnin && silverTurnin)
+                                    missionConfig.AutoTurnin = false;
+
+                                missionConfig.TurninSilver = silverTurnin;
+                                C.Save();
+                            }
+                            if (ImGui.Checkbox("Bronze", ref bronzeTurnin))
+                            {
+                                if (anyTurnin && bronzeTurnin)
+                                    missionConfig.AutoTurnin = false;
+
+                                missionConfig.TurninBronze = bronzeTurnin;
+                                C.Save();
+                            }
+
+                            ImGui.EndPopup();
                         }
                     }
 
-                    if (showNotes)
+                    // Gather Mission Profile Settings
+                    ImGui.TableNextColumn();
+                    if (missionInfo.Attributes.HasFlag(MissionAttributes.Gather))
                     {
-                        ImGui.TableNextColumn();
-                        bool hasPreviousNotes = false;
-                        string notes = "";
-                        if (entry.Value.Weather != CosmicWeather.FairSkies)
+                        string profileName = C.GatherSettings[missionConfig.GatherProfileId].Name;
+
+                        if (CenterButton($"{profileName}##GatherProfile_{profileName}"))
                         {
-                            hasPreviousNotes = true;
-                            notes = entry.Value.Weather.ToString();
+                            ImGui.OpenPopup("Selecting Gathering Profile");
                         }
-                        else if (entry.Value.Time != 0)
+                        if (ImGui.IsItemHovered())
                         {
-                            hasPreviousNotes = true;
-                            notes = $"{2 * (entry.Value.Time - 1)}:00 - {2 * (entry.Value.Time)}:00";
+                            ImGui.BeginTooltip();
+                            ImGui.Text("Select profile to use");
+                            ImGui.EndTooltip();
                         }
-                        else if (entry.Value.PreviousMissionID != 0)
+                        if (ImGui.BeginPopup("Selecting Gathering Profile"))
                         {
-                            hasPreviousNotes = true;
-                            var (Id, Name) = MissionInfoDict.Where(m => m.Key == entry.Value.PreviousMissionID).Select(m => (Id: m.Key, Name: m.Value.Name)).FirstOrDefault();
-                            notes = $"[{Id}] {Name}";
+                            ImGui.Text($"Currently Selected: {profileName}");
+                            ImGui.Separator();
+                            for (int i = 0; i < C.GatherSettings.Count; i++)
+                            {
+                                var GProfile = C.GatherSettings[i];
+                                bool GProfileSelected = missionConfig.GatherProfileId == i;
+
+                                if (ImGui.RadioButton(GProfile.Name, GProfileSelected))
+                                {
+                                    missionConfig.GatherProfileId = i;
+                                    C.Save();
+                                }
+                            }
+
+                            ImGui.EndPopup();
                         }
-                        if (entry.Value.JobId2 != 0)
-                        {
-                            if (hasPreviousNotes) ImGui.SameLine();
-                            notes += $"{jobOptions.Find(job => job.Id == entry.Value.JobId).Name}/{jobOptions.Find(job => job.Id == entry.Value.JobId2).Name}";
-                        }
-                        float NotesLength = Math.Max(Utils.missionLength, ImGui.CalcTextSize(notes).X);
-                        Utils.MissionNotesLength = NotesLength;
-                        ImGui.TextWrapped(notes);
                     }
+
+                    ImGui.TableNextColumn();
+                    int notesCount = 0;
+
+                    if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                    {
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        ImGui.Text(FontAwesomeIcon.ListOl.ToIconString());
+                        ImGui.PopFont();
+                        notesCount++;
+                    }
+                    if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
+                    {
+                        if (notesCount > 0)
+                            ImGui.SameLine();
+
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        ImGui.Text(FontAwesomeIcon.Cloud.ToIconString());
+                        ImGui.PopFont();
+                        notesCount++;
+                    }
+                    if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
+                    {
+                        if (notesCount > 0)
+                            ImGui.SameLine();
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        ImGui.Text(FontAwesomeIcon.Clock.ToIconString());
+                        ImGui.PopFont();
+                    }
+
+                    ImGui.PopID();
                 }
 
                 ImGui.EndTable();
             }
         }
+
+        private Dictionary<string, bool> QuickSetModes = new()
+        {
+            ["Any"] = true,
+            ["Gold"] = false,
+            ["Silver"] = false,
+            ["Bronze"] = false,
+            ["Manual"] = false,
+        };
+
+        private List<string> QuickApplyOptions = new() { "Current Class", "All Enabled", "All Missions" };
+        private int QuickSelectedOption = 0;
 
         private void UpdateMissions()
         {
@@ -1249,115 +1187,156 @@ namespace ICE.Ui
 
             if (ImGui.BeginPopup("Select Mission Profiles"))
             {
-                ImGui.Checkbox($"Gold", ref selectedModes[0]);
-                ImGui.Checkbox($"Silver", ref selectedModes[1]);
-                ImGui.Checkbox($"Bronze/ASAP", ref selectedModes[2]);
-                ImGui.Checkbox($"Manual", ref selectedModes[3]);
+                ImGui.Text("QuickSet Modes");
+
+                // Any checkbox
+                bool anyValue = QuickSetModes["Any"];
+                bool goldValue = QuickSetModes["Gold"];
+                bool silverValue = QuickSetModes["Silver"];
+                bool bronzeValue = QuickSetModes["Bronze"];
+                if (!(anyValue ||  goldValue || silverValue || bronzeValue))
+                {
+                    QuickSetModes["Any"] = true;
+                }
+
+                if (ImGui.Checkbox("Any", ref anyValue))
+                {
+                    QuickSetModes["Any"] = anyValue;
+                    if (anyValue && (goldValue ||  silverValue || bronzeValue))
+                    {
+                        QuickSetModes["Gold"] = false;
+                        QuickSetModes["Silver"] = false;
+                        QuickSetModes["Bronze"] = false;
+                    }
+                }
+
+                // Separator between Any and medal types
+                ImGui.Separator();
+
+                // Medal checkboxes
+                if (ImGui.Checkbox("Gold", ref goldValue))
+                {
+                    QuickSetModes["Gold"] = goldValue;
+                    QuickSetModes["Any"] = false;
+                }
+
+                if (ImGui.Checkbox("Silver", ref silverValue))
+                {
+                    QuickSetModes["Silver"] = silverValue;
+                    QuickSetModes["Any"] = false;
+                }
+
+                if (ImGui.Checkbox("Bronze", ref bronzeValue))
+                {
+                    QuickSetModes["Bronze"] = bronzeValue;
+                    QuickSetModes["Any"] = false;
+                }
+
+                // Separator between medals and Manual
+                ImGui.Separator();
+
+                // Manual checkbox
+                bool manualValue = QuickSetModes["Manual"];
+                if (ImGui.Checkbox("Manual", ref manualValue))
+                {
+                    QuickSetModes["Manual"] = manualValue;
+                }
 
                 ImGui.EndPopup();
             }
 
-            if (ImGui.BeginCombo("###ProfileSelector", selectedOption))
+            if (ImGui.BeginCombo("Quick Apply", QuickApplyOptions[QuickSelectedOption]))
             {
-                for (int i = 0; i < missionOptions.Length; i++)
+                for (int i = 0; i < QuickApplyOptions.Count; i++)
                 {
-                    bool selected = selectedModes[i];
-                    if (ImGui.Selectable(missionOptions[i], selected))
+                    bool isSelected = (QuickSelectedOption == i);
+                    if (ImGui.Selectable(QuickApplyOptions[i], isSelected))
                     {
-                        selectedOption = missionOptions[i];
+                        QuickSelectedOption = i;
+                        string selectedOption = QuickApplyOptions[QuickSelectedOption];
                     }
+
+                    // Set the initial focus when opening the combo
+                    if (isSelected)
+                        ImGui.SetItemDefaultFocus();
                 }
                 ImGui.EndCombo();
             }
 
+            ImGui.Text($"Option: {QuickSelectedOption}");
+            ImGui.Text($"Selected Job: {C.SelectedJob}");
             if (ImGui.Button("Apply to selected profiles"))
             {
                 var currentJob = PlayerHelper.GetClassJobId();
 
-                foreach (var mission in OldConfig.Missions)
+                foreach (var mission in C.MissionConfig)
                 {
-                    var id = mission.Id;
-
-                    bool unsupported = UnsupportedMissions.Ids.Contains(id);
-
-                    var missionDict = MissionInfoDict[id];
-
-                    bool craftMission = missionDict.Attributes.HasFlag(MissionAttributes.Craft);
-                    bool gatherMission = missionDict.Attributes.HasFlag(MissionAttributes.Gather);
-                    bool fishMission = missionDict.Attributes.HasFlag(MissionAttributes.Fish);
-                    bool collectableMission = missionDict.Attributes.HasFlag(MissionAttributes.Collectables);
-                    bool stellerReductionMission = missionDict.Attributes.HasFlag(MissionAttributes.ReducedItems);
+                    var id = mission.Key;
+                    var missionDict = CosmicHelper.MissionInfoDict[id];
+                    bool selectedJob = (C.SelectedJob == missionDict.JobId || C.SelectedJob == missionDict.JobId2);
                     bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
 
-                    bool dualclass = craftMission && (gatherMission || fishMission);
+                    PluginLog.Information($"ID: {id} | Enabled: {mission.Value.Enabled}");
+                    PluginLog.Information($"Option 0: {!(QuickSelectedOption == 0 && selectedJob)}");
 
-                    if (dualclass || fishMission || (gatherMission && (collectableMission || stellerReductionMission)) || (gatherMission && missionDict.NodeSet == 0))
+                    if (QuickSelectedOption == 0 && selectedJob)
                     {
-                        unsupported = true;
+                        if (!selectedJob)
+                        {
+                            PluginLog.Information($"Option 0 was checked, and returned false");
+                        }
+                        continue;
                     }
-
-                    // "Current Class", "All Missions", "Currently Enabled"
-                    void UpdateMissions()
+                    if (QuickSelectedOption == 1)
                     {
-                        if (TimedMission)
+                        if (!mission.Value.Enabled)
                         {
-                            if (!selectedModes[2] && !selectedModes[3])
-                            {
-                                mission.TurnInASAP = true;
-                                mission.ManualMode = false;
-
-                            }
-                            else
-                            {
-                                mission.TurnInGold = false;
-                                mission.TurnInSilver = false;
-                                mission.TurnInASAP = selectedModes[2];
-                                mission.ManualMode = selectedModes[3];
-                            }
-                        }
-                        else if (unsupported)
-                        {
-                            mission.TurnInGold = false;
-                            mission.TurnInSilver = false;
-                            mission.TurnInASAP = false;
-                            mission.ManualMode = true;
-                        }
-                        else
-                        {
-                            // should be the catch all for all missions
-                            mission.TurnInGold = selectedModes[0];
-                            mission.TurnInSilver = selectedModes[1];
-                            mission.TurnInASAP = selectedModes[2];
-                            mission.ManualMode = selectedModes[3];
-                        }
-                    }
-
-
-                    if (selectedOption == missionOptions[0])
-                    {
-                        if (missionDict.JobId == currentJob)
-                        {
-                            UpdateMissions();
-                        }
-                        else
+                            PluginLog.Information($"Option 1 was selected, but not enabled." +
+                                                  $"Mission Id: {mission.Key} | Enabled? : {mission.Value.Enabled}" +
+                                                  $"Skipping for now");
                             continue;
-                    }
-                    else if (selectedOption == missionOptions[1])
-                    {
-                        UpdateMissions();
-                    }
-                    else if (selectedOption == missionOptions[2])
-                    {
-                        if (mission.Enabled)
-                        {
-                            UpdateMissions();
                         }
                         else
-                            continue;
+                        {
+                            PluginLog.Information($"It's valid! Continuing on");
+                        }
+                    }
+
+                    PluginLog.Information($"Mission is being modified: {id}");
+
+                    if (TimedMission)
+                    {
+                        PluginLog.Information($"Timed Mission: \n" +
+                                              $"Any: {QuickSetModes["Any"]}" +
+                                              $"Gold: {QuickSetModes["Gold"]}" +
+                                              $"Silver: {QuickSetModes["Silver"]}" +
+                                              $"Bronze: {QuickSetModes["Bronze"]}" +
+                                              $"Manual: {QuickSetModes["Manual"]}");
+
+                        mission.Value.AutoTurnin = QuickSetModes["Any"];
+                        mission.Value.TurninGold = false;
+                        mission.Value.TurninSilver = false;
+                        mission.Value.TurninBronze = false;
+                        mission.Value.ManualMode = QuickSetModes["Manual"];
+                    }
+                    else
+                    {
+                        PluginLog.Information($"Non-timed Mission \n" +
+                                              $"Any: {QuickSetModes["Any"]}" +
+                                              $"Gold: {QuickSetModes["Gold"]}" +
+                                              $"Silver: {QuickSetModes["Silver"]}" +
+                                              $"Bronze: {QuickSetModes["Bronze"]}" +
+                                              $"Manual: {QuickSetModes["Manual"]}");
+
+                        mission.Value.AutoTurnin = QuickSetModes["Any"];
+                        mission.Value.TurninGold = QuickSetModes["Gold"];
+                        mission.Value.TurninSilver = QuickSetModes["Silver"];
+                        mission.Value.TurninBronze = QuickSetModes["Bronze"];
+                        mission.Value.ManualMode = QuickSetModes["Manual"];
                     }
                 }
 
-                OldConfig.Save();
+                C.Save();
             }
         }
 
@@ -1443,9 +1422,9 @@ namespace ICE.Ui
                 float windowSize = ImGui.GetWindowSize().X - 20;
                 Vector2 size = new Vector2(windowSize, 10);
 
-                var (classScore, cappedClassScore, totalScores, classId) = MissionHandler.GetCosmicClassScores();
+                // var (classScore, cappedClassScore, totalScores, classId) = MissionHandler.GetCosmicClassScores();
 
-                DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
+                // DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
             }
         }
 
@@ -1496,18 +1475,8 @@ namespace ICE.Ui
             ImGui.Dummy(new Vector2(size.X, size.Y + 5));
         }
 
-
         #region Table Tools
 
-        private void CenterText(string text)
-        {
-            float colWidth = ImGui.GetColumnWidth();
-            Vector2 textSize = ImGui.CalcTextSize(text);
-            float offset = (colWidth - textSize.X) * 0.5f;
-            if (offset > 0)
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-            ImGui.TextUnformatted(text);
-        }
         private void CenterTextInTableCell(string text)
         {
             float cellWidth = ImGui.GetContentRegionAvail().X;
@@ -1519,46 +1488,24 @@ namespace ICE.Ui
 
             ImGui.TextUnformatted(text);
         }
-        public void CenterCheckboxInTableCell(string label, ref bool value, ref bool config)
+        private bool CenterCheckbox(string label, ref bool value)
         {
-            float cellWidth = ImGui.GetContentRegionAvail().X;
-            float checkboxWidth = ImGui.CalcTextSize(label).X + ImGui.GetFrameHeight(); // estimate checkbox width
-            float offset = (cellWidth - checkboxWidth) * 0.5f;
+            // Checkbox size is roughly the font size
+            float checkboxSize = ImGui.GetFontSize();
+            float availableWidth = ImGui.GetContentRegionAvail().X;
+            float offset = Math.Max(0f, (availableWidth - checkboxSize) * 0.5f);
 
-            if (offset > 0f)
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-
-            if (ImGui.Checkbox(label, ref value))
-            {
-
-            }
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
+            return ImGui.Checkbox(label, ref value);
         }
-        private void DrawCenteredHeader(string label, float spacing = 4f)
+        private bool CenterButton(string label, Vector2? size = null)
         {
-            var drawList = ImGui.GetWindowDrawList();
-            var cursorPos = ImGui.GetCursorScreenPos();
-            var windowWidth = ImGui.GetContentRegionAvail().X;
+            Vector2 buttonSize = size ?? ImGui.CalcTextSize(label) + ImGui.GetStyle().FramePadding * 2;
+            float availableWidth = ImGui.GetContentRegionAvail().X;
+            float offset = Math.Max(0f, (availableWidth - buttonSize.X) * 0.5f);
 
-            float padding = 6.0f;
-            var textSize = ImGui.CalcTextSize(label);
-            float bgHeight = textSize.Y + padding * 2;
-
-            var headerRectMin = cursorPos;
-            var headerRectMax = new Vector2(cursorPos.X + windowWidth, cursorPos.Y + bgHeight);
-
-            // Background and border
-            drawList.AddRectFilled(headerRectMin, headerRectMax, ImGui.GetColorU32(new Vector4(0.2f, 0.2f, 0.2f, 1f)), 2f);
-            drawList.AddRect(headerRectMin, headerRectMax, ImGui.GetColorU32(ImGuiColors.ParsedGold), 2f);
-
-            // Centered text
-            var textPos = new Vector2(
-                cursorPos.X + (windowWidth - textSize.X) * 0.5f,
-                cursorPos.Y + padding
-            );
-            drawList.AddText(textPos, ImGui.GetColorU32(new Vector4(1f, 1f, 1f, 1f)), label);
-
-            // Advance cursor to next line
-            ImGui.SetCursorScreenPos(new Vector2(cursorPos.X, cursorPos.Y + bgHeight + spacing));
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
+            return size.HasValue ? ImGui.Button(label, size.Value) : ImGui.Button(label);
         }
         private List<uint> GetOnlyPreviousMissionsRecursive(uint missionId)
         {
@@ -1585,7 +1532,6 @@ namespace ICE.Ui
         }
 
         #endregion
-        */
 
     }
 }

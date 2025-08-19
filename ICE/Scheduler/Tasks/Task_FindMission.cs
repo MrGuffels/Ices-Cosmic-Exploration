@@ -62,7 +62,7 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                if (EzThrottler.Throttle("Closing the hud to make sure it's on the right class"))
+                if (EzThrottler.Throttle("Opening the mission ui"))
                 {
                     if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
                         moonHud.Mission();
@@ -126,6 +126,19 @@ namespace ICE.Scheduler.Tasks
                     CRankMisisons.Add(missionId);
                 else if (missionInfo.Rank == 1)
                     DRankMissions.Add(missionId);
+
+                if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                {
+                    criticalMissionCount += 1;
+                }
+                else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential) || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed) || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
+                {
+                    specialMissionCount += 1;
+                }
+                else
+                {
+                    basicMissionCount += 1;
+                }
             }
 
             IceLogging.Info("Mission count has been updated to the following: \n" +
@@ -136,7 +149,10 @@ namespace ICE.Scheduler.Tasks
                 $"A Rank: {ARankMissions.Count}" +
                 $"B Rank: {BRankMissions.Count}" +
                 $"C Rank: {CRankMisisons.Count}" +
-                $"D Rank: {DRankMissions.Count}", "Mission Finder Task");
+                $"D Rank: {DRankMissions.Count}", "Mission Finder Task" +
+                $"Total Critical Missions: {criticalMissionCount}" +
+                $"Total Special Missions: {specialMissionCount}" +
+                $"Total Basic Missions: {basicMissionCount}");
 
             return true;
         }

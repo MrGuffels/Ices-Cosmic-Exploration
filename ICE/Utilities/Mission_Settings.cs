@@ -6,15 +6,16 @@ using System.Threading.Tasks;
 
 namespace ICE.Utilities
 {
-    internal static class MissionInfo
+    internal static class Mission_Settings
     {
+        // States that get set in the main Ui
+        internal static bool StopBeforeGrab = false;
 
         internal static string MissionName = string.Empty;
         internal static bool inMission = false;
         internal static bool Abandon = false;
         internal static bool AnimationLockAbandonState = false;
         internal static uint PossiblyStuck = 0;
-        internal static bool StopBeforeGrab = false;
         internal static uint PreviousNodeSetId = 0;
         internal static List<GatheringUtil.GathNodeInfo> CurrentNodeSet = [];
         internal static int CurrentIndex = 0;
