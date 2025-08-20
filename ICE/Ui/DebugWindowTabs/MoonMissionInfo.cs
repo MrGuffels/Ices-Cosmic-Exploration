@@ -14,6 +14,7 @@ namespace ICE.Ui.DebugWindowTabs
         private static string CraftingTableSearchText = "";
         private static string AttributeSearchText = "";
         private static uint RankSearch = 0;
+        private static uint jobSearch = 7;
 
         public static unsafe void Draw()
         {
@@ -24,41 +25,47 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.InputText("Search by Attribute", ref AttributeSearchText, 100);
             ImGui.SetNextItemWidth(250);
             ImGui.SliderUInt("Rank ID", ref RankSearch, 0, 6);
-
-            if (ImGui.BeginTable("Moon Mission Information Table", 18, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit))
+            ImGui.SetNextItemWidth(250);
+            ImGui.SliderUInt("Class Selection", ref jobSearch, 7, 18);
+            if (ImGui.Button("Copy Scores"))
             {
-                ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, -1);
-                ImGui.TableSetupColumn("Jobs", ImGuiTableColumnFlags.WidthFixed, -1);
+                ImGui.SetClipboardText(GenerateMissionScoreDictionaryCode());
+            }
 
-                ImGui.TableSetupColumn("Mission Name", ImGuiTableColumnFlags.WidthFixed, -1);
-                ImGui.TableSetupColumn("Job", ImGuiTableColumnFlags.WidthFixed, 100);
-                ImGui.TableSetupColumn("2nd Job", ImGuiTableColumnFlags.WidthFixed, 100);
-                ImGui.TableSetupColumn("Rank", ImGuiTableColumnFlags.WidthFixed, 100);
-                ImGui.TableSetupColumn("ToDo ID", ImGuiTableColumnFlags.WidthFixed, 100);
-                ImGui.TableSetupColumn("RecipeID", ImGuiTableColumnFlags.WidthFixed, 100);
-                ImGui.TableSetupColumn("Silver", ImGuiTableColumnFlags.WidthFixed, -1);
-                ImGui.TableSetupColumn("Gold", ImGuiTableColumnFlags.WidthFixed, -1);
-                ImGui.TableSetupColumn("Attribute Flags", ImGuiTableColumnFlags.WidthFixed, -1);
-                //ImGui.TableSetupColumn("Exp Type 1###MissionExpType1", ImGuiTableColumnFlags.WidthFixed, 100);
-                //ImGui.TableSetupColumn("Exp Amount 1###MissionExpAmount1", ImGuiTableColumnFlags.WidthFixed, 100);
-                //ImGui.TableSetupColumn("Exp Type 2###MissionExpType2", ImGuiTableColumnFlags.WidthFixed, 100);
-                //ImGui.TableSetupColumn("Exp Amount 2###MissionExpAmount2", ImGuiTableColumnFlags.WidthFixed, 100);
-                //ImGui.TableSetupColumn("Exp Type 3###MissionExpType3", ImGuiTableColumnFlags.WidthFixed, 100);
-                //ImGui.TableSetupColumn("Exp Amount 3###MissionExpAmount3", ImGuiTableColumnFlags.WidthFixed, 100);
+            ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
+                            ImGuiTableFlags.Borders |
+                            ImGuiTableFlags.SizingFixedFit |
+                            ImGuiTableFlags.Resizable |           // Allow column resizing
+                            ImGuiTableFlags.Reorderable |         // Allow column reordering
+                            ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
+
+            if (ImGui.BeginTable("Moon Mission Information Table", 18, tableFlags))
+            {
+                ImGui.TableSetupColumn("ID");
+                ImGui.TableSetupColumn("Jobs");
+
+                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn("Job");
+                ImGui.TableSetupColumn("2nd Job");
+                ImGui.TableSetupColumn("Rank");
+                ImGui.TableSetupColumn("ToDo ID");
+                ImGui.TableSetupColumn("RecipeID");
+                ImGui.TableSetupColumn("Silver");
+                ImGui.TableSetupColumn("Gold");
+                ImGui.TableSetupColumn("Attribute Flags");
 
                 IOrderedEnumerable<KeyValuePair<int, string>> orderedExp = CosmicHelper.ExpDictionary.ToList().OrderBy(exp => exp.Key);
                 var agent = AgentMap.Instance();
                 var wk = WKSManager.Instance();
-
-                //_gatherCenter = new(marker.Unknown1 - 1024, marker.Unknown2 - 1024);
-                //_gatherRadius = marker.Unknown3;
 
                 foreach (var exp in orderedExp)
                 {
                     ImGui.TableSetupColumn($"{exp.Value}", ImGuiTableColumnFlags.WidthFixed, -1);
                 }
 
-                ImGui.TableSetupColumn("Test Flag", ImGuiTableColumnFlags.WidthFixed, -1);
+                ImGui.TableSetupColumn("Test Flag");
+
+                ImGui.TableSetupColumn("Score");
 
                 ImGui.TableHeadersRow();
 
@@ -80,7 +87,19 @@ namespace ICE.Ui.DebugWindowTabs
                     if (RankSearch != 0 && entry.Value.Rank != RankSearch)
                         continue;
 
+                    if (jobSearch != 7)
+                    {
+                        var jobs = new[] { entry.Value.JobId, entry.Value.JobId2 }
+                                         .Where(id => id != 0)
+                                         .ToHashSet();
+
+                        if (!jobs.Contains(jobSearch))
+                            continue;
+                    }
+
                     ImGui.TableNextRow();
+
+                    ImGui.PushID(entry.Key);
 
                     // Mission ID
                     ImGui.TableSetColumnIndex(0);
@@ -103,6 +122,10 @@ namespace ICE.Ui.DebugWindowTabs
                     // Mission Name
                     ImGui.TableNextColumn();
                     ImGui.Text(entry.Value.Name);
+                    if (ImGui.IsItemClicked())
+                    {
+                        ImGui.SetClipboardText(RemovePrivateUseChars(entry.Value.Name));
+                    }
 
                     // JobId Attached to it
                     ImGui.TableNextColumn();
@@ -175,10 +198,52 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.EndTooltip();
                         }
                     }
+
+                    ImGui.TableNextColumn();
+                    uint missionScore = entry.Value.missionScore;
+                    ImGui.SetNextItemWidth(100);
+                    if (ImGui.InputUInt($"##MissionScore", ref missionScore))
+                    {
+                        entry.Value.missionScore = missionScore;
+                    }
+                    ImGui.PopID();
                 }
 
                 ImGui.EndTable();
             }
+        }
+
+        public static string GenerateMissionScoreDictionaryCode()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("public static Dictionary<uint, uint> MissionScoreDict = new Dictionary<uint, uint>");
+            sb.AppendLine("{");
+
+            foreach (var kvp in CosmicHelper.MissionInfoDict)
+            {
+                sb.AppendLine($"    [{kvp.Key}] = {kvp.Value.missionScore},");
+            }
+
+            sb.AppendLine("};");
+
+            return sb.ToString();
+        }
+
+        public static string RemovePrivateUseChars(string input)
+        {
+            var result = new StringBuilder();
+            foreach (char c in input)
+            {
+                int code = (int)c;
+                // Skip Private Use Areas where games often store custom symbols
+                if (!(code >= 0xE000 && code <= 0xF8FF) &&    // Private Use Area
+                    !(code >= 0xF0000 && code <= 0xFFFFD) &&  // Supplementary Private Use Area A
+                    !(code >= 0x100000 && code <= 0x10FFFD))  // Supplementary Private Use Area B
+                {
+                    result.Append(c);
+                }
+            }
+            return result.ToString();
         }
     }
 }

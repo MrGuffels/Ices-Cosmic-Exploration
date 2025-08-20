@@ -10,6 +10,21 @@ namespace ICE.Utilities
 {
     internal class CosmicHandler
     {
+        internal static HashSet<string> commenceStrings = ["Commence selected mission?",
+                                                           "Ausgewählte Mission wird gestartet.Fortfahren?",
+                                                           "Commencer la mission sélectionnée ?",
+                                                           "選択したミッションを開始します。よろしいですか？",
+                                                           "确定要开始此任务吗？", "선택한 임무를 시작하시겠습니까?"
+                                                          ];
+
+        internal static HashSet<string> abandonStrings = ["Abandon mission?",            // English
+                                                          "Aktuelle Mission abbrechen?", // German
+                                                          "Êtes-vous sûre de vouloir abandonner la mission en cours ?", // French
+                                                          "受注中のミッションを破棄します。", // Japanese
+                                                          "确定要放弃已领取的任务吗？",      // Chinese
+                                                          "수락한 임무를 포기하시겠습니까?"  // Korean?
+                                                          ]; 
+
         internal unsafe static bool IsMissionTimedOut()
         {
             if (AddonHelper.GetAtkTextNode("WKSMissionInfomation", 23)->IsVisible())

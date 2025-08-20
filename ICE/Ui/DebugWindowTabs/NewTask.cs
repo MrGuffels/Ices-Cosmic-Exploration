@@ -9,31 +9,29 @@ namespace ICE.Ui.DebugWindowTabs
 {
     internal class NewTask
     {
+        private static uint mission = 0;
+
         public static void Draw()
         {
-            if (P.TaskManager.MaxTasks != 0)
-                ImGui.Text($"Task Name: {P.TaskManager.CurrentTask.Name} | Number of task: {P.TaskManager.MaxTasks}");
-            else
-                ImGui.Text($"No Task Active");
-            ImGui.Text($"Counter: {Counter}");
+            bool runningTask = P.TaskManager.NumQueuedTasks != 0;
+            ImGui.Text($"Running task: {runningTask}");
 
-            if (ImGui.Button("Task Find Mission"))
+            if (ImGui.Button("Stop Task"))
             {
-                P.TaskManager.Enqueue(TestInsert, "Testing Adding 1");
+                P.TaskManager.Abort();
             }
-            if (ImGui.Button("Add Delay"))
+
+            ImGui.SetNextItemWidth(100);
+            ImGui.InputUInt("Mission", ref mission);
+
+            if (ImGui.Button("Path to mission"))
             {
-                P.TaskManager.InsertDelay(2000);
-                P.TaskManager.Insert(ChatTest, "Sending chat message");
+                P.TaskManager.Enqueue(() => Task_FindMission.Navmesh_MoveToMission(mission), "Testing Moveto Task", Utils.TaskConfig);
             }
-            if (ImGui.Button("Insert Reset"))
-            {
-                P.TaskManager.Insert(() => Counter = 0, "Resetting Counter");
-            }
-            if (ImGui.Button("Reset Counter"))
-            {
-                Counter = 0;
-            }
+            bool navmeshRunning = P.Navmesh.IsRunning();
+            bool escelator = Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Unknown101];
+            ImGui.Text($"Navmesh Running: {navmeshRunning}");
+            ImGui.Text($"Is taking escelator: {escelator}");
         }
 
         private static int Counter = 0;

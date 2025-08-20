@@ -355,7 +355,7 @@ public sealed partial class ICE
             }
 
             uint nodeSet = 0;
-            if (GatheringUtil.Nodeset.TryGetValue(new Vector2(_x, _y), out nodeSet)) 
+            if (GatheringUtil.OldNodeset.TryGetValue(new Vector2(_x, _y), out nodeSet)) 
             {
 
             }
@@ -426,6 +426,7 @@ public sealed partial class ICE
             }
         }
 
+        // Need to go back and remove this... might be worthless at this point
         if (OldConfig.Missions.Count == 0)
         {
             // fresh install?
@@ -455,6 +456,12 @@ public sealed partial class ICE
                 OldConfig.Missions.AddRange(newMissions);
                 OldConfig.Save();
             }
+        }
+
+        foreach (var entry in MissionInfoDict)
+        {
+            var id = entry.Key;
+            entry.Value.missionScore = MissionScoreDict[id];
         }
     }
     private static MissionType GetMissionType(MissionListInfo mission)

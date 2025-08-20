@@ -1,4 +1,8 @@
-﻿using ECommons.UIHelpers.AddonMasterImplementations;
+﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons.Automation.NeoTaskManager;
+using ECommons.GameHelpers;
+using ECommons.UIHelpers.AddonMasterImplementations;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -226,9 +230,23 @@ namespace ICE.Scheduler.Tasks
                     if (CriticalMissions.Contains(mission.MissionId))
                     {
                         mission.Select();
-                        // MAKE SURE. 
+                        // Insert the task for the following:
+                        // -> Check if mission is a gathering or critical
+                        //   -> If yes, insert a task to check if need to pathfind to area
+                        // -> Insert delay here (small one, like 500 ms)
+                        // -> Insert grab mission and switch states to whichever is necessary
+
+                        P.TaskManager.InsertMulti(
+                            new(() => Navmesh_MoveToMission(mission.MissionId), "Checking if movement is necessary", Utils.TaskConfig),
+                            new(FrameDelay, "Waiting 8 frames before next action"),
+                            new(GrabMission, "Selecting mission for grabbing")
+                            );
+
+                        return true;
                     }
                 }
+
+                // No mission was
             }
 
             return false;
@@ -240,6 +258,91 @@ namespace ICE.Scheduler.Tasks
         private static bool? CheckStandard()
         {
             return false;
+        }
+        private static bool? GrabMission()
+        {
+            bool test = true;
+            if (test)
+            {
+
+            }
+            else
+            {
+
+            }
+
+            return false;
+        }
+        public static unsafe bool? Navmesh_MoveToMission(uint missionId)
+        {
+            var missionEntry = CosmicHelper.MissionInfoDict[missionId];
+            if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather) || missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
+            {
+                // Mission was found to be a gathering or critical mission, seeing if you're within range of it
+                Vector2 PlayerPos = new Vector2(Player.Position.X, Player.Position.Z);
+                Vector2 MapCenter = new Vector2(missionEntry.X, missionEntry.Y);
+
+                float distance = missionEntry.MarkerId != 0 ? Vector2.Distance(PlayerPos, MapCenter) + 5 : 0;
+                if (distance > missionEntry.Radius)
+                {
+                    if (PlayerHelper.IsPlayerNotBusy() && !Svc.Condition[ConditionFlag.Mounted])
+                    {
+                        // Mount Roulette. But need to look into assigning specific mounts
+                        if (EzThrottler.Throttle("Attempting to mount up"))
+                            ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
+                    }
+
+                    if (!Svc.Condition[ConditionFlag.Unknown101])
+                    {
+                        // Condition unknown 101 pops up while you're on the flying... mount thingies. Need to make sure to try and not pathfind while on these/stop current pathfind if you manage to land on one.
+
+                        if (!P.Navmesh.IsRunning())
+                        {
+                            var nodeLoc = GatheringUtil.GatheringLocation[MapCenter][0].LandZone;
+                            if (EzThrottler.Throttle("Initiating navmesh to move to the first landing zone"))
+                                P.Navmesh.PathfindAndMoveTo(nodeLoc, false);
+                        }
+                    }
+                    else
+                    {
+                        if (P.Navmesh.IsRunning())
+                            if (EzThrottler.Throttle("Special Movement + Navmesh found, temp stopping"))
+                                P.Navmesh.Stop();
+                    }
+
+                    if (!P.Navmesh.IsRunning())
+                    {
+                        // Condition unknown 101 pops up while you're on the flying... mount thingies. Need to make sure to try and not pathfind while on these/stop current pathfind if you manage to land on one.
+                        var nodeLoc = GatheringUtil.GatheringLocation[MapCenter][0].LandZone;
+                        if (EzThrottler.Throttle("Initiating navmesh to move to the first landing zone"))
+                            P.Navmesh.PathfindAndMoveTo(nodeLoc, false);
+                    }
+                    else if (P.Navmesh.IsRunning())
+                    {
+                        if (Svc.Condition[ConditionFlag.Unknown101])
+                        {
+                            P.Navmesh.Stop();
+                        }
+                    }
+                }
+                else
+                {
+                    // Distance has been met, moving onto next condition:
+                    IceLogging.Debug("Distance to the node has been closed. Moving onto the next step:", "[Task_FindMission: Navmesh]");
+                    return true;
+                }
+            }
+            else
+            {
+                IceLogging.Debug("Mission was not a gathering or critical mission. Navmesh moving was not necessary. Moving onto next step", "[Task_FindMission: Navmesh]");
+                return true;
+            }
+
+            return false;
+        }
+        private static void FrameDelay()
+        {
+            P.TaskManager.InsertDelay(8, true);
         }
 
     }

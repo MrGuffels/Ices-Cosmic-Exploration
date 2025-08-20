@@ -881,7 +881,7 @@ namespace ICE.Ui
         private void MissionInfoV2(string tableName, List<(uint id, bool ShowGather, bool enabled)> missions)
         {
             // Fixed column count - include ALL possible columns
-            int totalColumns = 13; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
+            int totalColumns = 14; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                                         ImGuiTableFlags.Borders |
@@ -901,6 +901,7 @@ namespace ICE.Ui
                 ImGui.TableSetupColumn("Mission Name", ImGuiTableColumnFlags.WidthFixed, 250f);
                 ImGui.TableSetupColumn("Cosmo", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Cosmo").X + padding);
                 ImGui.TableSetupColumn("Lunar", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Lunar").X + padding);
+                ImGui.TableSetupColumn("Score", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Score").X + padding);
 
                 // XP columns
                 float xpWidth = ImGui.CalcTextSize("III").X + padding;
@@ -969,7 +970,7 @@ namespace ICE.Ui
 
                     // Mission ID
                     ImGui.TableNextColumn();
-                    ImGui.Text(Id.ToString());
+                    CenterTextInTableCell(Id.ToString());
 
                     // Mission Name
                     ImGui.TableNextColumn();
@@ -993,10 +994,13 @@ namespace ICE.Ui
 
                     // Cosmo/Lunar Credits
                     ImGui.TableNextColumn();
-                    ImGui.Text(missionInfo.CosmoCredit.ToString());
+                    CenterTextInTableCell(missionInfo.CosmoCredit.ToString());
 
                     ImGui.TableNextColumn();
-                    ImGui.Text(missionInfo.LunarCredit.ToString());
+                    CenterTextInTableCell(missionInfo.LunarCredit.ToString());
+
+                    ImGui.TableNextColumn();
+                    CenterTextInTableCell(missionInfo.missionScore.ToString());
 
                     // XP Columns
                     for (int i = 1; i < 5; i++)
