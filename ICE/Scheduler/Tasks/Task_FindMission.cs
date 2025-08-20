@@ -30,13 +30,23 @@ namespace ICE.Scheduler.Tasks
         private static HashSet<uint> CRankMisisons = new HashSet<uint>();
         private static HashSet<uint> DRankMissions = new HashSet<uint>();
 
+        private static int SpecialMissionCount = 0;
+        private static int BasicMissionCount = 0;
+
         public static void Enqueue()
         {
             P.TaskManager.Enqueue(RefreshMissionUi, "Refreshing Mission UI");
             P.TaskManager.Enqueue(OpenMissionUi, "Opening it on proper class");
             P.TaskManager.Enqueue(RefreshSelectedMissions, "Refreshing the list of viable missions");
+            if (C.XPRelicGrind)
+            {
+                P.TaskManager.Enqueue(() => OpenTab("Standard"), "Opening Standard tab for relic grind");
+            }
+            else
+            {
+                P.TaskManager.Enqueue(TabTasksCheck, "Checking which tabs to check for missions");
+            }
         }
-
         private static bool? RefreshMissionUi()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && !hud.IsAddonReady)
@@ -82,9 +92,6 @@ namespace ICE.Scheduler.Tasks
             BRankMissions.Clear();
             CRankMisisons.Clear();
             DRankMissions.Clear();
-            int basicMissionCount = 0;
-            int specialMissionCount = 0;
-            int criticalMissionCount = 0;
 
             uint? currentJobId = PlayerHelper.GetClassJobId();
 
@@ -129,15 +136,16 @@ namespace ICE.Scheduler.Tasks
 
                 if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
                 {
-                    criticalMissionCount += 1;
+                    // Do nothing here, just let it continue onwards
+                    continue;
                 }
                 else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential) || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed) || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
                 {
-                    specialMissionCount += 1;
+                    SpecialMissionCount += 1;
                 }
                 else
                 {
-                    basicMissionCount += 1;
+                    BasicMissionCount += 1;
                 }
             }
 
@@ -150,30 +158,89 @@ namespace ICE.Scheduler.Tasks
                 $"B Rank: {BRankMissions.Count}" +
                 $"C Rank: {CRankMisisons.Count}" +
                 $"D Rank: {DRankMissions.Count}", "Mission Finder Task" +
-                $"Total Critical Missions: {criticalMissionCount}" +
-                $"Total Special Missions: {specialMissionCount}" +
-                $"Total Basic Missions: {basicMissionCount}");
+                $"Total Critical Missions: {CriticalMissions.Count}" +
+                $"Total Special Missions: {SpecialMissionCount}" +
+                $"Total Basic Missions: {BasicMissionCount}");
 
             return true;
         }
         private static bool? TabTasksCheck()
         {
-
-            return false;
-        }
-        private static bool? OpenCriticalTab()
-        {
             if (CriticalMissions.Count > 0)
             {
-
+                P.TaskManager.Enqueue(() => OpenTab("Critical"), "Opening the critical tab for missions");
+                P.TaskManager.EnqueueDelay(500);
+                P.TaskManager.Enqueue(CheckCritical, "Checking to see if current missions match up with the critical");
             }
+            if (SpecialMissionCount > 0)
+            {
+                P.TaskManager.Enqueue(() => OpenTab("Provisional"), "Opening the provisional tab for missions");
+                P.TaskManager.EnqueueDelay(500);
+                P.TaskManager.Enqueue(CheckProvisional, "Checking to see if any provisional missions exist");
+            }
+            if (BasicMissionCount > 0)
+            {
+                P.TaskManager.Enqueue(() => OpenTab("Standard"), "Opening the standard mission tab");
+                P.TaskManager.EnqueueDelay(500);
+                P.TaskManager.Enqueue(CheckStandard, "Checking the standard missions for any potentional missions");
+            }
+
+            return true;
+        }
+        private static bool? OpenTab(string type)
+        {
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
+            {
+                switch (type)
+                {
+                    case "Critical":
+                        x.CriticalMissions();
+                        break;
+                    case "Provisional":
+                        x.ProvisionalMissions();
+                        break;
+                    default:
+                        x.BasicMissions();
+                        break;
+                }
+
+                return true;
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Opening the mission ui"))
+                {
+                    if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                        moonHud.Mission();
+                }
+            }
+
             return false;
         }
         private static bool? CheckCritical()
         {
-
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
+            {
+                foreach (var mission in x.StellerMissions)
+                {
+                    if (CriticalMissions.Contains(mission.MissionId))
+                    {
+                        mission.Select();
+                        // MAKE SURE. 
+                    }
+                }
+            }
 
             return false;
         }
+        private static bool? CheckProvisional()
+        {
+            return false;
+        }
+        private static bool? CheckStandard()
+        {
+            return false;
+        }
+
     }
 }

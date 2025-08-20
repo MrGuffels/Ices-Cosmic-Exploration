@@ -103,26 +103,25 @@ namespace ICE.Ui
 
         // Middle Column stuff
         private Dictionary<string, bool> headerStates = new();
-        private int SortOption = C.TableSortOption;
         private bool hideUnsupported = C.HideUnsupportedMissions;
 
         private bool showTableSetting = false;
 
-        private static Dictionary<string, List<(uint id, bool gather)>> missionList = new()
+        private static Dictionary<string, List<(uint id, bool gather, bool enabled)>> missionList = new()
         {
-            ["Critical"] = new List<(uint id, bool gather)>(),
-            ["Weather"] = new List<(uint id, bool gather)>(),
-            ["Timed"] = new List<(uint id, bool gather)> (),
-            ["Sequence"] = new List<(uint id, bool gather)> (),
-            ["ARank"] = new List<(uint id, bool gather)> (),
-            ["BRank"] = new List<(uint id, bool gather)> (),
-            ["CRank"] = new List<(uint id, bool gather)> (),
-            ["DRank"] = new List<(uint id, bool gather)> ()
+            ["Critical"] = new List<(uint id, bool gather, bool enabled)>(),
+            ["Weather"] = new List<(uint id, bool gather, bool enabled)>(),
+            ["Timed"] = new List<(uint id, bool gather, bool enabled)> (),
+            ["Sequence"] = new List<(uint id, bool gather, bool enabled)> (),
+            ["ARank"] = new List<(uint id, bool gather, bool enabled)> (),
+            ["BRank"] = new List<(uint id, bool gather, bool enabled)> (),
+            ["CRank"] = new List<(uint id, bool gather, bool enabled)> (),
+            ["DRank"] = new List<(uint id, bool gather, bool enabled)> ()
         };
 
         private string[] missionSortOptions = ["Id", "Name", "Cosmo Credits", "Lunar Credits", "Exp I", "Exp II", "Exp III", "Exp IV", "Map Location"];
         private int missionSelectedOption = C.TableSortOption;
-        private List<(uint id, bool gather)> SortMissionList(List<(uint id, bool gather)> missions)
+        private List<(uint id, bool gather, bool enabled)> SortMissionList(List<(uint id, bool gather, bool enabled)> missions)
         {
             int sortOption = missionSelectedOption;
             var missionInfo = CosmicHelper.MissionInfoDict;
@@ -137,14 +136,22 @@ namespace ICE.Ui
                     return missions.OrderByDescending(m => missionInfo[m.id].CosmoCredit).ToList();
                 case 3: // Lunar Credits
                     return missions.OrderByDescending(m => missionInfo[m.id].LunarCredit).ToList();
-                case 4: // Exp 1:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
-                case 5: // Exp 2:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
-                case 6: // Exp 3:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
-                case 7: // Exp 4:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards[1]).ToList();
+                case 4: // Exp Type 0:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
+                                                     .Where(exp => exp.Type == 1)
+                                                     .Sum(exp => exp.Amount)).ToList();
+                case 5: // Exp Type 1:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
+                                                     .Where(exp => exp.Type == 2)
+                                                     .Sum(exp => exp.Amount)).ToList();
+                case 6: // Exp Type 2:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
+                                                     .Where(exp => exp.Type == 3)
+                                                     .Sum(exp => exp.Amount)).ToList();
+                case 7: // Exp Type 3:
+                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
+                                                     .Where(exp => exp.Type == 4)
+                                                     .Sum(exp => exp.Amount)).ToList();
                 case 8: // Map Location
                     return missions.OrderBy(m => missionInfo[m.id].MarkerId).ToList();
                 default:
@@ -416,22 +423,22 @@ namespace ICE.Ui
 
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(150);
-                if (ImGui.BeginCombo("Sort By", missionSortOptions[SortOption]))
+                if (ImGui.BeginCombo("Sort By", missionSortOptions[missionSelectedOption]))
                 {
                     for (int i = 0; i < missionSortOptions.Length; i++)
                     {
-                        bool isSelected = (i == SortOption);
+                        bool isSelected = (i == missionSelectedOption);
                         if (ImGui.Selectable(missionSortOptions[i], isSelected))
                         {
-                            SortOption = i;
+                            missionSelectedOption = i;
                         }
                         if (isSelected)
                         {
                             ImGui.SetItemDefaultFocus();
                         }
-                        if (SortOption != C.TableSortOption)
+                        if (missionSelectedOption != C.TableSortOption)
                         {
-                            C.TableSortOption = SortOption;
+                            C.TableSortOption = missionSelectedOption;
                             C.Save();
                         }
                     }
@@ -471,101 +478,104 @@ namespace ICE.Ui
 
                     bool isGatherMission = CosmicHelper.GatheringJobList.Contains((int)mission.Value.JobId) || CosmicHelper.GatheringJobList.Contains((int)mission.Value.JobId2);
                     if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical))
-                        missionList["Critical"].Add((mission.Key, isGatherMission));
+                        missionList["Critical"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                        missionList["Weather"].Add((mission.Key, isGatherMission));
+                        missionList["Weather"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                        missionList["Timed"].Add((mission.Key, isGatherMission));
+                        missionList["Timed"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                        missionList["Sequence"].Add((mission.Key, isGatherMission));
+                        missionList["Sequence"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Rank > 3)
-                        missionList["ARank"].Add((mission.Key, isGatherMission));
+                        missionList["ARank"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Rank == 3)
-                        missionList["BRank"].Add((mission.Key, isGatherMission));
+                        missionList["BRank"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Rank == 2)
-                        missionList["CRank"].Add((mission.Key, isGatherMission));
+                        missionList["CRank"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Rank == 1)
-                        missionList["DRank"].Add((mission.Key, isGatherMission));
+                        missionList["DRank"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                 }
 
 
                 if (showCritical)
                 {
-                    DrawCollapsibleHeader($"Critical Missions", $"Critical Missions - ");
+                    int amountEnabled = missionList.ContainsKey("Critical") ? missionList["Critical"].Count(mission => mission.enabled) : 0;
+                    DrawCollapsibleHeader($"Critical Missions", $"Critical Missions | Enabled: {amountEnabled}");
                     if (headerStates.TryGetValue("Critical Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["Critical"].Any(mission => mission.gather);
-                        MissionInfoV2("Critical Missions", missionList["Critical"], showGathering);
+                        MissionInfoV2("Critical Missions", SortMissionList(missionList["Critical"]));
                     }
                 }
 
                 if (showSequential)
                 {
-                    DrawCollapsibleHeader($"Sequential Missions", $"Sequential Missions - ");
+                    int amountEnabled = missionList.ContainsKey("Sequence") ? missionList["Sequence"].Count(mission => mission.enabled) : 0;
+                    DrawCollapsibleHeader($"Sequential Missions", $"Sequential Missions | Enabled: {amountEnabled}");
                     if (headerStates.TryGetValue("Sequential Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["Sequence"].Any(mission => mission.gather);
-                        MissionInfoV2("Sequence Missions", missionList["Sequence"], showGathering);
+                        MissionInfoV2("Sequence Missions", SortMissionList(missionList["Sequence"]));
                     }
                 }
 
                 if (showWeather)
                 {
-                    DrawCollapsibleHeader($"Weather Missions", $"Weather Missions - ");
+                    int amountEnabled = missionList.ContainsKey("Weather") ? missionList["Weather"].Count(mission => mission.enabled) : 0;
+
+                    DrawCollapsibleHeader($"Weather Missions", $"Weather Missions | Enabled: {amountEnabled}");
                     if (headerStates.TryGetValue("Weather Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["Weather"].Any(mission => mission.gather);
-                        MissionInfoV2("Weather Missions", missionList["Weather"], showGathering);
+                        MissionInfoV2("Weather Missions", SortMissionList(missionList["Weather"]));
                     }
                 }
 
                 if (showTimeRestricted)
                 {
-                    DrawCollapsibleHeader($"Time-Restricted Missions", $"Time-Restricted Missions - ");
+                    int amountEnabled = missionList.ContainsKey("Timed") ? missionList["Timed"].Count(mission => mission.enabled) : 0;
+
+                    DrawCollapsibleHeader($"Time-Restricted Missions", $"Time-Restricted Missions | {amountEnabled}");
                     if (headerStates.TryGetValue("Time-Restricted Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["Timed"].Any(mission => mission.gather);
-                        MissionInfoV2("Timed Missions", missionList["Timed"], showGathering);
+                        MissionInfoV2("Timed Missions", SortMissionList(missionList["Timed"]));
                     }
                 }
 
                 if (showClassA)
                 {
-                    DrawCollapsibleHeader($"A Rank Missions", "A Rank Mission - ");
+                    int amountEnabled = missionList.ContainsKey("ARank") ? missionList["ARank"].Count(mission => mission.enabled) : 0;
+
+                    DrawCollapsibleHeader($"A Rank Missions", $"A Rank Mission | Enabled: {amountEnabled}");
                     if (headerStates.TryGetValue("A Rank Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["ARank"].Any(mission => mission.gather);
-                        MissionInfoV2("A Rank Missions", missionList["ARank"], showGathering);
+                        MissionInfoV2("A Rank Missions", SortMissionList(missionList["ARank"]));
                     }
                 }
 
                 if (showClassB)
                 {
-                    DrawCollapsibleHeader($"B Rank Missions", "B Rank Mission - ");
+                    int amountEnabled = missionList.ContainsKey("BRank") ? missionList["BRank"].Count(mission => mission.enabled) : 0;
+                    DrawCollapsibleHeader($"B Rank Missions", $"B Rank Mission | Enabled: {amountEnabled}");
                     if (headerStates.TryGetValue("B Rank Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["BRank"].Any(mission => mission.gather);
-                        MissionInfoV2("B Rank Missions", missionList["BRank"], showGathering);
+                        MissionInfoV2("B Rank Missions", SortMissionList(missionList["BRank"]));
                     }
                 }
 
                 if (showClassC)
                 {
-                    DrawCollapsibleHeader($"C Rank Missions", "C Rank Mission - ");
+                    int amountEnabled = missionList.ContainsKey("CRank") ? missionList["CRank"].Count(mission => mission.enabled) : 0;
+                    DrawCollapsibleHeader($"C Rank Missions", $"C Rank Mission | Enabled: {amountEnabled}");
                     if (headerStates.TryGetValue("C Rank Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["CRank"].Any(mission => mission.gather);
-                        MissionInfoV2("C Rank Missions", missionList["CRank"], showGathering);
+                        MissionInfoV2("C Rank Missions", SortMissionList(missionList["CRank"]));
                     }
                 }
 
                 if (showClassD)
                 {
-                    DrawCollapsibleHeader($"D Rank Missions", "D Rank Mission - ");
+                    int amountEnabled = missionList.ContainsKey("DRank") ? missionList["DRank"].Count(mission => mission.enabled) : 0;
+                    DrawCollapsibleHeader($"D Rank Missions", $"D Rank Mission | Enabled: {amountEnabled}");
                     if (headerStates.TryGetValue("D Rank Missions", out var isOpen) && isOpen)
                     {
-                        bool showGathering = missionList["DRank"].Any(mission => mission.gather);
-                        MissionInfoV2("D Rank Missions", missionList["DRank"], showGathering);
+                        MissionInfoV2("D Rank Missions", SortMissionList(missionList["DRank"]));
                     }
                 }
 
@@ -606,7 +616,7 @@ namespace ICE.Ui
                     float infoSize1 = MissionInfo.Max(row => ImGui.CalcTextSize(row.Label).X) + 10;
                     float infoSize2 = MissionInfo.Max(row => ImGui.CalcTextSize(row.Value).X) + 10;
 
-                    if (ImGui.BeginTable("Detail##DetailPanelTable", 2))
+                    if (ImGui.BeginTable("Detail##DetailPanelTable", 2, ImGuiTableFlags.SizingFixedFit))
                     {
                         ImGui.TableSetupColumn("##Label");
                         ImGui.TableSetupColumn("##Value");
@@ -868,7 +878,7 @@ namespace ICE.Ui
 
             ImGui.SetCursorScreenPos(new Vector2(cursorPos.X, cursorPos.Y + bgHeight + spacing));
         }
-        private void MissionInfoV2(string tableName, List<(uint id, bool ShowGather)> missions, bool showGatherConfig = false)
+        private void MissionInfoV2(string tableName, List<(uint id, bool ShowGather, bool enabled)> missions)
         {
             // Fixed column count - include ALL possible columns
             int totalColumns = 13; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
@@ -880,7 +890,7 @@ namespace ICE.Ui
                                         ImGuiTableFlags.Reorderable |         // Allow column reordering
                                         ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable($"MissionList###{tableName}_{missions[0].id}", totalColumns, tableFlags))
+            if (ImGui.BeginTable($"MissionList###{tableName}_{selectedJob}", totalColumns, tableFlags))
             {
                 float padding = 10f;
 
@@ -938,6 +948,11 @@ namespace ICE.Ui
                         missionConfig.Enabled = enabled;
                         C.Save();
                     }
+                    if (ImGui.IsItemClicked())
+                    {
+                        selectedMission = Id;
+                    }
+
 
                     // Manual mode checkbox
                     ImGui.TableNextColumn();
@@ -946,6 +961,10 @@ namespace ICE.Ui
                     {
                         missionConfig.ManualMode = manualMode;
                         C.Save();
+                    }
+                    if (ImGui.IsItemClicked())
+                    {
+                        selectedMission = Id;
                     }
 
                     // Mission ID
@@ -966,7 +985,10 @@ namespace ICE.Ui
                         ImGui.Text(FontAwesomeIcon.Flag.ToIconString());
                         ImGui.PopFont();
                         if (ImGui.IsItemClicked())
+                        {
+                            selectedMission = Id;
                             Utils.SetGatheringRing(missionInfo.TerritoryId, missionInfo.X, missionInfo.Y, missionInfo.Radius, missionInfo.Name);
+                        }
                     }
 
                     // Cosmo/Lunar Credits
@@ -1132,11 +1154,26 @@ namespace ICE.Ui
                     ImGui.TableNextColumn();
                     int notesCount = 0;
 
+                    ImGui.Dummy(new(2, 0));
                     if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
                     {
                         ImGui.PushFont(UiBuilder.IconFont);
                         ImGui.Text(FontAwesomeIcon.ListOl.ToIconString());
                         ImGui.PopFont();
+                        if (ImGui.IsItemHovered())
+                        {
+                            var prevMissions = GetOnlyPreviousMissionsRecursive(Id);
+
+                            ImGui.BeginTooltip();
+                            ImGui.Text("Sequence Missions");
+                            ImGui.Separator();
+                            for (int i = 0; i < prevMissions.Count; i++)
+                            {
+                                var prevMission = prevMissions[i];
+                                ImGui.Text($"{i + 1}: [{prevMission}] - {CosmicHelper.MissionInfoDict[prevMission].Name}");
+                            }
+                            ImGui.EndTooltip();
+                        }
                         notesCount++;
                     }
                     if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
@@ -1147,6 +1184,12 @@ namespace ICE.Ui
                         ImGui.PushFont(UiBuilder.IconFont);
                         ImGui.Text(FontAwesomeIcon.Cloud.ToIconString());
                         ImGui.PopFont();
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text($"Weather: {missionInfo.Weather}");
+                            ImGui.EndTooltip();
+                        }
                         notesCount++;
                     }
                     if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
@@ -1156,6 +1199,26 @@ namespace ICE.Ui
                         ImGui.PushFont(UiBuilder.IconFont);
                         ImGui.Text(FontAwesomeIcon.Clock.ToIconString());
                         ImGui.PopFont();
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text($"{2 * (missionInfo.Time - 1)}:00 - {2 * (missionInfo.Time)}:00");
+                            ImGui.EndTooltip();
+                        }
+                        notesCount++;
+                    }
+                    if (missionInfo.JobId2 != 0)
+                    {
+                        if (notesCount > 0)
+                            ImGui.SameLine();
+
+                        ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.JobId];
+                        ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.JobId2];
+                        Vector2 imageSize = new Vector2(23, 23);
+
+                        ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
+                        ImGui.SameLine();
+                        ImGui.Image(job2Icon.GetWrapOrEmpty().Handle, imageSize);
                     }
 
                     ImGui.PopID();
@@ -1245,6 +1308,7 @@ namespace ICE.Ui
                 ImGui.EndPopup();
             }
 
+            ImGui.SetNextItemWidth(100);
             if (ImGui.BeginCombo("Quick Apply", QuickApplyOptions[QuickSelectedOption]))
             {
                 for (int i = 0; i < QuickApplyOptions.Count; i++)
@@ -1277,15 +1341,18 @@ namespace ICE.Ui
                     bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
 
                     PluginLog.Information($"ID: {id} | Enabled: {mission.Value.Enabled}");
-                    PluginLog.Information($"Option 0: {!(QuickSelectedOption == 0 && selectedJob)}");
 
                     if (QuickSelectedOption == 0 && selectedJob)
                     {
                         if (!selectedJob)
                         {
                             PluginLog.Information($"Option 0 was checked, and returned false");
+                            continue;
                         }
-                        continue;
+                        else
+                        {
+                            PluginLog.Information($"Option 0 was valid! Continuing on");
+                        }
                     }
                     if (QuickSelectedOption == 1)
                     {
@@ -1298,7 +1365,7 @@ namespace ICE.Ui
                         }
                         else
                         {
-                            PluginLog.Information($"It's valid! Continuing on");
+                            PluginLog.Information($"Option 1 was valid! Continuing on");
                         }
                     }
 
@@ -1422,9 +1489,9 @@ namespace ICE.Ui
                 float windowSize = ImGui.GetWindowSize().X - 20;
                 Vector2 size = new Vector2(windowSize, 10);
 
-                // var (classScore, cappedClassScore, totalScores, classId) = MissionHandler.GetCosmicClassScores();
+                var (classScore, cappedClassScore, totalScores, classId) = CosmicHandler.GetCosmicClassScores();
 
-                // DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
+                DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
             }
         }
 
