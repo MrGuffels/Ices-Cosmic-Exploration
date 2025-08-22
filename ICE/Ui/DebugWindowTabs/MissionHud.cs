@@ -109,6 +109,11 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         m.Select();
                     }
+                    ImGui.SameLine();
+                    if (ImGui.Button($"Initiate##Initiate + {m.Name}"))
+                    {
+                        m.Initiate();
+                    }
                 }
 
                 ImGui.Text($"Best Relic Mission: {BestMission}");

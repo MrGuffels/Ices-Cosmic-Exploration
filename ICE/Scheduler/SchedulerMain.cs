@@ -58,8 +58,11 @@ namespace ICE.Scheduler
                     case Start:
                         Task_CheckState.Enqueue();
                         break;
-                    case ForceTurnin:
-
+                    case GrabMission:
+                        Task_FindMission.Enqueue();
+                        break;
+                    case AbandonMission:
+                        Task_AbandonMission.Enqueue();
                         break;
                     default:
                         DisablePlugin();

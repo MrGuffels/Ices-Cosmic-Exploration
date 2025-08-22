@@ -1,0 +1,202 @@
+﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility.Raii;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ICE.Ui.SettingTabs
+{
+    internal class MiscTab
+    {
+        // Overlay Settings
+        private static bool showOverlay = C.ShowOverlay;
+        private static bool ShowSeconds = C.ShowSeconds;
+
+        // Mission Priority Settings
+
+        public static void Draw()
+        {
+            ImGui.Text("Overlay Settings");
+
+            if (ImGui.Checkbox("Show Overlay", ref showOverlay))
+            {
+                C.ShowOverlay = showOverlay;
+                C.Save();
+            }
+
+            if (ImGui.Checkbox("Show Seconds", ref ShowSeconds))
+            {
+                C.ShowSeconds = ShowSeconds;
+                C.Save();
+            }
+
+            ImGui.Separator();
+
+            bool repairAtVendor = C.RepairAtVendor;
+            if (ImGui.Checkbox("Repair at Vendor", ref repairAtVendor))
+            {
+                C.RepairAtVendor = repairAtVendor;
+                C.Save();
+            }
+
+            using (ImRaii.Disabled(repairAtVendor))
+            {
+                bool selfRepairGather = C.SelfRepairGather;
+                if (ImGui.Checkbox("Self Repair Gather", ref selfRepairGather))
+                {
+                    C.SelfRepairGather = selfRepairGather;
+                    C.Save();
+                }
+
+                bool selfRepairCrafter = C.SelfRepairCrafter;
+                if (ImGui.Checkbox("Self Repair Crafter", ref selfRepairCrafter))
+                {
+                    C.SelfRepairCrafter= selfRepairCrafter;
+                    C.Save();
+                }
+            }
+
+            float repairAmount = C.RepairPercent;
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderFloat("###Repair %", ref repairAmount, 0f, 99f, "%.0f%%"))
+            {
+                if (C.RepairPercent != repairAmount)
+                {
+                    C.RepairPercent = (int)repairAmount;
+                    C.Save();
+                }
+            }
+
+            ImGui.Separator();
+
+            ImGui.Text("Mission Priority Organizer");
+
+            ImGui.Text("Drag items to reorder mission priority (higher = processed first):");
+            ImGui.Separator();
+
+            // Create a copy for manipulation
+            var currentOrder = C.MissionPrio.ToList();
+            bool orderChanged = false;
+
+            for (int i = 0; i < currentOrder.Count; i++)
+            {
+                ImGui.PushID(i);
+
+                var missionType = currentOrder[i];
+
+                ImGui.PushFont(UiBuilder.IconFont);
+                ImGui.Text(GetMissionTypeIcon(missionType));
+                ImGui.PopFont();
+
+                ImGui.SameLine();
+
+                // Making the text the only selectable thing... trying to make it WITH the icon is messy
+                string displayText = GetMissionTypeName(missionType);
+                bool isSelected = false;
+                ImGui.Selectable(displayText, isSelected, ImGuiSelectableFlags.None);
+
+                // Handle drag and drop
+                if (ImGui.BeginDragDropSource())
+                {
+                    // Store the index being dragged
+                    unsafe
+                    {
+                        int draggedIndex = i;
+                        byte* data = (byte*)&draggedIndex;
+                        ImGui.SetDragDropPayload("MISSION_TYPE", new ReadOnlySpan<byte>(data, sizeof(int)));
+                    }
+                    ImGui.Text($"Moving: {GetMissionTypeName(missionType)}");
+                    ImGui.EndDragDropSource();
+                }
+
+                if (ImGui.BeginDragDropTarget())
+                {
+                    unsafe
+                    {
+                        var payload = ImGui.AcceptDragDropPayload("MISSION_TYPE");
+                        if (!payload.IsNull)
+                        {
+                            int draggedIndex = *(int*)payload.Data;
+
+                            // Perform the reorder
+                            if (draggedIndex != i && draggedIndex >= 0 && draggedIndex < currentOrder.Count)
+                            {
+                                var draggedItem = currentOrder[draggedIndex];
+                                currentOrder.RemoveAt(draggedIndex);
+                                currentOrder.Insert(i, draggedItem);
+                                orderChanged = true;
+                            }
+                        }
+                    }
+                    ImGui.EndDragDropTarget();
+                }
+
+                // Show priority number
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"(Priority: {i + 1})");
+
+                ImGui.PopID();
+            }
+
+            if (orderChanged)
+            {
+                // Priority has been changed. Updating the config now.
+                C.MissionPrio = currentOrder;
+                C.Save();
+            }
+
+            ImGui.Separator();
+
+            // Reset to default button
+            if (ImGui.Button("Reset to Default"))
+            {
+                C.MissionPrio = new List<ProvisionalTypes>
+                {
+                    ProvisionalTypes.ProvisionalWeather,
+                    ProvisionalTypes.ProvisionalSequential,
+                    ProvisionalTypes.ProvisionalTimed
+                };
+            }
+
+            ImGui.SameLine();
+
+            // Show current order as text (for debugging/confirmation)
+            if (ImGui.Button("Show Current Order"))
+            {
+                string orderText = string.Join(" → ", C.MissionPrio.Select(GetMissionTypeName));
+                ImGui.SetClipboardText(orderText);
+            }
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Copies current priority order to clipboard");
+            }
+        }
+
+        // Quick way of assigning a name to the missions (useful for enums, saves me a lot of typing
+        private static string GetMissionTypeName(ProvisionalTypes type)
+        {
+            return type switch
+            {
+                ProvisionalTypes.ProvisionalWeather => "Weather Missions",
+                ProvisionalTypes.ProvisionalSequential => "Sequence Missions",
+                ProvisionalTypes.ProvisionalTimed => "Timed Missions",
+                _ => type.ToString()
+            };
+        }
+
+        // Quick way of assigning Icons to the mission types
+        private static string GetMissionTypeIcon(ProvisionalTypes type)
+        {
+            return type switch
+            {
+                ProvisionalTypes.ProvisionalWeather => FontAwesomeIcon.Cloud.ToIconString(),
+                ProvisionalTypes.ProvisionalSequential => FontAwesomeIcon.ListOl.ToIconString(),
+                ProvisionalTypes.ProvisionalTimed => FontAwesomeIcon.Clock.ToIconString(),
+                _ => FontAwesomeIcon.Question.ToIconString()
+            };
+        }
+    }
+}

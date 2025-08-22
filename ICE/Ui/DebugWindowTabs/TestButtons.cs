@@ -55,7 +55,7 @@ namespace ICE.Ui.DebugWindowTabs
                 gameObjectDistance = PlayerHelper.GetDistanceToPlayer(gameObject);
             if (ImGui.Button("Click Nearest EventObject"))
             {
-                Utils.TargetgameObject(gameObject);
+                Utils.TargetgameObjectTask(gameObject);
                 Utils.InteractWithObject(gameObject);
             }
             ImGui.SameLine();
@@ -67,7 +67,7 @@ namespace ICE.Ui.DebugWindowTabs
                 collectionPointDistance = PlayerHelper.GetDistanceToPlayer(collectionPoint);
             if (ImGui.Button("Click Nearest Collection Point"))
             {
-                Utils.TargetgameObject(collectionPoint);
+                Utils.TargetgameObjectTask(collectionPoint);
                 Utils.InteractWithObject(collectionPoint);
             }
             ImGui.SameLine();

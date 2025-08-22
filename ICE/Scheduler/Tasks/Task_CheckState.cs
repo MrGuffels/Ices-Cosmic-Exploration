@@ -29,6 +29,7 @@ namespace ICE.Scheduler.Tasks
                     // The mission info (the one that contains the timer + current score while a mission is active) isn't loaded. Going to fix that.
                     if (EzThrottler.Throttle("Attempting to open the mission information window"))
                     {
+                        IceLogging.Info("Opening the mission information window, you're in the middle of one!", "[Check State]");
                         CosmicHelper.OpenStellarMission();
                     }
                     return false;
@@ -75,6 +76,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 // There is no active mission, time to find one.
+
                 SchedulerMain.State = IceState.GrabMission;
             }
 

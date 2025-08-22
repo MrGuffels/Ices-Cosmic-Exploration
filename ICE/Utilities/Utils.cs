@@ -5,6 +5,7 @@ using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using System;
 
 namespace ICE.Utilities;
 
@@ -55,7 +56,7 @@ public static unsafe class Utils
         return objectPosition / scalar - center / scalar;
     }
 
-    public static bool? TargetgameObject(IGameObject? gameObject)
+    public static bool? TargetgameObjectTask(IGameObject? gameObject)
     {
         var x = gameObject;
         if (Svc.Targets.Target != null && Svc.Targets.Target.DataId == x.DataId)
@@ -82,6 +83,25 @@ public static unsafe class Utils
     public static IGameObject? TryGetObjectCollectionPoint()
     {
         return Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.DataId == 2014616 || x.DataId == 2014618);
+    }
+    public static void TargetgameObject(IGameObject? gameObject)
+    {
+        var x = gameObject;
+        var currentTarget = Svc.Targets.Target;
+        if (currentTarget != null && currentTarget.DataId == x.DataId)
+            return;
+
+        if (!GenericHelpers.IsOccupied())
+        {
+            if (x != null)
+            {
+                if (EzThrottler.Throttle($"Throttle targeting: {x.DataId}"))
+                {
+                    IceLogging.Info($"Attempting to set the target to: {x.DataId} | {x.Name}", "[Target Game Object]");
+                    Svc.Targets.SetTarget(x);
+                }
+            }
+        }
     }
     public static unsafe void InteractWithObject(IGameObject? gameObject)
     {

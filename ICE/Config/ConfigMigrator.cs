@@ -41,6 +41,11 @@ namespace ICE.Config
 
                 Svc.Log.Information("Migration of the Main Window Settings Complete");
 
+                C.ShowOverlay = OldConfig.ShowOverlay;
+                C.ShowSeconds = OldConfig.ShowSeconds;
+
+                Svc.Log.Information("Migration of the overlay settings complete");
+
                 C.OnlyGrabMission = OldConfig.OnlyGrabMission;
                 C.TargetLevel = OldConfig.TargetLevel;
                 C.StopWhenLevel = OldConfig.StopWhenLevel;

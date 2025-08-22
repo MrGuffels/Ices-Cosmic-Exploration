@@ -10,6 +10,7 @@ namespace ICE.Utilities
     {
         // States that get set in the main Ui
         internal static bool StopBeforeGrab = false;
+        internal static uint previouslyAbandoned = 0;
 
         internal static string MissionName = string.Empty;
         internal static bool inMission = false;

@@ -37,6 +37,13 @@ namespace ICE.Config
 
         #endregion
 
+        #region Overlay Settings
+
+        public bool ShowOverlay { get; set; } = false;
+        public bool ShowSeconds { get; set; } = false;
+
+        #endregion
+
         #region MissionSettings
 
         public bool OnlyGrabMission { get; set; } = false;
@@ -51,6 +58,12 @@ namespace ICE.Config
         public byte SequenceMissionPriority { get; set; } = 1;
         public byte WeatherMissionPriority { get; set; } = 2;
         public byte TimedMissionPriority { get; set; } = 3;
+        public List<ProvisionalTypes> MissionPrio { get; set; } = new()
+        {
+            ProvisionalTypes.ProvisionalWeather,
+            ProvisionalTypes.ProvisionalSequential,
+            ProvisionalTypes.ProvisionalTimed
+        };
 
         #endregion
 
@@ -63,11 +76,17 @@ namespace ICE.Config
 
         #endregion
 
-        #region Gathering Settings
+        #region Repair Settings
 
         public bool SelfRepairGather { get; set; } = true;
+        public bool SelfRepairCrafter { get; set; } = false;
+        public bool RepairAtVendor { get; set; } = false;
         public int RepairPercent { get; set; } = 50;
         public bool SelfSpiritbondGather { get; set; } = true;
+
+        #endregion
+
+        #region Gathering Settings
         public int SelectedGatherIndex { get; set; } = 0;
 
         #region Cordial Settings
