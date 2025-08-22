@@ -197,11 +197,22 @@ namespace ICE.Scheduler.Tasks
         }
         public static bool? TabTasksCheck()
         {
-            if (CriticalMissions.Count > 0)
+            bool hasCritical = CriticalMissions.Count > 0;
+            bool hasSpecial = SpecialMissionCount > 0;
+            bool hasBasic = BasicMissionCount > 0;
+
+            if (!(hasCritical || hasSpecial || hasBasic))
+            {
+                IceLogging.Debug("You have... no active missions and you're not on relic grinding mode. Disabling this for now");
+                SchedulerMain.State = IceState.Idle;
+                SchedulerMain.DisablePlugin();
+            }
+
+            if (hasCritical)
                 P.TaskManager.Enqueue(() => OpenTab("Critical"), "Opening the critical tab for missions");
-            if (SpecialMissionCount > 0)
+            if (hasSpecial)
                 P.TaskManager.Enqueue(() => OpenTab("Provisional"), "Opening the provisional tab for missions");
-            if (BasicMissionCount > 0)
+            if (hasBasic)
             {
                 P.TaskManager.Enqueue(() => OpenTab("Standard"), "Opening the standard mission tab");
                 P.TaskManager.Enqueue(() => FrameDelay(8), "Delaying 8 frames for tab");

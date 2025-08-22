@@ -75,9 +75,20 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                // There is no active mission, time to find one.
+                var currentJob = PlayerHelper.GetClassJobId();
 
-                SchedulerMain.State = IceState.GrabMission;
+                bool repairVendor = C.RepairAtVendor && PlayerHelper.NeedsRepair(C.RepairPercent);
+                bool selfRepairCraft = C.SelfRepairCrafter && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.CrafterJobList.Contains((int)currentJob);
+                bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.GatheringJobList.Contains((int)currentJob);
+
+                if (repairVendor ||  selfRepairCraft || selfRepairGather)
+                {
+                    SchedulerMain.State = IceState.Repair;
+                }
+                else
+                {
+                    SchedulerMain.State = IceState.GrabMission;
+                }
             }
 
             return true;

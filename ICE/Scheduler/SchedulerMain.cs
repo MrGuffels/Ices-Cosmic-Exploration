@@ -1,7 +1,3 @@
-using Dalamud.Game.ClientState.Conditions;
-using ICE.Scheduler.Tasks.OldTask;
-using System.Collections.Generic;
-using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Enums.IceState;
 
 namespace ICE.Scheduler
@@ -57,6 +53,9 @@ namespace ICE.Scheduler
                 {
                     case Start:
                         Task_CheckState.Enqueue();
+                        break;
+                    case Repair:
+                        Task_Repair.Enqueue();
                         break;
                     case GrabMission:
                         Task_FindMission.Enqueue();

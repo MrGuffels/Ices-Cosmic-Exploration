@@ -34,6 +34,7 @@ namespace ICE.Scheduler.Tasks
                         new(CloseRepair, "Closing Self Repair")
                     );
                 }
+                SchedulerMain.State = IceState.GrabMission;
             }
         }
         public static unsafe bool? HubCheck()

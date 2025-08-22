@@ -11,13 +11,17 @@ namespace ICE.Enums
         ForceTurnin = 5,
         ScoreCheck = 6,
         ManualMode = 7,
-        Craft = 8,
-        Gather = 9,
-        Fish = 10,
-        ScoringMission = 11,
-        AnimationLock = 12,
-        Gambling = 13,
-        RelicTurnin = 14,
-        Waiting = 15,
+        Waiting = 8,
+
+        Repair = 11,
+        Gambling = 12,
+        RelicTurnin = 13,
+
+        Craft = 20,
+        Gather = 21,
+        Fish = 22,
+
+        ScoringMission = 30,
+        AnimationLock = 31,
     }
 }
