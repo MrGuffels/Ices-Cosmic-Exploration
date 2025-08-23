@@ -635,5 +635,11 @@ public static unsafe partial class CosmicHelper
         [544] = 0,
     };
 
+    public class XPType
+    {
+        public int CurrentXP { get; set; }
+        public int NeededXP { get; set; }
+    }
+
     #endregion
 }

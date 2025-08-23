@@ -25,7 +25,7 @@ namespace ICE.Scheduler.Tasks
                         );
                 }
                 else if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains((int)currentJob)) 
-                  || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains((int)currentJob)))
+                       || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains((int)currentJob)))
                 {
                     P.TaskManager.EnqueueMulti
                     (

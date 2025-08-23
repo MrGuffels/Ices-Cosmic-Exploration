@@ -11,9 +11,9 @@ using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks.OldTask
 {
-    /*
     internal static class TaskMissionFind
     {
+        /*
         private static uint MissionId = 0;
         private static uint? currentClassJob => PlayerHelper.GetClassJobId();
         private static bool isGatherer => currentClassJob >= 16 && currentClassJob <= 18;
@@ -914,6 +914,6 @@ namespace ICE.Scheduler.Tasks.OldTask
             if (C.DelayGrabMission)
                 P.TaskManager.EnqueueDelay(C.DelayIncrease);
         }
+        */
     }
-    */
 }

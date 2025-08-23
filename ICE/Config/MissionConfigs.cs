@@ -122,7 +122,15 @@ namespace ICE.Config
 
         #region Debug
 
-        public bool FailsafeRecipeSelect = false;
+        public bool FailsafeRecipeSelect { get; set; } = false;
+        public bool UseDummyXp { get; set; } = false;
+        public Dictionary<int, CosmicHelper.XPType> DummyXP { get; set; } = new()
+        {
+            { 1, new CosmicHelper.XPType { CurrentXP = 0, NeededXP = 100} },
+            { 2, new CosmicHelper.XPType { CurrentXP = 50, NeededXP = 200} },
+            { 3, new CosmicHelper.XPType { CurrentXP = 100, NeededXP = 300} },
+            { 4, new CosmicHelper.XPType { CurrentXP = 150, NeededXP = 400} }
+        };
 
         #endregion
 
