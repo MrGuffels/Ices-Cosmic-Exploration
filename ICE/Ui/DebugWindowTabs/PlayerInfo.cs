@@ -21,6 +21,11 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 ImGui.SetClipboardText($"{Player.Position.X:N2}f, {Player.Position.Z:N2}f");
             }
+            ImGui.SameLine();
+            if (ImGui.Button("Copy Vector3"))
+            {
+                ImGui.SetClipboardText($"{Player.Position.X:N2}f, {Player.Position.Y:N2}f, {Player.Position.Z:N2}f");
+            }
             ImGui.Text($"Job: {Player.Job}");
             ImGui.Text($"JobId: {Player.JobId}");
             ImGui.Text($"Current Territory/ZoneId: {Player.Territory}");

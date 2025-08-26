@@ -8,6 +8,7 @@ using ICE.Config;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -41,6 +42,11 @@ namespace ICE.Scheduler.Tasks
         private static int SpecialMissionCount = 0;
         private static int BasicMissionCount = 0;
 
+        private static List<Vector3> fishingPath = new List<Vector3>();
+        private static GatheringUtil.FisherSpotInfo fishingEntry = new();
+
+        private static readonly Random _random = new Random();
+
         public static void Enqueue()
         {
 
@@ -49,7 +55,7 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.Enqueue(RefreshSelectedMissions, "Refreshing the list of viable missions");
             if (C.XPRelicGrind)
             {
-                P.TaskManager.Enqueue(() => OpenTab("Standard"), "Opening Standard tab for relic grind");
+                P.TaskManager.Enqueue(() => OpenTab("ExpCheck"), "Opening Standard tab for relic grind");
             }
             else
             {
@@ -310,13 +316,7 @@ namespace ICE.Scheduler.Tasks
                     if (CriticalMissions.Contains(mission.MissionId))
                     {
                         mission.Select();
-
-                        P.TaskManager.InsertMulti(
-                            new(() => Navmesh_MoveToMission(mission.MissionId), "Checking if movement is necessary", Utils.TaskConfig),
-                            new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                            new(() => GrabMission(mission.MissionId), "Selecting mission for grabbing")
-                            );
-
+                        InsertGrabMission(mission.MissionId);
                         return true;
                     }
                 }
@@ -359,12 +359,7 @@ namespace ICE.Scheduler.Tasks
                             //   -> If yes, insert a task to check if need to pathfind to area
                             // -> Insert delay here (small one, like 500 ms)
                             // -> Insert grab mission and switch states to whichever is necessary
-
-                            P.TaskManager.InsertMulti(
-                                new(() => Navmesh_MoveToMission(mission.MissionId), "Checking if movement is necessary", Utils.TaskConfig),
-                                new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                                new(() => GrabMission(mission.MissionId), "Selecting mission for grabbing")
-                                );
+                            InsertGrabMission(mission.MissionId);
 
                             return true;
                         }
@@ -404,11 +399,7 @@ namespace ICE.Scheduler.Tasks
                     foreach (var mission in x.StellerMissions.Where(m => missionHashSet.Contains(m.MissionId)))
                     {
                         mission.Select();
-                        P.TaskManager.InsertMulti(
-                            new(() => Navmesh_MoveToMission(mission.MissionId), "Checking if movement is necessary", Utils.TaskConfig),
-                            new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                            new(() => GrabMission(mission.MissionId), "Selecting mission for grabbing")
-                        );
+                        InsertGrabMission(mission.MissionId);
                         IceLogging.Debug($"Mission was found!: {mission.MissionId}. Activating it");
                         return true; // Found and processed a mission
                     }
@@ -423,7 +414,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static unsafe bool? CheckExp()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
@@ -540,6 +530,22 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
 
+                    if (CosmicHelper.MissionInfoDict.TryGetValue((uint)id, out var missionEntry))
+                    {
+                        bool gatheringMission = missionEntry.Attributes.HasFlag(MissionAttributes.Gather) 
+                                             || missionEntry.Attributes.HasFlag(MissionAttributes.Fish);
+
+                        if (gatheringMission)
+                        {
+                            Vector2 missionLoc = new Vector2(missionEntry.X, missionEntry.Y);
+                            Vector2 currentPos = new Vector2(Player.Position.X, Player.Position.Z);
+                            float distance = Vector2.Distance(missionLoc, currentPos);
+
+                            float distanceMultiplier = Math.Max(0.1f, 1.0f - (distance / 200f));
+                            score = score * distanceMultiplier;
+                        }
+                    }
+
                     if (score > bestScore)
                     {
                         bestScore = score;
@@ -553,16 +559,30 @@ namespace ICE.Scheduler.Tasks
                     var selectedMission = x.StellerMissions.Where(x => x.MissionId == bestIndex).FirstOrDefault();
 
                     selectedMission.Select();
-                    P.TaskManager.InsertMulti(
-                        new(() => Navmesh_MoveToMission((uint)bestIndex), "Checking if movement is necessary", Utils.TaskConfig),
-                        new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                        new(() => GrabMission((uint)bestIndex), "Selecting mission for grabbing")
-                    );
+                    InsertGrabMission(selectedMission.MissionId);
                     return true;
                 }
                 else
                 {
+                    IceLogging.Debug("\n" +
+                                     "Somehow, you manage to find absolutely no missions. That's actually impressive.\n" +
+                                     "You might have one of the following issues:\n" +
+                                     "1: Ignore Manual Mode is enabled, and you have all missions set to manual mode.\n" +
+                                     "2: Only Enabled Missions is on, and you have a very limited pool of missions that somehow missed the mark\n" +
+                                     "If it's 2, then this should go on to re-roll for you (assuming that you have ATLEAST 1 mission enabled somewhere...\n" +
+                                     "Checking this now", "[Xp Grind]");
 
+                    if (C.XPRelicOnlyEnabled && BasicMissionCount != 0)
+                    {
+                        IceLogging.Debug($"Only relic grind was enabled. Continuing to re-roll mission now");
+                        P.TaskManager.Insert(() => FindReroll(), "Finding Reroll mission for Relic Grind");
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Error($"Okay, something is wrong. Stopping the process", "[Relic Grind]");
+                        SchedulerMain.DisablePlugin();
+                    }
                 }
             }
 
@@ -708,6 +728,15 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        public static void InsertGrabMission(uint missionId)
+        {
+            P.TaskManager.InsertMulti(
+                new(() => ClearNavFishing(), "Clearing the previous navmesh pathing"),
+                new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
+                new(() => FrameDelay(8), "Waiting 8 frames before next action"),
+                new(() => GrabMission(missionId), "Selecting mission for grabbing")
+            );
+        }
         private static bool? GrabMission(uint missionId, bool reroll = false)
         {
             if (CosmicHelper.CurrentLunarMission != 0)
@@ -750,6 +779,13 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        public static bool? ClearNavFishing()
+        {
+            fishingPath.Clear();
+            fishingEntry = null;
+
+            return true;
+        }
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
             var missionEntry = CosmicHelper.MissionInfoDict[missionId];
@@ -762,11 +798,12 @@ namespace ICE.Scheduler.Tasks
                 float distance = missionEntry.MarkerId != 0 ? Vector2.Distance(PlayerPos, MapCenter) + 5 : 0;
                 if (distance > missionEntry.Radius)
                 {
-                    if (PlayerHelper.IsPlayerNotBusy() && !Svc.Condition[ConditionFlag.Mounted])
+                    if (PlayerHelper.IsPlayerNotBusy() && !Svc.Condition[ConditionFlag.Mounted] && C.UseMountOutsideMission && distance > C.MountRadius)
                     {
-                        // Mount Roulette. But need to look into assigning specific mounts
                         if (EzThrottler.Throttle("Attempting to mount up"))
-                            ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
+                        {
+                            Utils.MountAction();
+                        }
                     }
 
                     if (!Svc.Condition[ConditionFlag.Unknown101])
@@ -809,6 +846,66 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
             }
+            else if (missionEntry.Attributes.HasFlag(MissionAttributes.Fish) || missionEntry.Attributes.HasFlag(MissionAttributes.LargeFish))
+            {
+                // Just a way to handle fishing missions specifically (that isn't under the critical unbrella).
+                // Need to generate a path to the pre-set spot per fishing hole
+                // Then need to add the last path to it once the base has been generated, to make sure that you're facing to the fishing hole properly.
+                var location = new Vector2(missionEntry.X, missionEntry.Y);
+                var distance = Player.DistanceTo(location);
+                if (GatheringUtil.FishingLocation.TryGetValue(location, out var fisherSpotInfos))
+                {
+                    if (!P.Navmesh.IsRunning())
+                    {
+                        foreach (var spot in fisherSpotInfos)
+                        {
+                            if (Player.DistanceTo(spot.FishingSpot) < 2)
+                            {
+                                return true;
+                            }
+                        }
+
+                        // Not in any of the pre-made fishing spots. So time to calculate a path and move to it.
+                        if (fishingPath.Count == 0 && !P.Navmesh.PathfindInProgress())
+                        {
+                            // The current pathfinding does not have a route already made up. Time to create one. 
+                            // Make sure to store the route that is selected somewhere, so it knows which one to pathfind to next
+                            if (EzThrottler.Throttle("Starting to find path"))
+                            {
+                                int randomIndex = _random.Next(fisherSpotInfos.Count);
+                                fishingEntry = fisherSpotInfos[randomIndex];
+
+                                UpdateFishingPath(fishingEntry.NavtoSpot);
+                                // Fire and forget - this will update pathTo when complete
+                            }
+                        }
+                        else if (fishingPath.Count > 0 && !P.Navmesh.IsRunning())
+                        {
+                            if (EzThrottler.Throttle("Telling navmesh to move to the fishing spot"))
+                            {
+                                // A path has been made up! Time to
+                                // -> Randomly select a spot to move to
+                                // -> Add that spot to the end of the route
+                                // -> Proceed to move to that route
+                                fishingPath.Add(fishingEntry.FishingSpot);
+                                P.Navmesh.MoveTo(new List<Vector3>(fishingPath), false);
+                                fishingPath.Clear(); // this just exist to reset the current path in case you stop navmesh somehow
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (PlayerHelper.IsPlayerNotBusy() && !Svc.Condition[ConditionFlag.Mounted] && C.UseMountOutsideMission && distance > C.MountRadius)
+                        {
+                            if (EzThrottler.Throttle("Attempting to mount up"))
+                            {
+                                Utils.MountAction();
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
             else
             {
                 IceLogging.Debug("Mission was not a gathering or critical mission. Navmesh moving was not necessary. Moving onto next step", "[Task_FindMission: Navmesh]");
@@ -816,6 +913,21 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+        private static void UpdateFishingPath(Vector3 pathToArea)
+        {
+            Vector3 currentPos = Player.Position;
+
+            // Fire and forget - this will update pathTo when complete
+            _ = Task.Run(async () =>
+            {
+                fishingPath = await FindTask(currentPos, pathToArea);
+            });
+        }
+
+        private static async Task<List<Vector3>> FindTask(Vector3 currentPos, Vector3 pathToArea)
+        {
+            return await P.Navmesh.Pathfind(currentPos, pathToArea, false);
         }
         private static bool? CheckReroll()
         {

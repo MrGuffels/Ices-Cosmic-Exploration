@@ -1,10 +1,14 @@
 ﻿using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.Automation.NeoTaskManager;
 using ECommons.DalamudServices.Legacy;
+using ECommons.GameHelpers;
 using ECommons.Reflection;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using SharpDX.Direct3D11;
 using System;
 
 namespace ICE.Utilities;
@@ -117,7 +121,6 @@ public static unsafe class Utils
             IceLogging.Error($"InteractWithObject: Exception: {ex}");
         }
     }
-
     public static unsafe void SetGatheringRing(uint territoryId, int x, int y, int radius, string? tooltip = "Node Location")
     {
         var map = ExcelHelper.TerritorySheet.GetRow(territoryId).Map.Value;
@@ -132,5 +135,20 @@ public static unsafe class Utils
         agent->TempMapMarkerCount = 0;
         agent->AddGatheringTempMarker(x, y, radius, tooltip: tooltip);
         agent->OpenMap(map.RowId, territoryId, tooltip, MapType.GatheringLog);
+    }
+    public static unsafe void MountAction()
+    {
+        bool useMount = C.MountId != 0 && PlayerState.Instance()->IsMountUnlocked(C.MountId);
+
+        if (useMount)
+        {
+            ActionManager.Instance()->UseAction(ActionType.Mount, C.MountId);
+            IceLogging.Info($"Attempting to mount: {C.MountName}");
+        }
+        else
+        {
+            ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
+            IceLogging.Info($"Resorting to using the mount roulette");
+        }
     }
 }

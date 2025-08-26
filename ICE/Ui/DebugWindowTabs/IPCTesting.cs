@@ -13,6 +13,8 @@ namespace ICE.Ui.DebugWindowTabs
         private static int Radius = 10;
         private static int XLoc = 0;
         private static int YLoc = 0;
+        private static string importString = new string('\0', 2048); // Pre-allocate buffer
+        private static string SwapToPreset = string.Empty;
 
         public static unsafe void Draw()
         {
@@ -35,6 +37,22 @@ namespace ICE.Ui.DebugWindowTabs
                 var agent = AgentMap.Instance();
 
                 Utils.SetGatheringRing(agent->CurrentTerritoryId, XLoc, YLoc, Radius);
+            }
+
+            ImGui.Separator();
+            ImGui.Text("AutoHook");
+            ImGui.SetNextItemWidth(150);
+            ImGui.InputText("Preset String", ref importString, 2048);
+            if (ImGui.Button("Import"))
+            {
+                P.AutoHook.ImportAndSelectPreset(importString);
+                importString = string.Empty;
+            }
+            ImGui.SetNextItemWidth(150);
+            ImGui.InputText("Swap to preset", ref SwapToPreset);
+            if (ImGui.Button("Swap"))
+            {
+                P.AutoHook.SetPreset(SwapToPreset);
             }
         }
     }

@@ -12,6 +12,8 @@ namespace ICE.Ui.DebugWindowTabs
     {
         private static uint mission = 0;
         private static int frameDelay = 4;
+        private static List<Vector3> pathTo = new List<Vector3>();
+        private static Vector3 pathToArea = new Vector3();
 
         public static void Draw()
         {
@@ -54,8 +56,36 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 Task_Repair.Enqueue();
             }
+            ImGui.Text($"Current waypoint list count: {pathTo.Count}");
+
+            ImGui.SetNextItemWidth(250);
+            ImGui.InputFloat3("Destination", ref pathToArea);
+            if (ImGui.Button("Set Area"))
+            {
+                pathToArea = ECommons.GameHelpers.Player.Position;
+            }
+            if (ImGui.Button("Create waypoint list"))
+            {
+                Vector3 currentPos = ECommons.GameHelpers.Player.Position;
+
+                // Fire and forget - this will update pathTo when complete
+                _ = Task.Run(async () =>
+                {
+                    pathTo = await FindTask(currentPos);
+                });
+            }
+            if (ImGui.Button("Test Fishing Moveto"))
+            {
+                P.TaskManager.Enqueue(() => Task_FindMission.ClearNavFishing(), "Clearing the current fishing queue");
+                P.TaskManager.Enqueue(() => Task_FindMission.Navmesh_MoveToMission(mission), "Testing fishing moveto",configuration: Utils.TaskConfig);
+            }
         }
 
         private static int Counter = 0;
+
+        private static async Task<List<Vector3>> FindTask(Vector3 currentPos)
+        {
+            return await P.Navmesh.Pathfind(currentPos, pathToArea, false);
+        }
     }
 }

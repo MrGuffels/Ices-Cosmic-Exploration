@@ -197,6 +197,17 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text($"X: {entry.Value.X} | Y: {entry.Value.Y}");
                             ImGui.EndTooltip();
                         }
+                        ImGui.SameLine();
+                        if (ImGui.Button($"Copy Flag##Flag-{entry.Key}"))
+                        {
+                            ImGui.SetClipboardText($"{entry.Value.X}, {entry.Value.Y}");
+                        }
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text($"X: {entry.Value.X} | Y: {entry.Value.Y}");
+                            ImGui.EndTooltip();
+                        }
                     }
 
                     ImGui.TableNextColumn();

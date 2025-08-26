@@ -1,5 +1,6 @@
 ﻿using ECommons.EzIpcManager;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 #nullable disable
 namespace ICE.IPC;
@@ -15,7 +16,7 @@ public class NavmeshIPC
     [EzIPC("Nav.%m")] public readonly Func<float> BuildProgress;
     [EzIPC("Nav.%m")] public readonly Func<bool> Reload;
     [EzIPC("Nav.%m")] public readonly Func<bool> Rebuild;
-    [EzIPC("Nav.%m")] public readonly Func<Vector3, Vector3, bool, Vector3> Pathfind;
+    [EzIPC("Nav.%m")] public readonly Func<Vector3, Vector3, bool, Task<List<Vector3>>> Pathfind;
 
     [EzIPC("SimpleMove.%m")] public readonly Func<Vector3, bool, bool> PathfindAndMoveTo;
     [EzIPC("SimpleMove.%m")] public readonly Func<bool> PathfindInProgress;

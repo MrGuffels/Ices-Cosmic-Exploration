@@ -70,6 +70,7 @@ public sealed partial class ICE : IDalamudPlugin
     internal PandoraIPC Pandora;
     internal ArtisanIPC Artisan;
     internal VislandIPC Visland;
+    internal AutoHookIPC AutoHook;
 
     public ICE(IDalamudPluginInterface pi)
     {
@@ -87,6 +88,7 @@ public sealed partial class ICE : IDalamudPlugin
         Pandora = new();
         Artisan = new();
         Visland = new();
+        AutoHook = new();
 
         // all the windows
         windowSystem = new();

@@ -1,5 +1,7 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,11 @@ namespace ICE.Ui.SettingTabs
         // Overlay Settings
         private static bool showOverlay = C.ShowOverlay;
         private static bool ShowSeconds = C.ShowSeconds;
+        private static Dictionary<uint, string> availableMounts = new();
+
+        private static string mountSearchText = "";
+        private static int mountDisplayOffset = 0;
+        private static int mountItemsPerPage = 10;
 
         // Mission Priority Settings
 
@@ -68,6 +75,8 @@ namespace ICE.Ui.SettingTabs
                     C.Save();
                 }
             }
+
+            MountSelection();
 
             ImGui.Separator();
 
@@ -197,6 +206,88 @@ namespace ICE.Ui.SettingTabs
                 ProvisionalTypes.ProvisionalTimed => FontAwesomeIcon.Clock.ToIconString(),
                 _ => FontAwesomeIcon.Question.ToIconString()
             };
+        }
+
+        private static unsafe void MountSelection()
+        {
+            if (ImGui.Button("Select Mounting Option"))
+            {
+                availableMounts.Clear();
+                availableMounts[0] = "Mount Roulette";
+
+                var mountSheet = Svc.Data.GetExcelSheet<Mount>();
+
+                foreach (var mountItem in mountSheet)
+                {
+                    //Checking to see if the current mount is unlocked
+                    if (!PlayerState.Instance()->IsMountUnlocked(mountItem.RowId)) continue;
+
+                    string mountName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mountItem.Singular.ToString().ToLower());
+                    uint id = mountItem.RowId;
+
+                   availableMounts[id] = mountName;
+                }
+
+                mountSearchText = "";
+                mountDisplayOffset = 0;
+
+                ImGui.OpenPopup("Mount Options");
+            }
+            ImGui.SameLine();
+            ImGui.AlignTextToFramePadding();
+            ImGui.Text($"Mount: {C.MountName}");
+
+            if (ImGui.BeginPopup("Mount Options"))
+            {
+                // Search box
+                ImGui.InputText("Search", ref mountSearchText, 100);
+
+                // Filter mounts based on search
+                var filteredMounts = availableMounts
+                    .Where(kvp => string.IsNullOrEmpty(mountSearchText) ||
+                                 kvp.Value.Contains(mountSearchText, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                // Calculate page count here, just to peeps know how many pages there are
+                int totalItems = filteredMounts.Count;
+                int maxOffset = Math.Max(0, totalItems - mountItemsPerPage);
+                mountDisplayOffset = Math.Min(mountDisplayOffset, maxOffset);
+
+                // Display current page of mounts
+                var displayMounts = filteredMounts
+                    .Skip(mountDisplayOffset)
+                    .Take(mountItemsPerPage);
+
+                foreach (var mount in displayMounts)
+                {
+                    if (ImGui.Selectable($"{mount.Value}##{mount.Key}"))
+                    {
+                        C.MountId = mount.Key;
+                        C.MountName = mount.Value;
+                        C.Save();
+                        ImGui.CloseCurrentPopup();
+                    }
+                }
+
+                // Navigation buttons
+                ImGui.Separator();
+
+                if (ImGui.Button("Previous") && mountDisplayOffset > 0)
+                {
+                    mountDisplayOffset = Math.Max(0, mountDisplayOffset - mountItemsPerPage);
+                }
+
+                ImGui.SameLine();
+                ImGui.Text($"{mountDisplayOffset + 1}-{Math.Min(mountDisplayOffset + mountItemsPerPage, totalItems)} of {totalItems}");
+
+                ImGui.SameLine();
+                if (ImGui.Button("Next") && mountDisplayOffset < maxOffset)
+                {
+                    mountDisplayOffset = Math.Min(maxOffset, mountDisplayOffset + mountItemsPerPage);
+                }
+
+                ImGui.EndPopup();
+            }
         }
     }
 }

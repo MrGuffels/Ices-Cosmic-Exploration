@@ -186,6 +186,329 @@ public static unsafe class GatheringUtil
         public uint NodeSet { get; set; }
     }
 
+    public class FisherSpotInfo
+    {
+        public Vector3 NavtoSpot { get; set; }
+        public Vector3 FishingSpot { get; set; }
+    }
+
+    public static Dictionary<Vector2, List<FisherSpotInfo>> FishingLocation = new()
+    {
+        { new Vector2(104, -269), new List<FisherSpotInfo>() {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(67.09f, 19.13f, -246.34f),
+                FishingSpot = new Vector3(72.78f, 18.07f, -251.65f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(81.34f, 18.19f, -232.67f),
+                FishingSpot = new Vector3(86.95f, 18.50f, -236.47f)
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(112.55f, 19.17f, -226.95f),
+                FishingSpot = new Vector3(110.03f, 18.81f, -229.61f)
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(136.14f, 22.61f, -235.72f),
+                FishingSpot = new Vector3(132.63f, 22.12f, -238.54f)
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(146.02f, 28.76f, -281.85f),
+                FishingSpot = new Vector3(143.39f, 28.23f, -279.23f)
+            },
+        } },
+        { new Vector2(-139, -283), new List<FisherSpotInfo>(){
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-119.67f, 20.40f, -285.04f),
+                FishingSpot = new Vector3(-124.69f, 20.12f, -286.35f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-116.36f, 21.45f, -303.67f),
+                FishingSpot = new Vector3(-119.45f, 21.23f, -302.83f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-132.22f, 22.14f, -315.09f),
+                FishingSpot = new Vector3(-133.92f, 21.89f, -307.77f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-149.69f, 21.98f, -303.55f),
+                FishingSpot = new Vector3(-146.28f, 21.34f, -301.40f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-157.92f, 21.41f, -274.88f),
+                FishingSpot = new Vector3(-153.74f, 20.53f, -275.38f),
+            }
+        } },
+        { new Vector2(-281, -104), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-263.24f, 26.04f, -123.94f),
+                FishingSpot = new Vector3(-266.38f, 25.28f, -122.38f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-261.11f, 24.92f, -111.89f),
+                FishingSpot = new Vector3(-262.08f, 24.88f, -111.59f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-255.11f, 22.12f, -86.71f),
+                FishingSpot = new Vector3(-257.40f, 21.89f, -86.17f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-257.32f, 23.20f, -73.09f),
+                FishingSpot = new Vector3(-258.54f, 22.30f, -76.33f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-286.72f, 23.03f, -70.65f),
+                FishingSpot = new Vector3(-285.15f, 22.29f, -72.24f),
+            },
+        } },
+        { new Vector2(193, 196), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(209.92f, 19.74f, 205.66f),
+                FishingSpot = new Vector3(207.89f, 19.52f, 203.26f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(201.62f, 19.74f, 210.88f),
+                FishingSpot = new Vector3(200.33f, 19.44f, 208.05f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(192.16f, 19.16f, 208.58f),
+                FishingSpot = new Vector3(192.16f, 19.16f, 208.58f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(174.96f, 18.57f, 194.23f),
+                FishingSpot = new Vector3(177.16f, 17.96f, 194.73f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(190.70f, 18.08f, 182.53f),
+                FishingSpot = new Vector3(191.45f, 17.58f, 186.35f),
+            },
+        } },
+        { new Vector2(573, 573), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(512.46f, 52.25f, 568.22f),
+                FishingSpot = new Vector3(516.74f, 52.35f, 568.17f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(560.55f, 51.35f, 528.83f),
+                FishingSpot = new Vector3(562.74f, 50.80f, 533.07f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(588.83f, 50.18f, 488.87f),
+                FishingSpot = new Vector3(591.27f, 49.92f, 491.14f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(626.51f, 54.19f, 528.09f),
+                FishingSpot = new Vector3(623.40f, 54.05f, 529.16f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(614.27f, 54.74f, 583.04f),
+                FishingSpot = new Vector3(611.00f, 54.41f, 580.93f),
+            },
+        } },
+        { new Vector2(-642, -631), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-683.40f, 75.44f, -602.75f),
+                FishingSpot = new Vector3(-684.47f, 74.90f, -599.87f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-696.28f, 78.40f, -613.17f),
+                FishingSpot = new Vector3(-697.79f, 78.65f, -611.57f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-705.91f, 80.24f, -640.99f),
+                FishingSpot = new Vector3(-709.01f, 80.49f, -640.24f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-717.26f, 81.34f, -680.15f),
+                FishingSpot = new Vector3(-717.43f, 81.14f, -676.65f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-751.98f, 83.22f, -657.03f),
+                FishingSpot = new Vector3(-749.07f, 83.04f, -655.83f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-592.44f, 69.78f, -675.48f),
+                FishingSpot = new Vector3(-589.42f, 69.64f, -675.19f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-582.07f, 70.15f, -702.85f),
+                FishingSpot = new Vector3(-579.83f, 69.57f, -700.20f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-562.54f, 69.07f, -706.32f),
+                FishingSpot = new Vector3(-563.15f, 68.70f, -703.20f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-531.57f, 68.99f, -686.71f),
+                FishingSpot = new Vector3(-534.03f, 69.17f, -685.55f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-532.27f, 68.40f, -670.41f),
+                FishingSpot = new Vector3(-535.46f, 69.00f, -671.25f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-557.52f, 68.54f, -646.11f),
+                FishingSpot = new Vector3(-558.69f, 68.80f, -649.56f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-586.18f, 67.78f, -637.35f),
+                FishingSpot = new Vector3(-584.33f, 68.06f, -640.09f),
+            },
+        } },
+        { new Vector2(909, -336), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(914.64f, -58.02f, -324.31f),
+                FishingSpot = new Vector3(917.44f, -58.05f, -323.82f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(916.67f, -58.75f, -337.77f),
+                FishingSpot = new Vector3(918.65f, -58.89f, -337.07f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(920.99f, -58.76f, -351.82f),
+                FishingSpot = new Vector3(921.87f, -58.69f, -350.27f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(927.40f, -58.56f, -356.18f),
+                FishingSpot = new Vector3(928.81f, -58.54f, -355.07f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(934.18f, -57.12f, -361.69f),
+                FishingSpot = new Vector3(935.86f, -56.89f, -360.24f),
+            },
+        } },
+        { new Vector2(-673, 497), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-737.19f, 69.92f, 509.45f),
+                FishingSpot = new Vector3(-742.38f, 69.99f, 511.53f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-756.84f, 70.81f, 486.75f),
+                FishingSpot = new Vector3(-757.83f, 70.11f, 490.82f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-717.75f, 57.43f, 438.85f),
+                FishingSpot = new Vector3(-713.94f, 57.14f, 437.88f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-721.22f, 57.21f, 409.58f),
+                FishingSpot = new Vector3(-716.97f, 57.09f, 410.51f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-609.42f, 50.00f, 515.78f),
+                FishingSpot = new Vector3(-607.97f, 49.84f, 519.56f),
+            },
+        } },
+        { new Vector2(-348, 604), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-381.03f, 47.83f, 590.70f),
+                FishingSpot = new Vector3(-376.01f, 47.63f, 591.75f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-372.27f, 47.92f, 572.60f),
+                FishingSpot = new Vector3(-369.26f, 47.70f, 574.86f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-341.73f, 47.75f, 563.59f),
+                FishingSpot = new Vector3(-342.58f, 47.59f, 567.20f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-320.82f, 47.78f, 579.43f),
+                FishingSpot = new Vector3(-322.84f, 47.60f, 580.93f),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(-324.11f, 47.83f, 604.22f),
+                FishingSpot = new Vector3(-327.31f, 47.65f, 603.05f),
+            },
+        } },
+        { new Vector2(0, 0), new List<FisherSpotInfo>()
+        {
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(),
+                FishingSpot = new Vector3(),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(),
+                FishingSpot = new Vector3(),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(),
+                FishingSpot = new Vector3(),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(),
+                FishingSpot = new Vector3(),
+            },
+            new FisherSpotInfo
+            {
+                NavtoSpot = new Vector3(),
+                FishingSpot = new Vector3(),
+            },
+        } },
+    };
+
     public static Dictionary<Vector2, List<GathNodeInfo>> GatheringLocation = new()
     {
         // - - - - - - - - - - - 

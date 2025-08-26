@@ -118,6 +118,16 @@ namespace ICE.Config
 
         #endregion
 
+        #region Misc
+
+        public uint MountId { get; set; } = 0;
+        public string MountName { get; set; } = "Mount Roulette";
+        public float MountRadius { get; set; } = 15.0f;
+        public bool UseMountOutsideMission { get; set; } = true;
+        public bool UseAmountInMission { get; set; } = true;
+
+        #endregion
+
         public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
 
         #region Debug
