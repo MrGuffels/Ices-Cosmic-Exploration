@@ -33,9 +33,9 @@ namespace ICE.Scheduler.Tasks
                         // Using the build in presets that are included in the plugin.
                         P.AutoHook.DeleteAllAnonymousPresets();
                         var presetList = GatheringUtil.FishingPreset[missionId];
-                        foreach (var preset in presetList)
+                        foreach (var preset in presetList.FishingPreset)
                         {
-                            P.AutoHook.ImportAndSelectPreset(preset);
+                            P.AutoHook.CreateAndSelectAnonymousPreset(preset);
                         }
                     }
                     else

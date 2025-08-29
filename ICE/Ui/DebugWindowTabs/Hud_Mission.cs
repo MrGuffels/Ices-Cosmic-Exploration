@@ -6,7 +6,7 @@ using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class MissionHud
+    internal class Hud_Mission
     {
         private static int BestMission = 0;
         private static string MissionName = "";

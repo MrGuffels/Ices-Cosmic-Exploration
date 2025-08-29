@@ -354,12 +354,6 @@ public sealed partial class ICE
                 Exp.Add((ExpSheet.GetRow(keyId).Unknown14, ExpSheet.GetRow(keyId).Unknown4));
             }
 
-            uint nodeSet = 0;
-            if (GatheringUtil.OldNodeset.TryGetValue(new Vector2(_x, _y), out nodeSet)) 
-            {
-
-            }
-
             if (!MissionInfoDict.ContainsKey(keyId))
             {
                 MissionInfoDict[keyId] = new MissionListInfo()
@@ -383,9 +377,7 @@ public sealed partial class ICE
                     PreviousMissionID = previousMissionId,
                     MarkerId = marker.RowId,
                     TerritoryId = territoryId,
-                    X = _x,
-                    Y = _y,
-                    NodeSet = nodeSet,
+                    MapPosition = new Vector2(_x, _y),
                     Radius = radius,
                 };
             }
@@ -462,6 +454,27 @@ public sealed partial class ICE
         {
             var id = entry.Key;
             entry.Value.missionScore = MissionScoreDict[id];
+        }
+
+        foreach (var item in MoonItemInfoSheet)
+        {
+            var itemId = item.Item.RowId;
+            if (itemId == 0) continue;
+            string itemName = ItemSheet.GetRow(itemId).Name.ToString();
+            var type = item.WKSItemSubCategory.RowId;
+
+            if (CosmicHelper.GatheringItems.TryGetValue(itemName, out var itemEntry))
+            {
+                itemEntry.itemIds.Add(itemId);
+            }
+            else
+            {
+                CosmicHelper.GatheringItems[itemName] = new()
+                {
+                    Type = item.WKSItemSubCategory.RowId,
+                    itemIds = new HashSet<uint> { itemId },
+                };
+            }
         }
     }
     private static MissionType GetMissionType(MissionListInfo mission)

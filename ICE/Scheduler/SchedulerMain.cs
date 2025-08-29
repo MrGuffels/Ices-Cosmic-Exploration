@@ -64,7 +64,7 @@ namespace ICE.Scheduler
                         Task_AbandonMission.Enqueue();
                         break;
                     case ExecutingMission:
-
+                        Task_ExecuteMission.Enqueue();
                         break;
                     default:
                         DisablePlugin();

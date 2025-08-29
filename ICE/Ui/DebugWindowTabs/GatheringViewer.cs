@@ -35,7 +35,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (showBuiltIn)
             {
-                selectedDict = GatheringUtil.OldNodeset;
+                
                 // selectedList = GatheringUtil.MoonNodeInfoList;
             }
             else if (showCustom)

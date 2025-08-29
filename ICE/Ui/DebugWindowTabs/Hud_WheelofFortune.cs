@@ -8,7 +8,7 @@ using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class WheelofFortuneHud
+    internal class Hud_WheelofFortune
     {
         public static void Draw()
         {

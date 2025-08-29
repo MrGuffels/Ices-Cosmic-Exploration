@@ -7,7 +7,7 @@ using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class MoonRecipeHud
+    internal class Hud_MoonRecipe
     {
         public static void Draw()
         {

@@ -245,7 +245,7 @@ namespace ICE.Ui.SettingTabs
                 // Filter mounts based on search
                 var filteredMounts = availableMounts
                     .Where(kvp => string.IsNullOrEmpty(mountSearchText) ||
-                                 kvp.Value.Contains(mountSearchText, StringComparison.OrdinalIgnoreCase))
+                                  kvp.Value.Contains(mountSearchText, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 // Calculate page count here, just to peeps know how many pages there are

@@ -59,11 +59,11 @@ public static unsafe partial class CosmicHelper
         public uint PreviousMissionID { get; set; }
         public uint MarkerId { get; set; }
         public uint TerritoryId { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        public Vector2 MapPosition { get; set; } = new Vector2();
         public int Radius { get; set; }
         public uint NodeSet { get; set; }
         public List<(int Type, int Amount)> ExperienceRewards { get; set; }
+        public HashSet<uint> StartingItems { get; set; } = new HashSet<uint>();
     }
 
     public static Dictionary<uint, MissionListInfo> MissionInfoDict = [];
@@ -633,6 +633,143 @@ public static unsafe partial class CosmicHelper
         [542] = 0,
         [543] = 0,
         [544] = 0,
+    };
+
+    public class GatherItemInfo
+    {
+        public HashSet<uint> itemIds { get; set; } = new();
+        public uint Type { get; set; } = 0;
+    }
+    public static Dictionary<string, GatherItemInfo> GatheringItems = new();
+
+    public class FishingMissionInfo
+    {
+        public Dictionary<string, HashSet<uint>> fishingItems { get; set; } = new();
+        public int amount { get; set; } = 0;
+    }
+
+    /// <summary>
+    /// Key: MissionId
+    /// Value: 
+    /// </summary>
+    public static Dictionary<uint, FishingMissionInfo> CustomFishDict = new()
+    {
+        [451] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
+                ["Lunar Tilapia"] = new HashSet<uint> { 45694 },
+                ["Lunar Blue Guppy"] = new HashSet<uint> { 45695 },
+            },
+            amount = 5
+        },
+        [455] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
+                ["Lunar Peacock Bass"] = new HashSet<uint> { 45706 },
+                ["Lunar Hemiodus"] = new HashSet<uint> { 45707 },
+            },
+            amount = 5
+        },
+        [463] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Melancholia"] = new HashSet<uint> { 45696, 45708, 45735, 45754, 45778, 45853, 45938 },
+                ["Hopped-on Leaffish"] = new HashSet<uint> { 45736 },
+                ["Lunar Discus"] = new HashSet<uint> { 45737 },
+                ["Solar Flarefish"] = new HashSet<uint> { 45738 },
+            },
+            amount = 4
+        },
+        [469] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Bluemoon Loach"] = new HashSet<uint> { 45699, 45719, 45731, 45764, 45784, 45810, 45918, 45935 },
+                ["Leaping Loach"] = new HashSet<uint> { 45765 },
+                ["Lunar Bronze Pleco"] = new HashSet<uint> { 45766 },
+                ["Starry Stingray"] = new HashSet<uint> { 45767 },
+                ["Lunar Lungfish"] = new HashSet<uint> { 45768 },
+            },
+            amount = 4
+        },
+        [470] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Star Pleco"] = new HashSet<uint> { 45702, 45711, 45723, 45769, 45820, 45841, 45913 },
+                ["Lunar Grass Carp"] = new HashSet<uint> { 45712, 45770, 45821, 45842, 45914 },
+                ["Macrobrachium Lunaris"] = new HashSet<uint> { 45771 },
+                ["Ataxite"] = new HashSet<uint> { 45772 },
+            },
+            amount = 13
+        },
+        [474] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Moonrock Candy"] = new HashSet<uint> { 45739, 45749, 45789, 45799, 45871, 45877, 45929 },
+                ["Moongill"] = new HashSet<uint> { 45740, 45750, 45790, 45800, 45878, 45930 },
+                ["Darkside Bass"] = new HashSet<uint> { 45791, 45801, 45879 },
+                ["Lunar Sisterscale"] = new HashSet<uint> { 45792 },
+                ["Grand Crowntail Betta"] = new HashSet<uint> { 45793 },
+            },
+            amount = 18
+        },
+        [480] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Arsenic Axolotl"] = new HashSet<uint> { 45836, 45883 },
+                ["Sunny Jellyfish"] = new HashSet<uint> { 45837, 45884 },
+                ["Universal Darkfin"] = new HashSet<uint> { 45838, 45885 },
+                ["Etheirys Croppie"] = new HashSet<uint> { 45839 },
+                ["Moon Mora"] = new HashSet<uint> { 45840 },
+            },
+            amount = 18
+        },
+        [486] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
+                ["Teardrop Knifefish"] = new HashSet<uint> { 45848 },
+                ["Weeping Crab"] = new HashSet<uint> { 45849 },
+                ["Silvermoon Tilapia"] = new HashSet<uint> { 45850 },
+                ["Weeping Minnow"] = new HashSet<uint> { 45851 },
+            },
+            amount = 5
+        },
+        [493] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Ctenophora Lunaris"] = new HashSet<uint> { 45831, 45889, 45907 },
+                ["Protomyke #721"] = new HashSet<uint> { 45832, 45890, 45908 },
+                ["Argonauta Lunaris"] = new HashSet<uint> { 45833, 45891, 45909 },
+                ["Aetherial Sword"] = new HashSet<uint> { 45892, 45910 },
+                ["Macropinna"] = new HashSet<uint> { 45911 },
+                ["Deepmoon Seadragon"] = new HashSet<uint> { 45912 },
+            },
+            amount = 18
+        },
+        [494] = new FishingMissionInfo
+        {
+            fishingItems = new Dictionary<string, HashSet<uint>>
+            {
+                ["Lunar Scorpion"] = new HashSet<uint> { 45759, 45773, 45794, 45804, 45815, 45865, 45895, 45923 },
+                ["Arsenical Proto-hropken"] = new HashSet<uint> { 45896 },
+                ["Lunar Oil Eel"] = new HashSet<uint> { 45897 },
+                ["Galactic Noise"] = new HashSet<uint> { 45898 },
+                ["Onychodictyon"] = new HashSet<uint> { 45899 },
+                ["Eolactoria Arsenici"] = new HashSet<uint> { 45900 },
+            },
+            amount = 6
+        },
     };
 
     public class XPType

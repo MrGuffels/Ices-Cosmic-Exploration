@@ -63,7 +63,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 18, tableFlags))
+            if (ImGui.BeginTable("Moon Mission Information Table", 25, tableFlags))
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -90,6 +90,15 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("Test Flag");
 
                 ImGui.TableSetupColumn("Score");
+
+                ImGui.TableSetupColumn("Main Item 1");
+                ImGui.TableSetupColumn("Amount #1");
+                ImGui.TableSetupColumn("Main Item 2");
+                ImGui.TableSetupColumn("Amount #2");
+                ImGui.TableSetupColumn("Main Item 3");
+                ImGui.TableSetupColumn("Amount #3");
+                ImGui.TableSetupColumn("Pre-Craft Item");
+                ImGui.TableSetupColumn("Pre-Craft Amount");
 
                 ImGui.TableHeadersRow();
 
@@ -211,23 +220,23 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         if (ImGui.Button($"Flag###Flag-{entry.Key}"))
                         {
-                            Utils.SetGatheringRing(entry.Value.TerritoryId, entry.Value.X, entry.Value.Y, entry.Value.Radius);
+                            Utils.SetGatheringRing(entry.Value.TerritoryId, (int)entry.Value.MapPosition.X, (int)entry.Value.MapPosition.Y, entry.Value.Radius);
                         }
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"X: {entry.Value.X} | Y: {entry.Value.Y}");
+                            ImGui.Text($"X: {entry.Value.MapPosition.X} | Y: {entry.Value.MapPosition.Y}");
                             ImGui.EndTooltip();
                         }
                         ImGui.SameLine();
                         if (ImGui.Button($"Copy Flag##Flag-{entry.Key}"))
                         {
-                            ImGui.SetClipboardText($"{entry.Value.X}, {entry.Value.Y}");
+                            ImGui.SetClipboardText($"{entry.Value.MapPosition.X}, {entry.Value.MapPosition.Y}");
                         }
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
-                            ImGui.Text($"X: {entry.Value.X} | Y: {entry.Value.Y}");
+                            ImGui.Text($"X: {entry.Value.MapPosition.X} | Y: {entry.Value.MapPosition.Y}");
                             ImGui.EndTooltip();
                         }
                     }
@@ -238,6 +247,47 @@ namespace ICE.Ui.DebugWindowTabs
                     if (ImGui.InputUInt($"##MissionScore", ref missionScore))
                     {
                         entry.Value.missionScore = missionScore;
+                    }
+
+                    if (CosmicHelper.GatheringItemDict.TryGetValue(entry.Key, out var gatherInfo))
+                    {
+                        foreach (var gatherEntry in gatherInfo.MinGatherItems)
+                        {
+                            ImGui.TableNextColumn();
+                            string name = itemSheet.GetRow(gatherEntry.Key).Name.ToString();
+                            ImGui.Text(name);
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text($"{gatherEntry.Key}");
+                                ImGui.EndTooltip();
+                            }
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{gatherEntry.Value}");
+                        }
+                    }
+                    else if (CosmicHelper.MoonRecipies.TryGetValue(entry.Key, out var recipeInfo))
+                    {
+                        foreach (var recipe in recipeInfo.MainCraftsDict)
+                        {
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{recipe.Key}");
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{recipe.Value}");
+                        }
+
+                        ImGui.TableSetColumnIndex(23);
+                        foreach (var precraft in recipeInfo.PreCraftDict)
+                        {
+                            ImGui.Text($"{precraft.Key}");
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{precraft.Value}");
+                        }
+
+                        // Anything post this, is currently column 25. Not that there's anything atm. Just noting to future self
                     }
                     ImGui.PopID();
                 }

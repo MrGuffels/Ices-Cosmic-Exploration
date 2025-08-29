@@ -538,7 +538,7 @@ namespace ICE.Scheduler.Tasks
 
                         if (gatheringMission)
                         {
-                            Vector2 missionLoc = new Vector2(missionEntry.X, missionEntry.Y);
+                            Vector2 missionLoc = missionEntry.MapPosition;
                             Vector2 currentPos = new Vector2(Player.Position.X, Player.Position.Z);
                             float distance = Vector2.Distance(missionLoc, currentPos);
 
@@ -611,7 +611,8 @@ namespace ICE.Scheduler.Tasks
                 foreach (var mission in x.StellerMissions)
                 {
                     var rank = CosmicHelper.MissionInfoDict[mission.MissionId].Rank;
-                    MissionKeeper[rank].Add(mission.MissionId);
+                    if (RankId.Contains(rank))
+                        MissionKeeper[rank].Add(mission.MissionId);
                 }
 
                 foreach (var rank in RankId)
@@ -760,6 +761,7 @@ namespace ICE.Scheduler.Tasks
                             SchedulerMain.State = IceState.AbandonMission;
                         else
                             SchedulerMain.State = IceState.ExecutingMission;
+                        IceLogging.Debug($"Current State upon  grabbing mission: {SchedulerMain.State}");
                         P.TaskManager.Tasks.Clear();
                         P.TaskManager.Insert(() => CosmicHelper.CurrentLunarMission != 0);
                         IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
@@ -798,7 +800,7 @@ namespace ICE.Scheduler.Tasks
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it
                 Vector2 PlayerPos = new Vector2(Player.Position.X, Player.Position.Z);
-                Vector2 MapCenter = new Vector2(missionEntry.X, missionEntry.Y);
+                Vector2 MapCenter = missionEntry.MapPosition;
 
                 float distance = missionEntry.MarkerId != 0 ? Vector2.Distance(PlayerPos, MapCenter) + 5 : 0;
                 if (distance > missionEntry.Radius)
@@ -856,7 +858,7 @@ namespace ICE.Scheduler.Tasks
                 // Just a way to handle fishing missions specifically (that isn't under the critical unbrella).
                 // Need to generate a path to the pre-set spot per fishing hole
                 // Then need to add the last path to it once the base has been generated, to make sure that you're facing to the fishing hole properly.
-                var location = new Vector2(missionEntry.X, missionEntry.Y);
+                var location = missionEntry.MapPosition;
                 var distance = Player.DistanceTo(location);
                 if (GatheringUtil.FishingLocation.TryGetValue(location, out var fisherSpotInfos))
                 {

@@ -70,7 +70,7 @@ namespace ICE.Ui.DebugWindowTabs
                     if (mission.Attributes.HasFlag(MissionAttributes.Fish))
                     {
                         var fishingPresets = GatheringUtil.FishingPreset[missionId];
-                        foreach (var preset in fishingPresets)
+                        foreach (var preset in fishingPresets.FishingPreset)
                         {
                             P.AutoHook.CreateAndSelectAnonymousPreset(preset);
                         }

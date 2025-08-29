@@ -7,7 +7,7 @@ using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class MissionInfoHud
+    internal class Hud_MissionInfo
     {
         public static void Draw()
         {
@@ -28,7 +28,14 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"Node Text: {AddonHelper.GetNodeText("WKSMissionInfomation", 27)}");
                 }
 
-                if (ImGui.BeginTable("Mission Info", 2))
+                ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
+                                             ImGuiTableFlags.Borders |
+                                             ImGuiTableFlags.SizingFixedFit |
+                                             ImGuiTableFlags.Resizable |           // Allow column resizing
+                                             ImGuiTableFlags.Reorderable |         // Allow column reordering
+                                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
+
+                if (ImGui.BeginTable("WKSMissionInfomationAddon_Table", 2, tableFlags))
                 {
                     ImGui.TableSetupColumn("###Info", ImGuiTableColumnFlags.WidthFixed, 150);
                     ImGui.TableSetupColumn("###UiInfo", ImGuiTableColumnFlags.WidthFixed, 100);

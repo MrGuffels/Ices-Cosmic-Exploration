@@ -988,7 +988,7 @@ namespace ICE.Ui
                         if (ImGui.IsItemClicked())
                         {
                             selectedMission = Id;
-                            Utils.SetGatheringRing(missionInfo.TerritoryId, missionInfo.X, missionInfo.Y, missionInfo.Radius, missionInfo.Name);
+                            Utils.SetGatheringRing(missionInfo.TerritoryId, (int)missionInfo.MapPosition.X, (int)missionInfo.MapPosition.Y, missionInfo.Radius, missionInfo.Name);
                         }
                     }
 

@@ -63,9 +63,15 @@ namespace ICE.Utilities
             return (classScore, cappedClassScore, totalScores, classId);
         }
 
-        internal static void UpdateMissions()
+        internal unsafe static (int currentScore, int silverScore, int GoldScore) CurrentScore()
         {
+            int currentScore = 0;
+            int silverScore = 0;
+            int GoldScore = 0;
 
+            return (currentScore, silverScore, GoldScore);
         }
+
+
     }
 }
