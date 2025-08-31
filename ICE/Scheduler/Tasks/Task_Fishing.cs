@@ -46,6 +46,16 @@ namespace ICE.Scheduler.Tasks
                         if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreVariety))
                         {
                             // Need to check all fish and see if you've met the threshold
+                            bool amountGathered = false;
+                            if (CosmicHelper.CustomFishDict.TryGetValue(id, out var customDict))
+                            {
+                                // This was one that needed to be hardcoded *-sighs-* 
+                                // Part of me wonders... if it would still be worth hard coding values for everything but. That's a different day
+                            }
+                            else
+                            {
+
+                            }
                         }
                         else
                         {

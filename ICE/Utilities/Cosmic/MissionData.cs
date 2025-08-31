@@ -654,122 +654,7 @@ public static unsafe partial class CosmicHelper
     /// </summary>
     public static Dictionary<uint, FishingMissionInfo> CustomFishDict = new()
     {
-        [451] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
-                ["Lunar Tilapia"] = new HashSet<uint> { 45694 },
-                ["Lunar Blue Guppy"] = new HashSet<uint> { 45695 },
-            },
-            amount = 5
-        },
-        [455] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
-                ["Lunar Peacock Bass"] = new HashSet<uint> { 45706 },
-                ["Lunar Hemiodus"] = new HashSet<uint> { 45707 },
-            },
-            amount = 5
-        },
-        [463] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Melancholia"] = new HashSet<uint> { 45696, 45708, 45735, 45754, 45778, 45853, 45938 },
-                ["Hopped-on Leaffish"] = new HashSet<uint> { 45736 },
-                ["Lunar Discus"] = new HashSet<uint> { 45737 },
-                ["Solar Flarefish"] = new HashSet<uint> { 45738 },
-            },
-            amount = 4
-        },
-        [469] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Bluemoon Loach"] = new HashSet<uint> { 45699, 45719, 45731, 45764, 45784, 45810, 45918, 45935 },
-                ["Leaping Loach"] = new HashSet<uint> { 45765 },
-                ["Lunar Bronze Pleco"] = new HashSet<uint> { 45766 },
-                ["Starry Stingray"] = new HashSet<uint> { 45767 },
-                ["Lunar Lungfish"] = new HashSet<uint> { 45768 },
-            },
-            amount = 4
-        },
-        [470] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Star Pleco"] = new HashSet<uint> { 45702, 45711, 45723, 45769, 45820, 45841, 45913 },
-                ["Lunar Grass Carp"] = new HashSet<uint> { 45712, 45770, 45821, 45842, 45914 },
-                ["Macrobrachium Lunaris"] = new HashSet<uint> { 45771 },
-                ["Ataxite"] = new HashSet<uint> { 45772 },
-            },
-            amount = 13
-        },
-        [474] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Moonrock Candy"] = new HashSet<uint> { 45739, 45749, 45789, 45799, 45871, 45877, 45929 },
-                ["Moongill"] = new HashSet<uint> { 45740, 45750, 45790, 45800, 45878, 45930 },
-                ["Darkside Bass"] = new HashSet<uint> { 45791, 45801, 45879 },
-                ["Lunar Sisterscale"] = new HashSet<uint> { 45792 },
-                ["Grand Crowntail Betta"] = new HashSet<uint> { 45793 },
-            },
-            amount = 18
-        },
-        [480] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Arsenic Axolotl"] = new HashSet<uint> { 45836, 45883 },
-                ["Sunny Jellyfish"] = new HashSet<uint> { 45837, 45884 },
-                ["Universal Darkfin"] = new HashSet<uint> { 45838, 45885 },
-                ["Etheirys Croppie"] = new HashSet<uint> { 45839 },
-                ["Moon Mora"] = new HashSet<uint> { 45840 },
-            },
-            amount = 18
-        },
-        [486] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
-                ["Teardrop Knifefish"] = new HashSet<uint> { 45848 },
-                ["Weeping Crab"] = new HashSet<uint> { 45849 },
-                ["Silvermoon Tilapia"] = new HashSet<uint> { 45850 },
-                ["Weeping Minnow"] = new HashSet<uint> { 45851 },
-            },
-            amount = 5
-        },
-        [493] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Ctenophora Lunaris"] = new HashSet<uint> { 45831, 45889, 45907 },
-                ["Protomyke #721"] = new HashSet<uint> { 45832, 45890, 45908 },
-                ["Argonauta Lunaris"] = new HashSet<uint> { 45833, 45891, 45909 },
-                ["Aetherial Sword"] = new HashSet<uint> { 45892, 45910 },
-                ["Macropinna"] = new HashSet<uint> { 45911 },
-                ["Deepmoon Seadragon"] = new HashSet<uint> { 45912 },
-            },
-            amount = 18
-        },
-        [494] = new FishingMissionInfo
-        {
-            fishingItems = new Dictionary<string, HashSet<uint>>
-            {
-                ["Lunar Scorpion"] = new HashSet<uint> { 45759, 45773, 45794, 45804, 45815, 45865, 45895, 45923 },
-                ["Arsenical Proto-hropken"] = new HashSet<uint> { 45896 },
-                ["Lunar Oil Eel"] = new HashSet<uint> { 45897 },
-                ["Galactic Noise"] = new HashSet<uint> { 45898 },
-                ["Onychodictyon"] = new HashSet<uint> { 45899 },
-                ["Eolactoria Arsenici"] = new HashSet<uint> { 45900 },
-            },
-            amount = 6
-        },
+
     };
 
     public class XPType
@@ -780,17 +665,562 @@ public static unsafe partial class CosmicHelper
 
     public class FishingInfo
     {
-        public Dictionary<string, HashSet<uint>> RequiredFish { get; set; } = new();
-        public uint BronzeScore { get; set; } = 0;
-        public uint SilverScore { get; set; } = 0;
-        public uint GoldScore { get; set; } = 0;
         /// <summary>
-        /// 
+        /// Applies to: ScoreTimeRemaining | Score Variety <br></br>
+        /// The required fish that can complete the conditions for either of these attributes
+        /// </summary>
+        public Dictionary<string, HashSet<uint>> RequiredFish { get; set; } = new();
+        /// <summary>
+        /// If a mission is a timed based mission (aka. Gather x amount of fish within a certain amount of time) <br></br>
+        /// Applies to: ScoreTimeRemaining | ScoreVariety
         /// </summary>
         public uint FishCountRequired { get; set; } = 0;
+        /// <summary>
+        /// Minimim score that is required to turnin
+        /// </summary>
+        public uint BronzeScore { get; set; } = 0;
+        /// <summary>
+        /// Silver score requirement
+        /// </summary>
+        public uint SilverScore { get; set; } = 0;
+        /// <summary>
+        /// Gold score requirement
+        /// </summary>
+        public uint GoldScore { get; set; } = 0;
     }
 
-    public static Dictionary<>
+    public static Dictionary<uint, FishingInfo> FishingMission = new()
+    {
+        [451] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
+                ["Lunar Tilapia"] = new HashSet<uint> { 45694 },
+                ["Lunar Blue Guppy"] = new HashSet<uint> { 45695 },
+            },
+            FishCountRequired = 5,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [452] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 540,
+            SilverScore = 630,
+            GoldScore = 1280,
+        },
+        [453] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Cobalt Eel"] = new HashSet<uint> { 45701 },
+            },
+            FishCountRequired = 0,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [454] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 1000,
+            SilverScore = 1300,
+            GoldScore = 1500,
+        },
+        [455] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
+                ["Lunar Peacock Bass"] = new HashSet<uint> { 45706 },
+                ["Lunar Hemiodus"] = new HashSet<uint> { 45707 },
+            },
+            FishCountRequired = 2,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [456] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 2000,
+            SilverScore = 5200,
+            GoldScore = 5500,
+        },
+        [457] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 1570,
+            SilverScore = 2040,
+            GoldScore = 3690,
+        },
+        [458] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Weepingeye"] = new HashSet<uint> { 45717 },
+                ["Lunar Eel"] = new HashSet<uint> { 45718 },
+            },
+            FishCountRequired = 2, // TODO: Set based on mission requirements
+            BronzeScore = 0, // TODO: Determine bronze requirement
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [459] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 1000,
+            SilverScore = 1500,
+            GoldScore = 2000,
+        },
+        [460] = new FishingInfo
+        {
+            FishCountRequired = 2,
+            BronzeScore = 0,
+            SilverScore = 3000,
+            GoldScore = 4000,
+        },
+        [461] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 20000,
+            SilverScore = 31000,
+            GoldScore = 37000,
+        },
+        [462] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 200,
+            SilverScore = 300,
+            GoldScore = 1000,
+        },
+        [463] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Melancholia"] = new HashSet<uint> { 45696, 45708, 45735, 45754, 45778, 45853, 45938 },
+                ["Hopped-on Leaffish"] = new HashSet<uint> { 45736 },
+                ["Lunar Discus"] = new HashSet<uint> { 45737 },
+                ["Solar Flarefish"] = new HashSet<uint> { 45738 },
+            },
+            FishCountRequired = 4,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [464] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Prismatic Fish"] = new HashSet<uint> { 45743 },
+            },
+            FishCountRequired = 3, // TODO: Set based on mission requirements
+            BronzeScore = 0, // TODO: Determine bronze requirement
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [465] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 3000,
+            SilverScore = 3500,
+            GoldScore = 3700,
+        },
+        [466] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Moonrock Candy"] = new HashSet<uint> { 45739, 45749, 45789, 45799, 45871, 45877, 45929 },
+                ["Moongill"] = new HashSet<uint> { 45740, 45750, 45790, 45800, 45878, 45930 },
+                ["Lunar Cabomba"] = new HashSet<uint> { 45751 },
+                ["Opal Eel"] = new HashSet<uint> { 45752 },
+                ["Lunar Pirarucu"] = new HashSet<uint> { 45753 },
+            },
+            FishCountRequired = 3,
+            BronzeScore = 0,
+            SilverScore = 4000,
+            GoldScore = 5000,
+        },
+        [467] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 3690,
+            SilverScore = 5540,
+            GoldScore = 6280,
+        },
+        [468] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 2400,
+            SilverScore = 3800,
+            GoldScore = 4500,
+        },
+        [469] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Bluemoon Loach"] = new HashSet<uint> { 45699, 45719, 45731, 45764, 45784, 45810, 45918, 45935 },
+                ["Leaping Loach"] = new HashSet<uint> { 45765 },
+                ["Lunar Bronze Pleco"] = new HashSet<uint> { 45766 },
+                ["Starry Stingray"] = new HashSet<uint> { 45767 },
+                ["Lunar Lungfish"] = new HashSet<uint> { 45768 },
+            },
+            FishCountRequired = 4,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [470] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Star Pleco"] = new HashSet<uint> { 45702, 45711, 45723, 45769, 45820, 45841, 45913 },
+                ["Lunar Grass Carp"] = new HashSet<uint> { 45712, 45770, 45821, 45842, 45914 },
+                ["Macrobrachium Lunaris"] = new HashSet<uint> { 45771 },
+                ["Ataxite"] = new HashSet<uint> { 45772 },
+            },
+            FishCountRequired = 13,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [471] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 35000,
+            SilverScore = 44000,
+            GoldScore = 50000,
+        },
+        [472] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Platinum Bichir"] = new HashSet<uint> { 45783 },
+            },
+            FishCountRequired = 1,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [473] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 1500,
+            SilverScore = 3000,
+            GoldScore = 3500,
+        },
+        [474] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Moonrock Candy"] = new HashSet<uint> { 45739, 45749, 45789, 45799, 45871, 45877, 45929 },
+                ["Moongill"] = new HashSet<uint> { 45740, 45750, 45790, 45800, 45878, 45930 },
+                ["Darkside Bass"] = new HashSet<uint> { 45791, 45801, 45879 },
+                ["Lunar Sisterscale"] = new HashSet<uint> { 45792 },
+                ["Grand Crowntail Betta"] = new HashSet<uint> { 45793 },
+            },
+            FishCountRequired = 18,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [475] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 5500,
+            SilverScore = 7200,
+            GoldScore = 7700,
+        },
+        [476] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 5000,
+            SilverScore = 10000,
+            GoldScore = 15000,
+        },
+        [477] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 7730,
+            SilverScore = 10240,
+            GoldScore = 10260,
+        },
+        [478] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 30000,
+            SilverScore = 34000,
+            GoldScore = 36000,
+        },
+        [479] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 1500,
+            SilverScore = 2250,
+            GoldScore = 2650,
+        },
+        [483] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Lunar Scorpion"] = new HashSet<uint> { 45759, 45773, 45794, 45804, 45815, 45865, 45895, 45923 },
+                ["Moonwhip"] = new HashSet<uint> { 45760, 45774, 45795, 45805, 45816, 45866, 45924 },
+                ["Lunar Anemone"] = new HashSet<uint> { 45806 },
+                ["Culter Arsenici"] = new HashSet<uint> { 45807 },
+                ["Lamentorum Regotoise"] = new HashSet<uint> { 45808 },
+                ["Polypus Sulfuris"] = new HashSet<uint> { 45809 },
+            },
+            FishCountRequired = 4,
+            BronzeScore = 0,
+            SilverScore = 5000,
+            GoldScore = 6000,
+        },
+        [485] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 4510,
+            SilverScore = 6500,
+            GoldScore = 6540,
+        },
+        [488] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 11700,
+            SilverScore = 12200,
+            GoldScore = 12900,
+        },
+
+        // Dual Class Missions
+        [508] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Heavy Ataxite"] = new HashSet<uint> { 45917 },
+            },
+            FishCountRequired = 7,
+            BronzeScore = 900,
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+        [509] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Hopping Lungfish"] = new HashSet<uint> { 45922 },
+            },
+            FishCountRequired = 1, // TODO: Set based on mission requirements
+            BronzeScore = 900, // TODO: Determine bronze requirement
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+
+        // Time-Restricted
+        [490] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 4800,
+            SilverScore = 4830,
+            GoldScore = 9240,
+        },
+        [493] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Ctenophora Lunaris"] = new HashSet<uint> { 45831, 45889, 45907 },
+                ["Protomyke #721"] = new HashSet<uint> { 45832, 45890, 45908 },
+                ["Argonauta Lunaris"] = new HashSet<uint> { 45833, 45891, 45909 },
+                ["Aetherial Sword"] = new HashSet<uint> { 45892, 45910 },
+                ["Macropinna"] = new HashSet<uint> { 45911 },
+                ["Deepmoon Seadragon"] = new HashSet<uint> { 45912 },
+            },
+            FishCountRequired = 18, // TODO: Set based on mission requirements
+            BronzeScore = 0, // TODO: Determine bronze requirement
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+
+        // Weather Missions
+        [480] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Arsenic Axolotl"] = new HashSet<uint> { 45836, 45883 },
+                ["Sunny Jellyfish"] = new HashSet<uint> { 45837, 45884 },
+                ["Universal Darkfin"] = new HashSet<uint> { 45838, 45885 },
+                ["Etheirys Croppie"] = new HashSet<uint> { 45839 },
+                ["Moon Mora"] = new HashSet<uint> { 45840 },
+            },
+            FishCountRequired = 18,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [481] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Eyeballingway"] = new HashSet<uint> { 45870 },
+            },
+            FishCountRequired = 1,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [482] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 4660,
+            SilverScore = 8500,
+            GoldScore = 8550,
+        },
+        [510] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Raw Moonbright Tourmaline"] = new HashSet<uint> { 45928 },
+            },
+            FishCountRequired = 7, // TODO: Set based on mission requirements
+            BronzeScore = 900, // TODO: Determine bronze requirement
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+        [511] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Hollow Eel"] = new HashSet<uint> { 45934 },
+            },
+            FishCountRequired = 1,
+            BronzeScore = 900,
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+
+        // Sequence
+        [484] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Lunar Sturgeon"] = new HashSet<uint> { 45846 },
+            },
+            FishCountRequired = 1,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [486] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Astacus Lamentorum"] = new HashSet<uint> { 45693, 45705, 45715, 45727, 45744, 45826, 45847 },
+                ["Teardrop Knifefish"] = new HashSet<uint> { 45848 },
+                ["Weeping Crab"] = new HashSet<uint> { 45849 },
+                ["Silvermoon Tilapia"] = new HashSet<uint> { 45850 },
+                ["Weeping Minnow"] = new HashSet<uint> { 45851 },
+            },
+            FishCountRequired = 5,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [487] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 7900,
+            SilverScore = 9600,
+            GoldScore = 12300,
+        },
+        [489] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 2250,
+            SilverScore = 3050,
+            GoldScore = 3450,
+        },
+        [491] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Lunar Goldfish"] = new HashSet<uint> { 45859, 45901 },
+                ["Lunar Minnow"] = new HashSet<uint> { 45860, 45902 },
+                ["Gleamingray"] = new HashSet<uint> { 45861 },
+                ["Lunar Butterfly"] = new HashSet<uint> { 45862 },
+                ["Lunar Seagrapes"] = new HashSet<uint> { 45863 },
+                ["Fishingway"] = new HashSet<uint> { 45864 },
+            },
+            FishCountRequired = 4,
+            BronzeScore = 0,
+            SilverScore = 5000,
+            GoldScore = 6000,
+        },
+        [492] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 11570,
+            SilverScore = 11640,
+            GoldScore = 23140,
+        },
+        [494] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Lunar Scorpion"] = new HashSet<uint> { 45759, 45773, 45794, 45804, 45815, 45865, 45895, 45923 },
+                ["Arsenical Proto-hropken"] = new HashSet<uint> { 45896 },
+                ["Lunar Oil Eel"] = new HashSet<uint> { 45897 },
+                ["Galactic Noise"] = new HashSet<uint> { 45898 },
+                ["Onychodictyon"] = new HashSet<uint> { 45899 },
+                ["Eolactoria Arsenici"] = new HashSet<uint> { 45900 },
+            },
+            FishCountRequired = 6,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [495] = new FishingInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 6000,
+            SilverScore = 8000,
+            GoldScore = 20000,
+        },
+
+        // Critical Engagements
+        [542] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Moon Bluetail"] = new HashSet<uint> { 45937 },
+            },
+            FishCountRequired = 3,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [543] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Sunken Drone"] = new HashSet<uint> { 45939 },
+            },
+            FishCountRequired = 3,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [544] = new FishingInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Moonlight Pleco"] = new HashSet<uint> { 45945 },
+            },
+            FishCountRequired = 3,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+    };
 
     #endregion
 }

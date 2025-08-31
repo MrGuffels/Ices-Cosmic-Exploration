@@ -34,7 +34,7 @@ internal class DebugWindow : Window
     private string[] DebugTypes = ["Player Info", "Hud: Moon Main",
                                    "Hud: Mission", "Hud: Mission Info", 
                                    "Hud: Wheel of fortune!", "Hud: Moon Recipe", 
-                                   "Moon Mission Info",
+                                   "Table: Mission Info",
                                    "Test Buttons", "IPC Testing", 
                                    "Map Test", "Gather Editor",
                                    "Navmesh Testing", "Relic Info",
@@ -77,7 +77,7 @@ internal class DebugWindow : Window
                 case 3: Hud_MissionInfo.Draw(); break;
                 case 4: Hud_WheelofFortune.Draw(); break;
                 case 5: Hud_MoonRecipe.Draw(); break;
-                case 6: MoonMissionInfo.Draw(); break;
+                case 6: Table_MissionInfo.Draw(); break;
                 case 7: TestButtons.Draw(); break;
                 case 8: IPCTesting.Draw(); break;
                 case 9: MapTesting.Draw(); break;

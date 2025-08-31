@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class MoonMissionInfo
+    internal class Table_MissionInfo
     {
         private static string CraftingTableSearchText = "";
         private static string AttributeSearchText = "";
@@ -63,7 +63,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 25, tableFlags))
+            if (ImGui.BeginTable("Moon Mission Information Table", 26, tableFlags)) // Increased column count by 1
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -99,6 +99,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("Amount #3");
                 ImGui.TableSetupColumn("Pre-Craft Item");
                 ImGui.TableSetupColumn("Pre-Craft Amount");
+                ImGui.TableSetupColumn("Export"); // New column for export button
 
                 ImGui.TableHeadersRow();
 
@@ -286,13 +287,100 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.TableNextColumn();
                             ImGui.Text($"{precraft.Value}");
                         }
-
-                        // Anything post this, is currently column 25. Not that there's anything atm. Just noting to future self
                     }
+
+
+                    ImGui.TableSetColumnIndex(25);
+                    if (entry.Value.JobId == 18 || entry.Value.JobId2 == 18) // Check if it's a fishing mission
+                    {
+                        if (ImGui.Button($"Export##Export-{entry.Key}"))
+                        {
+                            var fishingEntryCode = GenerateFishingEntryCode(entry.Key, entry.Value);
+                            ImGui.SetClipboardText(fishingEntryCode);
+                        }
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text("Export this fishing mission entry");
+                            ImGui.EndTooltip();
+                        }
+                    }
+
                     ImGui.PopID();
                 }
 
                 ImGui.EndTable();
+            }
+        }
+
+        public static string GenerateFishingEntryCode(uint missionId, dynamic missionInfo)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine($"        [{missionId}] = new FishingInfo");
+            sb.AppendLine("        {");
+
+            // Add RequiredFish if gathering items exist
+            if (CosmicHelper.GatheringItemDict.TryGetValue(missionId, out var gatherInfo) && gatherInfo.MinGatherItems.Any())
+            {
+                sb.AppendLine("            RequiredFish = new Dictionary<string, HashSet<uint>>");
+                sb.AppendLine("            {");
+                sb.AppendLine("                // TODO: Define fish categories and their IDs");
+                sb.AppendLine("                // Example: [\"CategoryName\"] = new HashSet<uint> { fish_id_1, fish_id_2 },");
+                foreach (var item in gatherInfo.MinGatherItems)
+                {
+                    var itemSheet = ExcelHelper.ItemSheet;
+                    string itemName = itemSheet.GetRow((uint)item.Key).Name.ToString();
+                    sb.AppendLine($"                // {RemovePrivateUseChars(itemName)} (ID: {item.Key}) - Quantity: {item.Value}");
+                }
+                sb.AppendLine("            },");
+            }
+            else
+            {
+                sb.AppendLine("            // RequiredFish = new Dictionary<string, HashSet<uint>>(),");
+            }
+
+            // Add FishCountRequired - you might need to determine this from mission data
+            sb.AppendLine("            FishCountRequired = 0, // TODO: Set based on mission requirements");
+
+            // Add Bronze, Silver, Gold scores
+            sb.AppendLine($"            BronzeScore = 0, // TODO: Determine bronze requirement");
+
+            // Use existing Silver and Gold requirements if available
+            if (HasProperty(missionInfo, "SilverRequirement"))
+            {
+                sb.AppendLine($"            SilverScore = {missionInfo.SilverRequirement},");
+            }
+            else
+            {
+                sb.AppendLine("            SilverScore = 0,");
+            }
+
+            if (HasProperty(missionInfo, "GoldRequirement"))
+            {
+                sb.AppendLine($"            GoldScore = {missionInfo.GoldRequirement},");
+            }
+            else
+            {
+                sb.AppendLine("            GoldScore = 0,");
+            }
+
+            sb.AppendLine("        },");
+
+            return sb.ToString();
+        }
+
+        // Helper method to check if a dynamic object has a property
+        private static bool HasProperty(dynamic obj, string propertyName)
+        {
+            try
+            {
+                var value = obj.GetType().GetProperty(propertyName)?.GetValue(obj);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
