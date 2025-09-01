@@ -6,7 +6,7 @@ namespace ICE.Utilities;
 
 public static partial class CosmicHelper
 {
-    public static MissionListInfo CurrentMissionInfo => MissionInfoDict[CurrentLunarMission];
+    public static SheetMissionInfo CurrentMissionInfo => SheetMissionDict[CurrentLunarMission];
     public static MoonRecipieInfo CurrentMoonRecipe => MoonRecipies[CurrentLunarMission];
     /// <summary>
     /// Gives the current mission that is active

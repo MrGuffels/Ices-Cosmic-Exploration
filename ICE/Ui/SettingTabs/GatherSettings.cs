@@ -283,7 +283,7 @@ namespace ICE.Ui.SettingTabs
                 {
                     var id = mission.Key;
 
-                    var missionDict = CosmicHelper.MissionInfoDict[id];
+                    var missionDict = CosmicHelper.SheetMissionDict[id];
 
                     bool craftMission = missionDict.Attributes.HasFlag(MissionAttributes.Craft);
                     bool gatherMission = missionDict.Attributes.HasFlag(MissionAttributes.Gather);

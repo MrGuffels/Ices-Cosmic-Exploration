@@ -134,7 +134,7 @@ namespace ICE.Scheduler.Tasks
                     continue;
 
                 var missionId = mission.Key;
-                var MissionDictionary = CosmicHelper.MissionInfoDict.TryGetValue(missionId, out var missionInfo);
+                var MissionDictionary = CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo);
                 HashSet<uint> missionJobs = new HashSet<uint>();
                 missionJobs.Add(missionInfo.JobId);
                 if (missionInfo.JobId2 != 0)
@@ -470,7 +470,7 @@ namespace ICE.Scheduler.Tasks
                 foreach (var availMission in x.StellerMissions)
                 {
                     var id = availMission.MissionId;
-                    if (CosmicHelper.MissionInfoDict.TryGetValue(id, out var mission))
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var mission))
                     {
                         var missionConfig = C.MissionConfig[id];
 
@@ -531,7 +531,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
 
-                    if (CosmicHelper.MissionInfoDict.TryGetValue((uint)id, out var missionEntry))
+                    if (CosmicHelper.SheetMissionDict.TryGetValue((uint)id, out var missionEntry))
                     {
                         bool gatheringMission = missionEntry.Attributes.HasFlag(MissionAttributes.Gather) 
                                              || missionEntry.Attributes.HasFlag(MissionAttributes.Fish);
@@ -610,7 +610,7 @@ namespace ICE.Scheduler.Tasks
 
                 foreach (var mission in x.StellerMissions)
                 {
-                    var rank = CosmicHelper.MissionInfoDict[mission.MissionId].Rank;
+                    var rank = CosmicHelper.SheetMissionDict[mission.MissionId].Rank;
                     if (RankId.Contains(rank))
                         MissionKeeper[rank].Add(mission.MissionId);
                 }
@@ -720,7 +720,7 @@ namespace ICE.Scheduler.Tasks
                     var abandonMission = x.StellerMissions.Where(m => m.MissionId == missionToAbandon).First();
                     abandonMission.Select();
                     P.TaskManager.Insert(() => GrabMission(missionToAbandon, true), "Going to abandon mission now");
-                    IceLogging.Debug($"Attempting to abandon mission ID: {missionToAbandon} (Rank: {CosmicHelper.MissionInfoDict[missionToAbandon].Rank})");
+                    IceLogging.Debug($"Attempting to abandon mission ID: {missionToAbandon} (Rank: {CosmicHelper.SheetMissionDict[missionToAbandon].Rank})");
 
                     return true;
                 }
@@ -795,7 +795,7 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
-            var missionEntry = CosmicHelper.MissionInfoDict[missionId];
+            var missionEntry = CosmicHelper.SheetMissionDict[missionId];
             if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather) || missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it

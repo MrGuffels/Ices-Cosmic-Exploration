@@ -243,7 +243,7 @@ public sealed partial class ICE : IDalamudPlugin
             if (!PlayerHelper.IsInCosmicZone()) return;
 
             int missionId = int.Parse(subcommands[1]);
-            var info = MissionInfoDict.FirstOrDefault(mission => mission.Key == missionId);
+            var info = SheetMissionDict.FirstOrDefault(mission => mission.Key == missionId);
             if (info.Value == default) return;
             if (info.Value.MarkerId == 0) return;
 

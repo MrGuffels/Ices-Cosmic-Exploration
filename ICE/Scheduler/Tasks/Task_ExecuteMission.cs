@@ -21,7 +21,7 @@ namespace ICE.Scheduler.Tasks
             {
                 var missionId = CosmicHelper.CurrentLunarMission;
 
-                var mission = CosmicHelper.MissionInfoDict[missionId];
+                var mission = CosmicHelper.SheetMissionDict[missionId];
                 bool fishingMission = mission.Attributes.HasFlag(MissionAttributes.Fish);
 
                 if (fishingMission)

@@ -134,7 +134,7 @@ namespace ICE.Ui.DebugWindowTabs
                         MissionName = "";
                     else
                     {
-                        MissionName = CosmicHelper.MissionInfoDict[(uint)BestMission].Name;
+                        MissionName = CosmicHelper.SheetMissionDict[(uint)BestMission].Name;
                     }
                 }
 
@@ -201,7 +201,7 @@ namespace ICE.Ui.DebugWindowTabs
                 foreach (var availMission in x.StellerMissions)
                 {
                     var id = availMission.MissionId;
-                    if (CosmicHelper.MissionInfoDict.TryGetValue(id, out var mission))
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var mission))
                     {
                         var missionConfig = C.MissionConfig[id];
 

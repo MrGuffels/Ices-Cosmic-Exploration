@@ -124,7 +124,7 @@ namespace ICE.Ui
         private List<(uint id, bool gather, bool enabled)> SortMissionList(List<(uint id, bool gather, bool enabled)> missions)
         {
             int sortOption = missionSelectedOption;
-            var missionInfo = CosmicHelper.MissionInfoDict;
+            var missionInfo = CosmicHelper.SheetMissionDict;
 
             switch (sortOption)
             {
@@ -468,7 +468,7 @@ namespace ICE.Ui
                     missionType.Value.Clear();
                 }
 
-                foreach (var mission in CosmicHelper.MissionInfoDict)
+                foreach (var mission in CosmicHelper.SheetMissionDict)
                 {
                     HashSet<uint> Jobs = new HashSet<uint>();
                     Jobs.Add(mission.Value.JobId, mission.Value.JobId2);
@@ -601,7 +601,7 @@ namespace ICE.Ui
                     ImGui.Text($"Mission Info (More Detailed)");
                     ImGui.Separator();
 
-                    var mission = MissionInfoDict[selectedMission];
+                    var mission = SheetMissionDict[selectedMission];
 
                     var MissionInfo = new List<(string Label, string Value)>
                     {
@@ -697,7 +697,7 @@ namespace ICE.Ui
                         {
                             hasPreviousNotes = true;
 
-                            var (Id, Name) = MissionInfoDict.Where(m => m.Key == mission.PreviousMissionID).Select(m => (Id: m.Key, Name: m.Value.Name)).FirstOrDefault();
+                            var (Id, Name) = SheetMissionDict.Where(m => m.Key == mission.PreviousMissionID).Select(m => (Id: m.Key, Name: m.Value.Name)).FirstOrDefault();
                             ImGui.TextWrapped($"[{Id}] {Name}");
                         }
                         if (mission.JobId2 != 0)
@@ -921,7 +921,7 @@ namespace ICE.Ui
                 {
                     var Id = entry.id;
                     var missionConfig = C.MissionConfig[Id];
-                    var missionInfo = CosmicHelper.MissionInfoDict[Id];
+                    var missionInfo = CosmicHelper.SheetMissionDict[Id];
 
                     bool unsupported = UnsupportedMissions.Ids.Contains(Id);
 
@@ -1206,7 +1206,7 @@ namespace ICE.Ui
                             for (int i = 0; i < prevMissions.Count; i++)
                             {
                                 var prevMission = prevMissions[i];
-                                ImGui.Text($"{i + 1}: [{prevMission}] - {CosmicHelper.MissionInfoDict[prevMission].Name}");
+                                ImGui.Text($"{i + 1}: [{prevMission}] - {CosmicHelper.SheetMissionDict[prevMission].Name}");
                             }
                             ImGui.EndTooltip();
                         }
@@ -1372,7 +1372,7 @@ namespace ICE.Ui
                 foreach (var mission in C.MissionConfig)
                 {
                     var id = mission.Key;
-                    var missionDict = CosmicHelper.MissionInfoDict[id];
+                    var missionDict = CosmicHelper.SheetMissionDict[id];
                     bool selectedJob = (C.SelectedJob == missionDict.JobId || C.SelectedJob == missionDict.JobId2);
                     bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
 
@@ -1612,7 +1612,7 @@ namespace ICE.Ui
         }
         private List<uint> GetOnlyPreviousMissionsRecursive(uint missionId)
         {
-            if (!MissionInfoDict.TryGetValue(missionId, out var missionInfo) || missionInfo.PreviousMissionID == 0)
+            if (!SheetMissionDict.TryGetValue(missionId, out var missionInfo) || missionInfo.PreviousMissionID == 0)
                 return [];
 
             var chain = GetOnlyPreviousMissionsRecursive(missionInfo.PreviousMissionID);
@@ -1621,7 +1621,7 @@ namespace ICE.Ui
         }
         private List<uint> GetOnlyNextMissionsRecursive(uint missionId)
         {
-            uint? nextMissionId = MissionInfoDict
+            uint? nextMissionId = SheetMissionDict
                 .Where(m => m.Value.PreviousMissionID == missionId)
                 .Select(m => (uint?)m.Key)
                 .FirstOrDefault();

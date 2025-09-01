@@ -64,7 +64,7 @@ namespace ICE.Ui.DebugWindowTabs
             if (ImGui.Button("Apply Mission Presets"))
             {
                 P.AutoHook.DeleteAllAnonymousPresets();
-                var mission = CosmicHelper.MissionInfoDict[missionId];
+                var mission = CosmicHelper.SheetMissionDict[missionId];
                 if (mission != null)
                 {
                     if (mission.Attributes.HasFlag(MissionAttributes.Fish))

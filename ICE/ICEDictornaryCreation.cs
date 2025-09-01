@@ -354,9 +354,9 @@ public sealed partial class ICE
                 Exp.Add((ExpSheet.GetRow(keyId).Unknown14, ExpSheet.GetRow(keyId).Unknown4));
             }
 
-            if (!MissionInfoDict.ContainsKey(keyId))
+            if (!SheetMissionDict.ContainsKey(keyId))
             {
-                MissionInfoDict[keyId] = new MissionListInfo()
+                SheetMissionDict[keyId] = new SheetMissionInfo()
                 {
                     Name = LeveName,
                     JobId = ((uint)JobId),
@@ -422,7 +422,7 @@ public sealed partial class ICE
         if (OldConfig.Missions.Count == 0)
         {
             // fresh install?
-            OldConfig.Missions = [.. MissionInfoDict.Select(x => new CosmicMission()
+            OldConfig.Missions = [.. SheetMissionDict.Select(x => new CosmicMission()
         {
             Id = x.Key,
             Name = x.Value.Name,
@@ -434,7 +434,7 @@ public sealed partial class ICE
         }
         else
         {
-            var newMissions = MissionInfoDict.Where(x => !OldConfig.Missions.Any(y => y.Id == x.Key)).Select(x => new CosmicMission()
+            var newMissions = SheetMissionDict.Where(x => !OldConfig.Missions.Any(y => y.Id == x.Key)).Select(x => new CosmicMission()
             {
                 Id = x.Key,
                 Name = x.Value.Name,
@@ -450,7 +450,7 @@ public sealed partial class ICE
             }
         }
 
-        foreach (var entry in MissionInfoDict)
+        foreach (var entry in SheetMissionDict)
         {
             var id = entry.Key;
             entry.Value.missionScore = MissionScoreDict[id];
@@ -462,6 +462,9 @@ public sealed partial class ICE
             if (itemId == 0) continue;
             string itemName = ItemSheet.GetRow(itemId).Name.ToString();
             var type = item.WKSItemSubCategory.RowId;
+#if DEBUG
+            IceLogging.Debug($"RowID: {item.RowId} | ID: {itemId} | Name: {itemName}");
+#endif
 
             if (CosmicHelper.GatheringItems.TryGetValue(itemName, out var itemEntry))
             {
@@ -469,6 +472,10 @@ public sealed partial class ICE
             }
             else
             {
+#if DEBUG
+                IceLogging.Debug($"Adding a new entry: {itemName}");
+#endif
+
                 CosmicHelper.GatheringItems[itemName] = new()
                 {
                     Type = item.WKSItemSubCategory.RowId,
@@ -477,7 +484,7 @@ public sealed partial class ICE
             }
         }
     }
-    private static MissionType GetMissionType(MissionListInfo mission)
+    private static MissionType GetMissionType(SheetMissionInfo mission)
     {
         if (mission.Attributes.HasFlag(Critical))
         {

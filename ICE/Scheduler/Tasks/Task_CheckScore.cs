@@ -27,7 +27,7 @@ namespace ICE.Scheduler.Tasks
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {
                 uint currentMission = CosmicHelper.CurrentLunarMission;
-                var missionEntry = CosmicHelper.MissionInfoDict[currentMission];
+                var missionEntry = CosmicHelper.SheetMissionDict[currentMission];
                 bool canTurnin = true;
                 bool gatherMission = missionEntry.Attributes.HasFlag(MissionAttributes.Gather) || missionEntry.Attributes.HasFlag(MissionAttributes.Fish);
 

@@ -33,7 +33,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             if (ImGui.Button("Export Fishing Missions"))
             {
-                var fishingMissions = CosmicHelper.MissionInfoDict
+                var fishingMissions = CosmicHelper.SheetMissionDict
                     .Where(kvp => kvp.Value.Attributes.HasFlag(MissionAttributes.Fish)) // Adjust flag name as needed
                     .OrderBy(kvp => kvp.Key) // Optional: sort by mission ID
                     .Select(kvp => $"    [{kvp.Key}] = \"\",")
@@ -103,7 +103,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 ImGui.TableHeadersRow();
 
-                foreach (var entry in CosmicHelper.MissionInfoDict)
+                foreach (var entry in CosmicHelper.SheetMissionDict)
                 {
                     // Case-insensitive name search
                     if (!string.IsNullOrEmpty(CraftingTableSearchText) &&
@@ -390,7 +390,7 @@ namespace ICE.Ui.DebugWindowTabs
             sb.AppendLine("public static Dictionary<uint, uint> MissionScoreDict = new Dictionary<uint, uint>");
             sb.AppendLine("{");
 
-            foreach (var kvp in CosmicHelper.MissionInfoDict)
+            foreach (var kvp in CosmicHelper.SheetMissionDict)
             {
                 sb.AppendLine($"    [{kvp.Key}] = {kvp.Value.missionScore},");
             }

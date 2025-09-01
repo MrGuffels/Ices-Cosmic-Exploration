@@ -42,7 +42,7 @@ namespace ICE.Utilities
 
             uint classId;
             if (currentMissionId > 0 &&
-                CosmicHelper.MissionInfoDict.TryGetValue(currentMissionId, out var missionInfo))
+                CosmicHelper.SheetMissionDict.TryGetValue(currentMissionId, out var missionInfo))
                 classId = missionInfo.JobId;
             else
                 classId = (uint)(Svc.ClientState.LocalPlayer?.ClassJob.RowId);

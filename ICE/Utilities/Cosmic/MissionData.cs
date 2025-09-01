@@ -37,7 +37,7 @@ public static unsafe partial class CosmicHelper
     /// <b>- Row 7:</b> Mission time limit (seconds) <br />
     /// <b>- Row 18:</b> Recipe # → Corresponds to the RecipeID
     /// </summary>
-    public class MissionListInfo
+    public class SheetMissionInfo
     {
         public string Name { get; set; }
         public uint JobId { get; set; }
@@ -66,7 +66,7 @@ public static unsafe partial class CosmicHelper
         public HashSet<uint> StartingItems { get; set; } = new HashSet<uint>();
     }
 
-    public static Dictionary<uint, MissionListInfo> MissionInfoDict = [];
+    public static Dictionary<uint, SheetMissionInfo> SheetMissionDict = [];
     public class MoonRecipieInfo
     {
         public Dictionary<ushort, int> MainCraftsDict = [];
@@ -642,29 +642,16 @@ public static unsafe partial class CosmicHelper
     }
     public static Dictionary<string, GatherItemInfo> GatheringItems = new();
 
-    public class FishingMissionInfo
-    {
-        public Dictionary<string, HashSet<uint>> fishingItems { get; set; } = new();
-        public int amount { get; set; } = 0;
-    }
-
-    /// <summary>
-    /// Key: MissionId
-    /// Value: 
-    /// </summary>
-    public static Dictionary<uint, FishingMissionInfo> CustomFishDict = new()
-    {
-
-    };
-
     public class XPType
     {
         public int CurrentXP { get; set; }
         public int NeededXP { get; set; }
     }
 
-    public class FishingInfo
+    public class CosmicInfo
     {
+        // - - - Fishing Specific - - - //
+
         /// <summary>
         /// Applies to: ScoreTimeRemaining | Score Variety <br></br>
         /// The required fish that can complete the conditions for either of these attributes
@@ -675,23 +662,37 @@ public static unsafe partial class CosmicHelper
         /// Applies to: ScoreTimeRemaining | ScoreVariety
         /// </summary>
         public uint FishCountRequired { get; set; } = 0;
-        /// <summary>
-        /// Minimim score that is required to turnin
-        /// </summary>
+        public Dictionary<string, HashSet<uint>> FishingBait { get; set; } = new();
+
+        // - - - Crafter Specific - - - //
+        public Dictionary<ushort, int> Crafts_Main { get; set; } = new();
+        public Dictionary<ushort, int> Crafts_Pre { get; set; } = new();
+
+        // - - - BTN | MIN Specific - - - //
+        public Dictionary<uint, int> Gathering_Min { get; set; } = new();
+
+        // - - - Map Related - - - // 
+        public Vector2 MapPosition { get; set; } = new();
+        public int Radius { get; set; } = 0;
+        public uint TerritoryId { get; set; }
+
+        // - - - Universal Info - - - //
+        public MissionAttributes Attributes { get; set; }
+        public CosmicWeather Weather { get; set; }
+        public HashSet<uint> Jobs { get; set; } = new();
+        public uint ClassScore { get; set; } = 0;
+        public uint CosmoCredit { get; set; } = 0;
+        public uint LunarCredit { get; set; } = 0;
+        public HashSet<uint> PreviousMissions { get; set; } = new();
+        public Dictionary<int, int> RelicXpInfo { get; set; } = new();
         public uint BronzeScore { get; set; } = 0;
-        /// <summary>
-        /// Silver score requirement
-        /// </summary>
         public uint SilverScore { get; set; } = 0;
-        /// <summary>
-        /// Gold score requirement
-        /// </summary>
         public uint GoldScore { get; set; } = 0;
     }
 
-    public static Dictionary<uint, FishingInfo> FishingMission = new()
+    public static Dictionary<uint, CosmicInfo> Dict_CosmicMissions = new()
     {
-        [451] = new FishingInfo
+        [451] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -704,32 +705,32 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [452] = new FishingInfo
+        [452] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 540,
             SilverScore = 630,
             GoldScore = 1280,
         },
-        [453] = new FishingInfo
+        [453] = new CosmicInfo
         {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Cobalt Eel"] = new HashSet<uint> { 45701 },
-            },
-            FishCountRequired = 0,
+            FishCountRequired = 1,
             BronzeScore = 0,
             SilverScore = 0,
             GoldScore = 0,
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Cobalt Eel"] = new HashSet<uint> { 45701 },
+            }
         },
-        [454] = new FishingInfo
+        [454] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 1000,
             SilverScore = 1300,
             GoldScore = 1500,
         },
-        [455] = new FishingInfo
+        [455] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -742,21 +743,21 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [456] = new FishingInfo
+        [456] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 2000,
             SilverScore = 5200,
             GoldScore = 5500,
         },
-        [457] = new FishingInfo
+        [457] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 1570,
             SilverScore = 2040,
             GoldScore = 3690,
         },
-        [458] = new FishingInfo
+        [458] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -768,35 +769,42 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [459] = new FishingInfo
+        [459] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 1000,
             SilverScore = 1500,
             GoldScore = 2000,
         },
-        [460] = new FishingInfo
+        [460] = new CosmicInfo
         {
             FishCountRequired = 2,
             BronzeScore = 0,
             SilverScore = 3000,
             GoldScore = 4000,
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Lunar Sole"] = new HashSet<uint> { 45725 },
+                ["Silver Sturgeon"] = new HashSet<uint> { 45726 },
+                ["Pinkmoon Cichlid"] = new HashSet<uint> { 45724 },
+                ["Star Pleco"] = new HashSet<uint> { 45702, 45711, 45723, 45769, 45820, 45841, 45913 },
+            }
         },
-        [461] = new FishingInfo
+        [461] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 20000,
             SilverScore = 31000,
             GoldScore = 37000,
         },
-        [462] = new FishingInfo
+        [462] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 200,
             SilverScore = 300,
             GoldScore = 1000,
         },
-        [463] = new FishingInfo
+        [463] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -810,7 +818,7 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [464] = new FishingInfo
+        [464] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -821,14 +829,14 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [465] = new FishingInfo
+        [465] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 3000,
             SilverScore = 3500,
             GoldScore = 3700,
         },
-        [466] = new FishingInfo
+        [466] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -843,21 +851,21 @@ public static unsafe partial class CosmicHelper
             SilverScore = 4000,
             GoldScore = 5000,
         },
-        [467] = new FishingInfo
+        [467] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 3690,
             SilverScore = 5540,
             GoldScore = 6280,
         },
-        [468] = new FishingInfo
+        [468] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 2400,
             SilverScore = 3800,
             GoldScore = 4500,
         },
-        [469] = new FishingInfo
+        [469] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -872,7 +880,7 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [470] = new FishingInfo
+        [470] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -886,14 +894,14 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [471] = new FishingInfo
+        [471] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 35000,
             SilverScore = 44000,
             GoldScore = 50000,
         },
-        [472] = new FishingInfo
+        [472] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -904,14 +912,14 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [473] = new FishingInfo
+        [473] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 1500,
             SilverScore = 3000,
             GoldScore = 3500,
         },
-        [474] = new FishingInfo
+        [474] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -926,42 +934,75 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [475] = new FishingInfo
+        [475] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 5500,
             SilverScore = 7200,
             GoldScore = 7700,
         },
-        [476] = new FishingInfo
+        [476] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 5000,
             SilverScore = 10000,
             GoldScore = 15000,
         },
-        [477] = new FishingInfo
+        [477] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 7730,
             SilverScore = 10240,
             GoldScore = 10260,
         },
-        [478] = new FishingInfo
+        [478] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 30000,
             SilverScore = 34000,
             GoldScore = 36000,
         },
-        [479] = new FishingInfo
+        [479] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 1500,
             SilverScore = 2250,
             GoldScore = 2650,
         },
-        [483] = new FishingInfo
+        [480] = new CosmicInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Arsenic Axolotl"] = new HashSet<uint> { 45836, 45883 },
+                ["Sunny Jellyfish"] = new HashSet<uint> { 45837, 45884 },
+                ["Universal Darkfin"] = new HashSet<uint> { 45838, 45885 },
+                ["Etheirys Croppie"] = new HashSet<uint> { 45839 },
+                ["Moon Mora"] = new HashSet<uint> { 45840 },
+            },
+            FishCountRequired = 18,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [481] = new CosmicInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Eyeballingway"] = new HashSet<uint> { 45870 },
+            },
+            FishCountRequired = 1,
+            BronzeScore = 0,
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [482] = new CosmicInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 4660,
+            SilverScore = 8500,
+            GoldScore = 8550,
+        },
+        [483] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -977,129 +1018,7 @@ public static unsafe partial class CosmicHelper
             SilverScore = 5000,
             GoldScore = 6000,
         },
-        [485] = new FishingInfo
-        {
-            FishCountRequired = 0,
-            BronzeScore = 4510,
-            SilverScore = 6500,
-            GoldScore = 6540,
-        },
-        [488] = new FishingInfo
-        {
-            FishCountRequired = 0,
-            BronzeScore = 11700,
-            SilverScore = 12200,
-            GoldScore = 12900,
-        },
-
-        // Dual Class Missions
-        [508] = new FishingInfo
-        {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Heavy Ataxite"] = new HashSet<uint> { 45917 },
-            },
-            FishCountRequired = 7,
-            BronzeScore = 900,
-            SilverScore = 1800,
-            GoldScore = 2700,
-        },
-        [509] = new FishingInfo
-        {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Hopping Lungfish"] = new HashSet<uint> { 45922 },
-            },
-            FishCountRequired = 1, // TODO: Set based on mission requirements
-            BronzeScore = 900, // TODO: Determine bronze requirement
-            SilverScore = 1800,
-            GoldScore = 2700,
-        },
-
-        // Time-Restricted
-        [490] = new FishingInfo
-        {
-            FishCountRequired = 0,
-            BronzeScore = 4800,
-            SilverScore = 4830,
-            GoldScore = 9240,
-        },
-        [493] = new FishingInfo
-        {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Ctenophora Lunaris"] = new HashSet<uint> { 45831, 45889, 45907 },
-                ["Protomyke #721"] = new HashSet<uint> { 45832, 45890, 45908 },
-                ["Argonauta Lunaris"] = new HashSet<uint> { 45833, 45891, 45909 },
-                ["Aetherial Sword"] = new HashSet<uint> { 45892, 45910 },
-                ["Macropinna"] = new HashSet<uint> { 45911 },
-                ["Deepmoon Seadragon"] = new HashSet<uint> { 45912 },
-            },
-            FishCountRequired = 18, // TODO: Set based on mission requirements
-            BronzeScore = 0, // TODO: Determine bronze requirement
-            SilverScore = 0,
-            GoldScore = 0,
-        },
-
-        // Weather Missions
-        [480] = new FishingInfo
-        {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Arsenic Axolotl"] = new HashSet<uint> { 45836, 45883 },
-                ["Sunny Jellyfish"] = new HashSet<uint> { 45837, 45884 },
-                ["Universal Darkfin"] = new HashSet<uint> { 45838, 45885 },
-                ["Etheirys Croppie"] = new HashSet<uint> { 45839 },
-                ["Moon Mora"] = new HashSet<uint> { 45840 },
-            },
-            FishCountRequired = 18,
-            BronzeScore = 0,
-            SilverScore = 0,
-            GoldScore = 0,
-        },
-        [481] = new FishingInfo
-        {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Eyeballingway"] = new HashSet<uint> { 45870 },
-            },
-            FishCountRequired = 1,
-            BronzeScore = 0,
-            SilverScore = 0,
-            GoldScore = 0,
-        },
-        [482] = new FishingInfo
-        {
-            FishCountRequired = 0,
-            BronzeScore = 4660,
-            SilverScore = 8500,
-            GoldScore = 8550,
-        },
-        [510] = new FishingInfo
-        {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Raw Moonbright Tourmaline"] = new HashSet<uint> { 45928 },
-            },
-            FishCountRequired = 7, // TODO: Set based on mission requirements
-            BronzeScore = 900, // TODO: Determine bronze requirement
-            SilverScore = 1800,
-            GoldScore = 2700,
-        },
-        [511] = new FishingInfo
-        {
-            RequiredFish = new Dictionary<string, HashSet<uint>>
-            {
-                ["Hollow Eel"] = new HashSet<uint> { 45934 },
-            },
-            FishCountRequired = 1,
-            BronzeScore = 900,
-            SilverScore = 1800,
-            GoldScore = 2700,
-        },
-
-        // Sequence
-        [484] = new FishingInfo
+        [484] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -1110,7 +1029,14 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [486] = new FishingInfo
+        [485] = new CosmicInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 4510,
+            SilverScore = 6500,
+            GoldScore = 6540,
+        },
+        [486] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -1125,21 +1051,35 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [487] = new FishingInfo
+        [487] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 7900,
             SilverScore = 9600,
             GoldScore = 12300,
         },
-        [489] = new FishingInfo
+        [488] = new CosmicInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 11700,
+            SilverScore = 12200,
+            GoldScore = 12900,
+        },
+        [489] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 2250,
             SilverScore = 3050,
             GoldScore = 3450,
         },
-        [491] = new FishingInfo
+        [490] = new CosmicInfo
+        {
+            FishCountRequired = 0,
+            BronzeScore = 4800,
+            SilverScore = 4830,
+            GoldScore = 9240,
+        },
+        [491] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -1155,14 +1095,30 @@ public static unsafe partial class CosmicHelper
             SilverScore = 5000,
             GoldScore = 6000,
         },
-        [492] = new FishingInfo
+        [492] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 11570,
             SilverScore = 11640,
             GoldScore = 23140,
         },
-        [494] = new FishingInfo
+        [493] = new CosmicInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Ctenophora Lunaris"] = new HashSet<uint> { 45831, 45889, 45907 },
+                ["Protomyke #721"] = new HashSet<uint> { 45832, 45890, 45908 },
+                ["Argonauta Lunaris"] = new HashSet<uint> { 45833, 45891, 45909 },
+                ["Aetherial Sword"] = new HashSet<uint> { 45892, 45910 },
+                ["Macropinna"] = new HashSet<uint> { 45911 },
+                ["Deepmoon Seadragon"] = new HashSet<uint> { 45912 },
+            },
+            FishCountRequired = 18, // TODO: Set based on mission requirements
+            BronzeScore = 0, // TODO: Determine bronze requirement
+            SilverScore = 0,
+            GoldScore = 0,
+        },
+        [494] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -1178,16 +1134,58 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [495] = new FishingInfo
+        [495] = new CosmicInfo
         {
             FishCountRequired = 0,
             BronzeScore = 6000,
             SilverScore = 8000,
             GoldScore = 20000,
         },
-
-        // Critical Engagements
-        [542] = new FishingInfo
+        [508] = new CosmicInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Heavy Ataxite"] = new HashSet<uint> { 45917 },
+            },
+            FishCountRequired = 7,
+            BronzeScore = 900,
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+        [509] = new CosmicInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Hopping Lungfish"] = new HashSet<uint> { 45922 },
+            },
+            FishCountRequired = 1, // TODO: Set based on mission requirements
+            BronzeScore = 900, // TODO: Determine bronze requirement
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+        [510] = new CosmicInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Raw Moonbright Tourmaline"] = new HashSet<uint> { 45928 },
+            },
+            FishCountRequired = 7, // TODO: Set based on mission requirements
+            BronzeScore = 900, // TODO: Determine bronze requirement
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+        [511] = new CosmicInfo
+        {
+            RequiredFish = new Dictionary<string, HashSet<uint>>
+            {
+                ["Hollow Eel"] = new HashSet<uint> { 45934 },
+            },
+            FishCountRequired = 1,
+            BronzeScore = 900,
+            SilverScore = 1800,
+            GoldScore = 2700,
+        },
+        [542] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -1198,7 +1196,7 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [543] = new FishingInfo
+        [543] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {
@@ -1209,7 +1207,7 @@ public static unsafe partial class CosmicHelper
             SilverScore = 0,
             GoldScore = 0,
         },
-        [544] = new FishingInfo
+        [544] = new CosmicInfo
         {
             RequiredFish = new Dictionary<string, HashSet<uint>>
             {

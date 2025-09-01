@@ -100,7 +100,7 @@ namespace ICE.Scheduler.Tasks
             SchedulerMain.MissionState = MissionAttributes.None;
 
             // Grabbing the mission info from the dictionary entry
-            var missionDictInfo = CosmicHelper.MissionInfoDict[missionId];
+            var missionDictInfo = CosmicHelper.SheetMissionDict[missionId];
 
             // Updating the Mission state to be the same as the current mission that's fired.
             SchedulerMain.MissionState = missionDictInfo.Attributes;

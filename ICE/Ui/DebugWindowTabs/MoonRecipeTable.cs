@@ -29,7 +29,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 ImGui.TableHeadersRow();
 
-                var recipeList = CosmicHelper.MoonRecipies.Where(recipe => CosmicHelper.MissionInfoDict.First(x => x.Key == recipe.Key).Value.Name.ToLower().Contains(RecipeTableSearchText.ToLower()));
+                var recipeList = CosmicHelper.MoonRecipies.Where(recipe => CosmicHelper.SheetMissionDict.First(x => x.Key == recipe.Key).Value.Name.ToLower().Contains(RecipeTableSearchText.ToLower()));
                 foreach (var entry in recipeList)
                 {
                     ImGui.TableNextRow();
@@ -38,7 +38,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"{entry.Key}");
 
                     ImGui.TableNextColumn();
-                    var missionName = CosmicHelper.MissionInfoDict.First(x => x.Key == entry.Key).Value.Name;
+                    var missionName = CosmicHelper.SheetMissionDict.First(x => x.Key == entry.Key).Value.Name;
                     ImGui.Text($"{missionName}");
 
                     ImGui.TableNextColumn();
