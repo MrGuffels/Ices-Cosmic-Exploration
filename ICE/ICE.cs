@@ -124,6 +124,7 @@ public sealed partial class ICE : IDalamudPlugin
         };
         DictionaryCreation();
         TaskGamba.EnsureGambaWeightsInitialized();
+        ConfigMigrator.UpdateConfigMissionList();
         ConfigMigrator.MigrateConfigv1();
     }
 

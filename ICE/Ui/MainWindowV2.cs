@@ -656,6 +656,9 @@ namespace ICE.Ui
                                     type = "III";
                                 else if (row.Type == 4)
                                     type = "IV";
+                                else if (row.Type == 5)
+                                    type = "V";
+
                                 ImGui.Text($"Lv {type}:");
 
                                 ImGui.TableSetColumnIndex(1);
@@ -881,7 +884,7 @@ namespace ICE.Ui
         private void MissionInfoV2(string tableName, List<(uint id, bool ShowGather, bool enabled)> missions)
         {
             // Fixed column count - include ALL possible columns
-            int totalColumns = 14; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
+            int totalColumns = 15; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                                         ImGuiTableFlags.Borders |

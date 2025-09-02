@@ -200,6 +200,19 @@ namespace ICE.Config
             }
         }
 
+        public static void UpdateConfigMissionList()
+        {
+            foreach (var entry in CosmicHelper.SheetMissionDict)
+            {
+                var id = entry.Key;
+                if (!C.MissionConfig.ContainsKey(id))
+                {
+                    C.MissionConfig[id] = new MissionSettings();
+                    C.Save();
+                }
+            }
+        }
+
         private static void SetBuff(GatherBuff buff, bool enabled, int minGp, int maxUse)
         {
             buff.Enabled = enabled;

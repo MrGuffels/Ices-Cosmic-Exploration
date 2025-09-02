@@ -453,7 +453,14 @@ public sealed partial class ICE
         foreach (var entry in SheetMissionDict)
         {
             var id = entry.Key;
-            entry.Value.missionScore = MissionScoreDict[id];
+            if (MissionScoreDict.TryGetValue(id, out var missionEntry))
+            {
+                entry.Value.missionScore = MissionScoreDict[id];
+            }
+            else
+            {
+                entry.Value.missionScore = 0;
+            }
         }
 
         foreach (var item in MoonItemInfoSheet)
