@@ -7,9 +7,9 @@ namespace ICE.Scheduler.Tasks.OldTask
     {
         public static void GatherCheck()
         {
-            var currentJob = PlayerHelper.GetClassJobId();
+            var currentJob = PlayerHelper.GetClassJobId().Value;
 
-            if (CosmicHelper.GatheringJobList.Contains((int)currentJob))
+            if (CosmicHelper.GatheringJobList.Contains(currentJob))
             {
                 if (OldConfig.SelfRepairGather && PlayerHelper.NeedsRepair(OldConfig.RepairPercent))
                 {

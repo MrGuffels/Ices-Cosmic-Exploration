@@ -242,9 +242,9 @@ namespace ICE.Ui.DebugWindowTabs
                         if (IgnoreNotEnabled) continue;
 
                         Dictionary<int, float> rewardDict = new();
-                        foreach (var reward in mission.ExperienceRewards)
+                        foreach (var reward in mission.RelicXpInfo.OrderBy(x => x.Key))
                         {
-                            rewardDict[reward.Type] = reward.Amount;
+                            rewardDict[reward.Key] = reward.Value;
                         }
                         rewardMissions[id] = rewardDict;
                     }

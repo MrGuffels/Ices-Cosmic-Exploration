@@ -13,7 +13,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (PlayerHelper.NeedsRepair(C.RepairPercent))
             {
-                var currentJob = PlayerHelper.GetClassJobId();
+                var currentJob = PlayerHelper.GetClassJobId().Value;
 
                 if (C.RepairAtVendor)
                 {
@@ -24,8 +24,8 @@ namespace ICE.Scheduler.Tasks
                         new(CloseRepair, "Closing the repair window")
                         );
                 }
-                else if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains((int)currentJob)) 
-                       || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains((int)currentJob)))
+                else if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(currentJob)) 
+                       || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(currentJob)))
                 {
                     P.TaskManager.EnqueueMulti
                     (

@@ -136,9 +136,7 @@ namespace ICE.Scheduler.Tasks
                 var missionId = mission.Key;
                 var MissionDictionary = CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo);
                 HashSet<uint> missionJobs = new HashSet<uint>();
-                missionJobs.Add(missionInfo.JobId);
-                if (missionInfo.JobId2 != 0)
-                    missionJobs.Add(missionInfo.JobId2);
+                missionJobs = missionInfo.Jobs;
                 if (!missionJobs.Contains(currentJobId.Value))
                     continue;
 
@@ -506,9 +504,9 @@ namespace ICE.Scheduler.Tasks
                         if (IgnoreNotEnabled) continue;
 
                         Dictionary<int, float> rewardDict = new();
-                        foreach (var reward in mission.ExperienceRewards)
+                        foreach (var reward in mission.RelicXpInfo.OrderBy(x => x.Key))
                         {
-                            rewardDict[reward.Type] = reward.Amount;
+                            rewardDict[reward.Key] = reward.Value;
                         }
                         rewardMissions[id] = rewardDict;
                     }

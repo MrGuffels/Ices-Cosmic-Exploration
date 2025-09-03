@@ -41,11 +41,14 @@ namespace ICE.Utilities
             var currentMissionId = wksManager->CurrentMissionUnitRowId;
 
             uint classId;
+            /*
+             * Unsure how to handle this right now... doesn't work with dual classes. Might need to just generally go back and figure out how to view this
             if (currentMissionId > 0 &&
                 CosmicHelper.SheetMissionDict.TryGetValue(currentMissionId, out var missionInfo))
                 classId = missionInfo.JobId;
             else
-                classId = (uint)(Svc.ClientState.LocalPlayer?.ClassJob.RowId);
+            */
+            classId = (uint)(Svc.ClientState.LocalPlayer?.ClassJob.RowId);
 
             if (classId is >= 8 and <= 18)
             {

@@ -11,8 +11,8 @@ public static unsafe partial class CosmicHelper
     public static readonly HashSet<uint> Ranks = [1, 2, 3, 4];
     public static readonly HashSet<uint> ARankIds = [4, 5, 6];
 
-    public static readonly HashSet<int> CrafterJobList = [8, 9, 10, 11, 12, 13, 14, 15];
-    public static readonly HashSet<int> GatheringJobList = [16, 17, 18];
+    public static readonly HashSet<uint> CrafterJobList = [8, 9, 10, 11, 12, 13, 14, 15];
+    public static readonly HashSet<uint> GatheringJobList = [16, 17, 18];
 
     public static readonly HashSet<int> WeatherMissionList = [30, 31, 32,];
     public static readonly HashSet<int> TimedMissionList = [40, 43,];
@@ -43,39 +43,56 @@ public static unsafe partial class CosmicHelper
     /// <b>- Row 7:</b> Mission time limit (seconds) <br />
     /// <b>- Row 18:</b> Recipe # → Corresponds to the RecipeID
     /// </summary>
-    public class SheetMissionInfo
+
+    public class CosmicInfo
     {
-        public string Name { get; set; }
-        public uint JobId { get; set; }
-        public uint JobId2 { get; set; } = 0;
-        public uint JobId3 { get; set; } = 0;
-        public uint ToDoSlot { get; set; }
-        public uint Rank { get; set; }
+        // - - - Fishing Specific - - - //
+
+        /// <summary>
+        /// Applies to: ScoreTimeRemaining | Score Variety <br></br>
+        /// The required fish that can complete the conditions for either of these attributes
+        /// </summary>
+        public Dictionary<string, HashSet<uint>> RequiredFish { get; set; } = new();
+        /// <summary>
+        /// If a mission is a timed based mission (aka. Gather x amount of fish within a certain amount of time) <br></br>
+        /// Applies to: ScoreTimeRemaining | ScoreVariety
+        /// </summary>
+        public uint FishCountRequired { get; set; } = 0;
+        public Dictionary<string, HashSet<uint>> FishingBait { get; set; } = new();
+
+        // - - - Crafter Specific - - - //
+        public Dictionary<ushort, int> Crafts_Main { get; set; } = new();
+        public Dictionary<ushort, int> Crafts_Pre { get; set; } = new();
+
+        // - - - BTN | MIN Specific - - - //
+        public Dictionary<uint, int> Gathering_Min { get; set; } = new();
+
+        // - - - Map Related - - - // 
+        public Vector2 MapPosition { get; set; } = new();
+        public int Radius { get; set; } = 0;
+        public uint TerritoryId { get; set; }
+        public uint MarkerId { get; set; }
+
+        // - - - Universal Info - - - //
+        public string Name { get; set; } = "";
+        public HashSet<uint> Jobs { get; set; } = new();
+        public uint ToDoId { get; set; } = 0;
+        public uint Rank { get; set; } = 1;
         public MissionAttributes Attributes { get; set; }
-        public uint TimeLimit { get; set; }
+        public CosmicWeather Weather { get; set; }
         public uint StartTime { get; set; }
         public uint EndTime { get; set; }
-        public uint TimeStart { get; set; }
-        public uint TimeEnd { get; set; }
-        public CosmicWeather Weather { get; set; }
-        public uint RecipeId { get; set; } = 0;
-        public uint BronzeRequirement { get; set; }
-        public uint SilverRequirement { get; set; }
-        public uint GoldRequirement { get; set; }
-        public uint CosmoCredit { get; set; }
-        public uint LunarCredit { get; set; }
-        public uint missionScore { get; set; } = 0;
-        public uint PreviousMissionID { get; set; }
-        public uint MarkerId { get; set; }
-        public uint TerritoryId { get; set; }
-        public Vector2 MapPosition { get; set; } = new Vector2();
-        public int Radius { get; set; }
-        public uint NodeSet { get; set; }
-        public List<(int Type, int Amount)> ExperienceRewards { get; set; }
-        public HashSet<uint> StartingItems { get; set; } = new HashSet<uint>();
+        public uint ClassScore { get; set; } = 0;
+        public uint CosmoCredit { get; set; } = 0;
+        public uint LunarCredit { get; set; } = 0;
+        public HashSet<uint> PreviousMissions { get; set; } = new();
+        public Dictionary<int, int> RelicXpInfo { get; set; } = new();
+        public uint BronzeScore { get; set; } = 0;
+        public uint SilverScore { get; set; } = 0;
+        public uint GoldScore { get; set; } = 0;
     }
 
-    public static Dictionary<uint, SheetMissionInfo> SheetMissionDict = [];
+    public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();
     public class MoonRecipieInfo
     {
         public Dictionary<ushort, int> MainCraftsDict = [];
@@ -655,50 +672,6 @@ public static unsafe partial class CosmicHelper
     {
         public int CurrentXP { get; set; }
         public int NeededXP { get; set; }
-    }
-
-    public class CosmicInfo
-    {
-        // - - - Fishing Specific - - - //
-
-        /// <summary>
-        /// Applies to: ScoreTimeRemaining | Score Variety <br></br>
-        /// The required fish that can complete the conditions for either of these attributes
-        /// </summary>
-        public Dictionary<string, HashSet<uint>> RequiredFish { get; set; } = new();
-        /// <summary>
-        /// If a mission is a timed based mission (aka. Gather x amount of fish within a certain amount of time) <br></br>
-        /// Applies to: ScoreTimeRemaining | ScoreVariety
-        /// </summary>
-        public uint FishCountRequired { get; set; } = 0;
-        public Dictionary<string, HashSet<uint>> FishingBait { get; set; } = new();
-
-        // - - - Crafter Specific - - - //
-        public Dictionary<ushort, int> Crafts_Main { get; set; } = new();
-        public Dictionary<ushort, int> Crafts_Pre { get; set; } = new();
-
-        // - - - BTN | MIN Specific - - - //
-        public Dictionary<uint, int> Gathering_Min { get; set; } = new();
-
-        // - - - Map Related - - - // 
-        public Vector2 MapPosition { get; set; } = new();
-        public int Radius { get; set; } = 0;
-        public uint TerritoryId { get; set; }
-
-        // - - - Universal Info - - - //
-        public MissionAttributes Attributes { get; set; }
-        public CosmicWeather Weather { get; set; }
-        public uint StartTime { get; set; }
-        public uint EndTime { get; set; }
-        public HashSet<uint> Jobs { get; set; } = new();
-        public uint ClassScore { get; set; } = 0;
-        public uint CosmoCredit { get; set; } = 0;
-        public uint LunarCredit { get; set; } = 0;
-        public HashSet<uint> PreviousMissions { get; set; } = new();
-        public Dictionary<int, int> RelicXpInfo { get; set; } = new();
-        public uint BronzeScore { get; set; } = 0;
-        public uint SilverScore { get; set; } = 0;
-        public uint GoldScore { get; set; } = 0;
     }
 
     public static Dictionary<uint, CosmicInfo> Dict_CosmicMissions = new()

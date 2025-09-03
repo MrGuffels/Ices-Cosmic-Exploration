@@ -15,33 +15,34 @@ public sealed partial class ICE
 
         var wk = WKSManager.Instance();
 
-        foreach (var item in MoonMissionSheet)
+        foreach (var entry in MoonMissionSheet)
         {
-            List<(int Type, int Amount)> Exp = [];
-            Dictionary<ushort, int> MainItems = [];
-            Dictionary<ushort, int> PreCrafts = [];
-            Dictionary<uint, int> GatherItems = [];
-            uint keyId = item.RowId;
-            string LeveName = item.Name.ToString();
+            Dictionary<ushort, int> crafts_Main = new();
+            Dictionary<ushort, int> crafts_Pre = new();
+            Dictionary<uint, int> gathering_Min = new();
+            HashSet<uint> jobs = new();
+            Dictionary<int, int> relicXp = new();
+
+            uint keyId = entry.RowId;
+            string LeveName = entry.Name.ToString();
             LeveName = LeveName.Replace("<nbsp>", " ");
             LeveName = LeveName.Replace("<->", "");
 
             if (LeveName == "")
                 continue;
 
-
-            int JobId = (int)item.ClassJobCategory[0].RowId - 1;
-            int Job2 = (int)item.ClassJobCategory[1].RowId;
+            jobs.Add(entry.ClassJobCategory[0].RowId - 1);
+            var Job2 = entry.ClassJobCategory[1].RowId;
             if (Job2 != 0)
             {
-                Job2 = Job2 - 1;
+                jobs.Add(Job2 - 1);
             }
-            uint timeLimit = item.MissionTime;
-            uint silver = item.SilverStarRequirement;
-            uint gold = item.GoldStarRequirement;
-            uint previousMissionId = item.LockedBehind.RowId;
+            uint timeLimit = entry.MissionTime;
+            uint silver = entry.SilverStarRequirement;
+            uint gold = entry.GoldStarRequirement;
+            HashSet<uint> previousMissionId = new() { entry.LockedBehind.RowId };
 
-            uint timeAndWeather = item.WKSMissionLotterySpecialCond.RowId;
+            uint timeAndWeather = entry.WKSMissionLotterySpecialCond.RowId;
             uint startTime = 0;
             uint endTime = 0;
             CosmicWeather weather = CosmicWeather.FairSkies;
@@ -49,19 +50,20 @@ public sealed partial class ICE
             {
                 var timeSheet = Svc.Data.GetExcelSheet<WKSMissionLotterySpecialCond>().GetRow(timeAndWeather);
                 startTime = timeSheet.Unknown1; // Start Time
-                endTime = timeSheet.Unknown2;
+                endTime = timeSheet.Unknown2; // End Time
             }
             else
             {
                 weather = (CosmicWeather)(timeAndWeather - 12);
+                // TODO: Go back and assign enums based on the value instead... or just directly give it a flag. Unsure. Feels dirty
             }
 
-            uint rank = item.LevelGroup;
-            bool isCritical = item.IsSpecialQuest;
+            uint rank = entry.LevelGroup;
+            bool isCritical = entry.IsSpecialQuest;
 
-            uint RecipeId = item.WKSMissionRecipe.RowId;
+            uint RecipeId = entry.WKSMissionRecipe.RowId;
 
-            uint toDoValue = item.MissionToDo[0].RowId;
+            uint toDoValue = entry.MissionToDo[0].RowId;
 
             var todo = ToDoSheet.GetRow(toDoValue);
             uint missionText = todo.WKSMissionText.Value.RowId;
@@ -95,19 +97,19 @@ public sealed partial class ICE
                 122 => Fish | Collectables,
                 >= 123 and <= 134 => Craft | Gather, // Dual class
                 >= 135 and <= 138 => Craft | Fish,  // Dual class
-                139 => JobId == 18 ? Fish : Gather, // Critical
+                139 => jobs.Contains(18) ? Fish : Gather, // Critical
                 140 or 149 => Craft,
                 _ => None
             };
             attributes |= isCritical ? Critical : None;
             attributes |= weather != CosmicWeather.FairSkies ? ProvisionalWeather : None;
             attributes |= (startTime != 0 || endTime != 0) ? ProvisionalTimed : None;
-            attributes |= previousMissionId != 0 ? ProvisionalSequential : None;
+            attributes |= !previousMissionId.Contains(0) ? ProvisionalSequential : None;
 
             uint bronze = todo.Unknown2; // Bronze score for Score missions
             attributes |= bronze > 0 ? ScoreScore : None;
 
-            if (CrafterJobList.Contains(JobId))
+            if (CrafterJobList.Overlaps(jobs))
             {
                 bool preCraftsbool = false;
 
@@ -115,13 +117,13 @@ public sealed partial class ICE
                 if (isCritical) // Criticals are sus
                 {
                     UInt16 item1Amount = 1; // It's a pass/fail progress, you need to go till you are full on score
-                    var item1RecipeRow = RecipeSheet.Where(e => e.RowId == MoonRecipeSheet.GetRow(item.WKSMissionRecipe.RowId).Recipe[0].Value.RowId).First();
+                    var item1RecipeRow = RecipeSheet.Where(e => e.RowId == MoonRecipeSheet.GetRow(entry.WKSMissionRecipe.RowId).Recipe[0].Value.RowId).First();
                     var item1Id = item1RecipeRow.ItemResult.RowId;
                     var item1Name = ItemSheet.GetRow(item1Id).Name.ToString();
                     var craftingType = item1RecipeRow.CraftType.Value.RowId;
                     IceLogging.Verbose($"Recipe Row ID: {item1RecipeRow.RowId} | for item: {item1Id} | {item1Name}");
                     var item1RecipeId = item1RecipeRow.RowId;
-                    MainItems.Add(((ushort)item1RecipeId), item1Amount);
+                    crafts_Main.Add(((ushort)item1RecipeId), item1Amount);
                 }
                 if (toDoRow.RequiredItem[0].RowId != 0 && !isCritical) // shouldn't be 0, 1st item entry
                 {
@@ -150,13 +152,13 @@ public sealed partial class ICE
                             {
                                 var subItemAmount = item1RecipeRow.AmountIngredient[i].ToInt();
                                 subItemAmount = subItemAmount * item1Amount;
-                                PreCrafts.Add(((ushort)subitemRecipe.RowId), subItemAmount);
+                                crafts_Pre.Add(((ushort)subitemRecipe.RowId), subItemAmount);
                                 preCraftsbool = true;
                             }
                         }
                     }
                     var item1RecipeId = item1RecipeRow.RowId;
-                    MainItems.Add(((ushort)item1RecipeId), item1Amount);
+                    crafts_Main.Add(((ushort)item1RecipeId), item1Amount);
                 }
                 if (toDoRow.RequiredItem[1].RowId != 0) // 2nd item entry
                 {
@@ -185,13 +187,13 @@ public sealed partial class ICE
                             {
                                 var subItemAmount = item2RecipeRow.AmountIngredient[i].ToInt();
                                 subItemAmount = subItemAmount * item2Amount;
-                                PreCrafts.Add(((ushort)subitemRecipe.RowId), subItemAmount);
+                                crafts_Pre.Add(((ushort)subitemRecipe.RowId), subItemAmount);
                                 preCraftsbool = true;
                             }
                         }
                     }
                     var item2RecipeId = item2RecipeRow.RowId;
-                    MainItems.Add(((ushort)item2RecipeId), item2Amount);
+                    crafts_Main.Add(((ushort)item2RecipeId), item2Amount);
                 }
                 if (toDoRow.RequiredItem[2].RowId != 0) // 3rd item entry
                 {
@@ -216,42 +218,32 @@ public sealed partial class ICE
                             {
                                 var subItemAmount = item3RecipeRow.AmountIngredient[i].ToInt();
                                 subItemAmount = subItemAmount * item3Amount;
-                                PreCrafts.Add(((ushort)subitemRecipe.RowId), subItemAmount);
+                                crafts_Pre.Add(((ushort)subitemRecipe.RowId), subItemAmount);
                                 preCraftsbool = true;
                             }
                         }
                     }
                     var item3RecipeId = item3RecipeRow.RowId;
-                    MainItems.Add(((ushort)item3RecipeId), item3Amount);
+                    crafts_Main.Add(((ushort)item3RecipeId), item3Amount);
                 }
 
                 if (preCraftsbool)
                 {
-                    foreach (var preItem in PreCrafts)
+                    foreach (var preItem in crafts_Pre)
                     {
-                        if (MainItems.ContainsKey(preItem.Key))
-                            PreCrafts.Remove(preItem.Key);
+                        if (crafts_Main.ContainsKey(preItem.Key))
+                            crafts_Pre.Remove(preItem.Key);
                     }
 
-                    if (PreCrafts.Count == 0)
+                    if (crafts_Pre.Count == 0)
                     {
                         preCraftsbool = false;
                     }
                 }
 
-                if (!MoonRecipies.ContainsKey(keyId))
-                {
-                    MoonRecipies[keyId] = new MoonRecipieInfo()
-                    {
-                        MainCraftsDict = MainItems,
-                        PreCraftDict = PreCrafts,
-                        PreCrafts = preCraftsbool
-                    };
-                }
-
             }
 
-            if (GatheringJobList.Contains(JobId))
+            if (GatheringJobList.Overlaps(jobs))
             {
                 var todoRow = ToDoSheet.GetRow(toDoValue);
 
@@ -259,75 +251,42 @@ public sealed partial class ICE
                 {
                     var minAmount = todoRow.RequiredItemQuantity[0].ToInt();
                     var itemInfoId = MoonItemInfoSheet.GetRow(todoRow.RequiredItem[0].RowId).Item.RowId;
-                    if (!GatherItems.ContainsKey(itemInfoId))
+                    if (!gathering_Min.ContainsKey(itemInfoId))
                     {
-                        GatherItems.Add(itemInfoId, minAmount);
+                        gathering_Min.Add(itemInfoId, minAmount);
                     }
                 }
                 if (todoRow.RequiredItem[1].RowId != 0) // First item in the gathering list. Shouldn't be 0...
                 {
                     var minAmount = todoRow.RequiredItemQuantity[1].ToInt();
                     var itemInfoId = MoonItemInfoSheet.GetRow(todoRow.RequiredItem[1].RowId).Item.RowId;
-                    if (!GatherItems.ContainsKey(itemInfoId))
+                    if (!gathering_Min.ContainsKey(itemInfoId))
                     {
-                        GatherItems.Add(itemInfoId, minAmount);
+                        gathering_Min.Add(itemInfoId, minAmount);
                     }
                 }
                 if (todoRow.RequiredItem[2].RowId != 0) // First item in the gathering list. Shouldn't be 0...
                 {
                     var minAmount = todoRow.RequiredItemQuantity[2].ToInt();
                     var itemInfoId = MoonItemInfoSheet.GetRow(todoRow.RequiredItem[2].RowId).Item.RowId;
-                    if (!GatherItems.ContainsKey(itemInfoId))
+                    if (!gathering_Min.ContainsKey(itemInfoId))
                     {
-                        GatherItems.Add(itemInfoId, minAmount);
+                        gathering_Min.Add(itemInfoId, minAmount);
                     }
-                }
-
-                if (!GatheringItemDict.ContainsKey(keyId))
-                {
-                    GatheringItemDict[keyId] = new GatheringInfo()
-                    {
-                        MinGatherItems = GatherItems
-                    };
                 }
             }
 
-            if (GatheringJobList.Contains(JobId) && CrafterJobList.Contains(Job2))
+            if (GatheringJobList.Overlaps(jobs) && CrafterJobList.Overlaps(jobs))
             {
-                var MissionRecipe = item.WKSMissionRecipe.RowId;
+                var MissionRecipe = entry.WKSMissionRecipe.RowId;
                 var DualRecipeId = MoonRecipeSheet.GetRow(MissionRecipe).Recipe[0].Value.RowId;
                 var Recipe = RecipeSheet.GetRow(DualRecipeId);
                 var MainItem = Recipe.ItemResult.Value.RowId;
                 var GatherItem = Recipe.Ingredient[0].Value.RowId;
                 var GatherAmount = Recipe.AmountIngredient[0].ToInt();
 
-                MainItems.Add((ushort)DualRecipeId, 1);
-                GatherItems.Add(GatherItem, GatherAmount);
-
-                if (!MoonRecipies.ContainsKey(keyId))
-                {
-                    MoonRecipies[keyId] = new MoonRecipieInfo()
-                    {
-                        MainCraftsDict = MainItems,
-                        PreCrafts = false
-                    };
-                }
-                else
-                {
-                    MoonRecipies[keyId].MainCraftsDict = MainItems;
-                }
-
-                if (GatheringItemDict.ContainsKey(keyId))
-                {
-                    GatheringItemDict[keyId] = new GatheringInfo()
-                    {
-                        MinGatherItems = GatherItems
-                    };
-                }
-                else
-                {
-                    GatheringItemDict[keyId].MinGatherItems = GatherItems;
-                }
+                crafts_Main.Add((ushort)DualRecipeId, 1);
+                gathering_Min.Add(GatherItem, GatherAmount);
             }
 
             // Col 3 -> Cosmocredits - Unknown 0
@@ -347,43 +306,52 @@ public sealed partial class ICE
 
             if (ExpSheet.GetRow(keyId).Unknown2 != 0)
             {
-                Exp.Add((ExpSheet.GetRow(keyId).Unknown12, ExpSheet.GetRow(keyId).Unknown2));
+                var xp1Kind = ExpSheet.GetRow(keyId).Unknown12;
+                var xp1Amount = ExpSheet.GetRow(keyId).Unknown2;
+                relicXp[xp1Kind] = xp1Amount;
             }
             if (ExpSheet.GetRow(keyId).Unknown3 != 0)
             {
-                Exp.Add((ExpSheet.GetRow(keyId).Unknown13, ExpSheet.GetRow(keyId).Unknown3));
+                var xp2Kind = ExpSheet.GetRow(keyId).Unknown13;
+                var xp2Amount = ExpSheet.GetRow(keyId).Unknown3;
+                relicXp[xp2Kind] = xp2Amount;
             }
             if (ExpSheet.GetRow(keyId).Unknown4 != 0)
             {
-                Exp.Add((ExpSheet.GetRow(keyId).Unknown14, ExpSheet.GetRow(keyId).Unknown4));
+                var xp3Kind = ExpSheet.GetRow(keyId).Unknown14;
+                var xp3Amount = ExpSheet.GetRow(keyId).Unknown4;
+                relicXp[xp3Kind] = xp3Amount;
             }
 
             if (!SheetMissionDict.ContainsKey(keyId))
             {
-                SheetMissionDict[keyId] = new SheetMissionInfo()
+                SheetMissionDict[keyId] = new CosmicInfo()
                 {
                     Name = LeveName,
-                    JobId = ((uint)JobId),
-                    JobId2 = ((uint)Job2),
-                    ToDoSlot = toDoValue,
+                    Jobs = jobs,
+                    ToDoId = toDoValue,
                     Rank = rank,
                     Attributes = attributes,
-                    TimeLimit = timeLimit,
+                    Weather = weather,
                     StartTime = startTime,
                     EndTime = endTime,
-                    Weather = weather,
-                    RecipeId = RecipeId,
-                    BronzeRequirement = bronze,
-                    SilverRequirement = silver,
-                    GoldRequirement = gold,
                     CosmoCredit = Cosmo,
                     LunarCredit = Lunar,
-                    ExperienceRewards = Exp,
-                    PreviousMissionID = previousMissionId,
-                    MarkerId = marker.RowId,
-                    TerritoryId = territoryId,
+                    PreviousMissions = previousMissionId,
+                    RelicXpInfo = relicXp,
+                    BronzeScore = bronze,
+                    SilverScore = silver,
+                    GoldScore = gold,
+
                     MapPosition = new Vector2(_x, _y),
                     Radius = radius,
+                    TerritoryId = territoryId,
+                    MarkerId = marker.RowId,
+
+                    Gathering_Min = gathering_Min,
+
+                    Crafts_Main = crafts_Main,
+                    Crafts_Pre = crafts_Pre,
                 };
             }
         }
@@ -423,48 +391,16 @@ public sealed partial class ICE
             }
         }
 
-        // Need to go back and remove this... might be worthless at this point
-        if (OldConfig.Missions.Count == 0)
-        {
-            // fresh install?
-            OldConfig.Missions = [.. SheetMissionDict.Select(x => new CosmicMission()
-        {
-            Id = x.Key,
-            Name = x.Value.Name,
-            Type = GetMissionType(x.Value),
-            PreviousMissionId = x.Value.PreviousMissionID,
-            JobId = x.Value.JobId,
-        })];
-            OldConfig.Save();
-        }
-        else
-        {
-            var newMissions = SheetMissionDict.Where(x => !OldConfig.Missions.Any(y => y.Id == x.Key)).Select(x => new CosmicMission()
-            {
-                Id = x.Key,
-                Name = x.Value.Name,
-                Type = GetMissionType(x.Value),
-                PreviousMissionId = x.Value.PreviousMissionID,
-                JobId = x.Value.JobId,
-            });
-
-            if (newMissions.Any())
-            {
-                OldConfig.Missions.AddRange(newMissions);
-                OldConfig.Save();
-            }
-        }
-
         foreach (var entry in SheetMissionDict)
         {
             var id = entry.Key;
             if (MissionScoreDict.TryGetValue(id, out var missionEntry))
             {
-                entry.Value.missionScore = MissionScoreDict[id];
+                entry.Value.ClassScore = MissionScoreDict[id];
             }
             else
             {
-                entry.Value.missionScore = 0;
+                entry.Value.ClassScore = 0;
             }
         }
 
@@ -495,8 +431,10 @@ public sealed partial class ICE
                 };
             }
         }
+
+        UpdateSheetMissionDict();
     }
-    private static MissionType GetMissionType(SheetMissionInfo mission)
+    private static MissionType GetMissionType(CosmicInfo mission)
     {
         if (mission.Attributes.HasFlag(Critical))
         {
@@ -516,5 +454,103 @@ public sealed partial class ICE
         }
 
         return MissionType.Standard;
+    }
+
+    public static void UpdateSheetMissionDict()
+    {
+        foreach (var kvp in Dict_CosmicMissions)
+        {
+            uint missionId = kvp.Key;
+            CosmicInfo sourceInfo = kvp.Value;
+
+            // Check if the mission exists in SheetMissionDict
+            if (SheetMissionDict.ContainsKey(missionId))
+            {
+                CosmicInfo targetInfo = SheetMissionDict[missionId];
+
+                // Update all properties from Dict_CosmicMissions to SheetMissionDict
+
+                // Fishing Specific
+                targetInfo.RequiredFish = new Dictionary<string, HashSet<uint>>(sourceInfo.RequiredFish);
+                targetInfo.FishCountRequired = sourceInfo.FishCountRequired;
+                targetInfo.FishingBait = new Dictionary<string, HashSet<uint>>(sourceInfo.FishingBait);
+
+                // Crafter Specific
+                targetInfo.Crafts_Main = new Dictionary<ushort, int>(sourceInfo.Crafts_Main);
+                targetInfo.Crafts_Pre = new Dictionary<ushort, int>(sourceInfo.Crafts_Pre);
+
+                // BTN | MIN Specific
+                targetInfo.Gathering_Min = new Dictionary<uint, int>(sourceInfo.Gathering_Min);
+
+                // Map Related
+                targetInfo.MapPosition = sourceInfo.MapPosition;
+                targetInfo.Radius = sourceInfo.Radius;
+                targetInfo.TerritoryId = sourceInfo.TerritoryId;
+                targetInfo.MarkerId = sourceInfo.MarkerId;
+
+                // Universal Info
+                targetInfo.Name = sourceInfo.Name;
+                targetInfo.Jobs = new HashSet<uint>(sourceInfo.Jobs);
+                targetInfo.ToDoId = sourceInfo.ToDoId;
+                targetInfo.Rank = sourceInfo.Rank;
+                targetInfo.Attributes = sourceInfo.Attributes;
+                targetInfo.Weather = sourceInfo.Weather;
+                targetInfo.StartTime = sourceInfo.StartTime;
+                targetInfo.EndTime = sourceInfo.EndTime;
+                targetInfo.ClassScore = sourceInfo.ClassScore;
+                targetInfo.CosmoCredit = sourceInfo.CosmoCredit;
+                targetInfo.LunarCredit = sourceInfo.LunarCredit;
+                targetInfo.PreviousMissions = new HashSet<uint>(sourceInfo.PreviousMissions);
+                targetInfo.RelicXpInfo = new Dictionary<int, int>(sourceInfo.RelicXpInfo);
+                targetInfo.BronzeScore = sourceInfo.BronzeScore;
+                targetInfo.SilverScore = sourceInfo.SilverScore;
+                targetInfo.GoldScore = sourceInfo.GoldScore;
+            }
+            else
+            {
+                // If the mission doesn't exist in SheetMissionDict, add it
+                // this... shouldn't be possible. But better ot be safer than sorry
+                var newInfo = new CosmicInfo
+                {
+                    // Fishing Specific
+                    RequiredFish = new Dictionary<string, HashSet<uint>>(sourceInfo.RequiredFish),
+                    FishCountRequired = sourceInfo.FishCountRequired,
+                    FishingBait = new Dictionary<string, HashSet<uint>>(sourceInfo.FishingBait),
+
+                    // Crafter Specific
+                    Crafts_Main = new Dictionary<ushort, int>(sourceInfo.Crafts_Main),
+                    Crafts_Pre = new Dictionary<ushort, int>(sourceInfo.Crafts_Pre),
+
+                    // BTN | MIN Specific
+                    Gathering_Min = new Dictionary<uint, int>(sourceInfo.Gathering_Min),
+
+                    // Map Related
+                    MapPosition = sourceInfo.MapPosition,
+                    Radius = sourceInfo.Radius,
+                    TerritoryId = sourceInfo.TerritoryId,
+                    MarkerId = sourceInfo.MarkerId,
+
+                    // Universal Info
+                    Name = sourceInfo.Name,
+                    Jobs = new HashSet<uint>(sourceInfo.Jobs),
+                    ToDoId = sourceInfo.ToDoId,
+                    Rank = sourceInfo.Rank,
+                    Attributes = sourceInfo.Attributes,
+                    Weather = sourceInfo.Weather,
+                    StartTime = sourceInfo.StartTime,
+                    EndTime = sourceInfo.EndTime,
+                    ClassScore = sourceInfo.ClassScore,
+                    CosmoCredit = sourceInfo.CosmoCredit,
+                    LunarCredit = sourceInfo.LunarCredit,
+                    PreviousMissions = new HashSet<uint>(sourceInfo.PreviousMissions),
+                    RelicXpInfo = new Dictionary<int, int>(sourceInfo.RelicXpInfo),
+                    BronzeScore = sourceInfo.BronzeScore,
+                    SilverScore = sourceInfo.SilverScore,
+                    GoldScore = sourceInfo.GoldScore
+                };
+
+                SheetMissionDict[missionId] = newInfo;
+            }
+        }
     }
 }

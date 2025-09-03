@@ -83,7 +83,7 @@ namespace ICE.Ui.DebugWindowTabs
                     var landZone = gatheringPoint.Position;
                     var gatheringType = (Job)PlayerHelper.GetClassJobId() == Job.MIN ? 2 : 3;
                     var currentMission = CosmicHelper.CurrentMissionInfo;
-                    var nodeSet = currentMission?.NodeSet ?? 0;
+                    var nodeSet = currentMission?.MapPosition ?? new Vector2(0, 0);
 
                     string info = $"new GathNodeInfo\n{{\n    ZoneId = 1237,\n    NodeId = {nodeId},\n    Position = new Vector3({position.X}f, {position.Y}f, {position.Z}f),\n    LandZone = new Vector3({landZone.X}f, {landZone.Y}f, {landZone.Z}f),\n    GatheringType = {gatheringType},\n    NodeSet = {nodeSet}\n}}";
 

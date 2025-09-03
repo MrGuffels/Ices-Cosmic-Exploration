@@ -75,11 +75,11 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                var currentJob = PlayerHelper.GetClassJobId();
+                var currentJob = PlayerHelper.GetClassJobId().Value;
 
                 bool repairVendor = C.RepairAtVendor && PlayerHelper.NeedsRepair(C.RepairPercent);
-                bool selfRepairCraft = C.SelfRepairCrafter && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.CrafterJobList.Contains((int)currentJob);
-                bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.GatheringJobList.Contains((int)currentJob);
+                bool selfRepairCraft = C.SelfRepairCrafter && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.CrafterJobList.Contains(currentJob);
+                bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.GatheringJobList.Contains(currentJob);
 
                 if (repairVendor ||  selfRepairCraft || selfRepairGather)
                 {

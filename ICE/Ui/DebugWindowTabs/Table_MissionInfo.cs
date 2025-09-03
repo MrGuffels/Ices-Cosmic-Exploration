@@ -63,7 +63,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 26, tableFlags)) // Increased column count by 1
+            if (ImGui.BeginTable("Moon Mission Information Table", 25, tableFlags)) // Increased column count by 1
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -73,7 +73,6 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("2nd Job");
                 ImGui.TableSetupColumn("Rank");
                 ImGui.TableSetupColumn("ToDo ID");
-                ImGui.TableSetupColumn("RecipeID");
                 ImGui.TableSetupColumn("Silver");
                 ImGui.TableSetupColumn("Gold");
                 ImGui.TableSetupColumn("Attribute Flags");
@@ -121,9 +120,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                     if (jobSearch != 7)
                     {
-                        var jobs = new[] { entry.Value.JobId, entry.Value.JobId2 }
-                                         .Where(id => id != 0)
-                                         .ToHashSet();
+                        var jobs = entry.Value.Jobs;
 
                         if (!jobs.Contains(jobSearch))
                             continue;
@@ -142,13 +139,16 @@ namespace ICE.Ui.DebugWindowTabs
 
                     Vector2 size = new Vector2(20, 20);
 
-                    ISharedImmediateTexture? icon = CosmicHelper.JobIconDict[entry.Value.JobId];
-                    ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
-                    if (entry.Value.JobId2 != 0)
+                    int index = 0;
+                    foreach (var jobId in entry.Value.Jobs)
                     {
-                        ImGui.SameLine();
-                        ISharedImmediateTexture? icon2 = CosmicHelper.JobIconDict[entry.Value.JobId2];
-                        ImGui.Image(icon2.GetWrapOrEmpty().Handle, size);
+                        ISharedImmediateTexture? icon = CosmicHelper.JobIconDict[jobId];
+                        ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
+
+                        if (index < entry.Value.Jobs.Count - 1) // Not the only job, adding a sameline for it
+                            ImGui.SameLine();
+
+                        index++;
                     }
 
                     // Mission Name
@@ -161,11 +161,18 @@ namespace ICE.Ui.DebugWindowTabs
 
                     // JobId Attached to it
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Value.JobId}");
+                    ImGui.Text($"{entry.Value.Jobs.First()}");
 
                     // 2nd Job for quest
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Value.JobId2}");
+                    if (entry.Value.Jobs.Count > 1)
+                    {
+                        ImGui.Text($"{entry.Value.Jobs.Last()}");
+                    }
+                    else
+                    {
+                        ImGui.Text($"0");
+                    }
 
                     // Rank of the mission
                     ImGui.TableNextColumn();
@@ -189,31 +196,29 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"{rank}");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Value.ToDoSlot}");
+                    ImGui.Text($"{entry.Value.ToDoId}");
 
                     ImGui.TableNextColumn();
-                    var RecipeSearch = entry.Value.RecipeId;
-                    ImGui.Text($"{RecipeSearch}");
+                    ImGui.Text($"{entry.Value.SilverScore}");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Value.SilverRequirement}");
-
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Value.GoldRequirement}");
+                    ImGui.Text($"{entry.Value.GoldScore}");
 
                     ImGui.TableNextColumn();
                     ImGui.Text($"{entry.Value.Attributes}");
 
                     foreach (var expType in orderedExp)
                     {
-                        var relicXp = entry.Value.ExperienceRewards.Where(exp => exp.Type == expType.Key).FirstOrDefault().Amount.ToString();
-                        if (relicXp == "0")
-                        {
-                            relicXp = "-";
-                        }
-
+                        var type = expType.Key;
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{relicXp}");
+                        if (entry.Value.RelicXpInfo.TryGetValue(type, out var amount))
+                        {
+                            ImGui.Text($"{amount}");
+                        }
+                        else
+                        {
+                            ImGui.Text($"-");
+                        }
                     }
 
                     ImGui.TableNextColumn();
@@ -243,11 +248,11 @@ namespace ICE.Ui.DebugWindowTabs
                     }
 
                     ImGui.TableNextColumn();
-                    uint missionScore = entry.Value.missionScore;
+                    uint missionScore = entry.Value.ClassScore;
                     ImGui.SetNextItemWidth(100);
                     if (ImGui.InputUInt($"##MissionScore", ref missionScore))
                     {
-                        entry.Value.missionScore = missionScore;
+                        entry.Value.ClassScore = missionScore;
                     }
 
                     if (CosmicHelper.GatheringItemDict.TryGetValue(entry.Key, out var gatherInfo))
@@ -291,7 +296,7 @@ namespace ICE.Ui.DebugWindowTabs
 
 
                     ImGui.TableSetColumnIndex(25);
-                    if (entry.Value.JobId == 18 || entry.Value.JobId2 == 18) // Check if it's a fishing mission
+                    if (entry.Value.Jobs.Contains(18)) // Check if it's a fishing mission
                     {
                         if (ImGui.Button($"Export##Export-{entry.Key}"))
                         {
@@ -392,7 +397,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             foreach (var kvp in CosmicHelper.SheetMissionDict)
             {
-                sb.AppendLine($"    [{kvp.Key}] = {kvp.Value.missionScore},");
+                sb.AppendLine($"    [{kvp.Key}] = {kvp.Value.ClassScore},");
             }
 
             sb.AppendLine("};");

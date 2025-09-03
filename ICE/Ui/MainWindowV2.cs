@@ -136,23 +136,27 @@ namespace ICE.Ui
                     return missions.OrderByDescending(m => missionInfo[m.id].CosmoCredit).ToList();
                 case 3: // Lunar Credits
                     return missions.OrderByDescending(m => missionInfo[m.id].LunarCredit).ToList();
-                case 4: // Exp Type 0:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
-                                                     .Where(exp => exp.Type == 1)
-                                                     .Sum(exp => exp.Amount)).ToList();
-                case 5: // Exp Type 1:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
-                                                     .Where(exp => exp.Type == 2)
-                                                     .Sum(exp => exp.Amount)).ToList();
-                case 6: // Exp Type 2:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
-                                                     .Where(exp => exp.Type == 3)
-                                                     .Sum(exp => exp.Amount)).ToList();
-                case 7: // Exp Type 3:
-                    return missions.OrderByDescending(m => missionInfo[m.id].ExperienceRewards
-                                                     .Where(exp => exp.Type == 4)
-                                                     .Sum(exp => exp.Amount)).ToList();
-                case 8: // Map Location
+                case 4: // Exp Type 1:
+                    return missions.OrderByDescending(m => missionInfo[m.id].RelicXpInfo
+                                                     .Where(exp => exp.Key == 1)
+                                                     .Sum(exp => exp.Value)).ToList();
+                case 5: // Exp Type 2:
+                    return missions.OrderByDescending(m => missionInfo[m.id].RelicXpInfo
+                                                     .Where(exp => exp.Key == 2)
+                                                     .Sum(exp => exp.Value)).ToList();
+                case 6: // Exp Type 3:
+                    return missions.OrderByDescending(m => missionInfo[m.id].RelicXpInfo
+                                                     .Where(exp => exp.Key == 3)
+                                                     .Sum(exp => exp.Value)).ToList();
+                case 7: // Exp Type 4:
+                    return missions.OrderByDescending(m => missionInfo[m.id].RelicXpInfo
+                                                     .Where(exp => exp.Key == 4)
+                                                     .Sum(exp => exp.Value)).ToList();
+                case 8: // Exp Type 5:
+                    return missions.OrderByDescending(m => missionInfo[m.id].RelicXpInfo
+                                                     .Where(exp => exp.Key == 5)
+                                                     .Sum(exp => exp.Value)).ToList();
+                case 9: // Map Location
                     return missions.OrderBy(m => missionInfo[m.id].MarkerId).ToList();
                 default:
                     return missions.ToList();
@@ -208,6 +212,7 @@ namespace ICE.Ui
                         SchedulerMain.DisablePlugin();
                     }
                 }
+
                 if (ImGui.Button("Settings", new Vector2(ImGui.GetContentRegionAvail().X, textLineHeight * 1.5f)))
                 {
                     P.settingsWindowV2.IsOpen = !P.settingsWindowV2.IsOpen;
@@ -470,13 +475,12 @@ namespace ICE.Ui
 
                 foreach (var mission in CosmicHelper.SheetMissionDict)
                 {
-                    HashSet<uint> Jobs = new HashSet<uint>();
-                    Jobs.Add(mission.Value.JobId, mission.Value.JobId2);
+                    var Jobs = mission.Value.Jobs;
 
                     if (!Jobs.Contains(selectedJob))
                         continue;
 
-                    bool isGatherMission = CosmicHelper.GatheringJobList.Contains((int)mission.Value.JobId) || CosmicHelper.GatheringJobList.Contains((int)mission.Value.JobId2);
+                    bool isGatherMission = CosmicHelper.GatheringJobList.Overlaps(mission.Value.Jobs) || CosmicHelper.GatheringJobList.Overlaps(mission.Value.Jobs);
                     if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical))
                         missionList["Critical"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
@@ -609,8 +613,8 @@ namespace ICE.Ui
                         ("Mission Name:", mission.Name),
                         ("Cosmocredits:", mission.CosmoCredit.ToString()),
                         ("Lunar Credits", mission.LunarCredit.ToString()),
-                        ("Silver Requirements:", mission.SilverRequirement.ToString()),
-                        ("Gold Requirements:", mission.GoldRequirement.ToString())
+                        ("Silver Requirements:", mission.SilverScore.ToString()),
+                        ("Gold Requirements:", mission.GoldScore.ToString())
                     };
 
                     float infoSize1 = MissionInfo.Max(row => ImGui.CalcTextSize(row.Label).X) + 10;
@@ -639,31 +643,35 @@ namespace ICE.Ui
                         ImGui.TableSetColumnIndex(0);
                         ImGui.Text($"Tool XP Reward");
 
-                        for (int i = mission.ExperienceRewards.Count - 1; i >= 0; i--)
+                        foreach (var xp in mission.RelicXpInfo.OrderBy(x => x.Key))
                         {
-                            var row = mission.ExperienceRewards[i];
-                            if (row.Amount != 0)
+                            ImGui.TableNextRow();
+                            string type = "";
+                            switch (xp.Key)
                             {
-                                ImGui.TableNextRow();
-
-                                ImGui.TableSetColumnIndex(0);
-                                string type = "";
-                                if (row.Type == 1)
+                                case 1:
                                     type = "I";
-                                else if (row.Type == 2)
+                                    break;
+                                case 2:
                                     type = "II";
-                                else if (row.Type == 3)
+                                    break;
+                                case 3:
                                     type = "III";
-                                else if (row.Type == 4)
+                                    break;
+                                case 4:
                                     type = "IV";
-                                else if (row.Type == 5)
+                                    break;
+                                case 5:
                                     type = "V";
-
-                                ImGui.Text($"Lv {type}:");
-
-                                ImGui.TableSetColumnIndex(1);
-                                ImGui.Text($"{row.Amount}");
+                                    break;
+                                default:
+                                    type = "???";
+                                    break;
                             }
+
+                            ImGui.Text($"Lv. {type}");
+                            ImGui.TableSetColumnIndex(1);
+                            ImGui.Text($"{xp.Value}");
                         }
 
                         ImGui.EndTable();
@@ -696,17 +704,17 @@ namespace ICE.Ui
 
                             ImGui.TextWrapped($"{mission.StartTime}:00 - {mission.EndTime}:00");
                         }
-                        else if (mission.PreviousMissionID != 0)
+                        else if (!mission.PreviousMissions.Contains(0))
                         {
                             hasPreviousNotes = true;
 
-                            var (Id, Name) = SheetMissionDict.Where(m => m.Key == mission.PreviousMissionID).Select(m => (Id: m.Key, Name: m.Value.Name)).FirstOrDefault();
+                            var (Id, Name) = SheetMissionDict.Where(m => m.Key == mission.PreviousMissions.First()).Select(m => (Id: m.Key, Name: m.Value.Name)).FirstOrDefault();
                             ImGui.TextWrapped($"[{Id}] {Name}");
                         }
-                        if (mission.JobId2 != 0)
+                        if (mission.Jobs.Last() != 0)
                         {
                             if (hasPreviousNotes) ImGui.SameLine();
-                            ImGui.TextWrapped($"{jobOptions.Find(job => job.Id == mission.JobId).Name}/{jobOptions.Find(job => job.Id == mission.JobId2).Name}");
+                            ImGui.TextWrapped($"{jobOptions.Find(job => job.Id == mission.Jobs.First()).Name}/{jobOptions.Find(job => job.Id == mission.Jobs.Last()).Name}");
                         }
 
                         if (mission.Attributes.HasFlag(MissionAttributes.Gather))
@@ -759,8 +767,6 @@ namespace ICE.Ui
                         ImGui.Dummy(new(0, 10));
                         ImGui.Text($"Debug Section");
                         ImGui.Spacing();
-
-                        ImGui.Text($"[Debug] Nodeset: {mission.NodeSet}");
 
                         ImGui.Text($"[Debug] Active Mission Flags:");
                         foreach (var flag in activeFlags)
@@ -1004,14 +1010,14 @@ namespace ICE.Ui
                     CenterTextInTableCell(missionInfo.LunarCredit.ToString());
 
                     ImGui.TableNextColumn();
-                    CenterTextInTableCell(missionInfo.missionScore.ToString());
+                    CenterTextInTableCell(missionInfo.ClassScore.ToString());
 
                     // XP Columns
                     for (int i = 1; i < 6; i++)
                     {
                         ImGui.TableNextColumn();
-                        var expReward = missionInfo.ExperienceRewards.Where(exp => exp.Type == i).FirstOrDefault();
-                        var relicXp = expReward.Amount.ToString();
+                        var expReward = missionInfo.RelicXpInfo.Where(exp => exp.Key == i).FirstOrDefault();
+                        var relicXp = expReward.Value.ToString();
 
                         if (relicXp == "0")
                         {
@@ -1247,13 +1253,13 @@ namespace ICE.Ui
                         }
                         notesCount++;
                     }
-                    if (missionInfo.JobId2 != 0)
+                    if (missionInfo.Jobs.Count > 1)
                     {
                         if (notesCount > 0)
                             ImGui.SameLine();
 
-                        ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.JobId];
-                        ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.JobId2];
+                        ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
+                        ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.Last()];
                         Vector2 imageSize = new Vector2(23, 23);
 
                         ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
@@ -1377,7 +1383,7 @@ namespace ICE.Ui
                 {
                     var id = mission.Key;
                     var missionDict = CosmicHelper.SheetMissionDict[id];
-                    bool selectedJob = (C.SelectedJob == missionDict.JobId || C.SelectedJob == missionDict.JobId2);
+                    bool selectedJob = missionDict.Jobs.Contains(C.SelectedJob);
                     bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
 
                     PluginLog.Information($"ID: {id} | Enabled: {mission.Value.Enabled}");
@@ -1616,17 +1622,17 @@ namespace ICE.Ui
         }
         private List<uint> GetOnlyPreviousMissionsRecursive(uint missionId)
         {
-            if (!SheetMissionDict.TryGetValue(missionId, out var missionInfo) || missionInfo.PreviousMissionID == 0)
+            if (!SheetMissionDict.TryGetValue(missionId, out var missionInfo) || missionInfo.PreviousMissions.Contains(0))
                 return [];
 
-            var chain = GetOnlyPreviousMissionsRecursive(missionInfo.PreviousMissionID);
-            chain.Add(missionInfo.PreviousMissionID);
+            var chain = GetOnlyPreviousMissionsRecursive(missionInfo.PreviousMissions.First());
+            chain.Add(missionInfo.PreviousMissions.First());
             return chain;
         }
         private List<uint> GetOnlyNextMissionsRecursive(uint missionId)
         {
             uint? nextMissionId = SheetMissionDict
-                .Where(m => m.Value.PreviousMissionID == missionId)
+                .Where(m => m.Value.PreviousMissions.First() == missionId)
                 .Select(m => (uint?)m.Key)
                 .FirstOrDefault();
 

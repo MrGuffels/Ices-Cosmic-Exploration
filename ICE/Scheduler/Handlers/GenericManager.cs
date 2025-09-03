@@ -34,7 +34,7 @@ namespace ICE.Scheduler.Handlers
             if (Svc.ClientState.LocalPlayer is null)
                 return false;
 
-            if ((!CosmicHelper.GatheringJobList.Contains((int)PlayerHelper.GetClassJobId()))
+            if ((!CosmicHelper.GatheringJobList.Contains((uint)PlayerHelper.GetClassJobId()))
              || (PlayerHelper.GetClassJobId() == 18 && !OldConfig.UseOnFisher)
              || (PlayerHelper.GetGp() >= OldConfig.CordialMinGp))
                 return false;

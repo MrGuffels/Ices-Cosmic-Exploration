@@ -1187,13 +1187,13 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         Attributes = mission.Attributes,
                         Weather = mission.Weather,
-                        ClassScore = mission.missionScore,
+                        ClassScore = mission.ClassScore,
                         CosmoCredit = mission.CosmoCredit,
                         LunarCredit = mission.LunarCredit,
-                        PreviousMissions = new() { mission.PreviousMissionID },
-                        BronzeScore = mission.BronzeRequirement,
-                        SilverScore = mission.SilverRequirement,
-                        GoldScore = mission.GoldRequirement,
+                        PreviousMissions = mission.PreviousMissions,
+                        BronzeScore = mission.BronzeScore,
+                        SilverScore = mission.SilverScore,
+                        GoldScore = mission.GoldScore,
                         Radius = mission.Radius,
                         TerritoryId = mission.TerritoryId,
                     };
@@ -1207,12 +1207,11 @@ namespace ICE.Ui.DebugWindowTabs
                     newEntry.StartTime = mission.StartTime;
                     newEntry.EndTime = mission.EndTime;
 
-                    newEntry.Jobs.Add(mission.JobId);
-                    if (mission.JobId2 != 0) newEntry.Jobs.Add(mission.JobId2);
+                    newEntry.Jobs = mission.Jobs;
 
-                    foreach (var xp in mission.ExperienceRewards)
+                    foreach (var xp in mission.RelicXpInfo.OrderBy(x => x.Key))
                     {
-                        newEntry.RelicXpInfo[xp.Type] = xp.Amount;
+                        newEntry.RelicXpInfo[xp.Key] = xp.Value;
                     }
 
                     // General information is added. Time to check for crafting/gathering/fishing specifics
@@ -1243,13 +1242,13 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         Attributes = mission.Value.Attributes,
                         Weather = mission.Value.Weather,
-                        ClassScore = mission.Value.missionScore,
+                        ClassScore = mission.Value.ClassScore,
                         CosmoCredit = mission.Value.CosmoCredit,
                         LunarCredit = mission.Value.LunarCredit,
-                        PreviousMissions = new() { mission.Value.PreviousMissionID },
-                        BronzeScore = mission.Value.BronzeRequirement,
-                        SilverScore = mission.Value.SilverRequirement,
-                        GoldScore = mission.Value.GoldRequirement,
+                        PreviousMissions = mission.Value.PreviousMissions,
+                        BronzeScore = mission.Value.BronzeScore,
+                        SilverScore = mission.Value.SilverScore,
+                        GoldScore = mission.Value.GoldScore,
                         Radius = mission.Value.Radius,
                         TerritoryId = mission.Value.TerritoryId,
                     };
@@ -1264,12 +1263,11 @@ namespace ICE.Ui.DebugWindowTabs
                     newEntry.EndTime = mission.Value.EndTime;
 
 
-                    newEntry.Jobs.Add(mission.Value.JobId);
-                    if (mission.Value.JobId2 != 0) newEntry.Jobs.Add(mission.Value.JobId2);
+                    newEntry.Jobs = mission.Value.Jobs;
 
-                    foreach (var xp in mission.Value.ExperienceRewards)
+                    foreach (var xp in mission.Value.RelicXpInfo.OrderBy(x => x.Key))
                     {
-                        newEntry.RelicXpInfo[xp.Type] = xp.Amount;
+                        newEntry.RelicXpInfo[xp.Key] = xp.Value;
                     }
 
                     // General information is added. Time to check for crafting/gathering/fishing specifics
@@ -1302,7 +1300,7 @@ namespace ICE.Ui.DebugWindowTabs
                 missionInfo.Weather = mission.Weather;
 
             if (importClassScore)
-                missionInfo.ClassScore = mission.missionScore;
+                missionInfo.ClassScore = mission.ClassScore;
 
             if (importStartEndTime)
             {
@@ -1322,18 +1320,18 @@ namespace ICE.Ui.DebugWindowTabs
                 if (missionInfo.RelicXpInfo == null)
                     missionInfo.RelicXpInfo = new Dictionary<int, int>();
 
-                foreach (var xp in mission.ExperienceRewards)
+                foreach (var xp in mission.RelicXpInfo.OrderBy(x => x.Key))
                 {
-                    missionInfo.RelicXpInfo[xp.Type] = xp.Amount;
+                    missionInfo.RelicXpInfo[xp.Key] = xp.Value;
                 }
             }
 
             // Requirements
             if (importScores)
             {
-                missionInfo.BronzeScore = mission.BronzeRequirement;
-                missionInfo.SilverScore = mission.SilverRequirement;
-                missionInfo.GoldScore = mission.GoldRequirement;
+                missionInfo.BronzeScore = mission.BronzeScore;
+                missionInfo.SilverScore = mission.SilverScore;
+                missionInfo.GoldScore = mission.GoldScore;
             }
 
             if (importPreviousMissions)
@@ -1341,8 +1339,8 @@ namespace ICE.Ui.DebugWindowTabs
                 if (missionInfo.PreviousMissions == null)
                     missionInfo.PreviousMissions = new HashSet<uint>();
 
-                if (mission.PreviousMissionID != 0)
-                    missionInfo.PreviousMissions.Add(mission.PreviousMissionID);
+                if (!mission.PreviousMissions.Contains(0))
+                    missionInfo.PreviousMissions = mission.PreviousMissions;
             }
 
             if (importJobs)
@@ -1350,9 +1348,7 @@ namespace ICE.Ui.DebugWindowTabs
                 if (missionInfo.Jobs == null)
                     missionInfo.Jobs = new HashSet<uint>();
 
-                missionInfo.Jobs.Add(mission.JobId);
-                if (mission.JobId2 != 0) missionInfo.Jobs.Add(mission.JobId2);
-                if (mission.JobId3 != 0) missionInfo.Jobs.Add(mission.JobId3);
+                missionInfo.Jobs = mission.Jobs;
             }
 
             // Location & Content
