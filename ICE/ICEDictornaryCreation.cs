@@ -489,10 +489,10 @@ public sealed partial class ICE
                 targetInfo.MarkerId = sourceInfo.MarkerId;
 
                 // Universal Info
-                targetInfo.Name = sourceInfo.Name;
+                // targetInfo.Name = sourceInfo.Name; // Don't want this to get overwrote. This should always just be what the sheet has it as
                 targetInfo.Jobs = new HashSet<uint>(sourceInfo.Jobs);
                 targetInfo.ToDoId = sourceInfo.ToDoId;
-                targetInfo.Rank = sourceInfo.Rank;
+                // targetInfo.Rank = sourceInfo.Rank; // Also something we don't really care about editing. This should be static from the sheet
                 targetInfo.Attributes = sourceInfo.Attributes;
                 targetInfo.Weather = sourceInfo.Weather;
                 targetInfo.StartTime = sourceInfo.StartTime;

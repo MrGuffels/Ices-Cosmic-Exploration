@@ -74,8 +74,8 @@ public static unsafe partial class CosmicHelper
         public uint MarkerId { get; set; }
 
         // - - - Universal Info - - - //
-        public string Name { get; set; } = "";
-        public HashSet<uint> Jobs { get; set; } = new();
+        public string Name { get; set; }
+        public HashSet<uint> Jobs { get; set; }
         public uint ToDoId { get; set; } = 0;
         public uint Rank { get; set; } = 1;
         public MissionAttributes Attributes { get; set; }
