@@ -417,6 +417,48 @@ namespace ICE.Scheduler.Tasks
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
+                var bestIndex = FindBestRelicMission();
+
+                if (bestIndex > 0)
+                {
+                    IceLogging.Debug($"A mission was found for the xp grind: {bestIndex}.");
+                    var selectedMission = x.StellerMissions.Where(x => x.MissionId == bestIndex).FirstOrDefault();
+
+                    selectedMission.Select();
+                    InsertGrabMission(selectedMission.MissionId);
+                    return true;
+                }
+                else
+                {
+                    IceLogging.Debug("\n" +
+                                     "Somehow, you manage to find absolutely no missions. That's actually impressive.\n" +
+                                     "You might have one of the following issues:\n" +
+                                     "1: Ignore Manual Mode is enabled, and you have all missions set to manual mode.\n" +
+                                     "2: Only Enabled Missions is on, and you have a very limited pool of missions that somehow missed the mark\n" +
+                                     "If it's 2, then this should go on to re-roll for you (assuming that you have ATLEAST 1 mission enabled somewhere...\n" +
+                                     "Checking this now", "[Xp Grind]");
+
+                    if (C.XPRelicOnlyEnabled && BasicMissionCount != 0)
+                    {
+                        IceLogging.Debug($"Only relic grind was enabled. Continuing to re-roll mission now");
+                        P.TaskManager.Insert(() => FindReroll(), "Finding Reroll mission for Relic Grind");
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Error($"Okay, something is wrong. Stopping the process", "[Relic Grind]");
+                        SchedulerMain.DisablePlugin();
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static unsafe uint? FindBestRelicMission()
+        {
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
+            {
                 var wksManager = WKSManager.Instance();
                 if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                     return null;
@@ -436,7 +478,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    for (byte type = 1; type <= 4; type++)
+                    for (byte type = 1; type < 6; type++)
                     {
                         if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
                             break;
@@ -512,81 +554,54 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
-                int bestIndex = -1;
+                uint? bestMissionId = null;
                 float bestScore = float.NegativeInfinity;
 
-                foreach (var mission in rewardMissions)
+                foreach (var kvp in rewardMissions)
                 {
-                    var id = (int)mission.Key;
-                    var reward = mission.Value;
+                    uint missionId = kvp.Key;
+                    var reward = kvp.Value;
                     float score = 0f;
+                    IceLogging.Info($"Currently checking mission: {missionId}");
 
                     foreach (var rewardEntry in reward)
                     {
+                        IceLogging.Debug($"Checking for value: {rewardEntry.Key}");
                         if (urgencies.TryGetValue(rewardEntry.Key, out var urgency))
                         {
-                            score += urgency * rewardEntry.Value;
+                            IceLogging.Info($"Checking urgency for: {rewardEntry.Key}");
+                            float contribution = urgency * rewardEntry.Value;
+
+                            // Only add positive contributions (high urgency rewards)
+                            if (contribution > 0)
+                            {
+                                score += contribution;
+                                IceLogging.Info($"Adding positive score: {contribution}");
+                            }
+                            else
+                            {
+                                IceLogging.Debug($"Skipping negative score: {contribution}");
+                            }
                         }
                     }
 
-                    if (CosmicHelper.SheetMissionDict.TryGetValue((uint)id, out var missionEntry))
-                    {
-                        bool gatheringMission = missionEntry.Attributes.HasFlag(MissionAttributes.Gather) 
-                                             || missionEntry.Attributes.HasFlag(MissionAttributes.Fish);
-
-                        if (gatheringMission)
-                        {
-                            Vector2 missionLoc = missionEntry.MapPosition;
-                            Vector2 currentPos = new Vector2(Player.Position.X, Player.Position.Z);
-                            float distance = Vector2.Distance(missionLoc, currentPos);
-
-                            float distanceMultiplier = Math.Max(0.1f, 1.0f - (distance / 200f));
-                            score = score * distanceMultiplier;
-                        }
-                    }
-
+                    // Compare this mission's score with the current best
                     if (score > bestScore)
                     {
                         bestScore = score;
-                        bestIndex = id;
+                        bestMissionId = missionId;
+                        IceLogging.Info($"New best mission: {missionId} with score: {score}");
                     }
                 }
 
-                if (bestIndex > 0)
-                {
-                    IceLogging.Debug($"A mission was found for the xp grind: {bestIndex}.");
-                    var selectedMission = x.StellerMissions.Where(x => x.MissionId == bestIndex).FirstOrDefault();
-
-                    selectedMission.Select();
-                    InsertGrabMission(selectedMission.MissionId);
-                    return true;
-                }
-                else
-                {
-                    IceLogging.Debug("\n" +
-                                     "Somehow, you manage to find absolutely no missions. That's actually impressive.\n" +
-                                     "You might have one of the following issues:\n" +
-                                     "1: Ignore Manual Mode is enabled, and you have all missions set to manual mode.\n" +
-                                     "2: Only Enabled Missions is on, and you have a very limited pool of missions that somehow missed the mark\n" +
-                                     "If it's 2, then this should go on to re-roll for you (assuming that you have ATLEAST 1 mission enabled somewhere...\n" +
-                                     "Checking this now", "[Xp Grind]");
-
-                    if (C.XPRelicOnlyEnabled && BasicMissionCount != 0)
-                    {
-                        IceLogging.Debug($"Only relic grind was enabled. Continuing to re-roll mission now");
-                        P.TaskManager.Insert(() => FindReroll(), "Finding Reroll mission for Relic Grind");
-                        return true;
-                    }
-                    else
-                    {
-                        IceLogging.Error($"Okay, something is wrong. Stopping the process", "[Relic Grind]");
-                        SchedulerMain.DisablePlugin();
-                    }
-                }
+                return bestMissionId;
             }
-
-            return false;
+            else
+            {
+                return null;
+            }
         }
+
         public static bool? FindReroll()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
