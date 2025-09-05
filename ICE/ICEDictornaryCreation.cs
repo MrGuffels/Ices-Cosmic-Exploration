@@ -76,8 +76,8 @@ public sealed partial class ICE
 
             MissionAttributes attributes = missionText switch
             {
-                99 or 101 or 145 => Craft | Limited,
-                100 or 102 or 146 or 147 or 148 => Craft | Limited | Collectables,
+                99 or 101 or 145 or 149 => Craft | Limited,
+                100 or 102 or 146 or 147 or 148 or 235 or 237 => Craft | Limited | Collectables,
                 103 => Gather | Limited,
                 104 => Gather | ScoreTimeRemaining,
                 105 => Gather,
@@ -432,7 +432,7 @@ public sealed partial class ICE
             }
         }
 
-        UpdateSheetMissionDict();
+        // UpdateSheetMissionDict();
     }
     private static MissionType GetMissionType(CosmicInfo mission)
     {

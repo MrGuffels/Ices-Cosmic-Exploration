@@ -23,6 +23,32 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static bool isEditMode = false;
 
+        // Pagination and filtering for mission list
+        private static int missionCurrentPage = 0;
+        private static int missionsPerPage = 20;
+        private static string missionSearch = "";
+        private static int selectedJobFilter = -1; // -1 = All, 8-18 = specific job
+        private static int sortMode = 0; // 0 = ID ascending, 1 = ID descending, 2 = Name ascending, 3 = Name descending
+
+        // Mass edit functionality
+        private static bool showMassEditPopup = false;
+        private static HashSet<uint> selectedMissionsForMassEdit = new();
+        private static bool selectAll = false;
+
+        // Mass edit import flags (same as selective import)
+        private static bool massImportAttributes = true;
+        private static bool massImportWeather = true;
+        private static bool massImportStartEndTime = true;
+        private static bool massImportClassScore = true;
+        private static bool massImportCredits = true;
+        private static bool massImportPreviousMissions = true;
+        private static bool massImportScores = true;
+        private static bool massImportLocation = true;
+        private static bool massImportJobs = true;
+        private static bool massImportXpRewards = true;
+        private static bool massImportCrafting = true;
+        private static bool massImportGathering = true;
+
         // Temporary edit fields
         private static uint tempAmount = 0;
         private static Dictionary<int, int> tempXpTable = new();
@@ -49,7 +75,6 @@ namespace ICE.Ui.DebugWindowTabs
         private static string newFishItemName = "";
         private static uint newFishItemId = 0;
 
-        private static string missionSearch = "";
         private static uint jobToAdd = 0;
         private static uint missionToAdd = 0;
         private static Dictionary<string, uint> newIds = new();
@@ -110,6 +135,15 @@ namespace ICE.Ui.DebugWindowTabs
                     ImportAllMissions();
                 }
 
+                // New mass edit button
+                ImGui.SameLine();
+                if (ImGui.Button("Mass Edit Existing"))
+                {
+                    showMassEditPopup = true;
+                    selectedMissionsForMassEdit.Clear();
+                    selectAll = false;
+                }
+
                 if (ImGui.BeginPopupModal("Confirm Delete"))
                 {
                     ImGui.Text($"Are you sure you want to delete mission {selectedMission}?");
@@ -133,8 +167,8 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             Vector2 windowSize = ImGui.GetContentRegionAvail();
-            float leftPanelWidth = windowSize.X * 0.5f;
-            float rightPanelWidth = windowSize.X * 0.5f - ImGui.GetStyle().ItemSpacing.X;
+            float leftPanelWidth = 600f; // Fixed width for mission list
+            float rightPanelWidth = windowSize.X - leftPanelWidth - ImGui.GetStyle().ItemSpacing.X;
 
             if (ImGui.BeginChild("Mission Entries Window", new Vector2(leftPanelWidth, 0), true))
             {
@@ -149,37 +183,111 @@ namespace ICE.Ui.DebugWindowTabs
                 MissionDetails();
                 ImGui.EndChild();
             }
+
+            // Handle mass edit popup
+            HandleMassEditPopup();
         }
 
         private static void MissionSelect()
         {
+            // Search and filtering controls
+            ImGui.SetNextItemWidth(100);
             ImGui.InputText("Search Missions", ref missionSearch);
+
+            // Job filter dropdown
+            ImGui.SetNextItemWidth(100);
+            string[] jobFilterOptions = new string[] { "All Jobs" }.Concat(
+                Enumerable.Range(8, 11).Select(i => $"Job {i}")
+            ).ToArray();
+
+            int jobFilterDisplay = selectedJobFilter + 1; // Convert -1 to 0 for display
+            if (ImGui.Combo("Job Filter", ref jobFilterDisplay, jobFilterOptions, jobFilterOptions.Length))
+            {
+                selectedJobFilter = jobFilterDisplay - 1; // Convert back to -1 for "All"
+                missionCurrentPage = 0; // Reset to first page when filter changes
+            }
+
+            // Sort mode dropdown
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(120);
+            string[] sortOptions = { "ID Ascending", "ID Descending", "Name Ascending", "Name Descending" };
+            if (ImGui.Combo("Sort", ref sortMode, sortOptions, sortOptions.Length))
+            {
+                missionCurrentPage = 0; // Reset to first page when sort changes
+            }
+
             ImGui.Separator();
 
             if (CosmicHelper.Dict_CosmicMissions.Count > 0)
             {
-                // Easy way to just sort by key. Nice instead of having to 
-                foreach (var entry in CosmicHelper.Dict_CosmicMissions.OrderBy(x => x.Key))
+                // Get filtered and sorted missions
+                var filteredMissions = GetFilteredAndSortedMissions();
+
+                // Pagination calculations
+                int totalMissions = filteredMissions.Count;
+                int totalPages = (int)Math.Ceiling((double)totalMissions / missionsPerPage);
+
+                if (missionCurrentPage >= totalPages && totalPages > 0)
+                    missionCurrentPage = totalPages - 1;
+                if (missionCurrentPage < 0)
+                    missionCurrentPage = 0;
+
+                // Pagination controls
+                ImGui.Text($"Page {missionCurrentPage + 1} of {Math.Max(1, totalPages)} ({totalMissions} missions)");
+
+                if (ImGui.Button("First") && missionCurrentPage > 0)
+                    missionCurrentPage = 0;
+                ImGui.SameLine();
+
+                if (ImGui.Button("Previous") && missionCurrentPage > 0)
+                    missionCurrentPage--;
+                ImGui.SameLine();
+
+                if (ImGui.Button("Next") && missionCurrentPage < totalPages - 1)
+                    missionCurrentPage++;
+                ImGui.SameLine();
+
+                if (ImGui.Button("Last") && missionCurrentPage < totalPages - 1)
+                    missionCurrentPage = totalPages - 1;
+
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(80);
+                int displayPage = missionCurrentPage + 1;
+                if (ImGui.InputInt("##PageInput", ref displayPage))
                 {
-                    var id = entry.Key;
+                    displayPage = Math.Clamp(displayPage, 1, Math.Max(1, totalPages));
+                    missionCurrentPage = displayPage - 1;
+                }
+
+                ImGui.Separator();
+
+                // Display missions for current page
+                var pageMissions = filteredMissions
+                    .Skip(missionCurrentPage * missionsPerPage)
+                    .Take(missionsPerPage)
+                    .ToList();
+
+                foreach (var mission in pageMissions)
+                {
+                    var id = mission.Key;
                     string missionName = SheetMissionDict.ContainsKey(id)
                         ? SheetMissionDict[id].Name
                         : "Unknown Mission";
 
-                    if (!string.IsNullOrEmpty(missionSearch) &&
-                        !missionName.Contains(missionSearch, StringComparison.OrdinalIgnoreCase) &&
-                        !id.ToString().Contains(missionSearch))
+                    // Get job info for display
+                    string jobInfo = "";
+                    if (mission.Value.Jobs != null && mission.Value.Jobs.Count > 0)
                     {
-                        continue;
+                        jobInfo = $" [Jobs: {string.Join(",", mission.Value.Jobs)}]";
                     }
 
                     bool isSelected = selectedMission == id;
-                    if (ImGui.Selectable($"[{id}] - {missionName}", isSelected))
+                    if (ImGui.Selectable($"[{id}] - {missionName}{jobInfo}", isSelected))
                     {
                         selectedMission = id;
                         if (isEditMode)
                         {
-                            isEditMode = false; // Making sure to exit the editing mode... can't be in an edit mid mission selection.
+                            isEditMode = false; // Exit edit mode when switching missions
                         }
                     }
                 }
@@ -188,6 +296,202 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 ImGui.Text("No current entries exist");
             }
+        }
+
+        private static List<KeyValuePair<uint, CosmicInfo>> GetFilteredAndSortedMissions()
+        {
+            var missions = CosmicHelper.Dict_CosmicMissions.AsEnumerable();
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(missionSearch))
+            {
+                missions = missions.Where(m =>
+                {
+                    string missionName = SheetMissionDict.ContainsKey(m.Key)
+                        ? SheetMissionDict[m.Key].Name
+                        : "Unknown Mission";
+
+                    return missionName.Contains(missionSearch, StringComparison.OrdinalIgnoreCase) ||
+                           m.Key.ToString().Contains(missionSearch);
+                });
+            }
+
+            // Apply job filter
+            if (selectedJobFilter >= 8 && selectedJobFilter <= 18)
+            {
+                uint jobFilter = (uint)selectedJobFilter;
+                missions = missions.Where(m =>
+                    m.Value.Jobs != null && m.Value.Jobs.Contains(jobFilter));
+            }
+
+            // Apply sorting
+            missions = sortMode switch
+            {
+                0 => missions.OrderBy(m => m.Key), // ID Ascending
+                1 => missions.OrderByDescending(m => m.Key), // ID Descending
+                2 => missions.OrderBy(m => SheetMissionDict.ContainsKey(m.Key) ? SheetMissionDict[m.Key].Name : "Unknown Mission"), // Name Ascending
+                3 => missions.OrderByDescending(m => SheetMissionDict.ContainsKey(m.Key) ? SheetMissionDict[m.Key].Name : "Unknown Mission"), // Name Descending
+                _ => missions.OrderBy(m => m.Key)
+            };
+
+            return missions.ToList();
+        }
+
+        private static void HandleMassEditPopup()
+        {
+            if (showMassEditPopup)
+            {
+                ImGui.OpenPopup("Mass Edit Missions");
+                showMassEditPopup = false;
+            }
+
+            if (ImGui.BeginPopupModal("Mass Edit Missions", ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                ImGui.Text("Select missions to update from old dictionary:");
+                ImGui.Separator();
+
+                // Selection controls
+                if (ImGui.Checkbox("Select All Visible", ref selectAll))
+                {
+                    var filteredMissions = GetFilteredAndSortedMissions();
+                    if (selectAll)
+                    {
+                        foreach (var mission in filteredMissions)
+                        {
+                            selectedMissionsForMassEdit.Add(mission.Key);
+                        }
+                    }
+                    else
+                    {
+                        selectedMissionsForMassEdit.Clear();
+                    }
+                }
+
+                ImGui.SameLine();
+                ImGui.Text($"Selected: {selectedMissionsForMassEdit.Count}");
+
+                if (ImGui.Button("Clear Selection"))
+                {
+                    selectedMissionsForMassEdit.Clear();
+                    selectAll = false;
+                }
+
+                ImGui.Separator();
+
+                // Mission selection list (with same filtering as main view)
+                if (ImGui.BeginChild("MissionSelection", new Vector2(400, 300), true))
+                {
+                    var filteredMissions = GetFilteredAndSortedMissions();
+
+                    foreach (var mission in filteredMissions)
+                    {
+                        var id = mission.Key;
+                        string missionName = SheetMissionDict.ContainsKey(id)
+                            ? SheetMissionDict[id].Name
+                            : "Unknown Mission";
+
+                        bool isSelected = selectedMissionsForMassEdit.Contains(id);
+                        if (ImGui.Checkbox($"[{id}] - {missionName}", ref isSelected))
+                        {
+                            if (isSelected)
+                                selectedMissionsForMassEdit.Add(id);
+                            else
+                                selectedMissionsForMassEdit.Remove(id);
+                        }
+                    }
+
+                    ImGui.EndChild();
+                }
+
+                ImGui.Separator();
+
+                // Import options (same as selective import)
+                ImGui.Text("Select properties to import from old dictionary:");
+
+                ImGui.Text("Basic Properties:");
+                ImGui.Checkbox("Attributes##mass", ref massImportAttributes);
+                ImGui.Checkbox("Weather##mass", ref massImportWeather);
+                ImGui.Checkbox("Start | End time##mass", ref massImportStartEndTime);
+                ImGui.Checkbox("Class Score##mass", ref massImportClassScore);
+
+                ImGui.Separator();
+                ImGui.Text("Rewards:");
+                ImGui.Checkbox("Credits (Cosmo/Lunar)##mass", ref massImportCredits);
+                ImGui.Checkbox("XP Rewards##mass", ref massImportXpRewards);
+
+                ImGui.Separator();
+                ImGui.Text("Requirements:");
+                ImGui.Checkbox("Scores (Bronze/Silver/Gold)##mass", ref massImportScores);
+                ImGui.Checkbox("Previous Missions##mass", ref massImportPreviousMissions);
+                ImGui.Checkbox("Jobs##mass", ref massImportJobs);
+
+                ImGui.Separator();
+                ImGui.Text("Location & Content:");
+                ImGui.Checkbox("Location (Territory/Position/Radius)##mass", ref massImportLocation);
+                ImGui.Checkbox("Crafting Info##mass", ref massImportCrafting);
+                ImGui.Checkbox("Gathering Info##mass", ref massImportGathering);
+
+                ImGui.Separator();
+
+                // Action buttons
+                if (ImGui.Button("Execute Mass Import", new Vector2(150, 0)) && selectedMissionsForMassEdit.Count > 0)
+                {
+                    ExecuteMassImport();
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Select All Properties", new Vector2(140, 0)))
+                {
+                    massImportAttributes = massImportWeather = massImportStartEndTime = massImportClassScore
+                    = massImportCredits = massImportPreviousMissions = massImportScores = massImportLocation
+                    = massImportJobs = massImportXpRewards = massImportCrafting = massImportGathering = true;
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Clear All Properties", new Vector2(130, 0)))
+                {
+                    massImportAttributes = massImportWeather = massImportStartEndTime = massImportClassScore
+                    = massImportCredits = massImportPreviousMissions = massImportScores = massImportLocation
+                    = massImportJobs = massImportXpRewards = massImportCrafting = massImportGathering = false;
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("Cancel", new Vector2(80, 0)))
+                {
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.EndPopup();
+            }
+        }
+
+        private static void ExecuteMassImport()
+        {
+            int successCount = 0;
+            int failCount = 0;
+
+            foreach (uint missionId in selectedMissionsForMassEdit)
+            {
+                if (CosmicHelper.Dict_CosmicMissions.TryGetValue(missionId, out var missionInfo))
+                {
+                    if (SelectiveImportMission(missionId, missionInfo,
+                        massImportAttributes, massImportWeather, massImportStartEndTime, massImportClassScore,
+                        massImportCredits, massImportXpRewards, massImportScores, massImportPreviousMissions,
+                        massImportJobs, massImportLocation, massImportCrafting, massImportGathering))
+                    {
+                        successCount++;
+                    }
+                    else
+                    {
+                        failCount++;
+                    }
+                }
+            }
+
+            // You might want to show a message about the results
+            // ImGui notification or console output could go here
+            Console.WriteLine($"Mass import completed: {successCount} successful, {failCount} failed");
         }
 
         private static void MissionDetails()
@@ -274,7 +578,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.EndTabBar();
             }
 
-            // Handle selective import popup
+            // Handle selective import popup (existing code)
             if (showImportPopup)
             {
                 ImGui.OpenPopup("Selective Import");
@@ -323,7 +627,10 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (canImport && ImGui.Button("Import Selected", new Vector2(120, 0)))
                 {
-                    SelectiveImportMission(selectedMission, missionInfo);
+                    SelectiveImportMission(selectedMission, missionInfo,
+                        importAttributes, importWeather, importStartEndTime, importClassScore,
+                        importCredits, importXpRewards, importScores, importPreviousMissions,
+                        importJobs, importLocation, importCrafting, importGathering);
                     if (isEditMode)
                     {
                         // Refreshes the edit mode with the new imported values
@@ -335,24 +642,24 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.SameLine();
                 if (ImGui.Button("Select All", new Vector2(80, 0)))
                 {
-                    importAttributes = importWeather 
-                    = importStartEndTime = importClassScore 
-                    = importCredits = importPreviousMissions 
-                    = importScores = importLocation 
-                    = importJobs = importXpRewards 
-                    = importCrafting = importGathering 
+                    importAttributes = importWeather
+                    = importStartEndTime = importClassScore
+                    = importCredits = importPreviousMissions
+                    = importScores = importLocation
+                    = importJobs = importXpRewards
+                    = importCrafting = importGathering
                     = true;
                 }
 
                 ImGui.SameLine();
                 if (ImGui.Button("Clear All", new Vector2(80, 0)))
                 {
-                    importAttributes = importWeather 
-                    = importStartEndTime = importClassScore 
-                    = importCredits = importPreviousMissions 
-                    = importScores = importLocation 
-                    = importJobs = importXpRewards 
-                    = importCrafting = importGathering 
+                    importAttributes = importWeather
+                    = importStartEndTime = importClassScore
+                    = importCredits = importPreviousMissions
+                    = importScores = importLocation
+                    = importJobs = importXpRewards
+                    = importCrafting = importGathering
                     = false;
                 }
 
@@ -366,6 +673,108 @@ namespace ICE.Ui.DebugWindowTabs
             }
         }
 
+        // Rest of the existing methods remain the same...
+        // I'll include the modified SelectiveImportMission method and keep the rest unchanged
+
+        private static bool SelectiveImportMission(uint missionId, CosmicInfo missionInfo,
+            bool importAttributes, bool importWeather, bool importStartEndTime, bool importClassScore,
+            bool importCredits, bool importXpRewards, bool importScores, bool importPreviousMissions,
+            bool importJobs, bool importLocation, bool importCrafting, bool importGathering)
+        {
+            if (!CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission))
+                return false;
+
+            // Basic Properties
+            if (importAttributes)
+                missionInfo.Attributes = mission.Attributes;
+
+            if (importWeather)
+                missionInfo.Weather = mission.Weather;
+
+            if (importClassScore)
+                missionInfo.ClassScore = mission.ClassScore;
+
+            if (importStartEndTime)
+            {
+                missionInfo.StartTime = mission.StartTime;
+                missionInfo.EndTime = mission.EndTime;
+            }
+
+            // Rewards
+            if (importCredits)
+            {
+                missionInfo.CosmoCredit = mission.CosmoCredit;
+                missionInfo.LunarCredit = mission.LunarCredit;
+            }
+
+            if (importXpRewards)
+            {
+                if (missionInfo.RelicXpInfo == null)
+                    missionInfo.RelicXpInfo = new Dictionary<int, int>();
+
+                missionInfo.RelicXpInfo.Clear();
+                foreach (var xp in mission.RelicXpInfo.OrderBy(x => x.Key))
+                {
+                    missionInfo.RelicXpInfo[xp.Key] = xp.Value;
+                }
+            }
+
+            // Requirements
+            if (importScores)
+            {
+                missionInfo.BronzeScore = mission.BronzeScore;
+                missionInfo.SilverScore = mission.SilverScore;
+                missionInfo.GoldScore = mission.GoldScore;
+            }
+
+            if (importPreviousMissions)
+            {
+                if (missionInfo.PreviousMissions == null)
+                    missionInfo.PreviousMissions = new HashSet<uint>();
+
+                if (!mission.PreviousMissions.Contains(0))
+                    missionInfo.PreviousMissions = new HashSet<uint>(mission.PreviousMissions);
+            }
+
+            if (importJobs)
+            {
+                if (missionInfo.Jobs == null)
+                    missionInfo.Jobs = new HashSet<uint>();
+
+                missionInfo.Jobs = new HashSet<uint>(mission.Jobs);
+            }
+
+            // Location & Content
+            if (importLocation)
+            {
+                missionInfo.TerritoryId = mission.TerritoryId;
+                missionInfo.MapPosition = mission.MapPosition == new Vector2(-1024, -1024) ? new Vector2(0, 0) : mission.MapPosition;
+                missionInfo.Radius = mission.Radius;
+            }
+
+            if (importCrafting)
+            {
+                if (CosmicHelper.MoonRecipies.TryGetValue(missionId, out var craftingInfo))
+                {
+                    if (craftingInfo.MainCraftsDict.Count > 0)
+                        missionInfo.Crafts_Main = new Dictionary<ushort, int>(craftingInfo.MainCraftsDict);
+                    if (craftingInfo.PreCraftDict.Count > 0 && craftingInfo.PreCrafts)
+                        missionInfo.Crafts_Pre = new Dictionary<ushort, int>(craftingInfo.PreCraftDict);
+                }
+            }
+
+            if (importGathering)
+            {
+                if (CosmicHelper.GatheringItemDict.TryGetValue(missionId, out var gatheringInfo))
+                {
+                    missionInfo.Gathering_Min = new Dictionary<uint, int>(gatheringInfo.MinGatherItems);
+                }
+            }
+
+            return true;
+        }
+
+        // Keep all other existing methods unchanged...
         private static void DrawBasicInfo(uint missionId)
         {
             var missionInfo = CosmicHelper.Dict_CosmicMissions[missionId];
@@ -662,7 +1071,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.Text("(Edit mode - You can modify item counts)");
             }
 
-            // Gathering minimum TODO: Make the add items specify which one to add to
+            // Gathering minimum 
             if (missionInfo.Gathering_Min != null && missionInfo.Gathering_Min.Count > 0)
             {
                 List<uint> itemsToRemove = new();
@@ -679,7 +1088,7 @@ namespace ICE.Ui.DebugWindowTabs
                     if (isEditMode)
                     {
                         ImGui.SameLine();
-
+                        // Add edit functionality here if needed
                     }
                     else
                     {
@@ -694,8 +1103,6 @@ namespace ICE.Ui.DebugWindowTabs
 
                     ImGui.PopID();
                 }
-
-
             }
 
             ImGui.Separator();
@@ -716,7 +1123,6 @@ namespace ICE.Ui.DebugWindowTabs
                     if (isEditMode)
                     {
                         List<uint> idsToRemove = new();
-                        List<uint> idsToAdd = new();
 
                         foreach (var id in itemIds)
                         {
@@ -899,11 +1305,14 @@ namespace ICE.Ui.DebugWindowTabs
             tempWeather = missionInfo.Weather != null
                 ? (CosmicWeather)missionInfo.Weather
                 : CosmicWeather.FairSkies;
+
+            tempStartTime = missionInfo.StartTime ?? 0;
+            tempEndTime = missionInfo.EndTime ?? 0;
             tempClassScore = missionInfo.ClassScore ?? 0;
             tempCosmoCredit = missionInfo.CosmoCredit ?? 0;
             tempLunarCredit = missionInfo.LunarCredit ?? 0;
             tempMapPosition = missionInfo.MapPosition ?? Vector2.Zero;
-            tempRadius = missionInfo.Radius ?? 0f;
+            tempRadius = missionInfo.Radius ?? 0;
             tempTerritoryId = missionInfo.TerritoryId ?? 0;
 
             // Initialize collections with null checks
@@ -954,7 +1363,7 @@ namespace ICE.Ui.DebugWindowTabs
                 sb.AppendLine($"    [{missionId}] = new CosmicInfo");
                 sb.AppendLine("    {");
 
-                // All properties (rest of your existing code stays the same)
+                // All properties
                 sb.AppendLine($"        FishCountRequired = {missionInfo.FishCountRequired},");
                 sb.AppendLine($"        BronzeScore = {missionInfo.BronzeScore},");
                 sb.AppendLine($"        SilverScore = {missionInfo.SilverScore},");
@@ -1160,16 +1569,16 @@ namespace ICE.Ui.DebugWindowTabs
             // Gathering_Min
             if (missionInfo.Gathering_Min != null && missionInfo.Gathering_Min.Count > 0)
             {
-                sb.AppendLine($"    Gathering_Min = new Dictionary<uint, int>");
-                sb.AppendLine("     {");
+                sb.AppendLine("    Gathering_Min = new Dictionary<uint, int>");
+                sb.AppendLine("    {");
                 foreach (var gatherItem in missionInfo.Gathering_Min)
                 {
                     var itemId = gatherItem.Key;
                     var amount = gatherItem.Value;
 
-                    sb.AppendLine($"        [{itemId}] = {amount}, ");
+                    sb.AppendLine($"        [{itemId}] = {amount},");
                 }
-                sb.AppendLine($"    }}");
+                sb.AppendLine("    },");
             }
 
             sb.AppendLine("},");
@@ -1262,7 +1671,6 @@ namespace ICE.Ui.DebugWindowTabs
                     newEntry.StartTime = mission.Value.StartTime;
                     newEntry.EndTime = mission.Value.EndTime;
 
-
                     newEntry.Jobs = mission.Value.Jobs;
 
                     foreach (var xp in mission.Value.RelicXpInfo.OrderBy(x => x.Key))
@@ -1283,98 +1691,6 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         newEntry.Gathering_Min = gatheringInfo.MinGatherItems;
                     }
-                }
-            }
-        }
-
-        private static void SelectiveImportMission(uint missionId, dynamic missionInfo)
-        {
-            if (!CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission))
-                return;
-
-            // Basic Properties
-            if (importAttributes)
-                missionInfo.Attributes = mission.Attributes;
-
-            if (importWeather)
-                missionInfo.Weather = mission.Weather;
-
-            if (importClassScore)
-                missionInfo.ClassScore = mission.ClassScore;
-
-            if (importStartEndTime)
-            {
-                missionInfo.StartTime = mission.StartTime;
-                missionInfo.EndTime = mission.EndTime;
-            }
-
-            // Rewards
-            if (importCredits)
-            {
-                missionInfo.CosmoCredit = mission.CosmoCredit;
-                missionInfo.LunarCredit = mission.LunarCredit;
-            }
-
-            if (importXpRewards)
-            {
-                if (missionInfo.RelicXpInfo == null)
-                    missionInfo.RelicXpInfo = new Dictionary<int, int>();
-
-                foreach (var xp in mission.RelicXpInfo.OrderBy(x => x.Key))
-                {
-                    missionInfo.RelicXpInfo[xp.Key] = xp.Value;
-                }
-            }
-
-            // Requirements
-            if (importScores)
-            {
-                missionInfo.BronzeScore = mission.BronzeScore;
-                missionInfo.SilverScore = mission.SilverScore;
-                missionInfo.GoldScore = mission.GoldScore;
-            }
-
-            if (importPreviousMissions)
-            {
-                if (missionInfo.PreviousMissions == null)
-                    missionInfo.PreviousMissions = new HashSet<uint>();
-
-                if (!mission.PreviousMissions.Contains(0))
-                    missionInfo.PreviousMissions = mission.PreviousMissions;
-            }
-
-            if (importJobs)
-            {
-                if (missionInfo.Jobs == null)
-                    missionInfo.Jobs = new HashSet<uint>();
-
-                missionInfo.Jobs = mission.Jobs;
-            }
-
-            // Location & Content
-            if (importLocation)
-            {
-                missionInfo.TerritoryId = mission.TerritoryId;
-                missionInfo.MapPosition = mission.MapPosition;
-                missionInfo.Radius = mission.Radius;
-            }
-
-            if (importCrafting)
-            {
-                if (CosmicHelper.MoonRecipies.TryGetValue(missionId, out var craftingInfo))
-                {
-                    if (craftingInfo.MainCraftsDict.Count > 0)
-                        missionInfo.Crafts_Main = craftingInfo.MainCraftsDict;
-                    if (craftingInfo.PreCraftDict.Count > 0 && craftingInfo.PreCrafts)
-                        missionInfo.Crafts_Pre = craftingInfo.PreCraftDict;
-                }
-            }
-
-            if (importGathering)
-            {
-                if (CosmicHelper.GatheringItemDict.TryGetValue(missionId, out var gatheringInfo))
-                {
-                    missionInfo.Gathering_Min = gatheringInfo.MinGatherItems;
                 }
             }
         }
