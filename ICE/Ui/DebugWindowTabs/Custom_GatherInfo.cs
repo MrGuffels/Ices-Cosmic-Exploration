@@ -757,9 +757,9 @@ namespace ICE.Ui.DebugWindowTabs
                 if (CosmicHelper.MoonRecipies.TryGetValue(missionId, out var craftingInfo))
                 {
                     if (craftingInfo.MainCraftsDict.Count > 0)
-                        missionInfo.Crafts_Main = new Dictionary<ushort, int>(craftingInfo.MainCraftsDict);
-                    if (craftingInfo.PreCraftDict.Count > 0 && craftingInfo.PreCrafts)
-                        missionInfo.Crafts_Pre = new Dictionary<ushort, int>(craftingInfo.PreCraftDict);
+                        missionInfo.Crafts_Main = new Dictionary<ushort, CosmicHelper.CraftingInfo>(craftingInfo.MainCraftsDict);
+                    if (craftingInfo.PreCraftDict.Count > 0)
+                        missionInfo.Crafts_Pre = new Dictionary<ushort, CosmicHelper.CraftingInfo>(craftingInfo.PreCraftDict);
                 }
             }
 
@@ -1628,7 +1628,7 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         if (craftingInfo.MainCraftsDict.Count > 0)
                             newEntry.Crafts_Main = craftingInfo.MainCraftsDict;
-                        if (craftingInfo.PreCraftDict.Count > 0 && craftingInfo.PreCrafts)
+                        if (craftingInfo.PreCraftDict.Count > 0)
                             newEntry.Crafts_Pre = craftingInfo.PreCraftDict;
                     }
 
@@ -1683,7 +1683,7 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         if (craftingInfo.MainCraftsDict.Count > 0)
                             newEntry.Crafts_Main = craftingInfo.MainCraftsDict;
-                        if (craftingInfo.PreCraftDict.Count > 0 && craftingInfo.PreCrafts)
+                        if (craftingInfo.PreCraftDict.Count > 0)
                             newEntry.Crafts_Pre = craftingInfo.PreCraftDict;
                     }
 

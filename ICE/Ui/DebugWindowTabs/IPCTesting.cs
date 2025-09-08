@@ -86,7 +86,27 @@ namespace ICE.Ui.DebugWindowTabs
             }
             if (ImGui.Button("Swap Bait... simple"))
             {
+                if (CosmicHelper.CurrentBait == 0)
+                {
+                    IceLogging.Debug("Bait is not currently equipped");
+                }
+
                 P.AutoHook.SwapBaitById(baitId);
+            }
+            if (ImGui.Button("Stupid Test"))
+            {
+                if (CosmicHelper.CurrentBait == 0)
+                {
+                    IceLogging.Debug($"No bait is equipped");
+                }
+                else if (CosmicHelper.CurrentBait == null)
+                {
+                    IceLogging.Debug("Bait is null... aka not in the middle of a mission");
+                }
+                else
+                {
+                    IceLogging.Debug($"Current bait: {CosmicHelper.CurrentBait}");
+                }
             }
         }
 

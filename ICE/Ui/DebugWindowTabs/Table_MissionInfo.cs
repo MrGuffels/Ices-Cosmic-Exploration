@@ -63,7 +63,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 25, tableFlags)) // Increased column count by 1
+            if (ImGui.BeginTable("Moon Mission Information Table", 27, tableFlags)) // Increased column count by 1
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -278,19 +278,19 @@ namespace ICE.Ui.DebugWindowTabs
                         foreach (var recipe in recipeInfo.MainCraftsDict)
                         {
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{recipe.Key}");
+                            ImGui.Text($"{recipe.Value.ItemId}");
 
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{recipe.Value}");
+                            ImGui.Text($"{recipe.Value.Amount}");
                         }
 
                         ImGui.TableSetColumnIndex(23);
                         foreach (var precraft in recipeInfo.PreCraftDict)
                         {
-                            ImGui.Text($"{precraft.Key}");
+                            ImGui.Text($"{precraft.Value.ItemId}");
 
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{precraft.Value}");
+                            ImGui.Text($"{precraft.Value.Amount}");
                         }
                     }
 
