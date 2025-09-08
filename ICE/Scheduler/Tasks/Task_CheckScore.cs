@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -214,7 +215,9 @@ namespace ICE.Scheduler.Tasks
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo))
             {
                 var Id = CosmicHelper.CurrentLunarMission;
-                var mission = CosmicHelper.Dict_CosmicMissions[Id];
+                // var mission = CosmicHelper.Dict_CosmicMissions[Id];
+                var mission = CosmicHelper.SheetMissionDict[Id];
+
                 bool hasMinItems = true; // Have this as true, because just want to run a check for all items
 
                 // First things first, have to check to see if you have enough of the initial crafts/meet the score threshold
@@ -231,6 +234,9 @@ namespace ICE.Scheduler.Tasks
                 }
 
                 // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
+                if (missionInfo.CurrentScore == null)
+                    return false;
+
                 if (mission.BronzeScore != 0 && !(missionInfo.CurrentScore >= mission.BronzeScore))
                 {
                     IceLogging.Info("Bronze score is recorded at not 0. Which means that it needs a minimum score. \n" +
@@ -241,7 +247,61 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
+                    bool shouldTurnin = false;
+                    var currentScore = missionInfo.CurrentScore;
+                    var bronzeScore = mission.BronzeScore;
+                    var silverScore = mission.SilverScore;
+                    var goldScore = mission.GoldScore;
 
+                    var config = C.MissionConfig[Id];
+                    bool AnyTurnin = config.AutoTurnin;
+                    bool GoldGoal = goldScore >= currentScore;
+                    bool SilverGoal = silverScore >= currentScore;
+                    bool TurninBronze = config.TurninBronze;
+
+                    if (config.AutoTurnin)
+                    {
+                        // AutoTurnin enabled, going to check for gold only since we have materials/time still
+                        if (GoldGoal)
+                        {
+                            shouldTurnin = true;
+                        }
+                    }
+                    else
+                    {
+                        if (GoldGoal && config.TurninGold)
+                        {
+                            shouldTurnin = true;
+                        }
+                        else if (SilverGoal && config.TurninSilver)
+                        {
+                            if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
+                            {
+                                shouldTurnin = true;
+                            }
+                        }
+                        else if (config.TurninBronze)
+                        {
+                            if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
+                            {
+                                shouldTurnin = true;
+                            }
+                        }
+                    }
+
+                    if (shouldTurnin)
+                    {
+                        IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
+
+                        SchedulerMain.State = IceState.TurninMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
+                        return true;
+                    }
                 }
             }
             else
@@ -253,48 +313,6 @@ namespace ICE.Scheduler.Tasks
                     {
                         moonHud.Mission();
                         IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private static bool? CheckScore(bool forceTurnin = false)
-        {
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
-            {
-                uint currentMission = CosmicHelper.CurrentLunarMission;
-                var missionEntry = CosmicHelper.SheetMissionDict[currentMission];
-                bool canTurnin = true;
-                bool gatherMission = missionEntry.Attributes.HasFlag(MissionAttributes.Gather) || missionEntry.Attributes.HasFlag(MissionAttributes.Fish);
-
-                if (CosmicHandler.IsMissionTimedOut())
-                {
-                    P.TaskManager.Tasks.Clear();
-                    P.TaskManager.Insert(() => ForceTurnin(), "Forcing mission turnin, or abandon");
-                    return true;
-                }
-
-                if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining) && gatherMission)
-                {
-                    // This should really only apply to gathering/fishing. Crafters don't have this particular one... I believe. Can't wait to be wrong here.
-                    var gatherEntry = CosmicHelper.GatheringItemDict[currentMission];
-                    foreach (var item in gatherEntry.MinGatherItems)
-                    {
-
-                    }
-                }
-            }
-            else
-            {
-                // The addon wasn't ready, fire off the mooon hud addon to open it (not sure how it got closed to begin with
-                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
-                {
-                    if (FrameThrottler.Throttle("Opening the mission information screen", 60))
-                    {
-                        IceLogging.Info("Opening the mission information screen (hate these names)");
-                        moonHud.Mission();
                     }
                 }
             }

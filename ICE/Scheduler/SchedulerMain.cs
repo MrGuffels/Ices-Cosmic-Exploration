@@ -22,11 +22,9 @@ namespace ICE.Scheduler
             return true;
         }
 
-#if DEBUG
         // Debug only settings
         internal static bool DebugOOMMain = false;
         internal static bool DebugOOMSub = false;
-#endif
 
         internal static IceState State = Idle;
         internal static MissionAttributes MissionState = MissionAttributes.None;

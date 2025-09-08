@@ -114,6 +114,7 @@ public sealed partial class ICE
             attributes |= (startTime != 0 || endTime != 0) ? ProvisionalTimed : None;
             attributes |= !previousMissionId.Contains(0) ? ProvisionalSequential : None;
 
+            // - - - HEY. BRONZE SCORE IS KEPT HERE - - - //
             uint bronze = wksToDo.Unknown2; // Bronze score for Score missions
             attributes |= bronze > 0 ? ScoreScore : None;
 
