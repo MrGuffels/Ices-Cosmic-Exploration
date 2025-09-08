@@ -80,7 +80,7 @@ public sealed partial class ICE
             }
             // TODO: Make this set the correct territoryId once new planets are added and we figure out where it is.
 
-                int _x = marker.Unknown1 - 1024;
+            int _x = marker.Unknown1 - 1024;
             int _y = marker.Unknown2 - 1024;
             int radius = marker.Unknown3;
 
@@ -239,21 +239,6 @@ public sealed partial class ICE
                     }
                 }
             }
-
-            /*
-            if (GatheringJobList.Overlaps(jobs) && CrafterJobList.Overlaps(jobs))
-            {
-                var MissionRecipe = entry.WKSMissionRecipe.RowId;
-                var DualRecipeId = wksMissionRecipe.GetRow(MissionRecipe).Recipe[0].Value.RowId;
-                var Recipe = RecipeSheet.GetRow(DualRecipeId);
-                var MainItem = Recipe.ItemResult.Value.RowId;
-                var GatherItem = Recipe.Ingredient[0].Value.RowId;
-                var GatherAmount = Recipe.AmountIngredient[0].ToInt();
-
-                crafts_Main.Add((ushort)DualRecipeId, 1);
-                gathering_Min.Add(GatherItem, GatherAmount);
-            }
-            */
 
             // Col 3 -> Cosmocredits - Unknown 0
             // Col 4 -> Lunar Credits - Unknown 1
