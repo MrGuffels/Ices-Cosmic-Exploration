@@ -65,6 +65,15 @@ namespace ICE.Scheduler
                     case ExecutingMission:
                         Task_ExecuteMission.Enqueue();
                         break;
+                    case ScoreCheck:
+                        Task_CheckScore.Enqueue();
+                        break;
+                    case TurninMission:
+                        Task_TurninMission.Enqueue();
+                        break;
+                    case Craft:
+                        Task_Craft.Enqueue();
+                        break;
                     default:
                         DisablePlugin();
                         break;

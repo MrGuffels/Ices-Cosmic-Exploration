@@ -281,7 +281,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text($"{recipe.Value.ItemId}");
 
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{recipe.Value.Amount}");
+                            ImGui.Text($"{recipe.Value.RequiredAmount}");
                         }
 
                         ImGui.TableSetColumnIndex(23);
@@ -290,7 +290,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text($"{precraft.Value.ItemId}");
 
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{precraft.Value.Amount}");
+                            ImGui.Text($"{precraft.Value.RequiredAmount}");
                         }
                     }
 

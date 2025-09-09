@@ -37,7 +37,7 @@ internal static class IceLogging
     public static void Verbose(string message, string prefix = null)
     {
         var formattedMessage = FormatMessage(message, prefix);
-        if (formattedMessage == _lastVerboseMessage) return;
+        // if (formattedMessage == _lastVerboseMessage) return;
         PluginLog.Verbose(formattedMessage);
         _lastVerboseMessage = formattedMessage;
     }
@@ -45,7 +45,7 @@ internal static class IceLogging
     public static void Debug(string message, string prefix = null)
     {
         var formattedMessage = FormatMessage(message, prefix);
-        if (formattedMessage == _lastDebugMessage) return;
+        // if (formattedMessage == _lastDebugMessage) return;
         PluginLog.Debug(formattedMessage);
         _lastDebugMessage = formattedMessage;
     }
@@ -53,7 +53,7 @@ internal static class IceLogging
     public static void Info(string message, string prefix = null)
     {
         var formattedMessage = FormatMessage(message, prefix);
-        if (formattedMessage == _lastInfoMessage) return;
+        // if (formattedMessage == _lastInfoMessage) return;
         PluginLog.Information(formattedMessage);
         _lastInfoMessage = formattedMessage;
     }

@@ -135,7 +135,7 @@ public sealed partial class ICE
                     crafts_Main[(ushort)item1RecipeId] = new CraftingInfo()
                     {
                         ItemId = itemId,
-                        Amount = itemAmount,
+                        RequiredAmount = itemAmount,
                     };
                 }
                 else
@@ -143,52 +143,111 @@ public sealed partial class ICE
                     // Reason for the following code is this:
                     // If it's a pre-craft, it should be further down the list, which means adding it first to the pre-crafts
                     // If it's required, then all of them SHOULD... be required. *-shrugs-*
-                    for (int i = 2; i >= 0; i--)
+                    List<ushort> recipeIds = new();
+                    for (int x = 2; x >= 0; x--)
                     {
-                        var recipeId = (ushort)wksRecipeRow.Recipe[i].Value.RowId;
+                        var recipeId = (ushort)wksRecipeRow.Recipe[x].Value.RowId;
+                        if (recipeId != 0 && !recipeIds.Contains(recipeId))
+                            recipeIds.Add(recipeId);
+                    }
 
-                        IceLogging.Info($"MissionID: {keyId} | ToDoId: {toDoValue} | recipeId: {recipeId} @ slot {i}");
-
-                        if (recipeId != 0)
+                    if (recipeIds.Count == 1)
+                    {
+                        // Only a single item exist in this table. So into the maincrafts it goes
+                        IceLogging.Info($"Mission: {keyId} had 1 recipie");
+                        var recipeId = recipeIds[0];
+                        var recipeRow = RecipeSheet.GetRow(recipeId);
+                        var itemId = recipeRow.ItemResult.RowId;
+                        var amountNeeded = wksToDo.RequiredItemQuantity[0];
+                        if (amountNeeded == 0)
                         {
-                            var recipeRow = RecipeSheet.GetRow(recipeId);
+                            // this should never happen. But on the off chance that square decides to be a dick and change it's place
+                            amountNeeded = 1;
+                        }
+                        var requiredItem = recipeRow.Ingredient[0].RowId;
+                        var requiredAmount = recipeRow.AmountIngredient[0];
+                        crafts_Main[recipeId] = new()
+                        {
+                            ItemId = itemId,
+                            RequiredAmount = amountNeeded,
+                            RequiredItems = new()
+                            {
+                                [requiredItem] = requiredAmount
+                            }
+                        };
+                    }
+                    else if (recipeIds.Count == 2)
+                    {
+                        IceLogging.Info($"Mission: {keyId} had 2 recipies");
+                        // First one is going to be the main item that you need.
 
+                        var recipeId = recipeIds[0];
+                        var recipeRow = RecipeSheet.GetRow(recipeId);
+                        var itemId = recipeRow.ItemResult.RowId;
+                        var amountNeeded = wksToDo.RequiredItemQuantity[0];
+                        if (amountNeeded == 0)
+                        {
+                            // this should never happen. But on the off chance that square decides to be a dick and change it's place
+                            amountNeeded = 1;
+                        }
+                        var requiredItem = recipeRow.Ingredient[0].RowId;
+                        var requiredAmount = recipeRow.AmountIngredient[0];
+                        crafts_Main[recipeId] = new()
+                        {
+                            ItemId = itemId,
+                            RequiredAmount = amountNeeded,
+                            RequiredItems = new()
+                            {
+                                [requiredItem] = requiredAmount
+                            }
+                        };
+
+                        // Second one is going to be the pre-crafting mat that you need
+                        var preRecipeId = recipeIds[1];
+                        var preRecipeRow = RecipeSheet.GetRow(preRecipeId);
+                        var preItemId = preRecipeRow.ItemResult.RowId;
+                        var preAmountNeeded = requiredAmount;
+
+                        var crateId = preRecipeRow.Ingredient[0].RowId;
+
+                        crafts_Pre[preRecipeId] = new()
+                        {
+                            ItemId = preItemId,
+                            RequiredAmount = preAmountNeeded,
+                            RequiredItems = new()
+                            {
+                                [crateId] = preAmountNeeded
+                            }
+                        };
+
+                    }
+                    else if (recipeIds.Count == 3)
+                    {
+                        IceLogging.Info($"Mission: {keyId} had 3 recipies");
+                        // all of these should be valid. 
+                        for (int i = 0; i < recipeIds.Count; i++)
+                        {
+                            // Only a single item exist in this table. So into the maincrafts it goes
+                            var recipeId = recipeIds[i];
+                            var recipeRow = RecipeSheet.GetRow(recipeId);
                             var itemId = recipeRow.ItemResult.RowId;
                             var amountNeeded = wksToDo.RequiredItemQuantity[i];
-
-                            // Appears to be a valid recipeId, time to grab the infomation from the other sheets.
                             if (amountNeeded == 0)
                             {
-                                // Item isn't a required item, but is a pre-craft. Going to set the default of 1 for now, then change post.
-                                IceLogging.Info($"Adding Pre-Craft: {itemId}");
-                                crafts_Pre[recipeId] = new CraftingInfo()
-                                {
-                                    Amount = 1,
-                                    ItemId = itemId,
-                                };
+                                // this should never happen. But on the off chance that square decides to be a dick and change it's place
+                                amountNeeded = 1;
                             }
-                            else
+                            var requiredItem = recipeRow.Ingredient[0].RowId;
+                            var requiredAmount = recipeRow.AmountIngredient[0];
+                            crafts_Main[recipeId] = new()
                             {
-                                // Item count was more than 0. Which means THEORETICALLY... it should be a main item. 
-                                crafts_Main[recipeId] = new CraftingInfo()
+                                ItemId = itemId,
+                                RequiredAmount = amountNeeded,
+                                RequiredItems = new()
                                 {
-                                    Amount = amountNeeded,
-                                    ItemId = itemId,
-                                };
-
-                                var recipeMaterialId = recipeRow.AmountIngredient[0];
-
-                                // Checking to see if the material exist in the crafts_pre. If so, then updating the value
-                                var preCraftId = crafts_Pre.FirstOrDefault(kvp => kvp.Value.ItemId == recipeMaterialId).Key;
-                                if (preCraftId != 0)
-                                {
-                                    crafts_Pre[preCraftId] = new CraftingInfo()
-                                    {
-                                        Amount = amountNeeded,
-                                        ItemId = itemId,
-                                    };
+                                    [requiredItem] = requiredAmount
                                 }
-                            }
+                            };
                         }
                     }
 
@@ -200,7 +259,7 @@ public sealed partial class ICE
 
                         foreach (var item in crafts_Pre)
                         {
-                            item.Value.Amount = 1;
+                            item.Value.RequiredAmount = 1;
                             crafts_Main.Add(item);
                             crafts_Pre.Remove(item);
                         }

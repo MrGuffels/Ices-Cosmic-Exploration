@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lumina.Excel.Sheets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -58,9 +59,28 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             ImGui.TableNextColumn();
                             ImGui.Text($"{mainCraft.Value.ItemId}");
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text($"RecipeID: {mainCraft.Key}");
+                                string itemName = ExcelHelper.ItemSheet.GetRow(mainCraft.Value.ItemId).Name.ToString();
+                                ImGui.Text($"Item Name: {itemName}");
+                                ImGui.Separator();
+                                ImGui.Text($"Item ID: {mainCraft.Value.ItemId}");
+                                ImGui.Text($"Necessary Amount: {mainCraft.Value.RequiredAmount}");
+                                ImGui.Separator();
+                                ImGui.Text($"Required Item");
+                                foreach (var item in mainCraft.Value.RequiredItems)
+                                {
+                                    ImGui.Text($"Id: {item.Key}");
+                                    ImGui.Text($"Amount: {item.Value}");
+                                }
+
+                                ImGui.EndTooltip();
+                            }
 
                             ImGui.TableNextColumn();
-                            ImGui.Text($"{mainCraft.Value.Amount}");
+                            ImGui.Text($"{mainCraft.Value.RequiredAmount}");
                         }
 
                         ImGui.TableSetColumnIndex(7);
@@ -70,9 +90,30 @@ namespace ICE.Ui.DebugWindowTabs
                             {
                                 ImGui.TableNextColumn();
                                 ImGui.Text($"{preCraft.Value.ItemId}");
+                                if (ImGui.IsItemHovered())
+                                {
+                                    ImGui.BeginTooltip();
+                                    ImGui.Text($"RecipeID: {preCraft.Key}");
+                                    string itemName = ExcelHelper.ItemSheet.GetRow(preCraft.Value.ItemId).Name.ToString();
+                                    ImGui.Text($"Item Name: {itemName}");
+                                    ImGui.Separator();
+                                    ImGui.Text($"Item ID: {preCraft.Value.ItemId}");
+                                    ImGui.Text($"Necessary Amount: {preCraft.Value.RequiredAmount}");
+                                    ImGui.Separator();
+                                    ImGui.Text($"Required Item");
+                                    foreach (var item in preCraft.Value.RequiredItems)
+                                    {
+                                        string itemNameC = ExcelHelper.ItemSheet.GetRow(item.Key).Name.ToString();
+                                        ImGui.Text($"{itemNameC}");
+                                        ImGui.Text($"Id: {item.Key}");
+                                        ImGui.Text($"Amount: {item.Value}");
+                                    }
+
+                                    ImGui.EndTooltip();
+                                }
 
                                 ImGui.TableNextColumn();
-                                ImGui.Text($"{preCraft.Value.Amount}");
+                                ImGui.Text($"{preCraft.Value.RequiredAmount}");
                             }
                         }
                     }

@@ -25,17 +25,7 @@ namespace ICE.Scheduler.Tasks
             if (currentMissionId != 0)
             {
                 // A mission was found to be active [aka not 0]
-                if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && !missionInfo.IsAddonReady)
-                {
-                    // The mission info (the one that contains the timer + current score while a mission is active) isn't loaded. Going to fix that.
-                    if (EzThrottler.Throttle("Attempting to open the mission information window"))
-                    {
-                        IceLogging.Info("Opening the mission information window, you're in the middle of one!", "[Check State]");
-                        CosmicHelper.OpenStellarMission();
-                    }
-                    return false;
-                }
-                else
+                if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
                 {
                     // Mission info window is now ready to be read, time to check out the current progress.
                     if (CosmicHandler.IsMissionTimedOut())
@@ -69,9 +59,22 @@ namespace ICE.Scheduler.Tasks
                         else
                         {
                             // Not currently in the middle of an action, so time to check score and go from there.
+                            IceLogging.Debug("Not in the middle of an action, swapping to score checking", "[Task_CheckState]");
                             SchedulerMain.State = IceState.ScoreCheck;
                         }
+
+                        return true;
                     }
+                }
+                else
+                {
+                    // The mission info (the one that contains the timer + current score while a mission is active) isn't loaded. Going to fix that.
+                    if (EzThrottler.Throttle("Attempting to open the mission information window"))
+                    {
+                        IceLogging.Info("Opening the mission information window, you're in the middle of one!", "[Check State]");
+                        CosmicHelper.OpenStellarMission();
+                    }
+                    return false;
                 }
             }
             else

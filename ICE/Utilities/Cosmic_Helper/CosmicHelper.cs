@@ -34,7 +34,8 @@ public static unsafe partial class CosmicHelper
     public class CraftingInfo
     {
         public uint ItemId { get; set; } 
-        public int Amount { get; set; }
+        public int RequiredAmount { get; set; }
+        public Dictionary<uint, int> RequiredItems { get; set; } = new();
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECommons.GameHelpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,22 +11,54 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_CheckScore
     {
-        private static Dictionary<string, int> ScoreKeeper = new Dictionary<string, int>()
-        {
-            ["Current"] = 0,
-            ["Silver"] = 0,
-            ["Gold"] = 0,
-            ["Critical"] = 1
-        };
-
         public static void Enqueue()
         {
+            var Id = CosmicHelper.CurrentLunarMission;
+            // var mission = CosmicHelper.Dict_CosmicMissions[Id];
+            var mission = CosmicHelper.SheetMissionDict[Id];
 
+            var jobs = mission.Jobs;
+
+            if (CosmicHelper.CrafterJobList.Overlaps(jobs) && CosmicHelper.GatheringJobList.Overlaps(jobs))
+            {
+                IceLogging.Info("Currently in a dual class mission");
+
+                if (mission.Jobs.Contains(18))
+                {
+                    P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Fish);
+                }
+                else
+                {
+                    P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Gather);
+                }
+
+                P.TaskManager.Enqueue(() => Crafts(), "Checking for crafts on a dual class mission");
+            }
+            if (CosmicHelper.CrafterJobList.Overlaps(jobs))
+            {
+                IceLogging.Info("Currently on a crafting job");
+                P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Craft);
+                P.TaskManager.Enqueue(() => Crafts(), "Checking for crafting score mission");
+            }
+            else if (CosmicHelper.GatheringJobList.Overlaps(jobs))
+            {
+                IceLogging.Info("Currently on a gathering job");
+                if (Player.JobId == 18)
+                {
+                    P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Fish);
+                    P.TaskManager.Enqueue(() => Fish(), "Checking fishing missions for score");
+                }
+                else
+                {
+                    P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Gather);
+                    // P.TaskManager.Enqueue(() => )
+                }
+            }
         }
 
         public static bool? Fish()
         {
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo))
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {
 
                 // Hud info should be available. Now time to check the mission status.
@@ -142,8 +175,8 @@ namespace ICE.Scheduler.Tasks
                             var config = C.MissionConfig[id];
 
                             bool AnyTurnin = config.AutoTurnin;
-                            bool GoldGoal = goldScore >= currentScore;
-                            bool SilverGoal = silverScore >= currentScore;
+                            bool GoldGoal = goldScore <= currentScore;
+                            bool SilverGoal = silverScore <= currentScore;
                             bool TurninBronze = config.TurninBronze;
 
                             if (config.AutoTurnin)
@@ -210,97 +243,119 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        public static bool? Crafts()
+        public static unsafe bool? Crafts()
         {
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo))
+            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {
-                var Id = CosmicHelper.CurrentLunarMission;
-                // var mission = CosmicHelper.Dict_CosmicMissions[Id];
-                var mission = CosmicHelper.SheetMissionDict[Id];
-
-                bool hasMinItems = true; // Have this as true, because just want to run a check for all items
-
-                // First things first, have to check to see if you have enough of the initial crafts/meet the score threshold
-                foreach (var item in mission.Crafts_Main)
+                if (missionInfo.Addon->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
                 {
-                    var itemId = item.Key;
-                    var recipeEntry = item.Value;
+                    IceLogging.Info("Step 1 Complete");
 
-                    if (!PlayerHelper.GetItemCount(itemId, out var count) || count < recipeEntry.Amount)
+                    var Id = CosmicHelper.CurrentLunarMission;
+                    // var mission = CosmicHelper.Dict_CosmicMissions[Id];
+                    var mission = CosmicHelper.SheetMissionDict[Id];
+
+                    // First things first, have to check to see if you have enough of the initial crafts/meet the score threshold
+                    foreach (var item in mission.Crafts_Main)
                     {
-                        hasMinItems = false;
-                        break;
-                    }
-                }
+                        var itemId = item.Value.ItemId;
+                        var recipeEntry = item.Value;
 
-                // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
-                if (missionInfo.CurrentScore == null)
-                    return false;
-
-                if (mission.BronzeScore != 0 && !(missionInfo.CurrentScore >= mission.BronzeScore))
-                {
-                    IceLogging.Info("Bronze score is recorded at not 0. Which means that it needs a minimum score. \n" +
-                                    $"Current Score: {missionInfo.CurrentScore}\n" +
-                                    $"Minimum Score: {mission.BronzeScore}" +
-                                    $"Continuing on with the crafting process");
-                    return true;
-                }
-                else
-                {
-                    bool shouldTurnin = false;
-                    var currentScore = missionInfo.CurrentScore;
-                    var bronzeScore = mission.BronzeScore;
-                    var silverScore = mission.SilverScore;
-                    var goldScore = mission.GoldScore;
-
-                    var config = C.MissionConfig[Id];
-                    bool AnyTurnin = config.AutoTurnin;
-                    bool GoldGoal = goldScore >= currentScore;
-                    bool SilverGoal = silverScore >= currentScore;
-                    bool TurninBronze = config.TurninBronze;
-
-                    if (config.AutoTurnin)
-                    {
-                        // AutoTurnin enabled, going to check for gold only since we have materials/time still
-                        if (GoldGoal)
+                        if (!PlayerHelper.GetItemCount(itemId, out var count) || count < recipeEntry.RequiredAmount)
                         {
-                            shouldTurnin = true;
-                        }
-                    }
-                    else
-                    {
-                        if (GoldGoal && config.TurninGold)
-                        {
-                            shouldTurnin = true;
-                        }
-                        else if (SilverGoal && config.TurninSilver)
-                        {
-                            if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
-                            {
-                                shouldTurnin = true;
-                            }
-                        }
-                        else if (config.TurninBronze)
-                        {
-                            if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
-                            {
-                                shouldTurnin = true;
-                            }
+                            IceLogging.Debug("Found an item that you didn't have the minumim amount of. Continuing on with our task", "[Task_CheckScore: Craft]");
+                            IceLogging.Debug($"ItemId: {item.Key} | Have: {count} | Expected amount: {recipeEntry.RequiredAmount}");
+                            return true;
                         }
                     }
 
-                    if (shouldTurnin)
-                    {
-                        IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
+                    // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
+                    IceLogging.Info("Step 2 Complete");
 
-                        SchedulerMain.State = IceState.TurninMission;
-                        P.TaskManager.Tasks.Clear();
+                    if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
+                    {
+                        IceLogging.Info("Bronze score is recorded at not 0. Which means that it needs a minimum score. \n" +
+                                        $"Current Score: {missionInfo.CurrentScore}\n" +
+                                        $"Minimum Score: {mission.BronzeScore}\n" +
+                                        $"Continuing on with the crafting process");
                         return true;
                     }
                     else
                     {
-                        IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
-                        return true;
+                        IceLogging.Info("Step 3 Complete");
+
+                        bool shouldTurnin = false;
+                        var currentScore = missionInfo.CurrentScore;
+                        var bronzeScore = mission.BronzeScore;
+                        var silverScore = mission.SilverScore;
+                        var goldScore = mission.GoldScore;
+
+                        var config = C.MissionConfig[Id];
+                        bool AnyTurnin = config.AutoTurnin;
+                        bool GoldGoal = goldScore <= currentScore;
+                        bool SilverGoal = silverScore <= currentScore;
+                        bool TurninBronze = config.TurninBronze;
+
+                        if (config.AutoTurnin)
+                        {
+                            // AutoTurnin enabled, going to check for gold only since we have materials/time still
+                            if (GoldGoal)
+                            {
+                                IceLogging.Info("Auto turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                shouldTurnin = true;
+                            }
+                        }
+                        else
+                        {
+                            if (GoldGoal && config.TurninGold)
+                            {
+                                IceLogging.Info("Gold Turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                shouldTurnin = true;
+                            }
+                            else if (SilverGoal && config.TurninSilver)
+                            {
+                                if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
+                                {
+                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", "[Craft Scoring]");
+                                    shouldTurnin = true;
+                                }
+                            }
+                            else if (config.TurninBronze)
+                            {
+                                if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
+                                {
+                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", "[Craft Scoring]");
+                                    shouldTurnin = true;
+                                }
+                            }
+                        }
+
+                        IceLogging.Info("Step 4 Complete");
+
+                        if (shouldTurnin)
+                        {
+                            IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
+
+                            SchedulerMain.State = IceState.TurninMission;
+                            P.TaskManager.Tasks.Clear();
+                            return true;
+                        }
+                        else
+                        {
+                            IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
+                            IceLogging.Debug($"Current settings:\n" +
+                                             $"Auto Turnin: {config.AutoTurnin}" +
+                                             $"Gold Turnin: {config.TurninGold}" +
+                                             $"Silver Turnin: {config.TurninSilver}" +
+                                             $"Bronze Turnin: {config.TurninBronze}" +
+                                             $"Current Score: {currentScore}" +
+                                             $"Gold Score: {goldScore}" +
+                                             $"Silver Score: {silverScore}" +
+                                             $"Bronze Score: {bronzeScore}");
+
+                            return true;
+                        }
+
                     }
                 }
             }
@@ -317,11 +372,6 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
-            return false;
-        }
-
-        private static bool? ForceTurnin()
-        {
             return false;
         }
     }

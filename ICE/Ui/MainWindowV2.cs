@@ -934,7 +934,7 @@ namespace ICE.Ui
                     var missionConfig = C.MissionConfig[Id];
                     var missionInfo = CosmicHelper.SheetMissionDict[Id];
 
-                    bool unsupported = UnsupportedMissions.Ids.Contains(Id);
+                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList);
 
                     bool craftMission = missionInfo.Attributes.HasFlag(MissionAttributes.Craft);
                     bool gatherMission = missionInfo.Attributes.HasFlag(MissionAttributes.Gather);
@@ -985,6 +985,15 @@ namespace ICE.Ui
 
                     // Mission Name
                     ImGui.TableNextColumn();
+                    if (unsupported)
+                    {
+                        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.0f, 0.0f, 1.0f)); // Red color (RGBA)
+                        ImGuiEx.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle, "This is currently not supported yet. I'm working on bringing it over.\n" +
+                                                "It's just taking me time");
+                        ImGui.PopStyleColor();
+                        ImGui.SameLine();
+                    }
+
                     ImGui.Text(missionInfo.Name);
                     if (ImGui.IsItemClicked())
                     {
