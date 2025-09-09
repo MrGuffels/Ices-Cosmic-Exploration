@@ -42,13 +42,13 @@ namespace ICE.Ui
             }
 
             (var currentTimedBonus, var nextTimedBonus) = PlayerHandlers.GetTimedJob();
-            if (currentTimedBonus.Value == null)
+            if (currentTimedBonus.Length == 0)
             {
                 ImGui.Text($"Timed Mission(s): None -> {string.Join(", ", nextTimedBonus.Value)} [{nextTimedBonus.Key.start:D2}:00]");
             }
             else
             {
-                ImGui.Text($"Timed Mission(s): {string.Join(", ", currentTimedBonus.Value)} -> {string.Join(", ", nextTimedBonus.Value)} [{nextTimedBonus.Key.start:D2}:00]");
+                ImGui.Text($"Timed Mission(s): {string.Join(", ", currentTimedBonus)} -> {string.Join(", ", nextTimedBonus.Value)} [{nextTimedBonus.Key.start:D2}:00]");
             }
 
             /* Temporarily Disabling this until I can figure out wtf is causing it to crash on non-english clients *-sighs-*

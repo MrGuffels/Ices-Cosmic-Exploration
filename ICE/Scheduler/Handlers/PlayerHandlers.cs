@@ -9,18 +9,6 @@ namespace ICE.Scheduler.Handlers;
 
 internal static unsafe class PlayerHandlers
 {
-    public static readonly Dictionary<Time, string[]> timeMap = new()
-    {
-            { (0, 1), new[] { "CRP", "ALC" } },
-            { (2, 3), new[] { "MIN" } },
-            { (4, 5), new[] { "BSM", "CUL" } },
-            { (6, 7), new[] { "FSH" } },
-            { (8, 9), new[] { "ARM" } },
-            { (10, 11), new[] { "BTN" } },
-            { (12, 13), new[] { "GSM" } },
-            { (16, 17), new[] { "LTW" } },
-            { (20, 21), new[] { "WVR" } }
-        };
     public static readonly Dictionary<Time, string[]> stage9TimeMap = new()
     {
         { (0, 1), new[] { "CRP", "ALC", "GSM" } },
@@ -32,10 +20,30 @@ internal static unsafe class PlayerHandlers
         { (12, 13), new[] { "GSM", "CRP", "ALC" } },
         { (14, 15), new[] { "MIN" } },
         { (16, 17), new[] { "LTW", "BSM", "CUL" } },
-        //{ (18, 19), new[] { "FSH" } },
+        { (18, 19), new[] { "FSH" } },
         { (20, 21), new[] { "WVR", "ARM" } },
         { (22, 23), new[] { "BTN" } }
     };
+
+    public static readonly Dictionary<Time, string[]> PhaennaMap = new()
+    {
+        { (0, 2), new [] { "CRP", "LTW", "ALC", "BTN"} },
+        { (2, 4), new [] { "MIN"} },
+        { (0, 4), new [] { "ARM" } },
+        { (4, 6), new [] { "BSM", "LTW", "WVR", "CUL" } },
+        { (4, 8), new [] { "GSM", "ALC", "FSH" } },
+        { (6, 8), new [] { "FSH"} },
+        { (8, 10), new [] { "CRP", "ARM", "WVR", "ALC", "FSH" } },
+        { (8, 12), new [] { "LTW", "CUL", "BTN"} },
+        { (10, 12), new [] { "BTN"} },
+        { (12, 14), new [] { "BSM", "GSM", "CUL" } },
+        { (12, 16), new [] { "WVR" } },
+        { (16, 18), new [] { "ARM", "MIN"} },
+        { (16, 20), new [] { "CRP" } },
+        { (20, 22), new [] { "GSM" } },
+        { (20, 24), new [] { "BSM" } },
+    };
+
     private static readonly uint stellarSprintID = 4398;
 
     public static float Distance(this Vector3 v, Vector3 v2)
@@ -84,21 +92,38 @@ internal static unsafe class PlayerHandlers
         return (hours, minutes);
     }
 
-    internal static (KeyValuePair<(int start, int end), string[]>, KeyValuePair<(int start, int end), string[]>) GetTimedJob()
+    internal static (string[], KeyValuePair<(int start, int end), string[]>) GetTimedJob()
     {
-        KeyValuePair<(int start, int end), string[]> currentTimeBonus = default;
+        var currentTimeBonuses = new List<string>();
         KeyValuePair<(int start, int end), string[]> nextTimeBonus = default;
-        Dictionary<Time, string[]> currentTimeMap = timeMap;
-        if (CosmicHelper.CurrentLunarDevelopment >= 9) currentTimeMap = stage9TimeMap;
+        Dictionary<Time, string[]> currentTimeMap = new();
+
+        if (PlayerHelper.IsInSinusArdorum()) currentTimeMap = stage9TimeMap;
+        if (PlayerHelper.IsInPhaenna()) currentTimeMap = PhaennaMap;
 
         (long hours, _) = GetEorzeaTime();
-        var currentTime = currentTimeMap.FirstOrDefault(time => hours >= time.Key.start && hours <= time.Key.end);
-        if (!currentTime.Equals(default(KeyValuePair<(int, int), string[]>))) currentTimeBonus = currentTime;
 
-        var nextTime = currentTimeMap.FirstOrDefault(time => hours < time.Key.start);
-        if (!nextTime.Equals(default(KeyValuePair<(int, int), string[]>))) nextTimeBonus = nextTime;
-        else nextTimeBonus = currentTimeMap.First();
+        // Find ALL current active bonuses and flatten them
+        var currentTimes = currentTimeMap.Where(time => hours >= time.Key.start && hours <= time.Key.end);
+        foreach (var timeBonus in currentTimes)
+        {
+            currentTimeBonuses.AddRange(timeBonus.Value);
+        }
 
-        return (currentTimeBonus, nextTimeBonus);
+        // Remove duplicates if needed
+        var uniqueCurrentBonuses = currentTimeBonuses.Distinct().ToArray();
+
+        // Find next time bonus
+        var nextTime = currentTimeMap
+            .Where(time => hours < time.Key.start)
+            .OrderBy(time => time.Key.start)
+            .FirstOrDefault();
+
+        if (!nextTime.Equals(default(KeyValuePair<(int, int), string[]>)))
+            nextTimeBonus = nextTime;
+        else
+            nextTimeBonus = currentTimeMap.OrderBy(time => time.Key.start).First();
+
+        return (uniqueCurrentBonuses, nextTimeBonus);
     }
 }

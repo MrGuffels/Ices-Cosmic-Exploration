@@ -1,10 +1,7 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using ICE.Config;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace ICE.Ui.SettingTabs
 {
@@ -23,6 +20,108 @@ namespace ICE.Ui.SettingTabs
 
         private static string[] MissionTypes = ["Limited Nodes", "Gather x Amount", "Time Attack", "Chained Scoring", "Boon Scoring", "Chain + Boon Scoring", "Dual Class"];
         private static int MissionIndex = 0;
+
+        private static string exportString = "";
+        private static string importString = "";
+        private static string exportError = "";
+        private static string importError = "";
+
+        public static class GatherProfileExporter
+        {
+            private const string PROFILE_PREFIX = "ICEPROFILE_";
+            private const int CURRENT_VERSION = 1;
+
+            public class ExportableProfile
+            {
+                public int Version { get; set; } = CURRENT_VERSION;
+                public string Name { get; set; }
+                public int MinimumGp { get; set; }
+                public int DualClassCraftAmount { get; set; }
+                public Config.GatherBuffs GatherBuffs { get; set; }
+            }
+
+#nullable disable
+            public static string ExportProfile(GatherProfile profile)
+            {
+                try
+                {
+                    var exportable = new ExportableProfile
+                    {
+                        Name = profile.Name,
+                        MinimumGp = profile.MinimumGp,
+                        DualClassCraftAmount = profile.DualClassCraftAmount,
+                        GatherBuffs = profile.GatherBuffs
+                    };
+
+                    string json = JsonSerializer.Serialize(exportable, new JsonSerializerOptions
+                    {
+                        WriteIndented = false
+                    });
+
+                    byte[] bytes = Encoding.UTF8.GetBytes(json);
+                    string base64 = Convert.ToBase64String(bytes);
+
+                    return PROFILE_PREFIX + base64;
+                }
+                catch (Exception ex)
+                {
+                    // Log error appropriately for your plugin
+                    return null;
+                }
+            }
+
+            public static (bool Success, ExportableProfile Profile, string Error) ImportProfile(string importString)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(importString))
+                        return (false, null, "Import string is empty");
+
+                    if (!importString.StartsWith(PROFILE_PREFIX))
+                        return (false, null, "Invalid profile format - missing prefix");
+
+                    string base64 = importString.Substring(PROFILE_PREFIX.Length);
+
+                    byte[] bytes = Convert.FromBase64String(base64);
+                    string json = Encoding.UTF8.GetString(bytes);
+
+                    var profile = JsonSerializer.Deserialize<ExportableProfile>(json);
+
+                    if (profile.Version > CURRENT_VERSION)
+                        return (false, null, "Profile version is newer than supported");
+
+                    if (string.IsNullOrWhiteSpace(profile.Name))
+                        return (false, null, "Profile name cannot be empty");
+
+                    return (true, profile, null);
+                }
+                catch (FormatException)
+                {
+                    return (false, null, "Invalid base64 format");
+                }
+                catch (JsonException)
+                {
+                    return (false, null, "Invalid JSON format");
+                }
+                catch (Exception ex)
+                {
+                    return (false, null, $"Import failed: {ex.Message}");
+                }
+            }
+#nullable enable
+
+            public static GatherProfile ConvertToGatherProfile(ExportableProfile exportable, int newId)
+            {
+                return new GatherProfile
+                {
+                    Id = newId,
+                    Name = exportable.Name,
+                    MinimumGp = exportable.MinimumGp,
+                    DualClassCraftAmount = exportable.DualClassCraftAmount,
+                    GatherBuffs = exportable.GatherBuffs
+                };
+            }
+        }
 
         public static void Draw()
         {
@@ -583,6 +682,94 @@ namespace ICE.Ui.SettingTabs
             );
 
             ImGui.Columns(1);
+
+            // Add the export/import section
+            DrawExportImportSection();
+        }
+
+        public static void DrawExportImportSection()
+        {
+            ImGui.Separator();
+            ImGui.Text("Export/Import Profiles");
+            ImGui.Spacing();
+
+            var currentProfile = C.GatherSettings[C.SelectedGatherIndex];
+
+            // Export Section
+            if (ImGui.Button("Export Current Profile"))
+            {
+                exportString = GatherProfileExporter.ExportProfile(currentProfile);
+                exportError = string.IsNullOrEmpty(exportString) ? "Export failed!" : "";
+            }
+
+            if (!string.IsNullOrEmpty(exportString))
+            {
+                ImGui.Text("Exported Profile (click to copy):");
+                ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.2f, 0.2f, 0.2f, 1.0f));
+
+                if (ImGui.InputTextMultiline("##ExportOutput", ref exportString, 4096,
+                    new Vector2(-1, ImGui.GetTextLineHeight() * 3), ImGuiInputTextFlags.ReadOnly))
+                {
+                    ImGui.SetClipboardText(exportString);
+                }
+
+                ImGui.PopStyleColor();
+
+                if (ImGui.Button("Copy to Clipboard"))
+                {
+                    ImGui.SetClipboardText(exportString);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(exportError))
+            {
+                ImGui.TextColored(new Vector4(1, 0, 0, 1), exportError);
+            }
+
+            ImGui.Spacing();
+
+            // Import Section
+            ImGui.Text("Import Profile:");
+            ImGui.InputTextMultiline("##ImportInput", ref importString, 4096,
+                new Vector2(-1, ImGui.GetTextLineHeight() * 3));
+
+            if (ImGui.Button("Import Profile"))
+            {
+                var (success, profile, error) = GatherProfileExporter.ImportProfile(importString);
+
+                if (success)
+                {
+                    // Check if profile name already exists
+                    string finalName = profile.Name;
+                    int counter = 1;
+                    while (C.GatherSettings.Any(x => x.Name == finalName))
+                    {
+                        finalName = $"{profile.Name} ({counter})";
+                        counter++;
+                    }
+
+                    int newId = C.GatherSettings.Max(x => x.Id) + 1;
+                    var newProfile = GatherProfileExporter.ConvertToGatherProfile(profile, newId);
+                    newProfile.Name = finalName;
+
+                    C.GatherSettings.Add(newProfile);
+                    C.Save();
+
+                    importString = "";
+                    importError = $"Successfully imported: {finalName}";
+                }
+                else
+                {
+                    importError = error;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(importError))
+            {
+                var color = importError.StartsWith("Successfully") ?
+                    new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
+                ImGui.TextColored(color, importError);
+            }
         }
     }
 }

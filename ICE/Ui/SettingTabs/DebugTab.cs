@@ -13,7 +13,7 @@ namespace ICE.Ui.SettingTabs
         {
             ImGui.Checkbox("Force OOM Main", ref SchedulerMain.DebugOOMMain);
             ImGui.Checkbox("Force OOM Sub", ref SchedulerMain.DebugOOMSub);
-            ImGui.Checkbox("Legacy Failsafe WKSRecipe Select", ref OldConfig.FailsafeRecipeSelect);
+            // ImGui.Checkbox("Legacy Failsafe WKSRecipe Select", ref C.FailsafeRecipeSelect);
 
             var missionMap = new List<(string name, Func<byte> get, Action<byte> set)>
                 {

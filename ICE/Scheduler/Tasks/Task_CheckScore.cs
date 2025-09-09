@@ -344,14 +344,14 @@ namespace ICE.Scheduler.Tasks
                         {
                             IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
                             IceLogging.Debug($"Current settings:\n" +
-                                             $"Auto Turnin: {config.AutoTurnin}" +
-                                             $"Gold Turnin: {config.TurninGold}" +
-                                             $"Silver Turnin: {config.TurninSilver}" +
-                                             $"Bronze Turnin: {config.TurninBronze}" +
-                                             $"Current Score: {currentScore}" +
-                                             $"Gold Score: {goldScore}" +
-                                             $"Silver Score: {silverScore}" +
-                                             $"Bronze Score: {bronzeScore}");
+                                             $"Auto Turnin: {config.AutoTurnin}\n" +
+                                             $"Gold Turnin: {config.TurninGold}\n" +
+                                             $"Silver Turnin: {config.TurninSilver}\n" +
+                                             $"Bronze Turnin: {config.TurninBronze}\n" +
+                                             $"Current Score: {currentScore}\n" +
+                                             $"Gold Score: {goldScore}\n" +
+                                             $"Silver Score: {silverScore}\n" +
+                                             $"Bronze Score: {bronzeScore}\n");
 
                             return true;
                         }

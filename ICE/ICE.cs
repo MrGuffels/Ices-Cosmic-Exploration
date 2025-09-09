@@ -6,7 +6,6 @@ using ICE.Config;
 using Pictomancy;
 using System.Collections.Generic;
 using static ICE.Utilities.CosmicHelper;
-using ICE.Scheduler.Tasks.OldTask;
 
 namespace ICE;
 
@@ -123,7 +122,7 @@ public sealed partial class ICE : IDalamudPlugin
             settingsWindowV2.IsOpen = true;
         };
         DictionaryCreation();
-        TaskGamba.EnsureGambaWeightsInitialized();
+        Task_Gamba.EnsureGambaWeightsInitialized();
         ConfigMigrator.UpdateConfigMissionList();
         ConfigMigrator.MigrateConfigv1();
     }

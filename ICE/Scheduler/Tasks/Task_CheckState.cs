@@ -77,6 +77,8 @@ namespace ICE.Scheduler.Tasks
                     return false;
                 }
             }
+            else if (AddonHelper.IsAddonActive("WKSLottery"))
+                SchedulerMain.State = IceState.Gambling;
             else
             {
                 var currentJob = Player.JobId;

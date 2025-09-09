@@ -107,7 +107,11 @@ namespace ICE.Scheduler.Tasks
 
                     }
 
-                    if (EzThrottler.Throttle("Telling it to abandon the mission"))
+                    if (EzThrottler.Throttle("Attempt to turnin"))
+                    {
+                        addon.Report();
+                    }
+                    else if (EzThrottler.Throttle("Telling it to abandon the mission"))
                     {
                         IceLogging.Debug("Attempting to abandon.", "[Abandoning Mission]");
                         addon.Abandon();

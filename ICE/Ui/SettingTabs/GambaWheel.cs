@@ -1,5 +1,4 @@
-﻿using ICE.Scheduler.Tasks.OldTask;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -71,7 +70,7 @@ namespace ICE.Ui.SettingTabs
             }
             if (ImGui.Button("Reset Weights"))
             {
-                TaskGamba.EnsureGambaWeightsInitialized(true);
+                Task_Gamba.EnsureGambaWeightsInitialized(true);
             }
         }
     }

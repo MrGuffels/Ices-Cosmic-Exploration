@@ -1,5 +1,4 @@
-﻿using ICE.Scheduler.Tasks.OldTask;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,13 +17,13 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.Button($"Left wheel select"))
                 {
-                    TaskGamba.SelectWheelLeft(lotto);
+                    Task_Gamba.SelectWheelLeft(lotto);
                 }
                 ImGui.SameLine();
 
                 if (ImGui.Button($"Right wheel select"))
                 {
-                    TaskGamba.SelectWheelRight(lotto);
+                    Task_Gamba.SelectWheelRight(lotto);
                 }
 
                 ImGui.SameLine();
@@ -35,7 +34,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (ImGui.Button($"Auto Gamba (Once)"))
                 {
-                    TaskGamba.TryHandleGamba();
+                    Task_Gamba.TryHandleGamba();
                 }
 
                 ImGui.Text($"Items in left wheel");

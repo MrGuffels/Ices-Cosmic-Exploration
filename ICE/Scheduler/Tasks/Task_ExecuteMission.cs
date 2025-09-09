@@ -64,6 +64,8 @@ namespace ICE.Scheduler.Tasks
                 SchedulerMain.State = IceState.GrabMission;
             }
 
+
+
             return true;
         }
     }

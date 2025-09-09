@@ -84,31 +84,54 @@ public sealed partial class ICE
             int _y = marker.Unknown2 - 1024;
             int radius = marker.Unknown3;
 
-            MissionAttributes attributes = missionText switch
+            MissionAttributes attributes = None;
+
+            if (CosmicHelper.CrafterJobList.Overlaps(jobs) && CosmicHelper.GatheringJobList.Overlaps(jobs))
             {
-                (>= 99 and <= 102) or 140 or (>= 145 and <= 149) or 235 or 237 => Craft,
-                103 => Gather | Limited,
-                104 => Gather | ScoreTimeRemaining,
-                105 => Gather,
-                106 => Gather | ScoreChains,
-                107 => Gather | ScoreGatherersBoon,
-                108 => Gather | ScoreChains | ScoreGatherersBoon,
-                109 or 111 => Gather | Collectables,
-                110 => Gather | ReducedItems | ScoreTimeRemaining,
-                112 => Gather | ReducedItems,
-                113 => Fish | ScoreVariety | ScoreTimeRemaining,
-                114 or 115 => Fish | ScoreTimeRemaining,
-                116 => Fish | Limited | ScoreVariety,
-                117 => Fish | Limited | ScoreLargestSize,
-                118 => Fish | Limited | Collectables,
-                119 or 121 => Fish,
-                120 => Fish | ScoreLargestSize,
-                122 => Fish | Collectables,
-                >= 123 and <= 134 => Craft | Gather, // Dual class
-                >= 135 and <= 138 => Craft | Fish,  // Dual class
-                139 => jobs.Contains(18) ? Fish : Gather, // Critical
-                _ => None
-            };
+                if (jobs.Contains(18))
+                    attributes = Craft | Fish;
+                else
+                    attributes = Craft | Gather;
+            }
+            else if (CosmicHelper.CrafterJobList.Overlaps(jobs))
+            {
+                // Just making this nice and simple. Making all crafter missions just check for crafting.
+                // Then going to add critical after
+                attributes = Craft;
+            }
+            else if (CosmicHelper.GatheringJobList.Overlaps(jobs))
+            {
+                if (jobs.Contains(18))
+                    attributes |= Fish;
+                else
+                    attributes |= Gather;
+
+                attributes = missionText switch
+                {
+                    103 => Gather | Limited,
+                    104 => Gather | ScoreTimeRemaining,
+                    105 => Gather,
+                    106 => Gather | ScoreChains,
+                    107 => Gather | ScoreGatherersBoon,
+                    108 => Gather | ScoreChains | ScoreGatherersBoon,
+                    109 or 111 => Gather | Collectables,
+                    110 => Gather | ReducedItems | ScoreTimeRemaining,
+                    112 => Gather | ReducedItems,
+                    113 => Fish | ScoreVariety | ScoreTimeRemaining,
+                    114 or 115 => Fish | ScoreTimeRemaining,
+                    116 => Fish | Limited | ScoreVariety,
+                    117 => Fish | Limited | ScoreLargestSize,
+                    118 => Fish | Limited | Collectables,
+                    119 or 121 => Fish,
+                    120 => Fish | ScoreLargestSize,
+                    122 => Fish | Collectables,
+                    >= 123 and <= 134 => Craft | Gather, // Dual class
+                    >= 135 and <= 138 => Craft | Fish,  // Dual class
+                    139 => jobs.Contains(18) ? Fish : Gather, // Critical
+                    _ => None
+                };
+            }
+
             attributes |= isCritical ? Critical : None;
             attributes |= weather != CosmicWeather.FairSkies ? ProvisionalWeather : None;
             attributes |= (startTime != 0 || endTime != 0) ? ProvisionalTimed : None;
@@ -116,7 +139,6 @@ public sealed partial class ICE
 
             // - - - HEY. BRONZE SCORE IS KEPT HERE - - - //
             uint bronze = wksToDo.Unknown2; // Bronze score for Score missions
-            attributes |= bronze > 0 ? ScoreScore : None;
 
             if (CrafterJobList.Overlaps(jobs))
             {
