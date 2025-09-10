@@ -36,8 +36,8 @@ namespace ICE.Scheduler.Handlers
                 return false;
 
             if ((!CosmicHelper.GatheringJobList.Contains(Player.JobId))
-             || (Player.JobId == 18 && !OldConfig.UseOnFisher)
-             || (PlayerHelper.GetGp() >= OldConfig.CordialMinGp))
+             || (Player.JobId == 18 && !C.UseOnFisher)
+             || (PlayerHelper.GetGp() >= C.CordialMinGp))
                 return false;
             else 
             {
@@ -63,10 +63,10 @@ namespace ICE.Scheduler.Handlers
                 }
 
                 bool CosmicZone = PlayerHelper.IsInCosmicZone();
-                if (OldConfig.AutoCordial && CosmicZone)
+                if (C.AutoCordial && CosmicZone)
                 {
                     var pandoraCordial = (P.Pandora.GetFeatureEnabled("Auto-Cordial") ?? false);
-                    if (pandoraCordial && (OldConfig.UseOnlyInMission && SchedulerMain.State.HasFlag(IceState.Gather)))
+                    if (pandoraCordial && (C.UseOnlyInMission && SchedulerMain.State.HasFlag(IceState.Gather)))
                     {
                         if (EzThrottler.Throttle("Disabling Pandora Cordial", 1000))
                         {
@@ -92,12 +92,12 @@ namespace ICE.Scheduler.Handlers
                         // IceLogging.Debug("Player is not a gathering job");
                         useCordial = false;
                     }
-                    if (Player.JobId == 18 && !OldConfig.UseOnFisher)
+                    if (Player.JobId == 18 && !C.UseOnFisher)
                     {
                         // IceLogging.Debug("Player is a fisher, but fishing job not enabled");
                         useCordial = false;
                     }
-                    if (OldConfig.CordialMinGp <= PlayerHelper.GetGp())
+                    if (C.CordialMinGp <= PlayerHelper.GetGp())
                     {
                         // IceLogging.Debug($"Current GP: {C.CordialMinGp} is < {PlayerHelper.GetGp()}");
                         useCordial = false;
@@ -107,7 +107,7 @@ namespace ICE.Scheduler.Handlers
                         // IceLogging.Debug("Player is not in cosmic zone");
                         useCordial = false;
                     }
-                    if (OldConfig.UseOnlyInMission && !SchedulerMain.State.HasFlag(IceState.Gather))
+                    if (C.UseOnlyInMission && !SchedulerMain.State.HasFlag(IceState.Gather))
                     {
                         // IceLogging.Debug("Use only in mission, but mission doesn't have gathering state");
                         useCordial = false;
@@ -124,14 +124,14 @@ namespace ICE.Scheduler.Handlers
                                 { 16911, 150} // HQ Watered
                             };
 
-                        foreach (var cordial in OldConfig.inverseCordialPrio ? cordials.Reverse() : cordials)
+                        foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
                         {
                             bool hq = cordial.Key >= 1_000_000;
                             if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
                             {
                                 if (ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Key) == 0)
                                 {
-                                    if (!OldConfig.PreventOvercap || (OldConfig.PreventOvercap && !WillOvercap(cordial.Value)))
+                                    if (!C.PreventOvercap || (C.PreventOvercap && !WillOvercap(cordial.Value)))
                                     {
                                         ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
                                         return;
@@ -143,8 +143,10 @@ namespace ICE.Scheduler.Handlers
                 }
             }
             if (EzThrottler.Throttle("DelayedTick"))
-                if (AddonHelper.IsAddonActive("WKSLottery") && OldConfig.GambaEnabled && SchedulerMain.State == IceState.Idle)
+            {
+                if (AddonHelper.IsAddonActive("WKSLottery") && C.GambaEnabled && SchedulerMain.State == IceState.Idle)
                     SchedulerMain.EnablePlugin();
+            }
         }
     }
 }

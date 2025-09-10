@@ -47,9 +47,6 @@ public static partial class CosmicHelper
 
     public static void UpdateStateFlags()
     {
-        // Grabs the current mission entry from the dictionary, and all config information tied to it.
-        CosmicMission? mission = OldConfig.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission);
-
         // just a shorthand for me to be able to grab all of it, while also just snapshotting the mission we're currently running
         var missionInfo = CurrentMissionInfo; 
         if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))

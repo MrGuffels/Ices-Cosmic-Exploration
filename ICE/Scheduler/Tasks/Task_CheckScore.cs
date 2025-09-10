@@ -249,8 +249,6 @@ namespace ICE.Scheduler.Tasks
             {
                 if (missionInfo.Addon->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
                 {
-                    IceLogging.Info("Step 1 Complete");
-
                     var Id = CosmicHelper.CurrentLunarMission;
                     // var mission = CosmicHelper.Dict_CosmicMissions[Id];
                     var mission = CosmicHelper.SheetMissionDict[Id];
@@ -264,13 +262,18 @@ namespace ICE.Scheduler.Tasks
                         if (!PlayerHelper.GetItemCount(itemId, out var count) || count < recipeEntry.RequiredAmount)
                         {
                             IceLogging.Debug("Found an item that you didn't have the minumim amount of. Continuing on with our task", "[Task_CheckScore: Craft]");
-                            IceLogging.Debug($"ItemId: {item.Key} | Have: {count} | Expected amount: {recipeEntry.RequiredAmount}");
+                            IceLogging.Debug($"RecipeId: {item.Key} | Have: {count} | Expected amount: {recipeEntry.RequiredAmount}");
+                            SchedulerMain.State = IceState.Craft;
                             return true;
                         }
                     }
 
+                    if (mission.Crafts_Pre.Count > 0)
+                    {
+
+                    }
+
                     // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
-                    IceLogging.Info("Step 2 Complete");
 
                     if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
                     {
@@ -282,8 +285,6 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        IceLogging.Info("Step 3 Complete");
-
                         bool shouldTurnin = false;
                         var currentScore = missionInfo.CurrentScore;
                         var bronzeScore = mission.BronzeScore;
@@ -329,8 +330,6 @@ namespace ICE.Scheduler.Tasks
                                 }
                             }
                         }
-
-                        IceLogging.Info("Step 4 Complete");
 
                         if (shouldTurnin)
                         {

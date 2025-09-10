@@ -624,107 +624,85 @@ namespace ICE.Scheduler.Tasks
                 foreach (var mission in x.StellerMissions)
                 {
                     var rank = CosmicHelper.SheetMissionDict[mission.MissionId].Rank;
-                    if (RankId.Contains(rank))
-                        MissionKeeper[rank].Add(mission.MissionId);
-                }
-
-                foreach (var rank in RankId)
-                {
-                    var missionSet = MissionKeeper[rank];
-                    if (missionSet.Count > 0)
+                    switch (rank)
                     {
-                        bool checkARank = (rank == 5 || rank == 4)
-                                       && (MissionKeeper[5].Count > 0 && MissionKeeper[4].Count > 0)
-                                       && (ExARankMissions.Count != 0 || ARankMissions.Count != 0);
-
-                        if (checkARank)
-                        {
-
-                            if (Mission_Settings.previouslyAbandoned == 5)
-                            {
-                                Mission_Settings.previouslyAbandoned = 4;
-                                missionToAbandon = MissionKeeper[4].First();
-                            }
-                            else if (Mission_Settings.previouslyAbandoned == 4)
-                            {
-                                Mission_Settings.previouslyAbandoned = 5;
-                                missionToAbandon = MissionKeeper[5].First();
-                            }
-                            else
-                            {
-                                missionToAbandon = missionSet.First();
-                            }
-                        }
-                        else if (rank == 3 && BRankMissions.Count > 0)
-                        {
-                            missionToAbandon = missionSet.First();
-                        }
-                        else if (rank == 2 && CRankMissions.Count > 0)
-                        {
-                            missionToAbandon = missionSet.First();
-                        }
-                        else if (rank == 1 && DRankMissions.Count > 0)
-                        {
-                            missionToAbandon = missionSet.First();
-                        }
-
-                        break;
+                        case 5:
+                            AExRank.Add(mission.MissionId);
+                            break;
+                        case 4:
+                            ARank.Add(mission.MissionId);
+                            break;
+                        case 3:
+                            BRank.Add(mission.MissionId);
+                            break;
+                        case 2:
+                            CRank.Add(mission.MissionId);
+                            break;
+                        case 1:
+                            DRank.Add(mission.MissionId);
+                            break;
+                        default:
+                            DRank.Add(mission.MissionId);
+                            break;
                     }
                 }
 
-                if ((ExARankMissions.Count > 0 || ARankMissions.Count > 0) &&
-                    (MissionKeeper[4].Count > 0 || MissionKeeper[5].Count > 0))
+                bool CheckARanks = (ExARankMissions.Count > 0 || ARankMissions.Count > 0) && (AExRank.Count > 0 || (ARank.Count > 0));
+                bool CheckBRanks = (BRankMissions.Count > 0 && BRank.Count > 0);
+                bool CheckCRanks = (CRankMissions.Count > 0 && CRank.Count > 0);
+                bool CheckDRanks = (DRankMissions.Count > 0 && DRank.Count > 0);
+
+                if (CheckARanks)
                 {
-                    // If both A and A-EX ranks have missions, alternate between them
-                    if (MissionKeeper[4].Count > 0 || MissionKeeper[5].Count > 0)
+                    if (AExRank.Count > 0 && ARank.Count > 0)
                     {
-                        if (Mission_Settings.previouslyAbandoned == 5)
+                        // Both missions are available to abandon, checking previous
+                        if (Mission_Settings.previouslyAbandoned == 4)
                         {
-                            Mission_Settings.previouslyAbandoned = 4;
-                            missionToAbandon = MissionKeeper[4].First();
-                            IceLogging.Info("Setting previous abandon to 4");
-                            IceLogging.Info($"Abandoning: {missionToAbandon}");
-                        }
-                        else if (Mission_Settings.previouslyAbandoned == 4)
-                        {
+                            IceLogging.Info($"Previously abandoned a rank 4 mission. Going to go for a rank 5");
+                            missionToAbandon = AExRank.FirstOrDefault();
                             Mission_Settings.previouslyAbandoned = 5;
-                            missionToAbandon = MissionKeeper[5].First();
-                            IceLogging.Info("Setting previous abandon to 5", "[Abandoning Mission]");
-                            IceLogging.Info($"Abandoning: {missionToAbandon}", "[Abandoning Mission]");
+                        }
+                        else if (Mission_Settings.previouslyAbandoned == 5)
+                        {
+                            IceLogging.Info($"Previously abandoned a rank 5 mission. Going to go for a rank 5");
+                            missionToAbandon = ARank.FirstOrDefault();
+                            Mission_Settings.previouslyAbandoned = 4;
                         }
                         else
                         {
-                            // Default to A-EX rank first time
+                            IceLogging.Info($"Previously abandoned mission wasn't a 4 or 5, just going to default for a rank 5");
+                            missionToAbandon = AExRank.FirstOrDefault();
                             Mission_Settings.previouslyAbandoned = 5;
-                            missionToAbandon = MissionKeeper[5].First();
-                            IceLogging.Info("No previous abandon was found, setting it to 5", "[Abandoning Mission]");
-                            IceLogging.Info($"Abandoning: {missionToAbandon}", "[Abandoning Mission]");
                         }
                     }
-                    // If only A rank has missions
-                    else if (MissionKeeper[4].Count > 0)
+                    else if (AExRank.Count > 0)
                     {
-                        Mission_Settings.previouslyAbandoned = 4;
-                        missionToAbandon = MissionKeeper[4].First();
-                    }
-                    // If only A-EX rank has missions
-                    else if (MissionKeeper[5].Count > 0)
-                    {
+                        IceLogging.Debug($"Only AEX Rank missions are available (impressive). Forcing an AEX rank to be accepted");
+                        missionToAbandon = AExRank.FirstOrDefault();
                         Mission_Settings.previouslyAbandoned = 5;
-                        missionToAbandon = MissionKeeper[5].First();
+                    }
+                    else if (ARank.Count > 0)
+                    {
+                        IceLogging.Debug($"Only A Rank missions are available (impressive...). Forcing an A rank to be accepted");
+                        missionToAbandon = ARank.FirstOrDefault();
+                        Mission_Settings.previouslyAbandoned = 4;
                     }
                 }
-                else if (BRankMissions.Count > 0 && MissionKeeper[3].Count > 0)
+                else if (CheckBRanks)
                 {
-                    missionToAbandon = MissionKeeper[3].First();
+                    missionToAbandon = BRank.FirstOrDefault();
+                    Mission_Settings.previouslyAbandoned = 3;
                 }
-                else if (CRankMissions.Count > 0 && MissionKeeper[2].Count > 0)
+                else if (CheckCRanks)
                 {
-                    missionToAbandon = MissionKeeper[2].First();
+                    missionToAbandon = CRank.FirstOrDefault();
+                    Mission_Settings.previouslyAbandoned = 2;
                 }
-                else if (DRankMissions.Count > 0 && MissionKeeper[1].Count > 0)
+                else if (CheckDRanks)
                 {
-                    missionToAbandon = MissionKeeper[1].First();
+                    missionToAbandon = DRank.FirstOrDefault();
+                    Mission_Settings.previouslyAbandoned = 1;
                 }
 
                 // If we found a mission to abandon

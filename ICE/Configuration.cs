@@ -6,6 +6,8 @@ namespace ICE
 {
     public class Configuration : IEzConfig
     {
+        // This is the old config, moreso just here for migragtion purposes. Please don't use this
+
         [JsonIgnore]
         public const int CurrentConfigVersion = 1;
 

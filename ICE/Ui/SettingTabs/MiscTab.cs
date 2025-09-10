@@ -21,6 +21,8 @@ namespace ICE.Ui.SettingTabs
         private static int mountDisplayOffset = 0;
         private static int mountItemsPerPage = 10;
 
+        private static bool AutoMoonSprint = C.MoonSprint;
+
         // Mission Priority Settings
 
         public static void Draw()
@@ -36,6 +38,12 @@ namespace ICE.Ui.SettingTabs
             if (ImGui.Checkbox("Show Seconds", ref ShowSeconds))
             {
                 C.ShowSeconds = ShowSeconds;
+                C.Save();
+            }
+
+            if (ImGui.Checkbox("Auto-Use Moon Sprint", ref AutoMoonSprint))
+            {
+                C.MoonSprint = AutoMoonSprint;
                 C.Save();
             }
 

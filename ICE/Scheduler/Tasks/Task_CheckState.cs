@@ -1,11 +1,13 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -16,11 +18,110 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.Enqueue(() => CheckState(), "Checking to see what state we should be in");
         }
 
-        private static bool? CheckState()
+        private static unsafe bool? CheckState()
         {
             // Resetting the inital state, just to get a baseline set for everything.
             SchedulerMain.State = IceState.Start;
             var currentMissionId = CosmicHelper.CurrentLunarMission;
+
+            if (C.StopWhenLevel)
+            {
+                if (Player.Level >= C.TargetLevel)
+                {
+                    {
+                        SchedulerMain.State = IceState.Idle;
+                        return true;
+                    }
+                }
+            }
+            if (C.StopOnceHitCosmicScore)
+            {
+                var scores = CosmicHelper.GetCosmicClassScores();
+
+                if (scores.classScore >= C.CosmicScoreCap)
+                {
+                    SchedulerMain.State = IceState.Idle;
+                    return true;
+                }
+            }
+            if (C.StopOnceHitLunarCredits)
+            {
+                uint[] currencies = [45691, 48146, 48147, 48148];
+                var manager = WKSManager.Instance();
+                var zoneId = *((byte*)manager + 0x5D);
+                var itemId = currencies[zoneId];
+
+                if (PlayerHelper.GetItemCount(itemId, out var credits))
+                {
+                    if (credits >= C.LunarCreditsCap)
+                    {
+                        SchedulerMain.State = IceState.Idle;
+                        return true;
+                    }
+                }
+            }
+            if (C.StopOnceHitCosmoCredits)
+            {
+                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady)
+                {
+                    if (hud.CosmoCredit >= C.CosmoCreditsCap)
+                    {
+                        DuoLog.Information($"Stopping the plugin as you have {hud.CosmoCredit} Cosmocredits.");
+                        SchedulerMain.State = IceState.Idle;
+                        return true;
+                    }
+                }
+            }
+            if (C.StopOnceRelicFinished)
+            {
+                var wksManager = WKSManager.Instance();
+                if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
+                    return null;
+
+                var job = Player.JobId;
+                var toolClassId = (byte)(job - 7);
+                var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
+                var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
+
+                Dictionary<int, CosmicHelper.XPType> XPTable = new Dictionary<int, CosmicHelper.XPType>();
+
+                for (byte type = 1; type < 6; type++)
+                {
+                    if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                    {
+
+                    }
+
+                    var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
+
+                    var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
+                    var requiredXp = neededXP - currentXp;
+                    if (!XPTable.ContainsKey(type))
+                    {
+                        XPTable[type] = new XPType()
+                        {
+                            CurrentXP = currentXp,
+                            NeededXP = neededXP,
+                        };
+                    }
+                }
+
+                bool allComplete = true;
+
+                for (int i = 0; i < XPTable.Count; i++)
+                {
+                    var bar = XPTable[i + 1];
+                    if (bar.CurrentXP < bar.NeededXP)
+                    {
+                        allComplete = false;
+                    }
+                }
+                if (allComplete)
+                {
+                    SchedulerMain.State = IceState.Idle;
+                    return true;
+                }
+            }
 
             if (currentMissionId != 0)
             {

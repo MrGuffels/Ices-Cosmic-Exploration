@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Config;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Globalization;
@@ -120,7 +121,7 @@ namespace ICE.Ui
                 }
             }
             ImGui.SameLine();
-            // ImGui.Checkbox("Stop after current mission", ref SchedulerMain.StopBeforeGrab);
+            ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
 
             ImGuiHelpers.ScaledDummy(2);
             ImGui.Separator();

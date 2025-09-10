@@ -144,7 +144,7 @@ namespace ICE.Scheduler.Handlers
             TimeSpan timeDifference = forecastTime - DateTime.UtcNow;
             if (!AccurateTime)
             {
-                string format = OldConfig.ShowSeconds ? @"hh\:mm\:ss" : @"hh\:mm";
+                string format = C.ShowSeconds ? @"hh\:mm\:ss" : @"hh\:mm";
                 return timeDifference < TimeSpan.Zero ? "-" + timeDifference.Duration().ToString(format) : timeDifference.ToString(format);
             }
             else
@@ -152,7 +152,7 @@ namespace ICE.Scheduler.Handlers
                 int totalSeconds = Math.Abs((int)timeDifference.TotalSeconds);
                 int hours = totalSeconds / 10000;
                 int minutes = (totalSeconds % 10000) / 100;
-                string format = OldConfig.ShowSeconds ? $"{hours:D2}:{minutes:D2}:{totalSeconds % 100:D2}" : $"{hours:D2}:{minutes:D2}";
+                string format = C.ShowSeconds ? $"{hours:D2}:{minutes:D2}:{totalSeconds % 100:D2}" : $"{hours:D2}:{minutes:D2}";
                 return timeDifference < TimeSpan.Zero ? "-" + format : format;
             }
         }

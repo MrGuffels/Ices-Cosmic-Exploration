@@ -17,9 +17,9 @@ namespace ICE.Ui.SettingTabs
 
             var missionMap = new List<(string name, Func<byte> get, Action<byte> set)>
                 {
-                    ("Sequence Missions", new Func<byte>(() => OldConfig.SequenceMissionPriority), new Action<byte>(v => { OldConfig.SequenceMissionPriority = v; OldConfig.Save(); })),
-                    ("Timed Missions", new Func<byte>(() => OldConfig.TimedMissionPriority), new Action<byte>(v => { OldConfig.TimedMissionPriority = v; OldConfig.Save(); })),
-                    ("Weather Missions", new Func<byte>(() => OldConfig.WeatherMissionPriority), new Action<byte>(v => { OldConfig.WeatherMissionPriority = v; OldConfig.Save(); }))
+                    ("Sequence Missions", new Func<byte>(() => C.SequenceMissionPriority), new Action<byte>(v => { C.SequenceMissionPriority = v; C.Save(); })),
+                    ("Timed Missions", new Func<byte>(() => C.TimedMissionPriority), new Action<byte>(v => { C.TimedMissionPriority = v; C.Save(); })),
+                    ("Weather Missions", new Func<byte>(() => C.WeatherMissionPriority), new Action<byte>(v => { C.WeatherMissionPriority = v; C.Save(); }))
                 };
 
             var sorted = missionMap

@@ -147,7 +147,11 @@ public sealed partial class ICE
                 if (isCritical) // Criticals are sus
                 {
                     var itemAmount = 3; // It's a pass/fail progress, you need to go till you are full on score
-                                            // Realistically need 3 items. So just going to hard code this as that for now. Until square decides to change the formula haha.
+                    if (keyId < 535)
+                        itemAmount = 3;
+                    else if (keyId < 1039)
+                        itemAmount = 2;
+
                     var missionRecipeRow = RecipeSheet.Where(e => e.RowId == wksRecipeRow.Recipe[0].RowId).First();
                     var itemId = missionRecipeRow.ItemResult.RowId;
                     var itemName = ItemSheet.GetRow(itemId).Name.ToString();

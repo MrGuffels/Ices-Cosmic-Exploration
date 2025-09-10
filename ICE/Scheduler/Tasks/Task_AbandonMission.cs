@@ -10,8 +10,11 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_AbandonMission
     {
+        private static bool Continue = false;
+
         public static void Enqueue()
         {
+            Continue = false;
             P.TaskManager.Enqueue(() => AbandonMission(), "Abandoning the current mission");
             P.TaskManager.Enqueue(() => CosmicHelper.CurrentLunarMission == 0, "Waiting till the current mission is 0");
         }
@@ -69,7 +72,7 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.CurrentLunarMission == 0)
             {
                 IceLogging.Debug("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
-                if (!C.StopOnAbort)
+                if (!C.StopOnAbort || Continue)
                     SchedulerMain.State = IceState.Start;
                 else
                     SchedulerMain.State = IceState.Idle;
@@ -104,7 +107,14 @@ namespace ICE.Scheduler.Tasks
                     // First things first. Going to see if you meet the score threshold for any of the classes.
                     if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
                     {
+                        var missionId = CosmicHelper.CurrentLunarMission;
+                        var mission = C.MissionConfig[missionId];
 
+                        if (mission.AutoTurnin)
+                        {
+                            // For now, just check to see if auto is enabled. Need to do a more thorough check but cba at this time of night xD
+                            Continue = true;
+                        }
                     }
 
                     if (EzThrottler.Throttle("Attempt to turnin"))

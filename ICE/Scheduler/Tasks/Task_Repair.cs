@@ -40,6 +40,11 @@ namespace ICE.Scheduler.Tasks
         public static unsafe bool? HubCheck()
         {
             Vector2 HubCenter = Vector2.Zero;
+            if (PlayerHelper.IsInPhaenna())
+            {
+                HubCenter = new Vector2(340.0f, -420.0f);
+            }
+
             Vector2 PlayerPos = new Vector2(Player.Position.Z, Player.Position.Z);
 
             if (Player.DistanceTo(HubCenter) < 45)
@@ -61,7 +66,8 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? PathToRepair()
         {
-            var npcEntry = NpcInfo.NpcLibrary[1052610];
+            var zoneId = Player.Territory;
+            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
 
             if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
             {

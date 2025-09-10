@@ -43,7 +43,7 @@ namespace ICE.Scheduler.Tasks.OldTask
             if (!EzThrottler.Throttle("Extract", 250))
                 return false;
 
-            if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny() || !OldConfig.SelfSpiritbondGather || !(Player.Job).IsDol())
+            if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny() || !C.SelfSpiritbondGather || !(Player.Job).IsDol())
                 return true;
 
             if (Player.IsBusy)

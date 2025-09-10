@@ -21,7 +21,6 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 P.TaskManager.Enqueue(() => Task_CheckScore.Enqueue(), "Checking Score");
-                P.TaskManager.EnqueueDelay(1000);
                 P.TaskManager.Enqueue(() => CheckMaterials(), "Checking materials");
             }
         }
@@ -81,6 +80,7 @@ namespace ICE.Scheduler.Tasks
                         var craftAmount = mainCraft.Value.RequiredAmount - mainItemCount;
                         P.Artisan.CraftItem(mainCraft.Key, craftAmount);
                         InsertArtisanWait();
+                        IceLogging.Debug($"Telling artisan to craft: {mainCraft.Value.ItemId} -> {craftAmount}");
                         return true;
                     }
                     else
@@ -88,6 +88,7 @@ namespace ICE.Scheduler.Tasks
                         // you have enough of the main hand item. But you still are crafting. So time to just craft 1 more
                         P.Artisan.CraftItem(mainCraft.Key, 1);
                         InsertArtisanWait();
+                        IceLogging.Debug($"Telling artisan to craft: {mainCraft.Value.ItemId} -> 1");
                         return true;
                     }
 
@@ -113,6 +114,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     IceLogging.Debug($"Somehow, out of mats. Need to exit. And either attempt to turnin, or just straight up abandon.", "[Task Craft: Check Materials]");
                     SchedulerMain.State = IceState.AbandonMission;
+                    P.TaskManager.Tasks.Clear();
                     return true;
                 }
             }
@@ -133,6 +135,7 @@ namespace ICE.Scheduler.Tasks
                         {
                             P.Artisan.CraftItem(craft.Key, reqAmount);
                             P.TaskManager.Insert(() => WaitingForArtisan(), Utils.TaskConfig);
+                            IceLogging.Debug($"Telling artisan to craft: {craft.Value.ItemId} -> {reqAmount}", "[Craft: No Pre-Mats]");
                             return true;
                         }
                         else
@@ -157,6 +160,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     P.Artisan.CraftItem(moreCraft.Key, AdditionalItem);
                     P.TaskManager.Insert(() => WaitingForArtisan(), Utils.TaskConfig);
+                    IceLogging.Debug($"Telling artisan to craft: {moreCraft.Value.ItemId} -> {AdditionalItem}", "[Craft: No Pre-Mats]");
                     return true;
                 }
                 else

@@ -121,17 +121,6 @@ internal class SettingsWindowV2 : Window
 
     }
 
-    private bool EnableAutoSprint = OldConfig.EnableAutoSprint;
-
-    private void Misc()
-    {
-        if (ImGui.Checkbox("Enable Auto Sprint", ref EnableAutoSprint))
-        {
-            OldConfig.EnableAutoSprint = EnableAutoSprint;
-            OldConfig.Save();
-        }
-    }
-
 #if DEBUG
 
 

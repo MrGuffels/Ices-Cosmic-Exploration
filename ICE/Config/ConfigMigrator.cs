@@ -84,6 +84,10 @@ namespace ICE.Config
 
                 Svc.Log.Information("Migration of the cordial settings complete");
 
+                C.MoonSprint = OldConfig.EnableAutoSprint;
+
+                Svc.Log.Information("Migration of the Misc settings is done");
+
                 foreach (var entry in OldConfig.GatherSettings)
                 {
                     int Id = entry.Id;
@@ -182,16 +186,29 @@ namespace ICE.Config
                         turninBronze = false;
                     }
 
-                    C.MissionConfig.Add(key, new MissionSettings
+                    if (C.MissionConfig.TryGetValue(key, out var value))
                     {
-                        Enabled = enabled,
-                        ManualMode = manualMode,
-                        GatherProfileId = gatherProfileId,
-                        AutoTurnin = useAny,
-                        TurninGold = turninGold,
-                        TurninSilver = turninSilver,
-                        TurninBronze = turninBronze,
-                    });
+                        value.Enabled = enabled;
+                        value.ManualMode = enabled;
+                        value.GatherProfileId = gatherProfileId;
+                        value.AutoTurnin = useAny;
+                        value.TurninGold = turninGold;
+                        value.TurninSilver = turninSilver;
+                        value.TurninBronze = turninBronze;
+                    }
+                    else
+                    {
+                        C.MissionConfig.Add(key, new MissionSettings
+                        {
+                            Enabled = enabled,
+                            ManualMode = manualMode,
+                            GatherProfileId = gatherProfileId,
+                            AutoTurnin = useAny,
+                            TurninGold = turninGold,
+                            TurninSilver = turninSilver,
+                            TurninBronze = turninBronze,
+                        });
+                    }
                 }
 
                 Svc.Log.Information("Migration of the mission configs are now complete");

@@ -40,6 +40,8 @@ namespace ICE.Ui
                 MaximumSize = new Vector2(2000, 3000)
             };
 
+            TitleBarButtons.Add(new() { ShowTooltip = () => ImGui.SetTooltip("♥ Ko-fi (Buy me an ice coffee)"), Icon = FontAwesomeIcon.Heart, IconOffset = new(1, 1), Click = _ => GenericHelpers.ShellStart("https://ko-fi.com/ice643269") });
+
             P.windowSystem.AddWindow(this);
 
             AllowPinning = true;
@@ -66,15 +68,6 @@ namespace ICE.Ui
             ("MIN", 16),
             ("BTN", 17),
             ("FSH", 18),
-        };
-
-        // Available mission ranks and their identifiers.
-        private static List<(uint RankId, string RankName)> rankOptions = new()
-        {
-            (1, "D"),
-            (2, "C"),
-            (3, "B"),
-            (4, "A")
         };
 
         private uint currentJobId => Player.JobId;
@@ -183,19 +176,32 @@ namespace ICE.Ui
             float labelHeight = ImGui.GetTextLineHeightWithSpacing();
             float childHeight = ImGui.GetContentRegionAvail().Y;
 
-            // Setting up the columns to be 3 right here. 
-            float leftPanelWidth = Math.Max(220, textLineHeight * 14);
-            float middlePanelWidth = Math.Max(0, textLineHeight * 22);
+            // Get total available width
+            float totalWidth = ImGui.GetContentRegionAvail().X;
 
-            ImGui.Columns(3, "Main Window", false);
+            // Ensure minimum widths and validate stored widths
+            float minLeftWidth = Math.Max(220, textLineHeight * 14);
+            float minMiddleWidth = Math.Max(200, textLineHeight * 12);
+            float minRightWidth = 150;
+
+            // Initialize column widths if not set
+            if (C.LeftColumnWidth < minLeftWidth)
+                C.LeftColumnWidth = minLeftWidth;
+            if (C.MiddleColumnWidth < minMiddleWidth)
+                C.MiddleColumnWidth = minMiddleWidth;
+
+            // Calculate actual widths (use the config values directly)
+            float leftWidth = C.LeftColumnWidth;
+            float middleWidth = C.MiddleColumnWidth;
+            float splitterWidth = 4.0f;
+            float rightWidth = Math.Max(minRightWidth, totalWidth - leftWidth - middleWidth - (splitterWidth * 2));
+
             // ----------------------------
-            //  LEFT PANEL (Start/Stop, Class Selection, Filter Ui)
+            // LEFT PANEL
             // ----------------------------
-
-            ImGui.SetColumnWidth(0, leftPanelWidth);
-
-            if (ImGui.BeginChild("Filter Panel##Filter Panel", new Vector2(0, childHeight), true))
+            if (ImGui.BeginChild("Filter Panel##Filter Panel", new Vector2(leftWidth, childHeight), true))
             {
+                // ... your existing left panel content ...
                 ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4.0f);
 
                 using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob))
@@ -233,7 +239,7 @@ namespace ICE.Ui
 
                 ImGui.Spacing();
 
-                ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopBeforeGrab);
+                ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
                 if (ImGui.Checkbox($"Stop at Cosmic Credits", ref stopCosmic))
                 {
                     C.StopOnceHitCosmoCredits = stopCosmic;
@@ -245,6 +251,11 @@ namespace ICE.Ui
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.SliderInt("##CosmicStop", ref cosmicCap, 0, 30000))
                     {
+                        if (cosmicCap > 30000)
+                            cosmicCap = 30000;
+                        else if (cosmicCap < 0)
+                            cosmicCap = 0;
+
                         C.CosmoCreditsCap = cosmicCap;
                         C.Save();
                     }
@@ -300,6 +311,12 @@ namespace ICE.Ui
                         C.Save();
                     }
                     ImGui.Unindent(15);
+                }
+                bool relicStop = C.StopOnceRelicFinished;
+                if (ImGui.Checkbox($"Stop @ Relic Complete", ref relicStop))
+                {
+                    C.StopOnceRelicFinished = relicStop;
+                    C.Save();
                 }
 
                 ImGui.Spacing();
@@ -410,17 +427,24 @@ namespace ICE.Ui
 
             ImGui.EndChild();
 
-            // ------------------------------------------ 
-            //  MIDDLE PANEL: MISSION LISTING
-            // ------------------------------------------
-            ImGui.NextColumn();
-
-            // Buffer room for the scrollbar
-            ImGui.SetColumnWidth(1, C.MiddleColumnWidth);
-
-            if (ImGui.BeginChild("##MissionList", new Vector2(0, childHeight), true))
+            // First splitter
+            ImGui.SameLine();
+            ImGui.Button("##vsplitter1", new Vector2(splitterWidth, childHeight));
+            if (ImGui.IsItemActive())
             {
+                C.LeftColumnWidth += ImGui.GetIO().MouseDelta.X;
+                C.LeftColumnWidth = Math.Max(C.LeftColumnWidth, minLeftWidth);
+                C.Save();
+            }
+            if (ImGui.IsItemHovered())
+                ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeAll);
 
+            // ----------------------------
+            // MIDDLE PANEL
+            // ----------------------------
+            ImGui.SameLine();
+            if (ImGui.BeginChild("##MissionList", new Vector2(middleWidth, childHeight), true))
+            {
                 if (ImGui.Checkbox("Hide Unsupported Missions", ref hideUnsupported))
                 {
                     C.HideUnsupportedMissions = hideUnsupported;
@@ -449,14 +473,6 @@ namespace ICE.Ui
                         }
                     }
                     ImGui.EndCombo();
-                }
-                ImGui.SameLine();
-                float middleColumnWidth = C.MiddleColumnWidth;
-                ImGui.SetNextItemWidth(75);
-                if (ImGui.DragFloat("Middle Column Width Adjuster", ref middleColumnWidth))
-                {
-                    C.MiddleColumnWidth = middleColumnWidth;
-                    C.Save();
                 }
 
                 ImGui.Dummy(new Vector2(0, 5));
@@ -589,18 +605,25 @@ namespace ICE.Ui
 
             ImGui.EndChild();
 
-            // ------------------------------------------
-            // RIGHT PANEL: MISSION INFO
-            // ------------------------------------------
-            ImGui.NextColumn();
-            float maxWidthAvail = ImGui.GetContentRegionMax().X;
-            ImGui.SetColumnWidth(2, maxWidthAvail);
+            // Second splitter
+            ImGui.SameLine();
+            ImGui.Button("##vsplitter2", new Vector2(splitterWidth, childHeight));
+            if (ImGui.IsItemActive())
+            {
+                C.MiddleColumnWidth += ImGui.GetIO().MouseDelta.X;
+                C.MiddleColumnWidth = Math.Max(C.MiddleColumnWidth, minMiddleWidth);
+                C.Save();
+            }
+            if (ImGui.IsItemHovered())
+                ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeAll);
 
+            // ----------------------------
+            // RIGHT PANEL
+            // ----------------------------
+
+            ImGui.SameLine();
             if (ImGui.BeginChild("###MissionDetailPanel", new Vector2(0, childHeight), true))
             {
-                Kofi.DrawRight();
-                ImGui.NewLine();
-
                 if (selectedMission != 0)
                 {
                     ImGui.Text($"Mission Info (More Detailed)");
@@ -776,6 +799,13 @@ namespace ICE.Ui
                         }
 #endif
                     }
+                }
+                else
+                {
+                    ImGui.TextWrapped("What might be a pirates favorite letter?");
+                    ImGui.TextWrapped("You might think it's R, but their first love is the C <3");
+                    ImGui.Dummy(new Vector2(0, 10));
+                    ImGui.Text("Thank you for reading my dad joke");
                 }
             }
             ImGui.EndChild();
@@ -1527,6 +1557,5 @@ namespace ICE.Ui
         }
 
         #endregion
-
     }
 }

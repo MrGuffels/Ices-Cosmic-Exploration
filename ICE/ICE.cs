@@ -70,6 +70,7 @@ public sealed partial class ICE : IDalamudPlugin
     internal ArtisanIPC Artisan;
     internal VislandIPC Visland;
     internal AutoHookIPC AutoHook;
+    internal IceCosmicExplorationIPC IceIpc;
 
     public ICE(IDalamudPluginInterface pi)
     {
@@ -88,6 +89,7 @@ public sealed partial class ICE : IDalamudPlugin
         Artisan = new();
         Visland = new();
         AutoHook = new();
+        IceIpc = new();
 
         // all the windows
         windowSystem = new();
@@ -98,13 +100,12 @@ public sealed partial class ICE : IDalamudPlugin
 
         EzCmd.Add("/icecosmic", OnCommand, """
             Open plugin interface
-            /ice clear - Removes all missions
-            /ice stop - Stops ICE
+            /ice help - shows all commands
+            /ice clear - removes all missions
+            /ice stop - stops ICE
             /ice start - Starts ICE
             /ice add | remove | toggle | only 
-            	(Ex. /ice add 405 406 410)
             /ice flag [id] - Opens the map and marks where the area of gathering is.
-                (Ex. /ice flag 301)
             """);
         EzCmd.Add("/ice", OnCommand);
         EzCmd.Add("/IceCosmic", OnCommand);
@@ -184,8 +185,11 @@ public sealed partial class ICE : IDalamudPlugin
         }
         else if (firstArg.ToLower() == "clear")
         {
-            OldConfig.Missions.ForEach(x => x.Enabled = false);
-            OldConfig.Save();
+            foreach (var mission in C.MissionConfig)
+            {
+                mission.Value.Enabled = false;
+            }
+            C.Save();
         }
         else if (firstArg.ToLower() == "stop")
         {
@@ -201,10 +205,14 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            OldConfig.Missions.Where(item => idSet.Contains(item.Id))
-                .ToList()
-                .ForEach(item => item.Enabled = true);
-            OldConfig.Save();
+            foreach (var id in idSet)
+            {
+                if (C.MissionConfig.TryGetValue(id, out var mission))
+                {
+                    mission.Enabled = true;
+                }
+            }
+            C.Save();
         }
         else if (firstArg.ToLower() == "remove")
         {
@@ -212,10 +220,14 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            OldConfig.Missions.Where(item => idSet.Contains(item.Id))
-                .ToList()
-                .ForEach(item => item.Enabled = false);
-            OldConfig.Save();
+            foreach (var id in idSet)
+            {
+                if (C.MissionConfig.TryGetValue(id, out var mission))
+                {
+                    mission.Enabled = false;
+                }
+            }
+            C.Save();
         }
         else if (firstArg.ToLower() == "toggle")
         {
@@ -223,10 +235,14 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            OldConfig.Missions.Where(item => idSet.Contains(item.Id))
-                .ToList()
-                .ForEach(item => item.Enabled = !item.Enabled);
-            OldConfig.Save();
+            foreach (var id in idSet)
+            {
+                if (C.MissionConfig.TryGetValue(id, out var mission))
+                {
+                    mission.Enabled = !mission.Enabled;
+                }
+            }
+            C.Save();
         }
         else if (firstArg.ToLower() == "only")
         {
@@ -234,8 +250,17 @@ public sealed partial class ICE : IDalamudPlugin
             var idSet = new HashSet<uint>(ids);
             if (ids.Length == 0) return;
 
-            OldConfig.Missions.ForEach(item => item.Enabled = idSet.Contains(item.Id));
-            OldConfig.Save();
+            foreach (var mission in C.MissionConfig.Where(x => x.Value.Enabled))
+            {
+                mission.Value.Enabled = false;
+            }
+            foreach (var id in idSet)
+            {
+                if (C.MissionConfig.TryGetValue (id, out var mission))
+                {
+                    mission.Enabled = true;
+                }
+            }
         }
         else if (firstArg.ToLower() == "flag")
         {
@@ -248,6 +273,24 @@ public sealed partial class ICE : IDalamudPlugin
             if (info.Value.MarkerId == 0) return;
 
             Utils.SetGatheringRing(info.Value.TerritoryId, (int)info.Value.MapPosition.X, (int)info.Value.MapPosition.Y, info.Value.Radius, info.Value.Name);
+        }
+        else if (firstArg.ToLower() == "help")
+        {
+            string helpMessage = $"- - ICE Commands Help - - \n" +
+                                 $"/ice help - show all available commands\n" +
+                                 $"/ice -> opens the main settings\n" +
+                                 $"/ice s -> opens the settings menu\n" +
+                                 $" - - - Mission specific - - - \n" +
+                                 $"/ice stop - Stops ICE\n" +
+                                 $"/ice start - starts ICE \n" +
+                                 $"The rest of the commands work by doing a single id/multiple in a row \n" +
+                                 $"EX. /ice add 10 155 185\n" +
+                                 $"/ice add (ids) - enables select missions\n" +
+                                 $"/ice remove (ids) - removes/disables select missions\n" +
+                                 $"/ice toggle (ids) - toggles select mission ids" +
+                                 $"/ice only (ids) - makes only select missions enabled" +
+                                 $"/ice flag (id) - opens the map and flags the mission (if it has one).\n";
+            Svc.Chat.Print(helpMessage);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ECommons.ExcelServices.TerritoryEnumeration;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using ICE.IPC;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -107,6 +108,16 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     IceLogging.Debug($"Current bait: {CosmicHelper.CurrentBait}");
                 }
+            }
+            ImGui.Text($"Is ICE Running? | {P.IceIpc.IsRunning()}");
+            if (ImGui.Button("Only Missions Via IPC"))
+            {
+                HashSet<uint> missionListIds = new() { 1, 3, 4, 7, 9, 11 };
+                P.IceIpc.OnlyMissions(missionListIds);
+            }
+            if (ImGui.Button("Change to gamba"))
+            {
+                SchedulerMain.State = IceState.Gambling;
             }
         }
 

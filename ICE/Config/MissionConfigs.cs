@@ -56,6 +56,7 @@ namespace ICE.Config
         public int LunarCreditsCap { get; set; } = 10000;
         public bool StopOnceHitCosmicScore { get; set; } = false;
         public int CosmicScoreCap { get; set; } = 500000;
+        public bool StopOnceRelicFinished { get; set; } = false;
         public byte SequenceMissionPriority { get; set; } = 1;
         public byte WeatherMissionPriority { get; set; } = 2;
         public byte TimedMissionPriority { get; set; } = 3;
@@ -121,11 +122,13 @@ namespace ICE.Config
 
         #region Misc
 
+        public bool MoonSprint { get; set; } = true;
         public uint MountId { get; set; } = 0;
         public string MountName { get; set; } = "Mount Roulette";
         public float MountRadius { get; set; } = 15.0f;
         public bool UseMountOutsideMission { get; set; } = true;
         public bool UseAmountInMission { get; set; } = true;
+        public float LeftColumnWidth { get; set; } = 300f;
 
         #endregion
 

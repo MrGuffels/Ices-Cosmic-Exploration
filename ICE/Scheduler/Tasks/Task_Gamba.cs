@@ -1,3 +1,4 @@
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -94,6 +95,17 @@ namespace ICE.Scheduler.Tasks
         {
             if (EzThrottler.Throttle("Gamba", C.GambaDelay))
             {
+                var currentZoneId = Player.Territory;
+                var npcInfo = NpcData.MoonNpcs[currentZoneId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault();
+                uint npcId = 0;
+                var npcLocation = new Vector3();
+
+                if (npcInfo != null)
+                {
+                    npcId = npcInfo.NpcId;
+                    npcLocation = npcInfo.NpcLocation;
+                }
+
                 EnsureGambaWeightsInitialized();
                 if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var gamba) && gamba.IsAddonReady)
                 {
@@ -153,6 +165,16 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
+                /*
+                else if (Svc.Targets.Target.DataId == npcId && npcId != 0)
+                {
+                    if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var addon) && addon.IsAddonReady)
+                    {
+                        if (EzThrottler.Throttle("Clicking the talk addon"))
+                            addon.Click();
+                    }
+                }
+                */
                 else
                     SchedulerMain.DisablePlugin();
             }

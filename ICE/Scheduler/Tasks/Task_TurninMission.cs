@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,8 +20,18 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission == 0)
             {
-                SchedulerMain.State = IceState.Start;
-                return true;
+                if (Mission_Settings.StopAfterCurrent)
+                {
+                    IceLogging.Debug($"Stop after current was enabled. Stopping now", "[Task Turnin]");
+                    SchedulerMain.State = IceState.Idle;
+                    return true;
+                }
+                else
+                {
+                    IceLogging.Debug($"Stop after current wasn't enabled. Grabbing another mission", "[Task Turnin]");
+                    SchedulerMain.State = IceState.Start;
+                    return true;
+                }
             }
             else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {

@@ -8,7 +8,7 @@
             {
                 SchedulerMain.State = IceState.GrabMission;
             }
-            if (!OldConfig.Missions.SingleOrDefault(x => x.Id == CosmicHelper.CurrentLunarMission).ManualMode && !OldConfig.OnlyGrabMission)
+            if (!C.MissionConfig.SingleOrDefault(x => x.Key == CosmicHelper.CurrentLunarMission).Value.ManualMode && !C.OnlyGrabMission)
             {
                 SchedulerMain.State &= ~IceState.ManualMode;
             }
