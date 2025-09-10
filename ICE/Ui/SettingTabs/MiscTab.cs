@@ -1,7 +1,9 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
+using Pictomancy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,6 +85,8 @@ namespace ICE.Ui.SettingTabs
                     C.Save();
                 }
             }
+
+            ImGui.Separator();
 
             MountSelection();
 
@@ -216,8 +220,14 @@ namespace ICE.Ui.SettingTabs
             };
         }
 
+        private static bool visualizeRadius = false;
+
         private static unsafe void MountSelection()
         {
+            bool mountOutsideMission = C.UseMountOutsideMission;
+            bool mountInMission = C.UseMountInMission;
+            float minMountRange = C.MountRadius;
+
             if (ImGui.Button("Select Mounting Option"))
             {
                 availableMounts.Clear();
@@ -295,6 +305,39 @@ namespace ICE.Ui.SettingTabs
                 }
 
                 ImGui.EndPopup();
+            }
+
+            if (ImGui.Checkbox("Use mount outside mission", ref mountOutsideMission))
+            {
+                C.UseMountOutsideMission = mountOutsideMission;
+                C.Save();
+            }
+
+            if (ImGui.Checkbox("Use mount in mission", ref mountInMission))
+            {
+                C.UseMountInMission = mountInMission;
+                C.Save();
+            }
+
+            ImGui.SetNextItemWidth(100);
+            if (ImGui.DragFloat("Minimum Mounting Range", ref minMountRange, 1))
+            {
+                C.MountRadius = minMountRange;
+                C.Save();
+            }
+            ImGui.SameLine();
+            ImGui.Checkbox("Visualize radius", ref visualizeRadius);
+            if (visualizeRadius)
+            {
+                using (var drawList = PictoService.Draw())
+                {
+                    if (drawList == null)
+                        return;
+
+                    var playerPos = Player.Position;
+
+                    drawList.AddCircleFilled(playerPos, C.MountRadius, 2616716297, 2616716297);
+                }
             }
         }
     }

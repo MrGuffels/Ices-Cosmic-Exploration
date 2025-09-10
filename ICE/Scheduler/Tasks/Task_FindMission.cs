@@ -673,7 +673,7 @@ namespace ICE.Scheduler.Tasks
                         {
                             IceLogging.Info($"Previously abandoned mission wasn't a 4 or 5, just going to default for a rank 5");
                             missionToAbandon = AExRank.FirstOrDefault();
-                            Mission_Settings.previouslyAbandoned = 5;
+                            Mission_Settings.previouslyAbandoned = 4;
                         }
                     }
                     else if (AExRank.Count > 0)
@@ -730,7 +730,8 @@ namespace ICE.Scheduler.Tasks
                 new(() => ClearNavFishing(), "Clearing the previous navmesh pathing"),
                 new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
                 new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                new(() => GrabMission(missionId), "Selecting mission for grabbing")
+                new(() => GrabMission(missionId), "Selecting mission for grabbing"),
+                new(() => FrameDelay(16), "Giving time before you kick in the mission")
             );
         }
         private static bool? GrabMission(uint missionId, bool reroll = false)
@@ -787,7 +788,7 @@ namespace ICE.Scheduler.Tasks
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
-            if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather) || missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
+            if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it
                 Vector2 PlayerPos = new Vector2(Player.Position.X, Player.Position.Z);

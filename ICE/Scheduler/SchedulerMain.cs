@@ -18,7 +18,7 @@ namespace ICE.Scheduler
             Mission_Settings.StopBeforeGrab = false;
             State = IceState.Idle;
             StartClassJob = Job.ADV;
-            if (P.Navmesh.IsRunning())
+            if (P.Navmesh.IsRunning() && P.Navmesh.IsReady())
                 P.Navmesh.Stop();
             return true;
         }

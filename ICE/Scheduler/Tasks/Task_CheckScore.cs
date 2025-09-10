@@ -68,7 +68,6 @@ namespace ICE.Scheduler.Tasks
 
                 if (missionEntry != null)
                 {
-
                     if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                     {
                         // Scoring mission based on the time. Divides up into 2 different types. Normal, and variety of fish

@@ -30,6 +30,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     {
                         SchedulerMain.State = IceState.Idle;
+                        Svc.Chat.Print("Stop At Player Level is enabled. \n" +
+                                       $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
                         return true;
                     }
                 }
@@ -40,6 +42,8 @@ namespace ICE.Scheduler.Tasks
 
                 if (scores.classScore >= C.CosmicScoreCap)
                 {
+                    Svc.Chat.Print("Stop At Cosmic Score is enabled. \n" +
+                                  $"Your current level is: {scores.classScore} and Goal: {C.CosmicScoreCap}", "[I.C.E.]");
                     SchedulerMain.State = IceState.Idle;
                     return true;
                 }
