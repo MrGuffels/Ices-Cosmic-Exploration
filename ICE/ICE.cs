@@ -126,6 +126,7 @@ public sealed partial class ICE : IDalamudPlugin
         Task_Gamba.EnsureGambaWeightsInitialized();
         ConfigMigrator.UpdateConfigMissionList();
         ConfigMigrator.MigrateConfigv1();
+        ConfigMigrator.CheckMissions();
     }
 
     private static void Init()

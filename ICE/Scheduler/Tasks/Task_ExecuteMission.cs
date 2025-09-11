@@ -23,8 +23,13 @@ namespace ICE.Scheduler.Tasks
 
                 var mission = CosmicHelper.SheetMissionDict[missionId];
                 bool fishingMission = mission.Attributes.HasFlag(MissionAttributes.Fish);
+                C.MissionConfig.TryGetValue(missionId, out var config);
 
-                if (fishingMission)
+                if (C.OnlyGrabMission || (config != null && config.ManualMode))
+                {
+                    SchedulerMain.State = IceState.ManualMode;
+                }
+                else if (fishingMission)
                 {
                     // Check exist twice, one here is to actually enable the fishing profile that is selected.
                     var missionConfig = C.MissionConfig[missionId];

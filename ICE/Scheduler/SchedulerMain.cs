@@ -15,7 +15,6 @@ namespace ICE.Scheduler
         {
             IceLogging.Debug("Stopping the plugin state", "[Schedular - Disable Plugin]");
             P.TaskManager.Abort();
-            Mission_Settings.StopBeforeGrab = false;
             State = IceState.Idle;
             StartClassJob = Job.ADV;
             if (P.Navmesh.IsRunning() && P.Navmesh.IsReady())
@@ -77,6 +76,9 @@ namespace ICE.Scheduler
                         break;
                     case Craft:
                         Task_Craft.Enqueue();
+                        break;
+                    case ManualMode:
+                        Task_Manual.Enqueue();
                         break;
                     default:
                         DisablePlugin();

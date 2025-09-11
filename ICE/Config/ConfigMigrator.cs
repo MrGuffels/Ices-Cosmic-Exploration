@@ -237,5 +237,23 @@ namespace ICE.Config
             buff.MinGp = minGp;
             buff.MaxUse = maxUse;
         }
+
+        public static void CheckMissions()
+        {
+            foreach (var mission in C.MissionConfig)
+            {
+                bool any = mission.Value.AutoTurnin
+                        || mission.Value.TurninGold
+                        || mission.Value.TurninSilver
+                        || mission.Value.TurninBronze;
+
+                if (!any)
+                {
+                    mission.Value.AutoTurnin = true;
+                    IceLogging.Info($"{mission.Key} did not have a set turnin. Making it auto-turnin now");
+                }
+            }
+            C.Save();
+        }
     }
 }

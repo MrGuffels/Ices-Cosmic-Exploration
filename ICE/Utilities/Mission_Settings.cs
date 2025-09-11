@@ -9,7 +9,6 @@ namespace ICE.Utilities
     internal static class Mission_Settings
     {
         // States that get set in the main Ui
-        internal static bool StopBeforeGrab = false;
         internal static bool StopAfterCurrent = false;
         internal static uint previouslyAbandoned = 0;
 

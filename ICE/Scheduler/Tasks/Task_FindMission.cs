@@ -738,7 +738,6 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission != 0)
             {
-                // shouldn't really end up in this state, but as a failsafe of "we're in a mission", returning true to get out of here.
                 SchedulerMain.State = IceState.ExecutingMission;
                 return true;
             }

@@ -104,7 +104,8 @@ public class IceCosmicExplorationIPC
     /// </summary>
     [EzIPC] public void GrabMissionOnly(bool state)
     {
-        Mission_Settings.StopBeforeGrab = state;
+        C.OnlyGrabMission = state;
+        C.Save();
     }
 
     /// <summary>

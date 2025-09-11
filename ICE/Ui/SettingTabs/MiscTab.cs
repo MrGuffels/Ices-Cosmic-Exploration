@@ -43,11 +43,26 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
 
+            bool showExpOverlay = C.ShowExpBars;
+            if (ImGui.Checkbox("Show Experience Bars on Overlay", ref showExpOverlay))
+            {
+                C.ShowExpBars = showExpOverlay;
+                C.Save();
+            }
+
+            ImGui.Dummy(new(0, 2));
+
+            ImGui.Separator();
+
+            ImGui.Dummy(new (0, 2));
+
             if (ImGui.Checkbox("Auto-Use Moon Sprint", ref AutoMoonSprint))
             {
                 C.MoonSprint = AutoMoonSprint;
                 C.Save();
             }
+
+            ImGui.Dummy(new(0, 2));
 
             ImGui.Separator();
 
@@ -336,9 +351,19 @@ namespace ICE.Ui.SettingTabs
 
                     var playerPos = Player.Position;
 
-                    drawList.AddCircleFilled(playerPos, C.MountRadius, 2616716297, 2616716297);
+                    // drawList.AddCircleFilled(playerPos, C.MountRadius, 2616716297, 2616716297);
+                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos, C.MountRadius, FromUintABGR(2616716297));
                 }
             }
+        }
+
+        private static Vector4 FromUintABGR(uint color)
+        {
+            float a = ((color >> 24) & 0xFF) / 255f;
+            float b = ((color >> 16) & 0xFF) / 255f;
+            float g = ((color >> 8) & 0xFF) / 255f;
+            float r = (color & 0xFF) / 255f;
+            return new Vector4(r, g, b, a);
         }
     }
 }

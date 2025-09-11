@@ -142,9 +142,10 @@ namespace ICE.Scheduler.Tasks
                     {
                         // Mission is still active. Time to check if it's a crafting or gathering mission
                         UpdateMissionState(currentMissionId);
+                        C.MissionConfig.TryGetValue(currentMissionId, out var config);
+
                         var s = SchedulerMain.MissionState;
                         bool dualMission = s.HasFlag(MissionAttributes.Craft) && s.HasFlag(MissionAttributes.Gather);
-
                         if (s.HasFlag(MissionAttributes.Critical))
                         {
                             // Critical mission info. Need to grab/update where to turn these into. 
@@ -153,7 +154,12 @@ namespace ICE.Scheduler.Tasks
                         }
                         // In the middle of a dual mission. 
                         // First, checking to see if you're in the middle of a gathering or crafting action
-                        if (Svc.Condition[ConditionFlag.Crafting] || P.Artisan.IsBusy())
+                        if (C.OnlyGrabMission || config.ManualMode)
+                        {
+                            IceLogging.Info($"You have either manual mode enabled, or you have OnlyGrabMission enabled. Swapping to manual mode state");
+                            SchedulerMain.State = IceState.ManualMode;
+                        }
+                        else if (Svc.Condition[ConditionFlag.Crafting] || P.Artisan.IsBusy())
                         {
                             SchedulerMain.State = IceState.Craft;
                         }
