@@ -1,4 +1,7 @@
-﻿using Dalamud.Interface.Textures;
+﻿using Dalamud.Game.ClientState.Objects.Enums;
+using Dalamud.Interface.Textures;
+using ECommons.GameHelpers;
+using InteropGenerator.Runtime.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +14,11 @@ namespace ICE.Ui.DebugWindowTabs
     {
         private static uint selectedZone = 0;
         private static Vector2 selectedFlag = Vector2.Zero;
+
+        // Gathering Node Settings
+        private static bool ViewOnlyTargeable = true;
+        private static bool AddPictoCircle = true;
+        private static float maxDistance = 25;
 
         public static unsafe void Draw()
         {
@@ -48,7 +56,8 @@ namespace ICE.Ui.DebugWindowTabs
                             }
 
                             // Then the selectable text
-                            string label = isSelected ? $"→ {flag.Key}" : $"{flag.Key}";
+                            string mapPos = $"X: {flag.Key.X} Z: {flag.Key.Y}";
+                            string label = isSelected ? $"→ {mapPos}" : $"{mapPos}";
                             if (ImGui.Selectable(label, isSelected))
                             {
                                 selectedZone = moon.Key;
@@ -69,12 +78,83 @@ namespace ICE.Ui.DebugWindowTabs
                     if (ImGui.Button("Open map position"))
                     {
                         var missionEntry = CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == selectedFlag
-                                                                                 && x.Value.TerritoryId == selectedZone).FirstOrDefault();
+                                                                             && x.Value.TerritoryId == selectedZone).FirstOrDefault();
                         if (missionEntry.Key != 0)
                         {
                             var mission = missionEntry.Value;
                             Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
                         }
+                    }
+                    if (ImGui.Button("Copy Map Info"))
+                    {
+                        // TODO: Actually put the code here to copy the info for this particular map.
+                    }
+
+                    ImGui.Separator();
+
+                    var textLineHeight = ImGui.GetTextLineHeightWithSpacing();
+                    var childHeight = textLineHeight * 8 + 20;
+
+                    if (ImGui.BeginTable("NodeEditTable", 3, ImGuiTableFlags.Resizable))
+                    {
+                        // Set up column widths
+                        ImGui.TableSetupColumn("NodeSelector", ImGuiTableColumnFlags.WidthStretch, 0.4f);
+                        ImGui.TableSetupColumn("NodeViewer", ImGuiTableColumnFlags.WidthStretch, 0.4f);
+                        ImGui.TableSetupColumn("Buttons", ImGuiTableColumnFlags.WidthFixed, 100f);
+
+                        ImGui.TableNextRow();
+
+                        // Node Selector
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Node Selector");
+                        if (ImGui.BeginChild("NodeSelector", new Vector2(0, childHeight), true))
+                        {
+                            for (int i = 0; i < 8; i++)
+                            {
+                                ImGui.Text($"Node entry {i + 1}");
+                            }
+                            ImGui.EndChild();
+                        }
+
+                        // Node Viewer
+                        ImGui.TableSetColumnIndex(1);
+                        ImGui.Text("Gathering Node Viewer");
+                        if (ImGui.BeginChild("Node Viewer", new Vector2(0, childHeight), true))
+                        {
+                            foreach (var x in Svc.Objects)
+                            {
+                                if (x.ObjectKind == ObjectKind.GatheringPoint)
+                                {
+                                    if (Player.DistanceTo(x.Position) <= maxDistance)
+                                    {
+                                        ImGui.Text($"Id: {x.DataId} | Distance: {Player.DistanceTo(x.Position):N2}");
+                                    }
+                                }
+                            }
+                            ImGui.EndChild();
+                        }
+
+                        // Side Buttons
+                        ImGui.TableSetColumnIndex(2);
+                        ImGui.Text(" ");
+                        if (ImGui.BeginChild("SideButtons", new Vector2(0, childHeight), true))
+                        {
+                            if (ImGui.Button("Add Node", new Vector2(-1, 0)))
+                            {
+                                // Add node logic
+                            }
+                            if (ImGui.Button("Remove", new Vector2(-1, 0)))
+                            {
+                                // Remove node logic
+                            }
+                            if (ImGui.Button("Edit", new Vector2(-1, 0)))
+                            {
+                                // Edit node logic
+                            }
+                            ImGui.EndChild();
+                        }
+
+                        ImGui.EndTable();
                     }
 
                     ImGui.EndChild();
