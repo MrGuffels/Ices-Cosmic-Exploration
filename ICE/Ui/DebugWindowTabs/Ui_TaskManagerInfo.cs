@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class NewTask
+    internal class Ui_TaskManagerInfo
     {
         private static uint mission = 0;
         private static int frameDelay = 4;

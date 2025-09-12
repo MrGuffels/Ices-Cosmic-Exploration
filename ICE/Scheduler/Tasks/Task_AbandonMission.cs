@@ -71,11 +71,16 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission == 0)
             {
-                IceLogging.Debug("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
                 if (!C.StopOnAbort || Continue)
+                {
+                    IceLogging.Info("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
                     SchedulerMain.State = IceState.Start;
+                }
                 else
+                {
+                    IceLogging.Info($"All conditions to continue is not true. Stopping the plugin");
                     SchedulerMain.State = IceState.Idle;
+                }
 
                 return true;
             }
@@ -108,11 +113,19 @@ namespace ICE.Scheduler.Tasks
                     if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
                     {
                         var missionId = CosmicHelper.CurrentLunarMission;
+                        var missionInfo = CosmicHelper.SheetMissionDict[missionId];
                         var mission = C.MissionConfig[missionId];
 
-                        if (mission.AutoTurnin)
+                        if (mission.AutoTurnin && (addon.CurrentScore >= missionInfo.BronzeScore))
                         {
-                            // For now, just check to see if auto is enabled. Need to do a more thorough check but cba at this time of night xD
+                            Continue = true;
+                        }
+                        if (mission.TurninSilver && (addon.CurrentScore >= missionInfo.SilverScore))
+                        {
+                            Continue = true;
+                        }
+                        if (mission.TurninBronze && (addon.CurrentScore >= missionInfo.BronzeScore))
+                        {
                             Continue = true;
                         }
                     }

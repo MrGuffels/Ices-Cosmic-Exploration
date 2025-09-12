@@ -11,7 +11,7 @@ using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class Custom_GatherInfo
+    internal class Ui_Custom_GatherInfo
     {
         private static uint addMissionId = 0;
         private static uint selectedMission = 0;

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class TestButtons
+    internal class Ui_TestButtons
     {
         public static unsafe void Draw()
         {

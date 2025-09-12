@@ -8,7 +8,7 @@ using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class PlayerInfo
+    internal class Ui_PlayerInfo
     {
         public static void Draw()
         {

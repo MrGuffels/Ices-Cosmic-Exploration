@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class RelicInfo
+    internal class Ui_RelicInfo
     {
         public static List<string> XPtypes = ["I", "II", "III", "IV"];
 

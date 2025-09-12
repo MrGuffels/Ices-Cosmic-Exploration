@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class MapTesting
+    internal class Ui_MapTesting
     {
         private static int TableRow = 1;
         private static int posX = 0;

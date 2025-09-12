@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class Navmesh_Testing
+    internal class Ui_NavmeshTesting
     {
         private static List<Vector3> finalPath = new List<Vector3>();
         private static Vector3 currentPos = new Vector3();

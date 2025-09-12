@@ -26,6 +26,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     IceLogging.Debug($"Stop after current was enabled. Stopping now", "[Task Turnin]");
                     SchedulerMain.State = IceState.Idle;
+                    Mission_Settings.StopAfterCurrent = false;
+                    P.TaskManager.Tasks.Clear();
                     return true;
                 }
                 else

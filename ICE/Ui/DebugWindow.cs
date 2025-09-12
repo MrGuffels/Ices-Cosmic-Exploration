@@ -72,22 +72,22 @@ internal class DebugWindow : Window
         {
             switch (selectedDebugIndex)
             {
-                case 0: PlayerInfo.Draw(); break;
+                case 0: Ui_PlayerInfo.Draw(); break;
                 case 1: Hud_MainMoon.Draw(); break;
                 case 2: Hud_Mission.Draw(); break;
                 case 3: Hud_MissionInfo.Draw(); break;
                 case 4: Hud_WheelofFortune.Draw(); break;
                 case 5: Hud_MoonRecipe.Draw(); break;
                 case 6: Table_MissionInfo.Draw(); break;
-                case 7: TestButtons.Draw(); break;
-                case 8: IPCTesting.Draw(); break;
-                case 9: MapTesting.Draw(); break;
-                case 10: GatheringViewer.Draw(); break;
-                case 11: Navmesh_Testing.Draw(); break;
-                case 12: RelicInfo.Draw(); break;
-                case 13: NewTask.Draw(); break;
+                case 7: Ui_TestButtons.Draw(); break;
+                case 8: Ui_IPCTesting.Draw(); break;
+                case 9: Ui_MapTesting.Draw(); break;
+                case 10: Ui_GatheringViewer.Draw(); break;
+                case 11: Ui_NavmeshTesting.Draw(); break;
+                case 12: Ui_RelicInfo.Draw(); break;
+                case 13: Ui_TaskManagerInfo.Draw(); break;
                 case 14: Table_CustomItems.Draw(); break;
-                case 15: Custom_GatherInfo.Draw(); break;
+                case 15: Ui_Custom_GatherInfo.Draw(); break;
                 case 16: Table_TimeWeather.Draw(); break;
                 case 17: Table_MissionText.Draw(); break;
                 case 18: Table_MoonRecipies.Draw(); break;

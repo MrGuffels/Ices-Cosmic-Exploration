@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    internal class IPCTesting
+    internal class Ui_IPCTesting
     {
         private static int Radius = 10;
         private static int XLoc = 0;

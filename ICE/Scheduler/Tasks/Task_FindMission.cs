@@ -607,19 +607,11 @@ namespace ICE.Scheduler.Tasks
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
                 List<uint> RankId = new() { 5, 4, 3, 2, 1 };
-                Dictionary<uint, HashSet<uint>> MissionKeeper = new()
-                {
-                    [5] = new HashSet<uint>(),
-                    [4] = new HashSet<uint>(),
-                    [3] = new HashSet<uint>(),
-                    [2] = new HashSet<uint>(),
-                    [1] = new HashSet<uint>()
-                };
-                HashSet<uint> AExRank = new HashSet<uint>();
-                HashSet<uint> ARank = new HashSet<uint>();
-                HashSet<uint> BRank = new HashSet<uint>();
-                HashSet<uint> CRank = new HashSet<uint>();
-                HashSet<uint> DRank = new HashSet<uint>();
+                List<uint> AExRank = new List<uint>();
+                List<uint> ARank = new List<uint>();
+                List<uint> BRank = new List<uint>();
+                List<uint> CRank = new List<uint>();
+                List<uint> DRank = new List<uint>();
 
                 foreach (var mission in x.StellerMissions)
                 {
@@ -652,56 +644,72 @@ namespace ICE.Scheduler.Tasks
                 bool CheckCRanks = (CRankMissions.Count > 0 && CRank.Count > 0);
                 bool CheckDRanks = (DRankMissions.Count > 0 && DRank.Count > 0);
 
+                var random = new Random();
+                ShuffleList(AExRank, random);
+                ShuffleList(ARank, random);
+                ShuffleList(BRank, random);
+                ShuffleList(CRank, random);
+                ShuffleList(DRank, random);
+
+                void ShuffleList<T>(List<T> list, Random rnd)
+                {
+                    for (int i = list.Count - 1; i > 0; i--)
+                    {
+                        int j = rnd.Next(i + 1);
+                        (list[i], list[j]) = (list[j], list[i]);
+                    }
+                }
+
                 if (CheckARanks)
                 {
-                    if (AExRank.Count > 0 && ARank.Count > 0)
+                    if (AExRank.Count > 2)
                     {
-                        // Both missions are available to abandon, checking previous
-                        if (Mission_Settings.previouslyAbandoned == 4)
+                        IceLogging.Debug($"Only AEX Rank missions are available (impressive). Forcing an AEX rank to be accepted");
+                        missionToAbandon = AExRank.First();
+                        Mission_Settings.previouslyAbandoned = 5;
+                    }
+                    else if (ARank.Count > 2)
+                    {
+                        IceLogging.Debug($"Only A Rank missions are available (impressive...). Forcing an A rank to be accepted");
+                        missionToAbandon = ARank.First();
+                        Mission_Settings.previouslyAbandoned = 4;
+                    }
+                    else
+                    {
+                        if (Mission_Settings.previouslyAbandoned == 5)
                         {
-                            IceLogging.Info($"Previously abandoned a rank 4 mission. Going to go for a rank 5");
-                            missionToAbandon = AExRank.FirstOrDefault();
-                            Mission_Settings.previouslyAbandoned = 5;
-                        }
-                        else if (Mission_Settings.previouslyAbandoned == 5)
-                        {
-                            IceLogging.Info($"Previously abandoned a rank 5 mission. Going to go for a rank 5");
-                            missionToAbandon = ARank.FirstOrDefault();
+                            missionToAbandon = ARank.First();
+                            IceLogging.Debug($"Abandonding Rank 4 Mission.");
                             Mission_Settings.previouslyAbandoned = 4;
+                        }
+                        else if (Mission_Settings.previouslyAbandoned == 4)
+                        {
+                            missionToAbandon = AExRank.First();
+                            IceLogging.Debug($"Abandoning Rank 5 Mission");
+                            Mission_Settings.previouslyAbandoned = 5;
                         }
                         else
                         {
-                            IceLogging.Info($"Previously abandoned mission wasn't a 4 or 5, just going to default for a rank 5");
-                            missionToAbandon = AExRank.FirstOrDefault();
+                            missionToAbandon = ARank.First();
+                            IceLogging.Debug($"Startin off w/ abandoning an A rank");
                             Mission_Settings.previouslyAbandoned = 4;
+
                         }
-                    }
-                    else if (AExRank.Count > 0)
-                    {
-                        IceLogging.Debug($"Only AEX Rank missions are available (impressive). Forcing an AEX rank to be accepted");
-                        missionToAbandon = AExRank.FirstOrDefault();
-                        Mission_Settings.previouslyAbandoned = 5;
-                    }
-                    else if (ARank.Count > 0)
-                    {
-                        IceLogging.Debug($"Only A Rank missions are available (impressive...). Forcing an A rank to be accepted");
-                        missionToAbandon = ARank.FirstOrDefault();
-                        Mission_Settings.previouslyAbandoned = 4;
                     }
                 }
                 else if (CheckBRanks)
                 {
-                    missionToAbandon = BRank.FirstOrDefault();
+                    missionToAbandon = BRank.First();
                     Mission_Settings.previouslyAbandoned = 3;
                 }
                 else if (CheckCRanks)
                 {
-                    missionToAbandon = CRank.FirstOrDefault();
+                    missionToAbandon = CRank.First();
                     Mission_Settings.previouslyAbandoned = 2;
                 }
                 else if (CheckDRanks)
                 {
-                    missionToAbandon = DRank.FirstOrDefault();
+                    missionToAbandon = DRank.First();
                     Mission_Settings.previouslyAbandoned = 1;
                 }
 
@@ -787,6 +795,13 @@ namespace ICE.Scheduler.Tasks
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
+            var missionConfig = C.MissionConfig[missionId];
+
+            if (missionConfig.ManualMode)
+            {
+                // This is here to make sure that you don't need to be in the area for moving. Mainly cause nodes aren't mapped out yet and it's expecting to map to that area...
+                return true;
+            }
             if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it
@@ -796,6 +811,8 @@ namespace ICE.Scheduler.Tasks
                 float distance = missionEntry.MarkerId != 0 ? Vector2.Distance(PlayerPos, MapCenter) + 5 : 0;
                 if (distance > missionEntry.Radius)
                 {
+                    var zoneId = Player.Territory;
+
                     if (PlayerHelper.IsPlayerNotBusy() && !Svc.Condition[ConditionFlag.Mounted] && C.UseMountOutsideMission && distance > C.MountRadius)
                     {
                         if (EzThrottler.Throttle("Attempting to mount up"))
@@ -810,7 +827,8 @@ namespace ICE.Scheduler.Tasks
 
                         if (!P.Navmesh.IsRunning())
                         {
-                            var nodeLoc = GatheringUtil.GatheringLocation[MapCenter][0].LandZone;
+                            var nodeLoc = GatheringUtil.MoonGatherLocations[zoneId][MapCenter][0].LandZone;
+
                             if (EzThrottler.Throttle("Initiating navmesh to move to the first landing zone"))
                                 P.Navmesh.PathfindAndMoveTo(nodeLoc, false);
                         }
@@ -825,7 +843,7 @@ namespace ICE.Scheduler.Tasks
                     if (!P.Navmesh.IsRunning())
                     {
                         // Condition unknown 101 pops up while you're on the flying... mount thingies. Need to make sure to try and not pathfind while on these/stop current pathfind if you manage to land on one.
-                        var nodeLoc = GatheringUtil.GatheringLocation[MapCenter][0].LandZone;
+                        var nodeLoc = GatheringUtil.MoonGatherLocations[zoneId][MapCenter][0].LandZone;
                         if (EzThrottler.Throttle("Initiating navmesh to move to the first landing zone"))
                             P.Navmesh.PathfindAndMoveTo(nodeLoc, false);
                     }
