@@ -151,4 +151,13 @@ public static unsafe class Utils
             IceLogging.Info($"Resorting to using the mount roulette");
         }
     }
+
+    public static Vector4 FromUintABGR(uint color)
+    {
+        float a = ((color >> 24) & 0xFF) / 255f;
+        float b = ((color >> 16) & 0xFF) / 255f;
+        float g = ((color >> 8) & 0xFF) / 255f;
+        float r = (color & 0xFF) / 255f;
+        return new Vector4(r, g, b, a);
+    }
 }

@@ -352,18 +352,9 @@ namespace ICE.Ui.SettingTabs
                     var playerPos = Player.Position;
 
                     // drawList.AddCircleFilled(playerPos, C.MountRadius, 2616716297, 2616716297);
-                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos, C.MountRadius, FromUintABGR(2616716297));
+                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos, C.MountRadius, Utils.FromUintABGR(2616716297));
                 }
             }
-        }
-
-        private static Vector4 FromUintABGR(uint color)
-        {
-            float a = ((color >> 24) & 0xFF) / 255f;
-            float b = ((color >> 16) & 0xFF) / 255f;
-            float g = ((color >> 8) & 0xFF) / 255f;
-            float r = (color & 0xFF) / 255f;
-            return new Vector4(r, g, b, a);
         }
     }
 }

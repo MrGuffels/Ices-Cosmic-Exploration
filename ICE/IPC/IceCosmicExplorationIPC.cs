@@ -100,13 +100,41 @@ public class IceCosmicExplorationIPC
     }
 
     /// <summary>
-    /// Sets "Grab Mission Only" to the state of your choice
+    /// General way of changing settings states. 
     /// </summary>
-    [EzIPC] public void GrabMissionOnly(bool state)
+    /// <param name="config"></param>
+    /// <param name="state"></param>
+    [EzIPC] public void ChangeSetting(string config, bool state)
     {
-        C.OnlyGrabMission = state;
+        switch (config)
+        {
+            case "OnlyGrabMission": C.OnlyGrabMission = state; break;
+            case "StopAfterCurrent": Mission_Settings.StopAfterCurrent = state; break;
+            case "StopOnceHitCosmoCredits": C.StopOnceHitCosmoCredits = state; break;
+            case "StopOnceHitLunarCredits": C.StopOnceHitLunarCredits = state; break;
+            case "XPRelicGrind": C.XPRelicGrind = state; break;
+            default: return;
+        }
         C.Save();
     }
+
+    /// <summary>
+    /// Ability to change the amounts on certain things.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <param name="amount"></param>
+    [EzIPC] public void ChangeSettingAmount(string config, int amount)
+    {
+        switch (config)
+        {
+            case "CosmoCreditsCap": C.CosmoCreditsCap = amount; break;
+            case "LunarCreditsCap": C.LunarCreditsCap = amount; break;
+            default: return;
+        }
+        C.Save();
+    }
+
+
 
     /// <summary>
     /// Returns the current state(s) that ICE is currently in a string format. 
