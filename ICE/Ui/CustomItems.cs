@@ -64,14 +64,13 @@ public class StyledImageButton
         Vector2 uv0 = enabled ? new Vector2(0, 0) : new Vector2(cropAmount, cropAmount);
         Vector2 uv1 = enabled ? new Vector2(1, 1) : new Vector2(1 - cropAmount, 1 - cropAmount);
 
-        // Apply the custom styling
+        // Applies the custom code
         ImGui.PushStyleColor(ImGuiCol.Button, buttonColor);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, buttonColor * 1.1f); // Slightly brighter on hover
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, buttonColor * 0.9f);  // Slightly darker when pressed
         ImGui.PushStyleColor(ImGuiCol.Border, borderColor);
         ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, borderSize);
 
-        // Create the ImageButton
         bool clicked = ImGui.ImageButton(icon.GetWrapOrEmpty().Handle, size, uv0, uv1);
 
         // Restore original styling
