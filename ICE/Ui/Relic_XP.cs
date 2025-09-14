@@ -138,8 +138,8 @@ namespace ICE.Ui
                     }
                     else
                     {
-                        left = new Vector4(0.6f, 1f, 0.8f, 1f); // Green #99ffcc
-                        right = new Vector4(0.2f, 0.6f, 1f, 1f); // Blue #3399ff
+                        left = new Vector4(0.2f, 0.6f, 1f, 1f); // Blue #3399ff
+                        right = new Vector4(0.6f, 1f, 0.8f, 1f); // Green #99ffcc
                     }
                 }
 

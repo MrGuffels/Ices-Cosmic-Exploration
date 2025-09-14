@@ -16,6 +16,12 @@
 
   <ItemGroup>
     <Content Include="ICE.json" />
+    <EmbeddedResource Include="Moons\Phaenna.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Moons\Sinus_Ardorum.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

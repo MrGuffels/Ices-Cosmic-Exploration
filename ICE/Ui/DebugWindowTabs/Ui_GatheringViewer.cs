@@ -31,6 +31,8 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool PictoCircle = false;
         private static bool PictoDot = false;
 
+        private static List<uint> MissionIds = new(); 
+
 
         public static unsafe void Draw()
         {
@@ -94,6 +96,15 @@ namespace ICE.Ui.DebugWindowTabs
                                 selectedZone = moon.Key;
                                 selectedFlag = flag.Key;
                                 selectedNodeIndex = 0;
+
+                                MissionIds.Clear();
+                                foreach (var mission in CosmicHelper.SheetMissionDict)
+                                {
+                                    var id = mission.Key;
+                                    var mapFlag = mission.Value.MapPosition;
+                                    if (mapFlag == selectedFlag)
+                                        MissionIds.Add(id);
+                                }
                             }
 
                             ImGui.PopID();
@@ -109,6 +120,13 @@ namespace ICE.Ui.DebugWindowTabs
                 var childHeight = textLineHeight * 8 + 20;
                 if (ImGui.BeginChild("Editor_GatheringSelector", new Vector2(0, childHeight + 150), false))
                 {
+                    string missions = "";
+                    foreach (var id in MissionIds)
+                    {
+                        missions += $"{id}, ";
+                    }
+                    ImGui.Text($"Missions: {missions}");
+
                     if (ImGui.Button("Open map position"))
                     {
                         var missionEntry = CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == selectedFlag

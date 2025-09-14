@@ -20,6 +20,9 @@ namespace ICE.Ui.DebugWindowTabs
         private static uint baitId = 0;
         private static bool baitSwapped = false;
 
+        private static string SettingChange = "";
+        private static bool SettingState = false;
+
         public static unsafe void Draw()
         {
             ImGui.Text($"Artisan Is Busy? {P.Artisan.IsBusy()}");
@@ -119,6 +122,18 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 SchedulerMain.State = IceState.Gambling;
             }
+
+            ImGui.Separator();
+
+            ImGui.SetNextItemWidth(150);
+            ImGui.InputText("Setting Name", ref SettingChange);
+            ImGui.Checkbox("Setting Bool", ref SettingState);
+
+            if (ImGui.Button("Toggle Setting"))
+            {
+                P.IceIpc.ChangeSetting(SettingChange, SettingState);
+            }
+
         }
 
         private static void SwapBait(uint baitId)

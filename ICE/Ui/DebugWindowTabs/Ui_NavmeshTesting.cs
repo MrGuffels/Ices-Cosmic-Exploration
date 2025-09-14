@@ -56,8 +56,6 @@ namespace ICE.Ui.DebugWindowTabs
                 }
             }
 
-            wholePath = TaskRelicCheck.BuildFullPath(currentPos, BaseCenter, radius, numCircleWps, finalPath);
-
             using (var drawList = PictoService.Draw())
             {
                 int wpNumber = 0;

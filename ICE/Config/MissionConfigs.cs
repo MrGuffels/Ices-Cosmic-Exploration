@@ -66,6 +66,8 @@ namespace ICE.Config
             ProvisionalTypes.ProvisionalSequential,
             ProvisionalTypes.ProvisionalTimed
         };
+        public bool ShowSinusMissions { get; set; } = true;
+        public bool ShowPhaennaMissions { get; set; } = true;
 
         #endregion
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
@@ -72,8 +73,10 @@ public static partial class CosmicHelper
         if (currentMissionId > 0 &&
             CosmicHelper.Dict_CosmicMissions.TryGetValue(currentMissionId, out var missionInfo))
             classId = missionInfo.Jobs.First();
+        else if (CosmicHelper.CrafterJobList.Contains(Player.JobId) || CosmicHelper.GatheringJobList.Contains(Player.JobId))
+            classId = Player.JobId;
         else
-            classId = (uint)(Svc.ClientState.LocalPlayer?.ClassJob.RowId);
+            classId = C.SelectedJob;
 
         if (classId is >= 8 and <= 18)
         {

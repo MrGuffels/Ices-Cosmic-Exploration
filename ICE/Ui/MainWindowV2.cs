@@ -72,19 +72,6 @@ namespace ICE.Ui
 
         private uint currentJobId => Player.JobId;
         private bool usingSupportedJob => jobOptions.Any(job => job.Id == currentJobId);
-        private uint selectedJob = C.SelectedJob;
-
-        // Left Column Settings
-        private bool onlyGrabMission = C.OnlyGrabMission;
-        private bool stopCosmic = C.StopOnceHitCosmoCredits;
-        private int cosmicCap = C.CosmoCreditsCap;
-        private bool stopLunar = C.StopOnceHitLunarCredits;
-        private int lunarCap = C.LunarCreditsCap;
-        private bool stopScore = C.StopOnceHitCosmicScore;
-        private int scoreCap = C.CosmicScoreCap;
-        private bool autoPickCurrentJob = C.AutoPickCurrentJob;
-        private bool stopWhenLevel = C.StopWhenLevel;
-        private int targetLevel = C.TargetLevel;
 
         private bool showCritical = C.ShowCritical;
         private bool showSequential = C.ShowSequential;
@@ -95,9 +82,11 @@ namespace ICE.Ui
         private bool showClassC = C.ShowClassC;
         private bool showClassD = C.ShowClassD;
 
+        private string SinusAsset = "ICE.Moons.Sinus_Ardorum.png";
+        private string PhaennaAsset = "ICE.Moons.Phaenna.png";
+
         // Middle Column stuff
         private Dictionary<string, bool> headerStates = new();
-        private bool hideUnsupported = C.HideUnsupportedMissions;
 
         private bool showTableSetting = false;
 
@@ -163,6 +152,8 @@ namespace ICE.Ui
         // Right Column stuff
         private uint selectedMission = 0;
 
+        private static HashSet<uint> VisibleZones = new HashSet<uint>() { 1237, 1291 };
+
         public override void Draw()
         {
             // Calculate scaling factors based on current font size
@@ -225,6 +216,7 @@ namespace ICE.Ui
                     P.settingsWindowV2.IsOpen = !P.settingsWindowV2.IsOpen;
                 }
 
+                bool onlyGrabMission = C.OnlyGrabMission;
                 if (ImGui.Checkbox($"Only grab mission", ref onlyGrabMission))
                 {
                     C.OnlyGrabMission = onlyGrabMission;
@@ -240,6 +232,8 @@ namespace ICE.Ui
                 ImGui.Spacing();
 
                 ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
+
+                bool stopCosmic = C.StopOnceHitCosmoCredits;
                 if (ImGui.Checkbox($"Stop at Cosmic Credits", ref stopCosmic))
                 {
                     C.StopOnceHitCosmoCredits = stopCosmic;
@@ -249,6 +243,8 @@ namespace ICE.Ui
                 {
                     ImGui.Indent(15);
                     ImGui.SetNextItemWidth(-1);
+
+                    int cosmicCap = C.CosmoCreditsCap;
                     if (ImGui.SliderInt("##CosmicStop", ref cosmicCap, 0, 30000))
                     {
                         if (cosmicCap > 30000)
@@ -262,6 +258,7 @@ namespace ICE.Ui
                     ImGui.Unindent(15);
                 }
 
+                bool stopLunar = C.StopOnceHitLunarCredits;
                 if (ImGui.Checkbox($"Stop at Lunar Credits", ref stopLunar))
                 {
                     C.StopOnceHitLunarCredits = stopLunar;
@@ -271,6 +268,7 @@ namespace ICE.Ui
                 {
                     ImGui.Indent(15);
                     ImGui.SetNextItemWidth(-1);
+                    int lunarCap = C.LunarCreditsCap;
                     if (ImGui.SliderInt("##LunarStop", ref lunarCap, 0, 10000))
                     {
                         C.LunarCreditsCap = lunarCap;
@@ -279,6 +277,7 @@ namespace ICE.Ui
                     ImGui.Unindent(15);
                 }
 
+                bool stopScore = C.StopOnceHitCosmicScore;
                 if (ImGui.Checkbox($"Stop at Cosmic Score", ref stopScore))
                 {
                     C.StopOnceHitCosmicScore = stopScore;
@@ -288,6 +287,7 @@ namespace ICE.Ui
                 {
                     ImGui.Indent(15);
                     ImGui.SetNextItemWidth(-1);
+                    int scoreCap = C.CosmicScoreCap;
                     if (ImGui.InputInt("###ScoreStop", ref scoreCap, 10000, 50000))
                     {
                         C.CosmicScoreCap = scoreCap >= 0 ? scoreCap : 0;
@@ -296,6 +296,7 @@ namespace ICE.Ui
                     ImGui.Unindent(15);
                 }
 
+                bool stopWhenLevel = C.StopWhenLevel;
                 if (ImGui.Checkbox($"Stop at Level", ref stopWhenLevel))
                 {
                     C.StopWhenLevel = stopWhenLevel;
@@ -305,6 +306,7 @@ namespace ICE.Ui
                 {
                     ImGui.Indent(15);
                     ImGui.SetNextItemWidth(-1);
+                    int targetLevel = C.TargetLevel;
                     if (ImGui.SliderInt("##Level", ref targetLevel, 10, 100))
                     {
                         C.TargetLevel = targetLevel;
@@ -352,13 +354,51 @@ namespace ICE.Ui
 
                 ImGui.Separator();
 
+                ImGui.Dummy(new Vector2(0, 5));
+
+                bool sinusEnabled = C.ShowSinusMissions;
+                var SinusTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), SinusAsset).GetWrapOrEmpty();
+                if (StyledImageButton.DrawStyledImageButton(SinusTexture, new Vector2(23, 23), sinusEnabled))
+                {
+                    C.ShowSinusMissions = !sinusEnabled;
+                    C.Save();
+                }
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Sinuc Ardorum");
+                    ImGui.EndTooltip();
+                }
+
+                ImGui.SameLine();
+                bool phaennaEnabled = C.ShowPhaennaMissions;
+                var PhaennaTextures = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), PhaennaAsset).GetWrapOrEmpty();
+                if (StyledImageButton.DrawStyledImageButton(PhaennaTextures, new Vector2(23, 23), phaennaEnabled))
+                {
+                    C.ShowPhaennaMissions = !phaennaEnabled;
+                    C.Save();
+                }
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Phaenna");
+                    ImGui.EndTooltip();
+                }
+
+                ImGui.Dummy(new Vector2(0, 5));
+
+
+                ImGui.Separator();
+
                 ImGui.Dummy(new(0, 10));
+                bool autoPickCurrentJob = C.AutoPickCurrentJob;
                 if (ImGui.Checkbox("Auto Pick Current Job", ref autoPickCurrentJob))
                 {
                     C.AutoPickCurrentJob = autoPickCurrentJob;
                     C.Save();
                 }
 
+                uint selectedJob = C.SelectedJob;
                 if (autoPickCurrentJob && usingSupportedJob)
                 {
                     if (currentJobId != selectedJob)
@@ -378,32 +418,32 @@ namespace ICE.Ui
                 ImGui.SetCursorPosX(startX);
 
                 // Row 1: CRP, BSM, ARM, GSM
-                DrawJobSelection(8, "CRP");
+                DrawJobButtons(8, "CRP");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(9, "BSM");
+                DrawJobButtons(9, "BSM");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(10, "ARM");
+                DrawJobButtons(10, "ARM");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(11, "GSM");
+                DrawJobButtons(11, "GSM");
 
                 // Row 2: LTW, WVR, ALC, CUL
                 ImGui.SetCursorPosX(startX);
 
-                DrawJobSelection(12, "LTW");
+                DrawJobButtons(12, "LTW");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(13, "WVR");
+                DrawJobButtons(13, "WVR");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(14, "ALC");
+                DrawJobButtons(14, "ALC");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(15, "CUL");
+                DrawJobButtons(15, "CUL");
 
                 // Row 3: MIN, BTN, FSH
                 ImGui.SetCursorPosX(startX);
-                DrawJobSelection(16, "MIN");
+                DrawJobButtons(16, "MIN");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(17, "BTN");
+                DrawJobButtons(17, "BTN");
                 ImGui.SameLine(0, iconSpacing);
-                DrawJobSelection(18, "FSH");
+                DrawJobButtons(18, "FSH");
 
                 ImGui.Dummy(new Vector2(0, 5));
 
@@ -422,7 +462,7 @@ namespace ICE.Ui
 
                 ImGui.Dummy(new Vector2(0, 5));
 
-                Relic_XP.DrawRelicXP(C.SelectedJob);
+                Relic_XP.DrawRelicXP(selectedJob);
             }
 
             ImGui.EndChild();
@@ -445,6 +485,7 @@ namespace ICE.Ui
             ImGui.SameLine();
             if (ImGui.BeginChild("##MissionList", new Vector2(middleWidth, childHeight), true))
             {
+                bool hideUnsupported = C.HideUnsupportedMissions;
                 if (ImGui.Checkbox("Hide Unsupported Missions", ref hideUnsupported))
                 {
                     C.HideUnsupportedMissions = hideUnsupported;
@@ -493,13 +534,25 @@ namespace ICE.Ui
                 foreach (var mission in CosmicHelper.SheetMissionDict)
                 {
                     var Jobs = mission.Value.Jobs;
+                    var territoryId = mission.Value.TerritoryId;
+                    uint selectedJob = C.SelectedJob;
+                    bool sinusEnabled = C.ShowSinusMissions;
+                    bool phaennaEnabled = C.ShowPhaennaMissions;
 
                     if (!Jobs.Contains(selectedJob))
                         continue;
 
+                    if (!sinusEnabled && territoryId == 1237)
+                    {
+                        continue;
+                    }
+
+                    if (!phaennaEnabled && territoryId == 1291)
+                        continue;
+
                     bool isGatherMission = CosmicHelper.GatheringJobList.Overlaps(mission.Value.Jobs) || CosmicHelper.GatheringJobList.Overlaps(mission.Value.Jobs);
                     if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical))
-                        missionList["Critical"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
+                            missionList["Critical"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
                         missionList["Weather"].Add((mission.Key, isGatherMission, C.MissionConfig[mission.Key].Enabled));
                     else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
@@ -812,6 +865,7 @@ namespace ICE.Ui
         }
         public void DrawJobSelection(uint jobId, string tooltip)
         {
+            uint selectedJob = C.SelectedJob;
             bool state = selectedJob == jobId;
             ISharedImmediateTexture? icon = state ? CosmicHelper.JobIconDict[jobId] : CosmicHelper.GreyTexture[jobId];
 
@@ -852,7 +906,7 @@ namespace ICE.Ui
             Vector2 uv0 = state ? new Vector2(0, 0) : new Vector2(cropAmount, cropAmount);
             Vector2 uv1 = state ? new Vector2(1, 1) : new Vector2(1 - cropAmount, 1 - cropAmount);
 
-
+            bool autoPickCurrentJob = C.AutoPickCurrentJob;
             if (ImGui.ImageButton(icon.GetWrapOrEmpty().Handle, size, uv0, uv1))
             {
                 if (autoPickCurrentJob)
@@ -877,6 +931,33 @@ namespace ICE.Ui
             {
                 ImGui.BeginTooltip();
                 ImGui.Text($"{tooltip}");
+                ImGui.EndTooltip();
+            }
+        }
+
+        public void DrawJobButtons(uint jobId, string tooltip)
+        {
+            uint selectedJob = C.SelectedJob;
+            bool state = selectedJob == jobId;
+            ISharedImmediateTexture? icon = state ? CosmicHelper.JobIconDict[jobId] : CosmicHelper.GreyTexture[jobId];
+            Vector2 size = new Vector2(26, 26);
+            bool autoPickCurrentJob = C.AutoPickCurrentJob;
+
+            if (StyledImageButton.DrawStyledImageButton(icon, size, state))
+            {
+                if (autoPickCurrentJob)
+                {
+                    autoPickCurrentJob = false;
+                    C.AutoPickCurrentJob = autoPickCurrentJob;
+                }
+
+                C.SelectedJob = jobId;
+                C.Save();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(tooltip);
                 ImGui.EndTooltip();
             }
         }
@@ -920,6 +1001,7 @@ namespace ICE.Ui
         }
         private void MissionInfoV2(string tableName, List<(uint id, bool ShowGather, bool enabled)> missions)
         {
+            uint selectedJob = C.SelectedJob;
             // Fixed column count - include ALL possible columns
             int totalColumns = 15; // Enabled, Manual, ID, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
 
@@ -973,6 +1055,7 @@ namespace ICE.Ui
                     bool stellerReductionMission = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
 
                     bool dualclass = craftMission && (gatherMission || fishMission);
+                    bool hideUnsupported = C.HideUnsupportedMissions;
 
                     if (unsupported && hideUnsupported)
                         continue;

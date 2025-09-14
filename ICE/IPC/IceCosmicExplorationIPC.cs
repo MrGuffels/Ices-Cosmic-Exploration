@@ -106,6 +106,7 @@ public class IceCosmicExplorationIPC
     /// <param name="state"></param>
     [EzIPC] public void ChangeSetting(string config, bool state)
     {
+        IceLogging.Info($"Setting: {config}, state: {state}");
         switch (config)
         {
             case "OnlyGrabMission": C.OnlyGrabMission = state; break;

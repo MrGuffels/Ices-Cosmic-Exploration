@@ -454,7 +454,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static unsafe uint? FindBestRelicMission()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
@@ -601,7 +600,6 @@ namespace ICE.Scheduler.Tasks
                 return null;
             }
         }
-
         public static bool? FindReroll()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
