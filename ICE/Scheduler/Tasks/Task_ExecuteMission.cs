@@ -25,7 +25,7 @@ namespace ICE.Scheduler.Tasks
                 bool fishingMission = mission.Attributes.HasFlag(MissionAttributes.Fish);
                 C.MissionConfig.TryGetValue(missionId, out var config);
 
-                if (C.OnlyGrabMission || (config != null && config.ManualMode))
+                if (C.OnlyGrabMission || (config != null && config.ManualMode) || mission.Attributes.HasFlag(MissionAttributes.Gather) || mission.Attributes.HasFlag(MissionAttributes.Fish))
                 {
                     SchedulerMain.State = IceState.ManualMode;
                 }
@@ -56,6 +56,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     SchedulerMain.State = IceState.Gather;
                     IceLogging.Debug("Mission is a gathering mission. Need to gather inial resources. But first going to do a check to make sure where we're at.", "[Task_ExecuteMission]");
+                    var missionFlag = mission.MapPosition;
+                    // TODO: Add things to checking for last gather ring, and reset current nodeId from there
                 }
                 else if (mission.Attributes.HasFlag(MissionAttributes.Craft))
                 {

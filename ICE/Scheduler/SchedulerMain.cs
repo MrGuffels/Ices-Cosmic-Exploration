@@ -77,6 +77,8 @@ namespace ICE.Scheduler
                     case Craft:
                         Task_Craft.Enqueue();
                         break;
+                    case Gather:
+                    case Fish:
                     case ManualMode:
                         Task_Manual.Enqueue();
                         break;

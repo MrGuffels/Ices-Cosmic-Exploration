@@ -17,7 +17,16 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission == 0)
             {
-                SchedulerMain.State = IceState.Start;
+                if (Mission_Settings.StopAfterCurrent)
+                {
+                    SchedulerMain.State = IceState.Idle;
+                    Mission_Settings.StopAfterCurrent = false;
+                    P.TaskManager.Tasks.Clear();
+                }
+                else
+                {
+                    SchedulerMain.State = IceState.Start;
+                }
                 return true;
             }
 

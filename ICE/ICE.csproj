@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/13.0">
 
   <PropertyGroup>
-    <Version>0.0.0.6831</Version>
+    <Version>0.0.0.6832</Version>
     <Description>Who said we couldn't explore the moon!.</Description>
     <PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -31,5 +31,9 @@
   <ItemGroup>
       <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
 	  <ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <PackageReference Update="DalamudPackager" Version="13.1.0" />
   </ItemGroup>
 </Project>

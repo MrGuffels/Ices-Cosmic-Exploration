@@ -795,69 +795,100 @@ namespace ICE.Scheduler.Tasks
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
 
-            if (missionConfig.ManualMode)
+            if (missionConfig.ManualMode || missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
             {
+                // TODO: Remove the extra 2 here until I can fix pathfinding thing
                 // This is here to make sure that you don't need to be in the area for moving. Mainly cause nodes aren't mapped out yet and it's expecting to map to that area...
                 return true;
             }
+
             if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it
                 Vector2 PlayerPos = new Vector2(Player.Position.X, Player.Position.Z);
                 Vector2 MapCenter = missionEntry.MapPosition;
+                var missionTerritory = missionEntry.TerritoryId;
+                var mapId = missionEntry.MapPosition;
+                var gatherInfo = GatheringUtil.MoonGatherLocations[missionTerritory][mapId];
 
-                float distance = missionEntry.MarkerId != 0 ? Vector2.Distance(PlayerPos, MapCenter) + 5 : 0;
-                if (distance > missionEntry.Radius)
+                float closestDistance = 999f;
+                Vector3 closestNode = Vector3.Zero;
+
+                foreach (var node in gatherInfo)
                 {
-                    var zoneId = Player.Territory;
+                    var distance = Player.DistanceTo(node.Position);
 
-                    if (PlayerHelper.IsPlayerNotBusy() && !Svc.Condition[ConditionFlag.Mounted] && C.UseMountOutsideMission && distance > C.MountRadius)
+                    if (distance <= 5 )
                     {
-                        if (EzThrottler.Throttle("Attempting to mount up"))
+                        if (Player.Mounted)
                         {
-                            Utils.MountAction();
+                            if (EzThrottler.Throttle("Somehow still mounted, getting off mount"))
+                                Utils.Dismount();
+                        }
+                        else if (!Player.IsJumping)
+                        {
+                            IceLogging.Info($"Pathing to node is complete, you are within range of {node.NodeId}");
+                            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hudMission) && hudMission.IsAddonReady)
+                            {
+                                return true;
+                            }
+                            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                            {
+                                if (EzThrottler.Throttle("Re-opening the mission addon info"))
+                                {
+                                    moonHud.Mission();
+                                }
+                            }
                         }
                     }
+                    else if (distance < closestDistance)
+                    {
+                        // Found a closer node to pathfind to if necessary
+                        closestDistance = distance;
+                        closestNode = node.LandZone;
+                    }
+                }
 
+                if (!P.Navmesh.IsRunning())
+                {
+                    // If we're continuing here, then that means we're not within interacting range of a node. Time to kick over to telling navmesh to path to a node
                     if (!Svc.Condition[ConditionFlag.Unknown101])
                     {
-                        // Condition unknown 101 pops up while you're on the flying... mount thingies. Need to make sure to try and not pathfind while on these/stop current pathfind if you manage to land on one.
-
-                        if (!P.Navmesh.IsRunning())
+                        // We ideally don't want to be trying to try and pathfind while on this. Need to wait for us to get off the hoverboard
+                        if (EzThrottler.Throttle("Inializing movement for pathfinding"))
                         {
-                            var nodeLoc = GatheringUtil.MoonGatherLocations[zoneId][MapCenter][0].LandZone;
-
-                            if (EzThrottler.Throttle("Initiating navmesh to move to the first landing zone"))
-                                P.Navmesh.PathfindAndMoveTo(nodeLoc, false);
+                            P.Navmesh.PathfindAndMoveTo(closestNode, false);
+                            P.Navmesh.SetTolerance(1f);
                         }
                     }
-                    else
+                }
+                else if (P.Navmesh.IsRunning())
+                {
+                    if (Svc.Condition[ConditionFlag.Unknown101])
                     {
-                        if (P.Navmesh.IsRunning())
-                            if (EzThrottler.Throttle("Special Movement + Navmesh found, temp stopping"))
-                                P.Navmesh.Stop();
-                    }
-
-                    if (!P.Navmesh.IsRunning())
-                    {
-                        // Condition unknown 101 pops up while you're on the flying... mount thingies. Need to make sure to try and not pathfind while on these/stop current pathfind if you manage to land on one.
-                        var nodeLoc = GatheringUtil.MoonGatherLocations[zoneId][MapCenter][0].LandZone;
-                        if (EzThrottler.Throttle("Initiating navmesh to move to the first landing zone"))
-                            P.Navmesh.PathfindAndMoveTo(nodeLoc, false);
-                    }
-                    else if (P.Navmesh.IsRunning())
-                    {
-                        if (Svc.Condition[ConditionFlag.Unknown101])
+                        // We're currently using the cosmoliners, telling it to stop the current navmesh in the mean time
+                        if (EzThrottler.Throttle("Stopping navmesh temp"))
                         {
                             P.Navmesh.Stop();
                         }
                     }
-                }
-                else
-                {
-                    // Distance has been met, moving onto next condition:
-                    IceLogging.Debug("Distance to the node has been closed. Moving onto the next step:", "[Task_FindMission: Navmesh]");
-                    return true;
+                    if (C.UseMountOutsideMission && !Svc.Condition[ConditionFlag.Mounted] && !Player.IsBusy)
+                    {
+                        if (Player.DistanceTo(closestNode) > C.MountRadius)
+                        {
+                            if (EzThrottler.Throttle("Attemping to mount up for btn/min"))
+                            {
+                                Utils.MountAction();
+                            }
+                        }
+                    }
+                    else if (Svc.Condition[ConditionFlag.Mounted] && Player.DistanceTo(closestNode) < C.MountRadius)
+                    {
+                        if (EzThrottler.Throttle("Dismounting from mount"))
+                        {
+                            Utils.Dismount();
+                        }
+                    }
                 }
             }
             else if (missionEntry.Attributes.HasFlag(MissionAttributes.Fish))

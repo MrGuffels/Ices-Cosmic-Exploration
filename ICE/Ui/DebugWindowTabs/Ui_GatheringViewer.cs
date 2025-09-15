@@ -89,7 +89,7 @@ namespace ICE.Ui.DebugWindowTabs
                             }
 
                             // Then the selectable text
-                            string mapPos = $"X: {flag.Key.X} Z: {flag.Key.Y}";
+                            string mapPos = $"X: {flag.Key.X} Z: {flag.Key.Y} [{flag.Value.Count}]";
                             string label = isSelected ? $"→ {mapPos}" : $"{mapPos}";
                             if (ImGui.Selectable(label, isSelected))
                             {
@@ -252,7 +252,24 @@ namespace ICE.Ui.DebugWindowTabs
                     if (GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag].Count > 0)
                     {
                         ImGui.Checkbox("Draw Node Position", ref PictoCircle);
+                        ImGui.SameLine();
+                        Vector4 circleColor = Utils.FromUintABGR(C.PictoColor_Circle);
+                        ImGui.SetNextItemWidth(200);
+                        if (ImGui.ColorEdit4("##CircleColorEditor", ref circleColor))
+                        {
+                            C.PictoColor_Circle = Utils.ToUintABGR(circleColor);
+                            C.Save();
+                        }
+
                         ImGui.Checkbox("Draw Land Position", ref PictoDot);
+                        ImGui.SameLine();
+                        Vector4 dotColor = Utils.FromUintABGR(C.PictoColor_Dot);
+                        ImGui.SetNextItemWidth(200);
+                        if (ImGui.ColorEdit4("##DotColorEditor", ref dotColor))
+                        {
+                            C.PictoColor_Dot = Utils.ToUintABGR(dotColor);
+                            C.Save();
+                        }
 
                         var nodeInfo = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag][selectedNodeIndex];
 

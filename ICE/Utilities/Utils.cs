@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.ClientState.Objects.Types;
+﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.Automation.NeoTaskManager;
 using ECommons.DalamudServices.Legacy;
 using ECommons.GameHelpers;
@@ -150,6 +151,22 @@ public static unsafe class Utils
             ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
             IceLogging.Info($"Resorting to using the mount roulette");
         }
+    }
+    public static unsafe void Dismount()
+    {
+        if (Svc.Condition[ConditionFlag.Mounted])
+        {
+            ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
+        }
+    }
+
+    public static uint ToUintABGR(Vector4 col)
+    {
+        byte a = (byte)(col.W * 255);
+        byte b = (byte)(col.Z * 255);
+        byte g = (byte)(col.Y * 255);
+        byte r = (byte)(col.X * 255);
+        return (uint)((a << 24) | (b << 16) | (g << 8) | r);
     }
 
     public static Vector4 FromUintABGR(uint color)

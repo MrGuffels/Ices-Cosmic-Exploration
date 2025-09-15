@@ -63,7 +63,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 27, tableFlags)) // Increased column count by 1
+            if (ImGui.BeginTable("Moon Mission Information Table", 28, tableFlags)) // Increased column count by 1
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -99,6 +99,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("Pre-Craft Item");
                 ImGui.TableSetupColumn("Pre-Craft Amount");
                 ImGui.TableSetupColumn("Export"); // New column for export button
+                ImGui.TableSetupColumn("Completed");
 
                 ImGui.TableHeadersRow();
 
@@ -310,6 +311,8 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.EndTooltip();
                         }
                     }
+
+                    if (WKSManager.Instance()->)
 
                     ImGui.PopID();
                 }

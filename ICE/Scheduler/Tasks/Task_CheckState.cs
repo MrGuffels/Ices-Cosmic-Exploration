@@ -154,9 +154,18 @@ namespace ICE.Scheduler.Tasks
                         }
                         // In the middle of a dual mission. 
                         // First, checking to see if you're in the middle of a gathering or crafting action
-                        if (C.OnlyGrabMission || config.ManualMode)
+                        if (C.OnlyGrabMission || config.ManualMode || s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish))
                         {
-                            IceLogging.Info($"You have either manual mode enabled, or you have OnlyGrabMission enabled. Swapping to manual mode state");
+                            // TODO: Remove this once properly coded
+                            if (s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish))
+                            {
+                                IceLogging.Info("Currently not built in/supported yet. Swapping to manual mode");
+                            }
+                            else
+                            {
+
+                                IceLogging.Info($"You have either manual mode enabled, or you have OnlyGrabMission enabled. Swapping to manual mode state");
+                            }
                             SchedulerMain.State = IceState.ManualMode;
                         }
                         else if (Svc.Condition[ConditionFlag.Crafting] || P.Artisan.IsBusy())

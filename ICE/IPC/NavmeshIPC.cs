@@ -25,6 +25,7 @@ public class NavmeshIPC
     [EzIPC("Path.%m")] public readonly Action Stop;
     [EzIPC("Path.%m")] public readonly Action<bool> SetAlignCamera;
     [EzIPC("Path.%m")] public readonly Func<bool> IsRunning;
+    [EzIPC("Path.%m")] public readonly Action<float> SetTolerance;
 
     [EzIPC("Query.Mesh.%m")] public readonly Func<Vector3, float, float, Vector3?> NearestPoint;
     [EzIPC("Query.Mesh.%m")] public readonly Func<Vector3, bool, float, Vector3?> PointOnFloor;

@@ -2336,6 +2336,42 @@ public static unsafe class GatheringUtil
             },
             [new Vector2(-561f, -658f)] = new()
             {
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-583.87f, -3.61f, -665.30f),
+                    LandZone = new Vector3(-582.41f, -4.29f, -665.27f),
+                    NodeId = 35449,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-574.71f, -2.62f, -654.34f),
+                    LandZone = new Vector3(-575.60f, -3.33f, -655.43f),
+                    NodeId = 35450,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-562.63f, -2.94f, -665.23f),
+                    LandZone = new Vector3(-563.36f, -3.97f, -665.80f),
+                    NodeId = 35448,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-557.39f, -3.74f, -652.86f),
+                    LandZone = new Vector3(-557.67f, -4.48f, -653.98f),
+                    NodeId = 35451,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-543.34f, -3.81f, -660.56f),
+                    LandZone = new Vector3(-543.44f, -4.94f, -661.23f),
+                    NodeId = 35447,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-538.54f, -4.12f, -649.13f),
+                    LandZone = new Vector3(-538.56f, -5.00f, -649.76f),
+                    NodeId = 35452,
+                },
             },
             [new Vector2(152f, 287f)] = new()
             {

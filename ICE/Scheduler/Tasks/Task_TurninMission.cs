@@ -43,7 +43,24 @@ namespace ICE.Scheduler.Tasks
 
                 if (critical)
                 {
-                    // for now, just exiting here for turning in. Because still need to get round to coding this
+                    var collectionPoint = Utils.TryGetObjectCollectionPoint();
+                    if (collectionPoint != null && Player.DistanceTo(collectionPoint) < 5)
+                    {
+                        if (Svc.Targets.Target != collectionPoint)
+                        {
+                            if (EzThrottler.Throttle("Targeting collection point"))
+                            {
+                                Utils.TargetgameObject(collectionPoint);
+                            }
+                        }
+                        else if (!Player.IsBusy)
+                        {
+                            if (EzThrottler.Throttle("Interacting with the collection point"))
+                            {
+                                Utils.InteractWithObject(collectionPoint);
+                            }
+                        }
+                    }
                 }
                 else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
                 {

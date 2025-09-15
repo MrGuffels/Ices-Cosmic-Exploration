@@ -165,6 +165,10 @@ namespace ICE.Config
                         });
                     }
                 }
+                C.GambaEnabled = OldConfig.GambaEnabled;
+                C.GambaDelay = OldConfig.GambaDelay;
+                C.GambaPreferSmallerWheel = OldConfig.GambaPreferSmallerWheel;
+                C.GambaCreditsMinimum = OldConfig.GambaCreditsMinimum;
 
                 Svc.Log.Information("Migration of the Gamba Weights are complete");
 
