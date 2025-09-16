@@ -10,9 +10,6 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_Gather
     {
-        private static List<string> FullDurActions = new() { "BoonIncrease2", "BoonIncrease1", "Tidings", "YieldII", "YieldI", "BountifulYieldII" };
-        private static List<string> MissingDurActions = new() { "BonusIntegrity", "BonusIntegrityChance", "BountifulYieldII" };
-
         public static void Enqueue()
         {
             if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady 
@@ -143,7 +140,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static bool? OpenGatheringMenu()
         {
             var zoneId = Player.Territory;
@@ -207,7 +203,7 @@ namespace ICE.Scheduler.Tasks
                         // this is the first window that you see. 
                         if (gather.CurrentIntegrity != 0)
                         {
-                            if (collectableItem)
+                            if (collectableItem || reduceItems)
                             {
                                 // no buffs are needed to apply before we go into the collectable window
                                 foreach (var item in gather.GatheredItems)
@@ -275,7 +271,21 @@ namespace ICE.Scheduler.Tasks
                     }
                     else if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
                     {
-                        // Specifically for gathering collectables at the nodes (this also includes the collectables -> reducables... ugh
+                        // Specifically for gathering collectables at the nodes (this also includes the collectables -> reducables... ugh)
+                        var currentQuality = collectable.CurrentCollectability;
+                        var minQuality = collectable.MinCollectability;
+                        var midQuality = collectable.MidCollectability;
+                        var highQuality = collectable.HighCollectability;
+
+                        // Something to note. It sometimes doesn't have all 3. One of these could be a 0... something to think about/need to check
+                        // Think the process is going to be 
+                        // Check to see if you meet tier 2/3 thresh
+                        // If you have > 2 durability && If you don't meet these requirements
+                        //   If you don't have the increase stat buff, and have it for this mission, use it
+                        //   Purple Button on the bottom left -> Increase Quality + Chance to not use dur
+                        // If you meet requirements
+                        //   -> If missing durability, check to see if increaseInteg Skill is usable
+                        //   -> If not missing durability, collect
                     }
                 }
                 else
