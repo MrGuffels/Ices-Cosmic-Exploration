@@ -200,7 +200,8 @@ namespace ICE.Config
             ["YieldII"] = new() { MinGp = 500 },
             ["YieldI"] = new() { MinGp = 400 },
             ["BountifulYieldII"] = new() { MinGp = 100 },
-            ["BonusIntegrity"] = new() { MinGp = 300 }
+            ["BonusIntegrity"] = new() { MinGp = 300 },
+            ["BonusIntegrityChance"] = new() { Enabled = true, MinGp = 0}
         };
 
         public int BountifulMinItem { get; set; } = 4;

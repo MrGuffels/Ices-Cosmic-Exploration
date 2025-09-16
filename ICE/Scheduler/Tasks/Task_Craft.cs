@@ -65,125 +65,128 @@ namespace ICE.Scheduler.Tasks
             // var mission = CosmicHelper.Dict_CosmicMissions[id];
                var mission = CosmicHelper.SheetMissionDict[id];
 
-            if (mission.Crafts_Pre.Count > 0)
+            if (!P.Artisan.IsBusy())
             {
-                // Mission has pre-crafts that are required. 
-                // Checking to see if you have enough pre-crafts first
-                var preCraft = mission.Crafts_Pre.FirstOrDefault();
-                var mainCraft = mission.Crafts_Main.FirstOrDefault();
-
-                var preItemId = preCraft.Value.ItemId;
-                var mainItemId = mainCraft.Value.ItemId;
-
-                PlayerHelper.GetItemCount(preCraft.Value.ItemId, out var preItemAmount);
-                PlayerHelper.GetItemCount(preCraft.Value.RequiredItems.FirstOrDefault().Key, out var moonCrateCount);
-                PlayerHelper.GetItemCount(mainCraft.Value.ItemId, out var mainItemCount);
-
-                if (preItemAmount >= mainCraft.Value.RequiredItems[preItemId])
+                if (mission.Crafts_Pre.Count > 0)
                 {
-                    IceLogging.Info($"Required pre-Item count: {mainCraft.Value.RequiredItems[preItemId]} | amount necessary: {preItemAmount}");
+                    // Mission has pre-crafts that are required. 
+                    // Checking to see if you have enough pre-crafts first
+                    var preCraft = mission.Crafts_Pre.FirstOrDefault();
+                    var mainCraft = mission.Crafts_Main.FirstOrDefault();
 
-                    // There's enough items to craft the mainhand. Telling it to craft it instead. 
-                    if (mainItemCount < mainCraft.Value.RequiredAmount)
+                    var preItemId = preCraft.Value.ItemId;
+                    var mainItemId = mainCraft.Value.ItemId;
+
+                    PlayerHelper.GetItemCount(preCraft.Value.ItemId, out var preItemAmount);
+                    PlayerHelper.GetItemCount(preCraft.Value.RequiredItems.FirstOrDefault().Key, out var moonCrateCount);
+                    PlayerHelper.GetItemCount(mainCraft.Value.ItemId, out var mainItemCount);
+
+                    if (preItemAmount >= mainCraft.Value.RequiredItems[preItemId])
                     {
-                        // you don't have enough of the pre-crafts to craft the main item. 
-                        // going to tell artisan to just kick it into gear
-                        var craftAmount = mainCraft.Value.RequiredAmount - mainItemCount;
-                        P.Artisan.CraftItem(mainCraft.Key, craftAmount);
-                        InsertArtisanWait();
-                        IceLogging.Info($"Telling artisan to craft: {mainCraft.Value.ItemId} -> {craftAmount}", "[Task Craft: Check Materials]");
-                        return true;
-                    }
-                    else
-                    {
-                        // you have enough of the main hand item. But you still are crafting. So time to just craft 1 more
-                        P.Artisan.CraftItem(mainCraft.Key, 1);
-                        InsertArtisanWait();
-                        IceLogging.Info($"Current item count of: {mainCraft.Value.ItemId} | {mainItemCount}");
-                        IceLogging.Info($"Telling artisan to craft: {mainCraft.Value.ItemId} -> 1", "[Task Craft: Check Materials]");
-                        return true;
-                    }
+                        IceLogging.Info($"Required pre-Item count: {mainCraft.Value.RequiredItems[preItemId]} | amount necessary: {preItemAmount}");
 
-                }
-                else if (moonCrateCount >= preCraft.Value.RequiredAmount)
-                {
-                    // You should have enough to make this pre-craft. Initiating the thing now.
-                    var craftAmount = preCraft.Value.RequiredAmount - preItemAmount;
-
-                    if (mainCraft.Value.RequiredAmount > 1 && mainItemCount == 0)
-                    {
-                        craftAmount = mainCraft.Value.RequiredAmount * (preCraft.Value.RequiredAmount - preItemAmount);
-                    }
-                    if (craftAmount < 1)
-                        craftAmount = 1;
-
-                    P.Artisan.CraftItem(preCraft.Key, craftAmount);
-                    InsertArtisanWait();
-                    IceLogging.Info($"Found a material that still needed to be crafted", "[Task Craft: Check Materials]");
-                    return true;
-                }
-                else
-                {
-                    IceLogging.Info($"Somehow, out of mats. Need to exit. And either attempt to turnin, or just straight up abandon.", "[Task Craft: Check Materials]");
-                    SchedulerMain.State = IceState.AbandonMission;
-                    P.TaskManager.Tasks.Clear();
-                    return true;
-                }
-            }
-            else
-            {
-                // This is the case when you need multiple items, or even just a single item.
-                foreach (var craft in mission.Crafts_Main)
-                {
-                    PlayerHelper.GetItemCount(craft.Value.ItemId, out var reqAmount);
-                    if (reqAmount < craft.Value.RequiredAmount)
-                    {
-                        // If you need less than what is necessary, this should change the count to be proper
-                        reqAmount = craft.Value.RequiredAmount - reqAmount;
-
-                        // Found an item that needs to be crafted. Time to check if you have enough of the material
-                        var craftMaterial = ExcelHelper.RecipeSheet.GetRow(craft.Key).Ingredient[0].RowId;
-                        if (PlayerHelper.GetItemCount(craftMaterial, out var itemAmount) && itemAmount >= reqAmount)
+                        // There's enough items to craft the mainhand. Telling it to craft it instead. 
+                        if (mainItemCount < mainCraft.Value.RequiredAmount)
                         {
-                            P.Artisan.CraftItem(craft.Key, reqAmount);
-                            P.TaskManager.Insert(() => WaitingForArtisan(), Utils.TaskConfig);
-                            IceLogging.Info($"Telling artisan to craft: {craft.Value.ItemId} -> {reqAmount}", "[Craft: No Pre-Mats]");
+                            // you don't have enough of the pre-crafts to craft the main item. 
+                            // going to tell artisan to just kick it into gear
+                            var craftAmount = mainCraft.Value.RequiredAmount - mainItemCount;
+                            P.Artisan.CraftItem(mainCraft.Key, craftAmount);
+                            InsertArtisanWait();
+                            IceLogging.Info($"Telling artisan to craft: {mainCraft.Value.ItemId} -> {craftAmount}", "[Task Craft: Check Materials]");
                             return true;
                         }
                         else
                         {
-                            // You don't have enough to craft this for the mission. Exiting out and checking for score/force abandon
-                            IceLogging.Info("You have no remaining items to craft the main crafting items. Going to abandon the mission now", "[Crafts: No Pre-Mats]");
-                            SchedulerMain.State = IceState.AbandonMission;
-                            P.TaskManager.Tasks.Clear();
+                            // you have enough of the main hand item. But you still are crafting. So time to just craft 1 more
+                            P.Artisan.CraftItem(mainCraft.Key, 1);
+                            InsertArtisanWait();
+                            IceLogging.Info($"Current item count of: {mainCraft.Value.ItemId} | {mainItemCount}");
+                            IceLogging.Info($"Telling artisan to craft: {mainCraft.Value.ItemId} -> 1", "[Task Craft: Check Materials]");
                             return true;
                         }
+
                     }
-                }
+                    else if (moonCrateCount >= preCraft.Value.RequiredAmount)
+                    {
+                        // You should have enough to make this pre-craft. Initiating the thing now.
+                        var craftAmount = preCraft.Value.RequiredAmount - preItemAmount;
 
-                var moreCraft = mission.Crafts_Main.FirstOrDefault();
-                // If you've gotten this far, that means you still need scoring. Just going to queue up the first mission (if possible)
-                // If you need less than what is necessary, this should change the count to be proper
-                var AdditionalItem = 1;
+                        if (mainCraft.Value.RequiredAmount > 1 && mainItemCount == 0)
+                        {
+                            craftAmount = mainCraft.Value.RequiredAmount * (preCraft.Value.RequiredAmount - preItemAmount);
+                        }
+                        if (craftAmount < 1)
+                            craftAmount = 1;
 
-                // Found an item that needs to be crafted. Time to check if you have enough of the material
-                var moreCraftMaterial = ExcelHelper.RecipeSheet.GetRow(moreCraft.Key).Ingredient[0].RowId;
-                if (PlayerHelper.GetItemCount(moreCraftMaterial, out var moreItemAmount) && moreItemAmount >= AdditionalItem)
-                {
-                    P.Artisan.CraftItem(moreCraft.Key, AdditionalItem);
-                    P.TaskManager.Insert(() => WaitingForArtisan(), Utils.TaskConfig);
-                    IceLogging.Info($"Telling artisan to craft: {moreCraft.Value.ItemId} -> {AdditionalItem}", "[Craft: No Pre-Mats]");
-                    return true;
+                        P.Artisan.CraftItem(preCraft.Key, craftAmount);
+                        InsertArtisanWait();
+                        IceLogging.Info($"Found a material that still needed to be crafted", "[Task Craft: Check Materials]");
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Info($"Somehow, out of mats. Need to exit. And either attempt to turnin, or just straight up abandon.", "[Task Craft: Check Materials]");
+                        SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
                 }
                 else
                 {
-                    // You don't have enough to craft this for the mission. Exiting out and checking for score/force abandon
-                    SchedulerMain.State = IceState.AbandonMission;
-                    IceLogging.Info("You have no remaining items to craft the pre-crafts. Going to abandon the mission now", "[Crafts: No Pre-Mats]");
-                    P.TaskManager.Tasks.Clear();
-                    return true;
-                }
+                    // This is the case when you need multiple items, or even just a single item.
+                    foreach (var craft in mission.Crafts_Main)
+                    {
+                        PlayerHelper.GetItemCount(craft.Value.ItemId, out var reqAmount);
+                        if (reqAmount < craft.Value.RequiredAmount)
+                        {
+                            // If you need less than what is necessary, this should change the count to be proper
+                            reqAmount = craft.Value.RequiredAmount - reqAmount;
 
+                            // Found an item that needs to be crafted. Time to check if you have enough of the material
+                            var craftMaterial = ExcelHelper.RecipeSheet.GetRow(craft.Key).Ingredient[0].RowId;
+                            if (PlayerHelper.GetItemCount(craftMaterial, out var itemAmount) && itemAmount >= reqAmount)
+                            {
+                                P.Artisan.CraftItem(craft.Key, reqAmount);
+                                P.TaskManager.Insert(() => WaitingForArtisan(), Utils.TaskConfig);
+                                IceLogging.Info($"Telling artisan to craft: {craft.Value.ItemId} -> {reqAmount}", "[Craft: No Pre-Mats]");
+                                return true;
+                            }
+                            else
+                            {
+                                // You don't have enough to craft this for the mission. Exiting out and checking for score/force abandon
+                                IceLogging.Info("You have no remaining items to craft the main crafting items. Going to abandon the mission now", "[Crafts: No Pre-Mats]");
+                                SchedulerMain.State = IceState.AbandonMission;
+                                P.TaskManager.Tasks.Clear();
+                                return true;
+                            }
+                        }
+                    }
+
+                    var moreCraft = mission.Crafts_Main.FirstOrDefault();
+                    // If you've gotten this far, that means you still need scoring. Just going to queue up the first mission (if possible)
+                    // If you need less than what is necessary, this should change the count to be proper
+                    var AdditionalItem = 1;
+
+                    // Found an item that needs to be crafted. Time to check if you have enough of the material
+                    var moreCraftMaterial = ExcelHelper.RecipeSheet.GetRow(moreCraft.Key).Ingredient[0].RowId;
+                    if (PlayerHelper.GetItemCount(moreCraftMaterial, out var moreItemAmount) && moreItemAmount >= AdditionalItem)
+                    {
+                        P.Artisan.CraftItem(moreCraft.Key, AdditionalItem);
+                        P.TaskManager.Insert(() => WaitingForArtisan(), Utils.TaskConfig);
+                        IceLogging.Info($"Telling artisan to craft: {moreCraft.Value.ItemId} -> {AdditionalItem}", "[Craft: No Pre-Mats]");
+                        return true;
+                    }
+                    else
+                    {
+                        // You don't have enough to craft this for the mission. Exiting out and checking for score/force abandon
+                        SchedulerMain.State = IceState.AbandonMission;
+                        IceLogging.Info("You have no remaining items to craft the pre-crafts. Going to abandon the mission now", "[Crafts: No Pre-Mats]");
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
+
+                }
             }
 
             return false;

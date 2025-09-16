@@ -1071,6 +1071,15 @@ namespace ICE.Ui
                     if (CenterCheckbox("##EnableMission", ref enabled))
                     {
                         missionConfig.Enabled = enabled;
+                        if (GetOnlyPreviousMissionsRecursive(Id).Count >0)
+                        {
+                            foreach (var prevMission in GetOnlyPreviousMissionsRecursive(Id))
+                            {
+                                var prevMissionConfig = C.MissionConfig[prevMission];
+                                prevMissionConfig.Enabled = true;
+                            }
+                        }
+
                         C.Save();
                     }
                     if (ImGui.IsItemClicked())

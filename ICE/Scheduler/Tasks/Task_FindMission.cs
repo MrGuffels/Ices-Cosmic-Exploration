@@ -795,7 +795,7 @@ namespace ICE.Scheduler.Tasks
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
 
-            if (missionConfig.ManualMode || missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
+            if (missionConfig.ManualMode || missionEntry.Attributes.HasFlag(MissionAttributes.Fish) || missionEntry.Attributes.HasFlag(MissionAttributes.Gather))
             {
                 // TODO: Remove the extra 2 here until I can fix pathfinding thing
                 // This is here to make sure that you don't need to be in the area for moving. Mainly cause nodes aren't mapped out yet and it's expecting to map to that area...

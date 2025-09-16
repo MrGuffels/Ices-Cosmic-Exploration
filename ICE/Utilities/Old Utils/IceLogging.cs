@@ -34,28 +34,42 @@ internal static class IceLogging
         return $"{callerPrefix} {message}";
     }
 
-    public static void Verbose(string message, string prefix = null)
+    public static void Verbose(string message, string prefix = null, bool debugOnly = false)
     {
         var formattedMessage = FormatMessage(message, prefix);
-        // if (formattedMessage == _lastVerboseMessage) return;
         PluginLog.Verbose(formattedMessage);
-        _lastVerboseMessage = formattedMessage;
     }
 
-    public static void Debug(string message, string prefix = null)
+    public static void Debug(string message, string prefix = null, bool debugOnly = false)
     {
-        var formattedMessage = FormatMessage(message, prefix);
-        // if (formattedMessage == _lastDebugMessage) return;
-        PluginLog.Debug(formattedMessage);
-        _lastDebugMessage = formattedMessage;
+        if (debugOnly)
+        {
+#if DEBUG
+            var formattedMessage = FormatMessage(message, prefix);
+            PluginLog.Debug(formattedMessage);
+#endif
+        }
+        else
+        {
+            var formattedMessage = FormatMessage(message, prefix);
+            PluginLog.Debug(formattedMessage);
+        }
     }
 
-    public static void Info(string message, string prefix = null)
+    public static void Info(string message, string prefix = null, bool debugOnly = true)
     {
-        var formattedMessage = FormatMessage(message, prefix);
-        // if (formattedMessage == _lastInfoMessage) return;
-        PluginLog.Information(formattedMessage);
-        _lastInfoMessage = formattedMessage;
+        if (debugOnly)
+        {
+#if DEBUG
+            var formattedMessage = FormatMessage(message, prefix);
+            PluginLog.Information(formattedMessage);
+#endif
+        }
+        else
+        {
+            var formattedMessage = FormatMessage(message, prefix);
+            PluginLog.Information(formattedMessage);
+        }
     }
 
     public static void Warning(string message, string prefix = null)

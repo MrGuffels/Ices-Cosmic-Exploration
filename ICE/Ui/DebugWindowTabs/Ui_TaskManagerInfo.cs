@@ -83,6 +83,10 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 Task_Craft.Enqueue();
             }
+            if (ImGui.Button("Test Gather Targeting"))
+            {
+                Task_Gather.Enqueue();
+            }
         }
 
         private static int Counter = 0;

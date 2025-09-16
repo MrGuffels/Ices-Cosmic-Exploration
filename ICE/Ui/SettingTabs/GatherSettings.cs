@@ -125,7 +125,11 @@ namespace ICE.Ui.SettingTabs
 
         public static void Draw()
         {
-            void DrawBuffSetting(string label, string uniqueId, bool currentEnabled, int currentMinGp, int minGpLimit, int maxGpLimit, string entryName, string ActionInfo, Action<bool> onEnabledChange, Action<int> onMinGpChange, int currentMaxUse, Action<int> onMaxUseChange)
+            void DrawBuffSetting(string label, string uniqueId, bool currentEnabled, 
+                                 int currentMinGp, int minGpLimit, int maxGpLimit, 
+                                 string entryName, string ActionInfo, 
+                                 Action<bool> onEnabledChange, Action<int> onMinGpChange, 
+                                 int currentMaxUse, Action<int> onMaxUseChange)
             {
                 bool enabled = currentEnabled;
                 if (ImGui.Checkbox($"{label}###Enable{uniqueId}", ref enabled))

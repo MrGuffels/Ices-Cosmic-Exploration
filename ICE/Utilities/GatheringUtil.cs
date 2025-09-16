@@ -11,6 +11,7 @@ public static unsafe class GatheringUtil
         /// Internal name for myself to know wtf this is
         /// </summary>
         public string ActionName { get; set; }
+        public Dictionary<uint, ClassGathInfo> ClassAction { get; set; } = new();
         /// <summary>
         /// Sheet name
         /// </summary>
@@ -41,15 +42,22 @@ public static unsafe class GatheringUtil
         public int RequiredGp { get; set; }
     }
 
+    public class ClassGathInfo
+    {
+        public string SkillName { get; set; }
+        public uint ActionId { get; set; }
+    }
+
     public static Dictionary<string, GatheringActions> GathActionDict = new()
     {
         { "BoonIncrease1", new GatheringActions
         {
             ActionName = "Pioneer's Gift I",
-            BtnName = "",
-            BtnActionId = 21178,
-            MinName = "",
-            MinActionId = 21177,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 21177, SkillName = "", },
+                [17] = new() { ActionId = 21178, SkillName = "", }
+            },
             StatusId = 2666,
             StatusName = "Gift of the Land",
             RequiredGp = 50,
@@ -57,10 +65,11 @@ public static unsafe class GatheringUtil
         { "BoonIncrease2", new GatheringActions
         {
             ActionName = "Pioneer's Gift II",
-            BtnName = "",
-            BtnActionId = 25590,
-            MinName = "",
-            MinActionId = 25589,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 25589, SkillName = "", },
+                [17] = new() { ActionId = 25590, SkillName = "", }
+            },
             StatusId = 759,
             StatusName = "Gift of the Land II",
             RequiredGp = 100,
@@ -68,10 +77,11 @@ public static unsafe class GatheringUtil
         { "Tidings", new GatheringActions
         {
             ActionName = "Nophica's Tidings",
-            BtnName = "",
-            BtnActionId = 21204,
-            MinName = "",
-            MinActionId = 21203,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 21203, SkillName = "", },
+                [17] = new() { ActionId = 21204, SkillName = "", }
+            },
             StatusId = 2667,
             StatusName = "Gatherer's Bounty",
             RequiredGp = 200,
@@ -79,10 +89,11 @@ public static unsafe class GatheringUtil
         { "YieldI", new GatheringActions
         {
             ActionName = "Blessed Harvest",
-            BtnName = "",
-            BtnActionId = 222,
-            MinName = "",
-            MinActionId = 239,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 239, SkillName = "", },
+                [17] = new() { ActionId = 222, SkillName = "", }
+            },
             StatusId = 219,
             StatusName = "Gathering Yield Up",
             RequiredGp = 400,
@@ -90,30 +101,33 @@ public static unsafe class GatheringUtil
         { "YieldII", new GatheringActions
         {
             ActionName = "Blessed Harvest II",
-            BtnName = "",
-            BtnActionId = 224,
-            MinName = "",
-            MinActionId = 241,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 241, SkillName = "", },
+                [17] = new() { ActionId = 224, SkillName = "", }
+            },
             StatusId = 219,
             StatusName = "Gathering Yield Up",
             RequiredGp = 500,
         }},
-        { "IntegrityIncrease", new GatheringActions
+        { "BonusIntegrity", new GatheringActions
         {
             ActionName = "Ageless Words",
-            BtnName = "",
-            BtnActionId = 215,
-            MinName = "",
-            MinActionId = 232,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 232, SkillName = "Solid Reason", },
+                [17] = new() { ActionId = 215, SkillName = "Ageless Word", }
+            },
             RequiredGp = 300,
         }},
         { "BonusIntegrityChance", new GatheringActions
         {
             ActionName = "Wise of the World",
-            BtnName = "",
-            BtnActionId = 26522,
-            MinName = "",
-            MinActionId = 26521,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 26521, SkillName = "", },
+                [17] = new() { ActionId = 26522, SkillName = "", }
+            },
             StatusId = 2765,
             StatusName = "",
             RequiredGp = 0,
@@ -121,13 +135,29 @@ public static unsafe class GatheringUtil
         { "BountifulYieldII", new GatheringActions
         {
             ActionName = "Bountiful Yield/Harvest II",
-            BtnName = "",
-            BtnActionId = 273,
-            MinName = "",
-            MinActionId = 272,
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 272, SkillName = "", },
+                [17] = new() { ActionId = 273, SkillName = "", }
+            },
             StatusId = 1286,
             StatusName = "",
             RequiredGp = 100,
+        }},
+    };
+
+    public static Dictionary<string, GatheringActions> GathCollectableActions = new()
+    {
+        { "Dummy", new GatheringActions
+        {
+            ActionName = "",
+            BtnName = "",
+            BtnActionId = 0,
+            MinName = "",
+            MinActionId = 0,
+            StatusId = 0,
+            StatusName = "",
+            RequiredGp = 50,
         }},
     };
 

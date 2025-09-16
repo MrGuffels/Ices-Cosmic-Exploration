@@ -29,7 +29,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     SchedulerMain.State = IceState.ManualMode;
                 }
-                else if (fishingMission)
+                else if (fishingMission && !config.ManualMode)
                 {
                     // Check exist twice, one here is to actually enable the fishing profile that is selected.
                     var missionConfig = C.MissionConfig[missionId];
@@ -56,7 +56,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     SchedulerMain.State = IceState.Gather;
                     IceLogging.Debug("Mission is a gathering mission. Need to gather inial resources. But first going to do a check to make sure where we're at.", "[Task_ExecuteMission]");
-                    var missionFlag = mission.MapPosition;
+
                     // TODO: Add things to checking for last gather ring, and reset current nodeId from there
                 }
                 else if (mission.Attributes.HasFlag(MissionAttributes.Craft))

@@ -312,7 +312,8 @@ namespace ICE.Ui.DebugWindowTabs
                         }
                     }
 
-                    if (WKSManager.Instance()->)
+                    // TODO: Check for mission completion state
+                    // var test = WKSManager.Instance()->
 
                     ImGui.PopID();
                 }

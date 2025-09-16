@@ -44,21 +44,12 @@ namespace ICE.Scheduler.Tasks
                 if (critical)
                 {
                     var collectionPoint = Utils.TryGetObjectCollectionPoint();
-                    if (collectionPoint != null && Player.DistanceTo(collectionPoint) < 5)
+                    if (collectionPoint != null && Player.DistanceTo(collectionPoint) < 5 && !Player.IsBusy)
                     {
-                        if (Svc.Targets.Target != collectionPoint)
+                        if (EzThrottler.Throttle("Turning into colleciton point"))
                         {
-                            if (EzThrottler.Throttle("Targeting collection point"))
-                            {
-                                Utils.TargetgameObject(collectionPoint);
-                            }
-                        }
-                        else if (!Player.IsBusy)
-                        {
-                            if (EzThrottler.Throttle("Interacting with the collection point"))
-                            {
-                                Utils.InteractWithObject(collectionPoint);
-                            }
+                            Utils.TargetgameObject(collectionPoint);
+                            Utils.InteractWithObject(collectionPoint);
                         }
                     }
                 }
