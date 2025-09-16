@@ -231,9 +231,11 @@ namespace ICE.Scheduler.Tasks
                                             ActionManager.Instance()->UseAction(ActionType.Action, actionId);
                                             Mission_Settings.SkillUseAmount[key] += 1;
                                         }
-                                        break;
+                                        return false;
                                     }
                                 }
+
+                                // foreach (var)
                             }
                         }
                         else

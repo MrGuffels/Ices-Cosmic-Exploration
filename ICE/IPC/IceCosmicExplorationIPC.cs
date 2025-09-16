@@ -135,8 +135,6 @@ public class IceCosmicExplorationIPC
         C.Save();
     }
 
-
-
     /// <summary>
     /// Returns the current state(s) that ICE is currently in a string format. 
     /// </summary>
@@ -144,5 +142,10 @@ public class IceCosmicExplorationIPC
     [EzIPC] public string CurrentState()
     {
         return SchedulerMain.State.ToString();
+    }
+
+    [EzIPC] public uint CurrentMission()
+    {
+        return CosmicHelper.CurrentLunarMission;
     }
 }
