@@ -23,6 +23,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 IceLogging.Debug("Not currently gathering, starting fresh instead");
+                Mission_Settings.ResetCollectableState();
                 Task_CheckScore.Enqueue();
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathToNode());

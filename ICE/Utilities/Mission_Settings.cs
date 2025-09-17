@@ -43,6 +43,7 @@ namespace ICE.Utilities
         internal static void ResetCollectableState()
         {
             CollectableStep = 0;
+            NextCollectableStep = 0;
             item_collectableId = 0;
         }
     }
