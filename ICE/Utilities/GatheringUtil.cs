@@ -15,22 +15,6 @@ public static unsafe class GatheringUtil
         /// <summary>
         /// Sheet name
         /// </summary>
-        public string BtnName { get; set; }
-        /// <summary>
-        /// Botanist Action ID
-        /// </summary>
-        public uint BtnActionId { get; set; }
-        /// <summary>
-        /// Sheet name
-        /// </summary>
-        public string MinName { get; set; }
-        /// <summary>
-        /// Miner Action ID
-        /// </summary>
-        public uint MinActionId { get; set; }
-        /// <summary>
-        /// If it has a status, the ID associated with it
-        /// </summary>
         public uint StatusId { get; set; }
         /// <summary>
         /// The status name attached to it (personal use)
@@ -146,19 +130,156 @@ public static unsafe class GatheringUtil
         }},
     };
 
+    public static Dictionary<string, GatheringActions> GathCollectableBuffs = new()
+    {
+        { "Scrutiny", new GatheringActions
+        {
+            ActionName = "Scrutiny",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 22185 },
+                [17] = new() { ActionId = 22189 }
+            },
+            StatusId = 757,
+            StatusName = "",
+            RequiredGp = 200,
+        }},
+        { "Focus", new GatheringActions
+        {
+            ActionName = "Collector's Focus",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 21205 },
+                [17] = new() { ActionId = 21206 }
+            },
+            StatusId = 2668,
+            StatusName = "",
+            RequiredGp = 100,
+        }},
+        { "Priming", new GatheringActions
+        {
+            ActionName = "Priming Touch",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 21205 },
+                [17] = new() { ActionId = 34872 }
+            },
+            StatusId = 2668,
+            StatusName = "",
+            RequiredGp = 100,
+        }},
+        { "CollectorsHigh", new GatheringActions
+        {
+            // Only available in certain missions... *-sighs-*
+            ActionName = "Collectors High Standard",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 27 },
+                [17] = new() { ActionId = 27 }
+            },
+            StatusId = 3911,
+            StatusName = "",
+            RequiredGp = 0,
+        }},
+        { "BonusIntegrity", new GatheringActions
+        {
+            ActionName = "Ageless Words",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 232, SkillName = "Solid Reason", },
+                [17] = new() { ActionId = 215, SkillName = "Ageless Word", }
+            },
+            RequiredGp = 300,
+        }},
+        { "BonusIntegrityChance", new GatheringActions
+        {
+            ActionName = "Wise of the World",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 26521, SkillName = "", },
+                [17] = new() { ActionId = 26522, SkillName = "", }
+            },
+            StatusId = 2765,
+            StatusName = "",
+            RequiredGp = 0,
+        }},
+    };
+
     public static Dictionary<string, GatheringActions> GathCollectableActions = new()
     {
-        { "Dummy", new GatheringActions
+        { "Scour", new GatheringActions
         {
-            ActionName = "",
-            BtnName = "",
-            BtnActionId = 0,
-            MinName = "",
-            MinActionId = 0,
+            // Base general use skill
+            ActionName = "Scour",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 22182 },
+                [17] = new() { ActionId = 22186 }
+            },
+            StatusId = 0,
+            StatusName = "n/a",
+            RequiredGp = 0,
+        }},
+        { "Brazen", new GatheringActions
+        {
+            // 50 - 150% buff
+            ActionName = "Brazen Woodsman",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 22183 },
+                [17] = new() { ActionId = 22187 }
+            },
+            StatusId = 0,
+            StatusName = "n/a",
+            RequiredGp = 0,
+        }},
+        { "Meticulous", new GatheringActions
+        {
+            // Chance to not use durability/integrity
+            ActionName = "Meticulous Woodsman",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 22184 },
+                [17] = new() { ActionId = 22188 }
+            },
+            StatusId = 0,
+            StatusName = "n/a",
+            RequiredGp = 0,
+        }},
+        { "BonusIntegrity", new GatheringActions
+        {
+            ActionName = "Ageless Words",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 232, SkillName = "Solid Reason", },
+                [17] = new() { ActionId = 215, SkillName = "Ageless Word", }
+            },
+            RequiredGp = 300,
+        }},
+        { "BonusIntegrityChance", new GatheringActions
+        {
+            ActionName = "Wise of the World",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 26521 },
+                [17] = new() { ActionId = 26522 }
+            },
+            StatusId = 2765,
+            StatusName = "",
+            RequiredGp = 0,
+        }},
+        { "Collect", new GatheringActions
+        {
+            ActionName = "Collect",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 240},
+                [17] = new() { ActionId = 0},
+            },
             StatusId = 0,
             StatusName = "",
-            RequiredGp = 50,
-        }},
+            RequiredGp = 0,
+        } },
     };
 
     /* First things first, there's several types of missions for gathering

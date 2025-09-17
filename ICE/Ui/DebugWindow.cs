@@ -40,7 +40,7 @@ internal class DebugWindow : Window
                                    "Navmesh Testing", "Relic Info",
                                    "TaskManager Testing", "Table: Item List",
                                    "Table: Gathering Missions", "Table: Special Missions",
-                                   "Table: Mission Text", "Table: Recipies"];
+                                   "Table: Mission Text", "Table: Recipies", "Hud: Gather Collectable"];
 
     int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
 
@@ -91,6 +91,7 @@ internal class DebugWindow : Window
                 case 16: Table_TimeWeather.Draw(); break;
                 case 17: Table_MissionText.Draw(); break;
                 case 18: Table_MoonRecipies.Draw(); break;
+                case 19: Hud_CollectableGathering.Draw(); break;
 
                 default: ImGui.Text("Unknown Debug View"); break;
             }

@@ -780,6 +780,11 @@ namespace ICE.Scheduler.Tasks
                     selectedMission.Initiate();
                 }
             }
+            if (EzThrottler.Throttle("Opening the mission ui"))
+            {
+                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                    moonHud.Mission();
+            }
 
             return false;
         }

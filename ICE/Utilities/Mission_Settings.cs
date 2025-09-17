@@ -12,12 +12,15 @@ namespace ICE.Utilities
         // States that get set in the main Ui
         internal static bool StopAfterCurrent = false;
         internal static uint previouslyAbandoned = 0;
-        
+
         // Gather Specifics
         internal static Vector2 previousMap = Vector2.Zero;
         internal static int nodeCounter = 0;
         internal static int nodeTotal = 0;
         internal static uint item_collectableId = 0;
+        internal static int CollectableStep = 0;
+        internal static int NextCollectableStep = 0;
+
         internal static Dictionary<string, uint> SkillUseAmount { get; set; } = new()
         {
             ["BoonIncrease2"] = 0,
@@ -35,5 +38,12 @@ namespace ICE.Utilities
         internal static uint PossiblyStuck = 0;
 
         internal static Vector3? NearestCollectionPoint = null;
+
+        // NEW: Helper method to reset collectable state when starting new gathering session
+        internal static void ResetCollectableState()
+        {
+            CollectableStep = 0;
+            item_collectableId = 0;
+        }
     }
 }

@@ -30,6 +30,9 @@ namespace ICE.Ui
         public override void Draw()
         {
             ImGui.Text($"Current state: " + SchedulerMain.State.ToString());
+#if DEBUG
+            ImGui.Text($"Current Collectable State: {Mission_Settings.CollectableStep}");
+#endif
 
             ImGuiHelpers.ScaledDummy(2);
             ImGui.Separator();

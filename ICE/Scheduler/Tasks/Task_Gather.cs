@@ -4,6 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using ICE.Config;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
+using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -150,6 +151,7 @@ namespace ICE.Scheduler.Tasks
 
             if (Svc.Condition[ConditionFlag.Gathering] && GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
             {
+                Mission_Settings.CollectableStep = 0;
                 P.TaskManager.Insert(() => GatheringInteraction(), "Gathering at the node", Utils.TaskConfig);
                 return true;
             }
@@ -184,6 +186,9 @@ namespace ICE.Scheduler.Tasks
             var configId = C.MissionConfig[CosmicHelper.CurrentLunarMission].GatherProfileId;
             var gatherConfig = C.GatherSettings[configId];
             var gathActions = GatheringUtil.GathActionDict;
+
+            var collectorBuffs = GatheringUtil.GathCollectableBuffs;
+            var collectorAction = GatheringUtil.GathCollectableActions;
             var jobId = Player.JobId;
 
             if (Svc.Condition[ConditionFlag.Gathering])
@@ -276,6 +281,9 @@ namespace ICE.Scheduler.Tasks
                         var minQuality = collectable.MinCollectability;
                         var midQuality = collectable.MidCollectability;
                         var highQuality = collectable.HighCollectability;
+                        var currentDur = collectable.CurrentIntegrity;
+                        var maxDur = collectable.TotalIntegrity;
+                        bool missingDur = currentDur < maxDur;
 
                         // Something to note. It sometimes doesn't have all 3. One of these could be a 0... something to think about/need to check
                         // Think the process is going to be 
@@ -286,6 +294,8 @@ namespace ICE.Scheduler.Tasks
                         // If you meet requirements
                         //   -> If missing durability, check to see if increaseInteg Skill is usable
                         //   -> If not missing durability, collect
+
+                        HighGpRotation(currentQuality, missingDur);
                     }
                 }
                 else
@@ -312,6 +322,10 @@ namespace ICE.Scheduler.Tasks
                 return true;
             else
             {
+                if (Mission_Settings.NextCollectableStep != Mission_Settings.CollectableStep)
+                {
+                    Mission_Settings.CollectableStep = Mission_Settings.NextCollectableStep;
+                }
                 return false;
             }
         }
@@ -377,6 +391,147 @@ namespace ICE.Scheduler.Tasks
                                    && gather1More == true,
                 _ => false,
             };
+        }
+
+        private static bool CanUseCollectableAction(string action, bool missingDur = false)
+        {
+            var actionInfo = GatheringUtil.GathCollectableBuffs[action];
+            bool hasStatus = PlayerHelper.HasStatusId(actionInfo.StatusId);
+            bool hasGp = PlayerHelper.GetGp() >= actionInfo.RequiredGp;
+
+            return action switch
+            {
+                "Scrutiny" => !hasStatus
+                           && hasGp,
+                "Focus" => !hasStatus
+                        && hasGp,
+                "Priming" => !hasStatus 
+                          && hasGp,
+                "CollectorsHigh" => !hasStatus
+                                 && hasGp,
+                "BonusIntegrityChance" => hasStatus
+                                       && missingDur,
+                "BonusIntegrity" => hasGp
+                                 && missingDur
+                                 && PlayerHelper.GetGp() >= 300,
+                _ => false,
+            };
+        }
+
+        public static bool HighGpRotation(int collectability, bool missingDur = false)
+        {
+            if (EzThrottler.Throttle("Executing HighGPRotation"))
+            {
+                // 1000 GP rotation (or better statement, 986+)
+                int step = Mission_Settings.NextCollectableStep;
+
+                if (step == 0)
+                {
+                    // Start of the rotation
+                    if (CanUseCollectableAction("Scrutiny"))
+                    {
+                        UseCollectableBuff("Scrutiny");
+                    }
+                    else
+                    {
+                        UseCollectableAction("Meticulous");
+                        Mission_Settings.NextCollectableStep = 1;
+                    }
+                }
+                else if (step == 1)
+                {
+                    // Option 1
+                    if (!PlayerHelper.HasStatusId(3911))
+                    {
+                        if (CanUseCollectableAction("Scrutiny"))
+                        {
+                            UseCollectableBuff("Scrutiny");
+                        }
+                        else
+                        {
+                            UseCollectableAction("Meticulous");
+                            Mission_Settings.NextCollectableStep = 2;
+                        }
+                    }
+                    else // Option 2, Has "Collector's High Standard"
+                    {
+                        if (CanUseCollectableAction("Scrutiny"))
+                        {
+                            UseCollectableBuff("Scrutiny");
+                        }
+                        else
+                        {
+                            UseCollectableAction("Brazen");
+                            Mission_Settings.NextCollectableStep = 3;
+                        }
+                    }
+                }
+                else if (step == 2)
+                {
+                    if ((PlayerHelper.HasStatusId(3911) && collectability > 800) || (collectability >= 850 && collectability <= 999))
+                    {
+                        // Top Row option, 
+                        UseCollectableAction("Meticulous");
+                    }
+                    else if (collectability == 1000)
+                    {
+                        Mission_Settings.NextCollectableStep = 4;
+                    }
+                    else
+                    {
+                        UseCollectableAction("Scour");
+                        Mission_Settings.NextCollectableStep = 4;
+                    }
+                }
+                else if (step == 3)
+                {
+                    if (collectability < 1000)
+                    {
+                        UseCollectableAction("Meticulous");
+                        Mission_Settings.NextCollectableStep = 4;
+                    }
+                    else
+                    {
+                        Mission_Settings.NextCollectableStep = 4;
+                    }
+                }
+                else if (step == 4)
+                {
+                    IceLogging.Debug($"Missing durability: {missingDur}");
+                    if (CanUseCollectableAction("BonusIntegrityChance", missingDur))
+                    {
+                        UseCollectableAction("BonusIntegrityChance");
+                    }
+                    else if (CanUseCollectableAction("BonusIntegrity", missingDur))
+                    {
+                        UseCollectableAction("BonusIntegrity");
+                    }
+                    else
+                    {
+                        UseCollectableAction("Collect");
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static unsafe void UseCollectableBuff(string action)
+        {
+            var collectorBuffs = GatheringUtil.GathCollectableBuffs;
+            var jobId = Player.JobId;
+
+            var actionId = collectorBuffs[action].ClassAction[jobId].ActionId;
+            ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+        }
+
+        public static unsafe void UseCollectableAction(string action)
+        {
+            var collectorAction = GatheringUtil.GathCollectableActions;
+            var jobId = Player.JobId;
+
+            var actionId = collectorAction[action].ClassAction[jobId].ActionId;
+            ActionManager.Instance()->UseAction(ActionType.Action, actionId);
         }
     }
 }
