@@ -135,7 +135,7 @@ namespace ICE.Scheduler.Tasks
             {
                 if (C.UseMountInMission && (Player.DistanceTo(location.Position) > C.MountRadius))
                 {
-                    if (!Player.Mounted && !Player.IsBusy)
+                    if (!Player.Mounted && !Player.Mounting)
                     {
                         if (EzThrottler.Throttle("Mounting for mission"))
                         {
@@ -162,9 +162,18 @@ namespace ICE.Scheduler.Tasks
             var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
             var location = gatherInfo[Mission_Settings.nodeCounter];
 
-            if (Svc.Condition[ConditionFlag.Gathering] && GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
+            if (CosmicHandler.IsMissionTimedOut())
+            {
+                IceLogging.Info($"We've managed to time out the mission. Going to attempt to turnin, and abandon if not", "[Gathering: Open Gathering Menu]");
+                SchedulerMain.State = IceState.AbandonMission;
+                P.TaskManager.Tasks.Clear();
+                return true;
+            }
+            else if (Svc.Condition[ConditionFlag.Gathering] && GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
             {
                 Mission_Settings.CollectableStep = 0;
+
+                IceLogging.Info($"Gathering window is now visible, continuing onto GatheringInteraction Task", "[Gathering: OpenGatheringMenu]");
                 P.TaskManager.Insert(() => GatheringInteraction(), "Gathering at the node", Utils.TaskConfig);
                 return true;
             }
@@ -184,6 +193,7 @@ namespace ICE.Scheduler.Tasks
                     else
                     {
                         // Node doesn't exist/isn't targetable. 
+                        IceLogging.Info($"The current node doesn't exist, continuing onto the next", "[Gathering: OpenGatheringMenu]");
                         return true;
                     }
                 }

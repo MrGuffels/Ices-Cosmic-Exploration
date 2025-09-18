@@ -59,6 +59,9 @@ namespace ICE.Scheduler
                     case Repair:
                         Task_Repair.Enqueue();
                         break;
+                    case Spiritbond:
+                        Task_Spiritbond.TryExtractMateria();
+                        break;
                     case GrabMission:
                         Task_FindMission.Enqueue();
                         break;

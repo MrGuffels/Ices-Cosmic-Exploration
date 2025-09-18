@@ -224,7 +224,7 @@ namespace ICE.Scheduler.Tasks
             if (hasBasic)
             {
                 P.TaskManager.Enqueue(() => OpenTab("Standard"), "Opening the standard mission tab");
-                P.TaskManager.Enqueue(() => FrameDelay(8), "Delaying 8 frames for tab");
+                P.TaskManager.Enqueue(() => FrameDelay(16), "Delaying 8 frames for tab");
                 P.TaskManager.Enqueue(CheckStandard, "Checking the standard missions for any potentional missions");
             }
 
@@ -247,7 +247,7 @@ namespace ICE.Scheduler.Tasks
                             x.CriticalMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(8), "Delaying 8 frames for tab"),
+                                new(() => FrameDelay(16), "Delaying 8 frames for tab"),
                                 new(CheckCritical, "Checking to see if current missions match up with the critical")
                             );
                             break;
@@ -257,7 +257,7 @@ namespace ICE.Scheduler.Tasks
                             x.ProvisionalMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(8), "Delaying 8 frames for tab"),
+                                new(() => FrameDelay(16), "Delaying 8 frames for tab"),
                                 new(CheckProvisional, "Checking to see if any provisional missions exist")
                             );
                             break;
@@ -267,7 +267,7 @@ namespace ICE.Scheduler.Tasks
                             x.BasicMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(8), "Delaying 8 frames for the tab"),
+                                new(() => FrameDelay(16), "Delaying 8 frames for the tab"),
                                 new(() => CheckExp(), "Checking Exp Missions")
                             );
                             break;
@@ -277,7 +277,7 @@ namespace ICE.Scheduler.Tasks
                             x.BasicMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(8), "Throwing a delay in to make sure you're on the right tab"),
+                                new(() => FrameDelay(16), "Throwing a delay in to make sure you're on the right tab"),
                                 new(() => FindReroll(), "Finding->Accepting next reroll")
                             );
                             break;
@@ -287,7 +287,7 @@ namespace ICE.Scheduler.Tasks
                             x.BasicMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(8), "Delaying 8 frames for tab"),
+                                new(() => FrameDelay(16), "Delaying 8 frames for tab"),
                                 new(CheckStandard, "Checking the standard missions for any potentional missions")
                             );
                             break;
@@ -425,9 +425,12 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Debug($"A mission was found for the xp grind: {bestIndex}.");
                     var selectedMission = x.StellerMissions.Where(x => x.MissionId == bestIndex).FirstOrDefault();
 
-                    selectedMission.Select();
-                    InsertGrabMission(selectedMission.MissionId);
-                    return true;
+                    if (selectedMission != null)
+                    {
+                        selectedMission.Select();
+                        InsertGrabMission(selectedMission.MissionId);
+                        return true;
+                    }
                 }
                 else
                 {
@@ -786,10 +789,12 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
             }
-            else if (FrameThrottler.Throttle("Opening the mission ui", 15))
+            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
             {
-                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                if (EzThrottler.Throttle("Opening the moon hud cause it somehow just slipped through/got turned off", 2000))
+                {
                     moonHud.Mission();
+                }
             }
 
             return false;
@@ -805,6 +810,16 @@ namespace ICE.Scheduler.Tasks
         {
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
+            var currentJob = Player.JobId;
+
+            if (!missionEntry.Jobs.Contains(currentJob))
+            {
+                IceLogging.Error("Somehow, we've managed to get a job that isn't suppose to be an option for our jobs?? Resetting the whole process and going to try again.\n" +
+                                 "If this continues on multiple times in a row, let me know.");
+                SchedulerMain.State = IceState.GrabMission;
+                P.TaskManager.Tasks.Clear();
+                return true;
+            }
 
             if (missionConfig.ManualMode || missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
             {
@@ -839,7 +854,7 @@ namespace ICE.Scheduler.Tasks
                         if (EzThrottler.Throttle("Inializing movement for pathfinding"))
                         {
                             P.Navmesh.PathfindAndMoveTo(closestNode, false);
-                            P.Navmesh.SetTolerance(1f);
+                            P.Navmesh.SetTolerance(0.25f);
                         }
                     }
                 }

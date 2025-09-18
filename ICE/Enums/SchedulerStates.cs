@@ -16,6 +16,7 @@ namespace ICE.Enums
         Repair = 11,
         Gambling = 12,
         RelicTurnin = 13,
+        Spiritbond = 14,
 
         Craft = 20,
         Gather = 21,

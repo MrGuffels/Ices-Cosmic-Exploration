@@ -371,6 +371,12 @@ namespace ICE.Scheduler.Tasks
             {
                 if (missionInfo.Addon ->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
                 {
+                    if (CosmicHandler.IsMissionTimedOut())
+                    {
+                        SchedulerMain.State = IceState.AbandonMission;
+                        return true;
+                    }
+
                     IceLogging.Debug("Checking score for gathering. . .", "[Check Score: Gather]");
                     // Hud info should be available. Now time to check the mission status.
                     var id = CosmicHelper.CurrentLunarMission;

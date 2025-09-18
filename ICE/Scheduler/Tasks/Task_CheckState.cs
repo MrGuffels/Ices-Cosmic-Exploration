@@ -143,7 +143,9 @@ namespace ICE.Scheduler.Tasks
                         if (CosmicHandler.IsMissionTimedOut())
                         {
                             // Mission time has reached 0, checking the score/aborting if necessary
-                            SchedulerMain.State = IceState.ForceTurnin;
+                            SchedulerMain.State = IceState.AbandonMission;
+                            P.TaskManager.Tasks.Clear();
+                            return true;
                         }
                         else
                         {
@@ -204,8 +206,6 @@ namespace ICE.Scheduler.Tasks
                         return false;
                     }
                 }
-                else if (AddonHelper.IsAddonActive("WKSLottery"))
-                    SchedulerMain.State = IceState.Gambling;
                 else
                 {
                     var currentJob = Player.JobId;
@@ -213,8 +213,13 @@ namespace ICE.Scheduler.Tasks
                     bool repairVendor = C.RepairAtVendor && PlayerHelper.NeedsRepair(C.RepairPercent);
                     bool selfRepairCraft = C.SelfRepairCrafter && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.CrafterJobList.Contains(currentJob);
                     bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.GatheringJobList.Contains(currentJob);
+                    bool extractSpiritbond = C.SelfSpiritbondGather && Task_Spiritbond.IsSpiritbondReadyAny();
 
-                    if (repairVendor ||  selfRepairCraft || selfRepairGather)
+                    if (extractSpiritbond)
+                    {
+                        SchedulerMain.State = IceState.Spiritbond;
+                    }
+                    else if (repairVendor ||  selfRepairCraft || selfRepairGather)
                     {
                         SchedulerMain.State = IceState.Repair;
                     }

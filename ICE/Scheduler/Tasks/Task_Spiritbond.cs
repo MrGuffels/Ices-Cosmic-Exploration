@@ -4,9 +4,9 @@ using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace ICE.Scheduler.Tasks.OldTask
+namespace ICE.Scheduler.Tasks
 {
-    public unsafe static class TaskSpiritbond
+    public unsafe static class Task_Spiritbond
     {
         public static ushort Weapon { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[0].SpiritbondOrCollectability; }
         public static ushort Offhand { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[1].SpiritbondOrCollectability; }
@@ -43,8 +43,11 @@ namespace ICE.Scheduler.Tasks.OldTask
             if (!EzThrottler.Throttle("Extract", 250))
                 return false;
 
-            if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny() || !C.SelfSpiritbondGather || !(Player.Job).IsDol())
+            if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny() || !C.SelfSpiritbondGather || !Player.Job.IsDol())
+            {
+                SchedulerMain.State = IceState.Start;
                 return true;
+            }
 
             if (Player.IsBusy)
                 return false;
@@ -79,6 +82,7 @@ namespace ICE.Scheduler.Tasks.OldTask
             else
             {
                 addonMaterialize->Close(true);
+                SchedulerMain.State = IceState.Start;
                 return true;
             }
             return false;

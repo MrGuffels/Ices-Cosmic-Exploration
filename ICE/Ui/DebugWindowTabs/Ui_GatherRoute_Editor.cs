@@ -31,7 +31,8 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool PictoCircle = false;
         private static bool PictoDot = false;
 
-        private static List<uint> MissionIds = new(); 
+        private static List<uint> MissionIds = new();
+        private static Dictionary<uint, bool> IsNodeValid = new();
 
 
         public static unsafe void Draw()
@@ -146,6 +147,10 @@ namespace ICE.Ui.DebugWindowTabs
                             Svc.Chat.Print("Map info copied to clipboard!");
                         }
                     }
+                    if (ImGui.Button("Check Nodes"))
+                    {
+                        TestNodes();
+                    }
 
                     ImGui.Separator();
 
@@ -172,6 +177,19 @@ namespace ICE.Ui.DebugWindowTabs
                                     // Create a unique label for the selectable (you can customize this)
                                     string label = $"Node: {nodeInfo.NodeId}";
 
+                                    if (IsNodeValid.TryGetValue(nodeInfo.NodeId, out var state))
+                                    {
+                                        if (state)
+                                        {
+                                            FontAwesome.Print(EColor.Green, FontAwesome.Check);
+                                            ImGui.SameLine();
+                                        }
+                                        else
+                                        {
+                                            FontAwesome.Print(EColor.Red, FontAwesome.Cross);
+                                            ImGui.SameLine();
+                                        }
+                                    }
                                     if (ImGui.Selectable(label, selectedNodeIndex == i))
                                     {
                                         selectedNodeIndex = i; // Track which node is selected
@@ -419,6 +437,21 @@ namespace ICE.Ui.DebugWindowTabs
 
             sb.AppendLine("},");
             return sb.ToString();
+        }
+
+        private static void TestNodes()
+        {
+            IsNodeValid.Clear();
+
+            foreach (var node in GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag])
+            {
+                bool isClear = false;
+                if (Vector3.Distance(node.Position, node.LandZone) < 5)
+                {
+                    isClear = true;
+                }
+                IsNodeValid[node.NodeId] = isClear;
+            }
         }
     }
 }
