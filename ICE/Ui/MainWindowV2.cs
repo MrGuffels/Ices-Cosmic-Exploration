@@ -1046,15 +1046,13 @@ namespace ICE.Ui
                     var missionConfig = C.MissionConfig[Id];
                     var missionInfo = CosmicHelper.SheetMissionDict[Id];
 
-                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList);
-
                     bool craftMission = missionInfo.Attributes.HasFlag(MissionAttributes.Craft);
                     bool gatherMission = missionInfo.Attributes.HasFlag(MissionAttributes.Gather);
                     bool fishMission = missionInfo.Attributes.HasFlag(MissionAttributes.Fish);
-                    bool collectableMission = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
-                    bool stellerReductionMission = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
+                    bool critical = missionInfo.Attributes.HasFlag(MissionAttributes.Critical);
 
                     bool dualclass = craftMission && (gatherMission || fishMission);
+                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || missionInfo.Jobs.Contains(18) || dualclass || (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList) && critical);
                     bool hideUnsupported = C.HideUnsupportedMissions;
 
                     if (unsupported && hideUnsupported)

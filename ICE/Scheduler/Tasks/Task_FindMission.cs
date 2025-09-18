@@ -5,6 +5,7 @@ using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Config;
+using ICE.Utilities.Cosmic;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -539,10 +540,12 @@ namespace ICE.Scheduler.Tasks
                         bool properLevel = minLevel <= Player.Level;
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
+                        bool unSupported = UnsupportedMissions.Ids.Contains(id);
 
                         if (!properLevel) continue;
                         if (IgnoreManual) continue;
                         if (IgnoreNotEnabled) continue;
+                        if (unSupported) continue;
 
                         Dictionary<int, float> rewardDict = new();
                         foreach (var reward in mission.RelicXpInfo.OrderBy(x => x.Key))
@@ -777,10 +780,13 @@ namespace ICE.Scheduler.Tasks
                 if (EzThrottler.Throttle("Initiating the quest"))
                 {
                     var selectedMission = mission.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                    selectedMission.Initiate();
+                    if (selectedMission != null)
+                    {
+                        selectedMission.Initiate();
+                    }
                 }
             }
-            if (EzThrottler.Throttle("Opening the mission ui"))
+            else if (FrameThrottler.Throttle("Opening the mission ui", 15))
             {
                 if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
                     moonHud.Mission();
@@ -857,7 +863,7 @@ namespace ICE.Scheduler.Tasks
                             }
                         }
                     }
-                    else if (Svc.Condition[ConditionFlag.Mounted] && Player.DistanceTo(closestNode) < C.MountRadius)
+                    else if (Svc.Condition[ConditionFlag.Mounted] && Player.DistanceTo(closestNode) < C.DismountRadius)
                     {
                         if (EzThrottler.Throttle("Dismounting from mount"))
                         {

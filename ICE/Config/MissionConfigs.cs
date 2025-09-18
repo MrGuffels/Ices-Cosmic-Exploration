@@ -128,6 +128,7 @@ namespace ICE.Config
         public uint MountId { get; set; } = 0;
         public string MountName { get; set; } = "Mount Roulette";
         public float MountRadius { get; set; } = 15.0f;
+        public float DismountRadius { get; set; } = 7.0f;
         public bool UseMountOutsideMission { get; set; } = true;
         public bool UseMountInMission { get; set; } = true;
         public float LeftColumnWidth { get; set; } = 300f;

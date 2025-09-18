@@ -274,7 +274,7 @@ public static unsafe class GatheringUtil
             ClassAction = new()
             {
                 [16] = new() { ActionId = 240},
-                [17] = new() { ActionId = 0},
+                [17] = new() { ActionId = 815},
             },
             StatusId = 0,
             StatusName = "",
@@ -2529,8 +2529,6 @@ public static unsafe class GatheringUtil
             },
         },
     };
-
-
 
     public class FishingTools
     {

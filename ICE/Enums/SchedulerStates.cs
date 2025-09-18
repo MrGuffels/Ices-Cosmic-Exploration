@@ -20,7 +20,7 @@ namespace ICE.Enums
         Craft = 20,
         Gather = 21,
         Fish = 22,
-        DualClassCheck = 23,
+        DualClass = 23,
 
         ScoringMission = 30,
         AnimationLock = 31,

@@ -9,7 +9,8 @@ namespace ICE.Utilities.Cosmic
     {
         public static readonly HashSet<uint> Ids = new HashSet<uint>
         {
-            0, // blacklisted mission ID
+            496, 497, 498, 499, 500, 501,
+            502, 503, 504, 505, 506, 507 // blacklisted mission ID
         };
     }
 }

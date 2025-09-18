@@ -20,6 +20,7 @@ namespace ICE.Utilities
         internal static uint item_collectableId = 0;
         internal static int CollectableStep = 0;
         internal static int NextCollectableStep = 0;
+        internal static int SelectedRotation = 0;
 
         internal static Dictionary<string, uint> SkillUseAmount { get; set; } = new()
         {

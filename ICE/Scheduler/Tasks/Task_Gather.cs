@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Config;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
@@ -11,14 +12,23 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_Gather
     {
+
         public static void Enqueue()
         {
+            bool NeedToDesynth = PlayerHelper.GetItemCount(Mission_Settings.item_collectableId, out var count) && count != 0 && CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
+
             if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady 
              || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
             {
                 IceLogging.Debug("Current in a gathering session");
                 // -> Check Score
                 P.TaskManager.Enqueue(() => GatheringInteraction(), Utils.TaskConfig);
+            }
+            else if (NeedToDesynth)
+            {
+                Task_CheckScore.Enqueue();
+                P.TaskManager.Enqueue(() => CheckReduceItems());
+                P.TaskManager.Enqueue(() => WaitForDesynthCompletion());
             }
             else
             {
@@ -53,6 +63,7 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
+            IceLogging.Debug("Task Complete", "[Gathering: Check Gather Location]");
             return true;
         }
         private static bool? PathToNode()
@@ -85,6 +96,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Enabling pathfinding to navmesh"))
                     {
+                        IceLogging.Debug($"Telling Navmesh to path to: {location.LandZone}", "[Gathering: Navmesh moveto]");
                         P.Navmesh.PathfindAndMoveTo(location.LandZone, false);
                     }
                 }
@@ -100,7 +112,7 @@ namespace ICE.Scheduler.Tasks
             var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
             var location = gatherInfo[Mission_Settings.nodeCounter];
 
-            if (!P.Navmesh.IsRunning())
+            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) < 5)
             {
                 // Time to check to see if the node is targetable 
                 if (Svc.Objects.Where(x => x.DataId == location.NodeId).Where(t => t.IsTargetable) != null)
@@ -131,7 +143,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
-                else if (Player.Mounted && (Player.DistanceTo(location.Position) < C.MountRadius))
+                else if (Player.Mounted && (Player.DistanceTo(location.Position) < C.DismountRadius))
                 {
                     if (EzThrottler.Throttle("Dismounting mount in mission"))
                     {
@@ -179,7 +191,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        private static unsafe bool? GatheringInteraction()
+        public static unsafe bool? GatheringInteraction()
         {
             var missionInfo = CosmicHelper.CurrentMissionInfo;
             bool collectableItem = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
@@ -220,6 +232,15 @@ namespace ICE.Scheduler.Tasks
                                         {
                                             item.Gather();
                                             Mission_Settings.item_collectableId = item.ItemID;
+
+                                            if (PlayerHelper.GetGp() >= 400)
+                                            {
+                                                Mission_Settings.SelectedRotation = 1;
+                                            }
+                                            else
+                                            {
+                                                Mission_Settings.SelectedRotation = 0;
+                                            }
                                             break;
                                         }
                                     }
@@ -296,7 +317,15 @@ namespace ICE.Scheduler.Tasks
                         //   -> If missing durability, check to see if increaseInteg Skill is usable
                         //   -> If not missing durability, collect
 
-                        HighGpRotation(currentQuality, missingDur);
+                        if (Mission_Settings.SelectedRotation == 1)
+                        {
+                            NormalGpRotation(currentQuality, missingDur);
+                        }
+                        else
+                        {
+                            NoGpRotation(currentDur, currentQuality, highQuality);
+                        }
+
                     }
                 }
                 else
@@ -307,11 +336,7 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                // No longer gathering. Exiting out of the task
-                if (reduceItems)
-                {
-                    // TODO: Add code for this
-                }
+                // No longer gathering an item. Time to check current state
                 return true;
             }
 
@@ -325,6 +350,7 @@ namespace ICE.Scheduler.Tasks
             {
                 if (Mission_Settings.NextCollectableStep != Mission_Settings.CollectableStep)
                 {
+                    IceLogging.Debug($"Current Collectable Step: {Mission_Settings.CollectableStep} | Setting it to: {Mission_Settings.NextCollectableStep}");
                     Mission_Settings.CollectableStep = Mission_Settings.NextCollectableStep;
                 }
                 return false;
@@ -419,12 +445,12 @@ namespace ICE.Scheduler.Tasks
             };
         }
 
-        public static bool HighGpRotation(int collectability, bool missingDur = false)
+        public static bool NormalGpRotation(int collectability, bool missingDur = false)
         {
             if (EzThrottler.Throttle("Executing HighGPRotation"))
             {
-                // 1000 GP rotation (or better statement, 986+)
-                int step = Mission_Settings.NextCollectableStep;
+                // 400+ gp
+                int step = Mission_Settings.CollectableStep;
 
                 if (step == 0)
                 {
@@ -476,7 +502,7 @@ namespace ICE.Scheduler.Tasks
                     }
                     else if (collectability == 1000)
                     {
-                        Mission_Settings.NextCollectableStep = 4;
+                        Mission_Settings.CollectableStep = 4;
                     }
                     else
                     {
@@ -493,7 +519,7 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        Mission_Settings.NextCollectableStep = 4;
+                        Mission_Settings.CollectableStep = 4;
                     }
                 }
                 else if (step == 4)
@@ -516,6 +542,19 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        public static bool NoGpRotation(uint currentDur, int collectability, uint hqCollectability)
+        {
+            if (currentDur > 1 && collectability < hqCollectability)
+            {
+                UseCollectableAction("Meticulous");
+            }
+            else
+            {
+                UseCollectableAction("Collect");
+            }
+
+            return false;
+        }
 
         public static unsafe void UseCollectableBuff(string action)
         {
@@ -533,6 +572,51 @@ namespace ICE.Scheduler.Tasks
 
             var actionId = collectorAction[action].ClassAction[jobId].ActionId;
             ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+        }
+
+        public static unsafe bool? CheckReduceItems()
+        {
+            if (Svc.Condition[ConditionFlag.Occupied39])
+            {
+                return true;
+            }
+            else
+            {
+                // We have items to desynth! Time to check and see which window we need to interact with... or just wait. 
+                if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("PurifyItemSelector", out var desynthWindow) && desynthWindow->IsReady)
+                {
+                    if (EzThrottler.Throttle("Desynthing the item"))
+                    {
+                        ECommons.Automation.Callback.Fire(desynthWindow, true, 12, 0);
+                    }
+                }
+                else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Opening the desynth window"))
+                    {
+                        missionInfo.StellerReduction();
+                    }
+                }
+                else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Opening the moon hud"))
+                    {
+                        moonHud.Mission();
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool? WaitForDesynthCompletion()
+        {
+            if (!Svc.Condition[ConditionFlag.Occupied39])
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
