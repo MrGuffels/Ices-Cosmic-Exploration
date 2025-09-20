@@ -8,6 +8,7 @@ namespace ICE.Scheduler
         internal static bool EnablePlugin()
         {
             State = Start;
+            IceLogging.Info($"Setting State to: {State} & Enabling Plugin");
             return true;
         }
         internal static bool DisablePlugin()
@@ -76,41 +77,5 @@ namespace ICE.Scheduler
                 }
             }
         }
-
-        /*
-        public static void EnqueueResumeCheck()
-        {
-            // Start the check by making the state idle, this clears all flags.
-            State = Idle;
-            if (CosmicHelper.CurrentLunarMission != 0)
-            {
-                // Mission was not 0, which means there's currently one active.
-                if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && !missionInfo.IsAddonReady)
-                {
-                    CosmicHelper.OpenStellarMission();
-                    State = Start;
-                    return; // Makes sure that none of the other flags can be set, and returns back to start until the mission information is open
-                }
-                else
-                {
-                    // Checking for the mission, seeing if it's timed out. If so, then initiating the timeout sequence (aka trying to turnin/abort)
-                    if (MissionHandler.IsMissionTimedOut())
-                        State |= AbortInProgress;
-
-                    // Updating the flags for the state. 
-                    TaskMissionFind.UpdateStateFlags();
-                    if (State.HasFlag(Craft) && P.Artisan.IsBusy())
-                        State |= Waiting;
-                    State |= ScoringMission;
-                }
-            }
-            else if (AddonHelper.IsAddonActive("WKSLottery"))
-                State = Gambling;
-            else
-                State = GrabMission;
-            if (AnimationLockAbandonState || (!(AddonHelper.IsAddonActive("WKSRecipeNotebook") || AddonHelper.IsAddonActive("RecipeNote")) && Svc.Condition[ConditionFlag.Crafting] && Svc.Condition[ConditionFlag.PreparingToCraft]))
-                State |= AnimationLock;
-        }
-        */
     }
 }

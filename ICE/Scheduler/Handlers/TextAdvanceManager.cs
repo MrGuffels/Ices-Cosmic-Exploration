@@ -16,8 +16,6 @@ namespace ICE.Scheduler.Handlers
                 if (!shouldDisable)
                 {
                     UnlockTA();
-                    if (EzThrottler.Throttle("Unlocking TextAdvanced", 5000))
-                        IceLogging.Debug($"TextAdvance unlocked");
                 }
             }
             else
@@ -26,8 +24,6 @@ namespace ICE.Scheduler.Handlers
                 {
                     WasChanged = true;
                     LockTA();
-                    if (EzThrottler.Throttle("Locking TextAdvanced", 5000))
-                        IceLogging.Debug($"TextAdvance locked");
                 }
             }
         }

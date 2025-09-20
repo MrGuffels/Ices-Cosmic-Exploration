@@ -17,8 +17,6 @@ namespace ICE.Scheduler.Handlers
                 {
                     WasChanged = false;
                     Unlock();
-                    if (EzThrottler.Throttle("Unlocking YesAlready", 5000))
-                        IceLogging.Debug($"YesAlready unlocked");
                 }
             }
             else
@@ -27,8 +25,6 @@ namespace ICE.Scheduler.Handlers
                 {
                     WasChanged = true;
                     Lock();
-                    if (EzThrottler.Throttle("Locking YesAlready", 5000))
-                        IceLogging.Debug($"YesAlready locked");
                 }
             }
         }

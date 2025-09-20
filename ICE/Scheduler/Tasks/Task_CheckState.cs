@@ -1,11 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Utilities.CosmicHelper;
 
@@ -20,28 +16,24 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool? CheckState()
         {
-            // Resetting the inital state, just to get a baseline set for everything.
-            SchedulerMain.State = IceState.Start;
             var currentMissionId = CosmicHelper.CurrentLunarMission;
 
             if (AddonHelper.IsAddonActive("WKSLottery"))
             {
+                IceLogging.Info("Setting State to gambling");
                 SchedulerMain.State = IceState.Gambling;
                 return true;
             }
             else
             {
-                if (C.StopWhenLevel)
+                if (C.StopWhenLevel && Player.Level >= C.TargetLevel)
                 {
-                    if (Player.Level >= C.TargetLevel)
-                    {
-                        {
-                            SchedulerMain.State = IceState.Idle;
-                            Svc.Chat.Print("Stop At Player Level is enabled. \n" +
-                                           $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
-                            return true;
-                        }
-                    }
+                    SchedulerMain.State = IceState.Idle;
+                    IceLogging.Info("Stop At Player Level is enabled. \n" +
+                                   $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
+                    Svc.Chat.Print("Stop At Player Level is enabled. \n" +
+                                   $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
+                    return true;
                 }
                 if (C.StopOnceHitCosmicScore)
                 {
