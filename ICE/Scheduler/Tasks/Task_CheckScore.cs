@@ -1,4 +1,5 @@
-﻿using ECommons.Configuration;
+﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons.Configuration;
 using ECommons.GameHelpers;
 using System;
 using System.Collections.Generic;
@@ -396,7 +397,7 @@ namespace ICE.Scheduler.Tasks
                             return true;
                         }
                     }
-                    if (mission.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                    else if (mission.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                     {
                         // We're just checking to see if we have all the items for missions that have a score time remaining. 
                         // These are typically missions that have 6 gather points, and also require a certain amount of items.
@@ -416,6 +417,16 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
+                        if (mission.Attributes.HasFlag(MissionAttributes.Limited))
+                        {
+                            if (Mission_Settings.nodeTotal >= 7 && !Svc.Condition[ConditionFlag.Gathering])
+                            {
+                                // We've hit the node total, and can't gather anymore. Just going to try and turnin/abandon
+                                SchedulerMain.State = IceState.AbandonMission;
+                                Mission_Settings.nodeTotal = 0;
+                            }
+                        }
+
                         var canTurnin = false;
 
                         // Not retricted by time, but by either score or item's gathered.

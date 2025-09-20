@@ -71,17 +71,8 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission == 0)
             {
-                if (!C.StopOnAbort || Continue)
-                {
-                    IceLogging.Info("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
-                    SchedulerMain.State = IceState.Start;
-                }
-                else
-                {
-                    IceLogging.Info($"All conditions to continue is not true. Stopping the plugin");
-                    SchedulerMain.State = IceState.Idle;
-                }
-
+                IceLogging.Info("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
+                SchedulerMain.State = IceState.Start;
                 return true;
             }
             else
@@ -109,31 +100,6 @@ namespace ICE.Scheduler.Tasks
                 }
                 else if(GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var addon) && addon.IsAddonReady)
                 {
-                    // First things first. Going to see if you meet the score threshold for any of the classes.
-                    if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
-                    {
-                        var missionId = CosmicHelper.CurrentLunarMission;
-                        var missionInfo = CosmicHelper.SheetMissionDict[missionId];
-                        var mission = C.MissionConfig[missionId];
-
-                        if (mission.AutoTurnin && (addon.CurrentScore >= missionInfo.BronzeScore))
-                        {
-                            Continue = true;
-                        }
-                        if (mission.TurninSilver && (addon.CurrentScore >= missionInfo.SilverScore))
-                        {
-                            Continue = true;
-                        }
-                        if (mission.TurninBronze && (addon.CurrentScore >= missionInfo.BronzeScore))
-                        {
-                            Continue = true;
-                        }
-                        if (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList))
-                        {
-                            Continue = true;
-                        }
-                    }
-
                     if (EzThrottler.Throttle("Attempt to turnin"))
                     {
                         addon.Report();

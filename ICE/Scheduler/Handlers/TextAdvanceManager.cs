@@ -9,16 +9,15 @@ namespace ICE.Scheduler.Handlers
         internal static void Tick()
         {
             var currentState = SchedulerMain.State;
-            bool shouldDisable = currentState.HasFlag(IceState.GrabMission)
-                              || currentState.HasFlag(IceState.AbandonMission);
+            bool shouldDisable = SchedulerMain.State == IceState.GrabMission || SchedulerMain.State == IceState.AbandonMission;
 
             if (WasChanged)
             {
                 if (!shouldDisable)
                 {
-                    WasChanged = false;
                     UnlockTA();
-                    IceLogging.Debug($"TextAdvance unlocked");
+                    if (EzThrottler.Throttle("Unlocking TextAdvanced", 5000))
+                        IceLogging.Debug($"TextAdvance unlocked");
                 }
             }
             else
@@ -27,7 +26,8 @@ namespace ICE.Scheduler.Handlers
                 {
                     WasChanged = true;
                     LockTA();
-                    IceLogging.Debug($"TextAdvance locked");
+                    if (EzThrottler.Throttle("Locking TextAdvanced", 5000))
+                        IceLogging.Debug($"TextAdvance locked");
                 }
             }
         }

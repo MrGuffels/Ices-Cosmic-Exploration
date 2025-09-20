@@ -129,6 +129,7 @@ namespace ICE.Scheduler.Tasks
                     }
                     if (allComplete)
                     {
+                        IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
                         SchedulerMain.State = IceState.Idle;
                         return true;
                     }
@@ -143,6 +144,7 @@ namespace ICE.Scheduler.Tasks
                         if (CosmicHandler.IsMissionTimedOut())
                         {
                             // Mission time has reached 0, checking the score/aborting if necessary
+                            IceLogging.Info("Mission is currently timed out. Going to abandon the mission state", "[Task: Check State]");
                             SchedulerMain.State = IceState.AbandonMission;
                             P.TaskManager.Tasks.Clear();
                             return true;
@@ -179,10 +181,13 @@ namespace ICE.Scheduler.Tasks
                             }
                             else if (Svc.Condition[ConditionFlag.Crafting] || P.Artisan.IsBusy())
                             {
+                                IceLogging.Info("We are on a crafter, and either in the middle of crafting or need to start.", "[Task: Check State]");
                                 SchedulerMain.State = IceState.Craft;
                             }
                             else if (Svc.Condition[ConditionFlag.Gathering])
                             {
+                                Mission_Settings.ResetNodeCounter();
+                                IceLogging.Info("On a gathering class, kicking over to the gathering action", "[Task: Check State]");
                                 SchedulerMain.State = IceState.Gather;
                             }
                             else
@@ -217,14 +222,17 @@ namespace ICE.Scheduler.Tasks
 
                     if (extractSpiritbond)
                     {
+                        IceLogging.Info("Extracting spiritbond is enabled. And you have some to extract. Going to go do so now", "[Task: Check State]");
                         SchedulerMain.State = IceState.Spiritbond;
                     }
                     else if (repairVendor ||  selfRepairCraft || selfRepairGather)
                     {
+                        IceLogging.Info("We need to repair! So going to go repair", "[Task: Check State]");
                         SchedulerMain.State = IceState.Repair;
                     }
                     else
                     {
+                        IceLogging.Info("Not in the middle of a mission, and don't need to repair/extract materia. So going to grab mission", "[Task: Check State]");
                         SchedulerMain.State = IceState.GrabMission;
                     }
                 }

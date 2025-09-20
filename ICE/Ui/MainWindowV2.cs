@@ -149,6 +149,8 @@ namespace ICE.Ui
         private string[] missionOptions = ["Current Class", "All Missions", "Currently Enabled"];
         private string selectedOption = "Current Class";
 
+        private ImGuiTableFlags tableFlag = ImGuiTableFlags.Resizable;
+
         // Right Column stuff
         private uint selectedMission = 0;
 
@@ -515,6 +517,14 @@ namespace ICE.Ui
                     }
                     ImGui.EndCombo();
                 }
+
+                ImGui.SameLine();
+
+                ImGui.Text("Table Help: ");
+                ImGui.SameLine();
+                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle, "There are a number of useful Features that are included in the tables below. This includes: \n" +
+                                                                        "-> Right clicking the top row will allow you to select which columns to hide. This is completely optional by your choice, and shouldn't effect anything. But if there are useless columns/columns you don't care about. You're free to do so\n" +
+                                                                        "-> You can re-order the columns at your choosing. Don't want manual to be right beside enable? Maybe you want to see the XP columns closer to the beginning. The options are yours. Just hold the column header and drag to where you want it to be.");
 
                 ImGui.Dummy(new Vector2(0, 5));
 
@@ -1007,38 +1017,40 @@ namespace ICE.Ui
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                                         ImGuiTableFlags.Borders |
-                                        ImGuiTableFlags.SizingFixedFit |
-                                        ImGuiTableFlags.Resizable |           // Allow column resizing
                                         ImGuiTableFlags.Reorderable |         // Allow column reordering
-                                        ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
+                                        ImGuiTableFlags.Hideable |             // Allow hiding columns via right-click
+                                        ImGuiTableFlags.SizingFixedFit;
 
             if (ImGui.BeginTable($"MissionList###{tableName}_{selectedJob}", totalColumns, tableFlags))
             {
                 float padding = 10f;
 
                 // Setup ALL columns - all visible by default, users can hide what they don't want via right-click
-                ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Enabled").X + padding);
-                ImGui.TableSetupColumn("Manual", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Manual").X + padding);
-                ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("99999").X + padding);
-                ImGui.TableSetupColumn("✓", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("✓").X + padding);
-                ImGui.TableSetupColumn("Mission Name", ImGuiTableColumnFlags.WidthFixed, 250f);
-                ImGui.TableSetupColumn("Cosmo", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Cosmo").X + padding);
-                ImGui.TableSetupColumn("Lunar", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Lunar").X + padding);
-                ImGui.TableSetupColumn("Score", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Score").X + padding);
+                ImGui.TableSetupColumn("Enabled");
+                ImGui.TableSetupColumn("Manual");
+                ImGui.TableSetupColumn("ID");
+                ImGui.TableSetupColumn("✓");
+                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn("Cosmo");
+                ImGui.TableSetupColumn("Lunar");
+                ImGui.TableSetupColumn("Score");
 
                 // XP columns
                 float xpWidth = ImGui.CalcTextSize("III").X + padding;
-                ImGui.TableSetupColumn("I", ImGuiTableColumnFlags.WidthFixed, xpWidth);
-                ImGui.TableSetupColumn("II", ImGuiTableColumnFlags.WidthFixed, xpWidth);
-                ImGui.TableSetupColumn("III", ImGuiTableColumnFlags.WidthFixed, xpWidth);
-                ImGui.TableSetupColumn("IV", ImGuiTableColumnFlags.WidthFixed, xpWidth);
-                ImGui.TableSetupColumn("V", ImGuiTableColumnFlags.WidthFixed, xpWidth);
+                ImGui.TableSetupColumn("I");
+                ImGui.TableSetupColumn("II");
+                ImGui.TableSetupColumn("III");
+                ImGui.TableSetupColumn("IV");
+                ImGui.TableSetupColumn("V");
 
-                ImGui.TableSetupColumn("Turnin Mode", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Select Turnin").X + padding + 15);
-                ImGui.TableSetupColumn("Gathering Profile", ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("Gathering Profile").X + padding + 15);
-                ImGui.TableSetupColumn("Mission Notes", ImGuiTableColumnFlags.WidthFixed, Math.Max(ImGui.CalcTextSize("Mission Notes").X + padding, 75));
+                ImGui.TableSetupColumn("Turnin Mode");
+                ImGui.TableSetupColumn("Gathering Profile");
+                ImGui.TableSetupColumn("Mission Notes");
 
-                // Replace ImGui.TableHeadersRow() with this custom header implementation:
+                if (tableFlag == ImGuiTableFlags.SizingFixedFit)
+                {
+                    tableFlag = ImGuiTableFlags.Resizable;
+                }
 
                 // Draw custom header row with tooltips
                 ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
@@ -1197,12 +1209,15 @@ namespace ICE.Ui
                     if (CenterCheckbox("##EnableMission", ref enabled))
                     {
                         missionConfig.Enabled = enabled;
-                        if (GetOnlyPreviousMissionsRecursive(Id).Count >0)
+                        if (missionConfig.Enabled == true)
                         {
-                            foreach (var prevMission in GetOnlyPreviousMissionsRecursive(Id))
+                            if (GetOnlyPreviousMissionsRecursive(Id).Count >0)
                             {
-                                var prevMissionConfig = C.MissionConfig[prevMission];
-                                prevMissionConfig.Enabled = true;
+                                foreach (var prevMission in GetOnlyPreviousMissionsRecursive(Id))
+                                {
+                                    var prevMissionConfig = C.MissionConfig[prevMission];
+                                    prevMissionConfig.Enabled = true;
+                                }
                             }
                         }
 

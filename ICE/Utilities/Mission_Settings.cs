@@ -40,7 +40,11 @@ namespace ICE.Utilities
 
         internal static Vector3? NearestCollectionPoint = null;
 
-        // NEW: Helper method to reset collectable state when starting new gathering session
+        internal static void ResetNodeCounter()
+        {
+            nodeCounter = 0;
+            nodeTotal = 0;
+        }
         internal static void ResetCollectableState()
         {
             CollectableStep = 0;

@@ -15,26 +15,19 @@ namespace ICE.Scheduler.Tasks
 
         public static void Enqueue()
         {
-            bool NeedToDesynth = PlayerHelper.GetItemCount(Mission_Settings.item_collectableId, out var count) && count != 0 && CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
-
             if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady 
              || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
             {
                 IceLogging.Debug("Current in a gathering session");
-                // -> Check Score
-                P.TaskManager.Enqueue(() => GatheringInteraction(), Utils.TaskConfig);
-            }
-            else if (NeedToDesynth)
-            {
                 Task_CheckScore.Enqueue();
-                P.TaskManager.Enqueue(() => CheckReduceItems());
-                P.TaskManager.Enqueue(() => WaitForDesynthCompletion());
+                P.TaskManager.Enqueue(() => GatheringInteraction(), Utils.TaskConfig);
             }
             else
             {
                 IceLogging.Debug("Not currently gathering, starting fresh instead");
-                Mission_Settings.ResetCollectableState();
                 Task_CheckScore.Enqueue();
+                P.TaskManager.Enqueue(() => CheckReduceMission(), "Checking to see if we need to reduce items");
+                P.TaskManager.Enqueue(() => Mission_Settings.ResetCollectableState());
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathToNode());
                 P.TaskManager.Enqueue(() => NavmeshMovement());
@@ -317,6 +310,12 @@ namespace ICE.Scheduler.Tasks
                         var maxDur = collectable.TotalIntegrity;
                         bool missingDur = currentDur < maxDur;
 
+                        if (Mission_Settings.item_collectableId != collectable.ItemID)
+                        {
+                            IceLogging.Debug($"Setting Mission CollectableId to: {collectable.ItemID}", "[Gather: Collectable Interacting]");
+                            Mission_Settings.item_collectableId = collectable.ItemID;
+                        }
+
                         // Something to note. It sometimes doesn't have all 3. One of these could be a 0... something to think about/need to check
                         // Think the process is going to be 
                         // Check to see if you meet tier 2/3 thresh
@@ -584,6 +583,22 @@ namespace ICE.Scheduler.Tasks
             ActionManager.Instance()->UseAction(ActionType.Action, actionId);
         }
 
+        public static bool? CheckReduceMission()
+        {
+            IceLogging.Info($"Current itemId: {Mission_Settings.item_collectableId}", "[Gather: Check Reduce Mission]");
+            bool hasCollectable = PlayerHelper.GetItemCount(Mission_Settings.item_collectableId, out var count) && count > 0;
+            bool isReducableMission = CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
+            if (hasCollectable && isReducableMission)
+            {
+                P.TaskManager.InsertMulti(
+                                            new(() => CheckReduceItems(), "Starting the desynth process"),
+                                            new(() => WaitForDesynthCompletion(), "Waiting for desyntht to complete")
+                                         );
+            }
+
+            return true;
+        }
+
         public static unsafe bool? CheckReduceItems()
         {
             if (Svc.Condition[ConditionFlag.Occupied39])
@@ -592,6 +607,15 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
+                if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady)
+                {
+                    // we shouldn't have this open while we're desynthing. . . closing it out.
+                    if (EzThrottler.Throttle("Closing gather window"))
+                    {
+                        // 
+                    }
+                }
+
                 // We have items to desynth! Time to check and see which window we need to interact with... or just wait. 
                 if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("PurifyItemSelector", out var desynthWindow) && desynthWindow->IsReady)
                 {
@@ -623,6 +647,13 @@ namespace ICE.Scheduler.Tasks
         {
             if (!Svc.Condition[ConditionFlag.Occupied39])
             {
+                PlayerHelper.GetItemCount(Mission_Settings.item_collectableId, out var count);
+                if (count != 0)
+                {
+                    // Still have some more items to desynth, going to reset the current task count and re-check
+                    P.TaskManager.Tasks.Clear();
+                }
+
                 return true;
             }
 

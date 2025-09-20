@@ -51,7 +51,7 @@ namespace ICE.Scheduler.Tasks
 
         public static void Enqueue()
         {
-
+            IceLogging.Info("Starting the find mission queue", "[Task Find Mission]");
             P.TaskManager.Enqueue(RefreshMissionUi, "Refreshing Mission UI");
             P.TaskManager.Enqueue(OpenMissionUi, "Opening it on proper class");
             P.TaskManager.Enqueue(RefreshSelectedMissions, "Refreshing the list of viable missions");
@@ -68,7 +68,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && !hud.IsAddonReady)
             {
-                IceLogging.Debug("Mission Selection Hud is no longer visible and been refreshed. Continuing on");
+                IceLogging.Info("Mission Selection Hud is no longer visible and been refreshed. Continuing on");
                 return true;
             }
             else
@@ -77,7 +77,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Closing the hud to make sure it's on the right class"))
                     {
-                        IceLogging.Info("Closing out the mission selection hud");
+                        IceLogging.Debug("Closing out the mission selection hud");
                         moonHud.Mission();
                     }
                 }
@@ -90,6 +90,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
             {
+                IceLogging.Info("Starting the find mission queue", "[Task: Find Mission | Open Mission Ui]");
                 return true;
             }
             else
@@ -317,11 +318,12 @@ namespace ICE.Scheduler.Tasks
                     {
                         mission.Select();
                         InsertGrabMission(mission.MissionId);
+                        IceLogging.Info("Going to \" Insert Grab Mission Task\" next", "[Task: Find Mission | Check Critical]");
                         return true;
                     }
                 }
 
-                IceLogging.Debug("No mission was found under the critical tab, continuing onto the next", "[Critical Mission Check]");
+                IceLogging.Info("No mission was found under the critical tab, continuing onto the next", "[Critical Mission Check]");
                 return true;
             }
 
@@ -331,7 +333,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission != 0)
             {
-                IceLogging.Debug("Mission has already been accepted, skipping Provisional Missions");
+                IceLogging.Info("Mission has already been accepted, skipping Provisional Missions check");
                 return true;
             }
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
@@ -750,6 +752,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission != 0)
             {
+                Mission_Settings.ResetNodeCounter();
                 SchedulerMain.State = IceState.ExecutingMission;
                 return true;
             }
@@ -965,7 +968,6 @@ namespace ICE.Scheduler.Tasks
                 fishingPath = await FindTask(currentPos, pathToArea);
             });
         }
-
         private static async Task<List<Vector3>> FindTask(Vector3 currentPos, Vector3 pathToArea)
         {
             return await P.Navmesh.Pathfind(currentPos, pathToArea, false);

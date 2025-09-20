@@ -2433,20 +2433,20 @@ public static unsafe class GatheringUtil
             {
                 new GathNodeInfo()
                 {
-                    Position = new Vector3(90.81f, 12.54f, 615.77f),
-                    LandZone = new Vector3(87.49f, 12.00f, 617.15f),
-                    NodeId = 35423,
-                },
-                new GathNodeInfo()
-                {
                     Position = new Vector3(86.33f, 12.51f, 612.67f),
-                    LandZone = new Vector3(87.49f, 12.00f, 617.15f),
+                    LandZone = new Vector3(86.06f, 12.00f, 614.50f),
                     NodeId = 35424,
                 },
                 new GathNodeInfo()
                 {
+                    Position = new Vector3(90.81f, 12.54f, 615.77f),
+                    LandZone = new Vector3(89.45f, 12.00f, 617.27f),
+                    NodeId = 35423,
+                },
+                new GathNodeInfo()
+                {
                     Position = new Vector3(22.84f, 27.59f, 695.38f),
-                    LandZone = new Vector3(23.84f, 26.98f, 691.93f),
+                    LandZone = new Vector3(23.88f, 26.97f, 693.00f),
                     NodeId = 35427,
                 },
                 new GathNodeInfo()
@@ -2458,13 +2458,13 @@ public static unsafe class GatheringUtil
                 new GathNodeInfo()
                 {
                     Position = new Vector3(-1.78f, 27.72f, 618.93f),
-                    LandZone = new Vector3(1.38f, 26.92f, 620.88f),
+                    LandZone = new Vector3(-0.38f, 26.96f, 620.82f),
                     NodeId = 35426,
                 },
                 new GathNodeInfo()
                 {
                     Position = new Vector3(1.48f, 27.69f, 616.74f),
-                    LandZone = new Vector3(1.38f, 26.92f, 620.88f),
+                    LandZone = new Vector3(2.72f, 26.87f, 618.28f),
                     NodeId = 35425,
                 },
             },
