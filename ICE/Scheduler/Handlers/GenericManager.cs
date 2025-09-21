@@ -47,17 +47,28 @@ namespace ICE.Scheduler.Handlers
 
         internal static void Tick()
         {
-            if (!SchedulerMain.State.HasFlag(IceState.ManualMode))
+            if (SchedulerMain.State != IceState.ManualMode)
             {
-                if (SchedulerMain.State.HasFlag(IceState.Gather))
+                if (SchedulerMain.State == IceState.Gather)
                 {
-                    var featureEnabled = (P.Pandora.GetFeatureEnabled("Pandora Quick Gather") ?? false);
+                    var pandoraGatherEnabled = (P.Pandora.GetFeatureEnabled("Pandora Quick Gather") ?? false);
 
-                    if (featureEnabled)
+                    if (pandoraGatherEnabled)
                     {
                         if (EzThrottler.Throttle("Disabling Pandora Gathering", 1000))
                         {
                             P.Pandora.PauseFeature("Pandora Quick Gather", 1000);
+                        }
+                    }
+                }
+                if (SchedulerMain.State != IceState.Idle)
+                {
+                    var autoInteract = (P.Pandora.GetFeatureEnabled("Auto-interact with Gathering Nodes") ?? false);
+                    if (autoInteract)
+                    {
+                        if (EzThrottler.Throttle("Disabling Pandora's Auto Interaction with nodes", 1000))
+                        {
+                            P.Pandora.PauseFeature("Auto-interact with Gathering Nodes", 1000);
                         }
                     }
                 }
@@ -66,7 +77,7 @@ namespace ICE.Scheduler.Handlers
                 if (C.AutoCordial && CosmicZone)
                 {
                     var pandoraCordial = (P.Pandora.GetFeatureEnabled("Auto-Cordial") ?? false);
-                    if (pandoraCordial && (C.UseOnlyInMission && SchedulerMain.State.HasFlag(IceState.Gather)))
+                    if (pandoraCordial && (C.UseOnlyInMission && SchedulerMain.State == IceState.Gather))
                     {
                         if (EzThrottler.Throttle("Disabling Pandora Cordial", 1000))
                         {
@@ -107,7 +118,7 @@ namespace ICE.Scheduler.Handlers
                         // IceLogging.Debug("Player is not in cosmic zone");
                         useCordial = false;
                     }
-                    if (C.UseOnlyInMission && !SchedulerMain.State.HasFlag(IceState.Gather))
+                    if (C.UseOnlyInMission && SchedulerMain.State != IceState.Gather)
                     {
                         // IceLogging.Debug("Use only in mission, but mission doesn't have gathering state");
                         useCordial = false;

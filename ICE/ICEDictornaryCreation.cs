@@ -469,6 +469,14 @@ public sealed partial class ICE
             }
         }
 
+        foreach (var weather in WeatherIds)
+        {
+            if (Svc.Texture.TryGetFromGameIcon(weather.Value, out var texture))
+            {
+                WeatherIconDict[weather.Key] = texture;
+            }
+        }
+
         // UpdateSheetMissionDict();
     }
     private static MissionType GetMissionType(CosmicInfo mission)

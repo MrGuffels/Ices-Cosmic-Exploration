@@ -24,10 +24,10 @@ namespace ICE.Scheduler.Tasks
 
             if (CosmicHelper.CrafterJobList.Overlaps(jobs) && CosmicHelper.GatheringJobList.Overlaps(jobs))
             {
-                P.TaskManager.Enqueue(() => DualClass());
-                P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.DualClass);
+                P.TaskManager.Enqueue(() => DualClass(), "Checking dual class score");
+                P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.DualClass, "Setting state to dual class");
             }
-            if (CosmicHelper.CrafterJobList.Overlaps(jobs))
+            else if (CosmicHelper.CrafterJobList.Overlaps(jobs))
             {
                 IceLogging.Info("Currently on a crafting job");
                 P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Craft);
@@ -553,23 +553,6 @@ namespace ICE.Scheduler.Tasks
                     // var mission = CosmicHelper.Dict_CosmicMissions[Id];
                     var mission = CosmicHelper.SheetMissionDict[Id];
                     bool shouldTurnin = false;
-
-                    // First things first, have to check to see if you have enough of the initial crafts/meet the score threshold
-                    foreach (var item in mission.Crafts_Main)
-                    {
-                        var itemId = item.Value.ItemId;
-                        var recipeEntry = item.Value;
-
-                        if (!PlayerHelper.GetItemCount(itemId, out var count) || count < recipeEntry.RequiredAmount)
-                        {
-                            IceLogging.Debug("Found an item that you didn't have the minumim amount of. Continuing on with our task", "[Task_CheckScore: Craft]");
-                            IceLogging.Debug($"RecipeId: {item.Key} | Have: {count} | Expected amount: {recipeEntry.RequiredAmount}");
-                            SchedulerMain.State = IceState.Craft;
-                            return true;
-                        }
-                    }
-
-                    // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
 
                     if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
                     {

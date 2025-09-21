@@ -3,6 +3,7 @@ using ECommons.GameHelpers;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using YamlDotNet.Serialization;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -38,6 +39,68 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
+        public static void Enqueue()
+        {
+            P.TaskManager.Enqueue(() => ExtractMateria(), "Extracting materia");
+        }
+
+        public static unsafe bool? ExtractMateria()
+        {
+            if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny())
+            {
+                if (GenericHelpers.TryGetAddonByName("Materialize", out AtkUnitBase* materialize))
+                {
+                    if (EzThrottler.Throttle("Closing the materialize window"))
+                        ECommons.Automation.Callback.Fire(materialize, true, -1);
+                }
+                else
+                {
+                    IceLogging.Info("Materia Extraction is completed, continuing back to the start state");
+                    SchedulerMain.State = IceState.Start;
+                    return true;
+                }
+            }
+            else
+            {
+                if (Player.Mounted)
+                {
+                    if (EzThrottler.Throttle("Dismounting"))
+                        Utils.Dismount();
+                }
+                else if (EzThrottler.Throttle("Attempting to extract materia") && !Player.IsBusy)
+                {
+                    if (GenericHelpers.TryGetAddonByName("MaterializeDialog", out AtkUnitBase* addonMaterializeDialog) && GenericHelpers.IsAddonReady(addonMaterializeDialog))
+                    {
+                        new AddonMaster.MaterializeDialog(addonMaterializeDialog).Materialize();
+                        return false;
+                    }
+                    if (!GenericHelpers.TryGetAddonByName("Materialize", out AtkUnitBase* addonMaterialize))
+                    {
+                        ActionManager.Instance()->UseAction(ActionType.GeneralAction, 14);
+                        return false;
+                    }
+                    else if (GenericHelpers.IsAddonReady(addonMaterialize))
+                    {
+                        var list = addonMaterialize->GetNodeById(12)->GetAsAtkComponentList();
+
+                        if (list == null)
+                            return false;
+
+                        var spiritbondTextNode = list->UldManager.NodeList[2]->GetComponent()->GetTextNodeById(5)->GetAsAtkTextNode();
+                        var categoryTextNode = addonMaterialize->GetNodeById(4)->GetAsAtkComponentDropdownList()->UldManager.NodeList[1]->GetAsAtkComponentCheckBox()->GetTextNodeById(3)->GetAsAtkTextNode();
+
+                        if (spiritbondTextNode == null || categoryTextNode == null)
+                            return false;
+
+                        if (spiritbondTextNode->NodeText.ToString().Replace(" ", string.Empty) == "100%")
+                            ECommons.Automation.Callback.Fire(addonMaterialize, true, 2, 0);
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public unsafe static bool TryExtractMateria()
         {
             if (!EzThrottler.Throttle("Extract", 250))
@@ -45,8 +108,16 @@ namespace ICE.Scheduler.Tasks
 
             if (InventoryManager.Instance()->GetEmptySlotsInBag() < 1 || !IsSpiritbondReadyAny() || !C.SelfSpiritbondGather || !Player.Job.IsDol())
             {
-                SchedulerMain.State = IceState.Start;
-                return true;
+                if (GenericHelpers.TryGetAddonByName("Materialize", out AtkUnitBase* materialize))
+                {
+                    if (EzThrottler.Throttle("Closing the materialize window"))
+                        ECommons.Automation.Callback.Fire(materialize, true, -1);
+                }
+                else
+                {
+                    SchedulerMain.State = IceState.Start;
+                    return true;
+                }
             }
 
             if (Player.IsBusy)
@@ -57,7 +128,6 @@ namespace ICE.Scheduler.Tasks
                 new AddonMaster.MaterializeDialog(addonMaterializeDialog).Materialize();
                 return false;
             }
-
             if (!GenericHelpers.TryGetAddonByName("Materialize", out AtkUnitBase* addonMaterialize))
             {
                 ActionManager.Instance()->UseAction(ActionType.GeneralAction, 14);

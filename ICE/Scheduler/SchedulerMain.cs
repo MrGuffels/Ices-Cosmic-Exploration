@@ -1,3 +1,4 @@
+using ECommons.Automation.NeoTaskManager;
 using ECommons.GameHelpers;
 using static ICE.Enums.IceState;
 
@@ -44,7 +45,7 @@ namespace ICE.Scheduler
                         Task_Repair.Enqueue();
                         break;
                     case Spiritbond:
-                        Task_Spiritbond.TryExtractMateria();
+                        Task_Spiritbond.Enqueue();
                         break;
                     case GrabMission:
                         Task_FindMission.Enqueue();
@@ -66,6 +67,9 @@ namespace ICE.Scheduler
                         break;
                     case Gather:
                         Task_Gather.Enqueue();
+                        break;
+                    case DualClass:
+                        Task_DualClass.Enqueue();
                         break;
                     // case Fish:
                     case ManualMode:

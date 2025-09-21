@@ -56,7 +56,7 @@ internal static class IceLogging
         }
     }
 
-    public static void Info(string message, string prefix = null, bool debugOnly = true)
+    public static void Info(string message, string prefix = null, bool debugOnly = false)
     {
         if (debugOnly)
         {
@@ -69,6 +69,20 @@ internal static class IceLogging
         {
             var formattedMessage = FormatMessage(message, prefix);
             PluginLog.Information(formattedMessage);
+        }
+    }
+
+    public static void ChatInfo(string s, string prefix = null)
+    {
+        if (prefix == null)
+        {
+            Svc.Chat.Print(s);
+            PluginLog.Information(s);
+        }
+        else
+        {
+            Svc.Chat.Print($"{prefix} {s}");
+            PluginLog.Information($"{prefix} {s}");
         }
     }
 

@@ -159,9 +159,8 @@ namespace ICE.Ui
         public override void Draw()
         {
             // Calculate scaling factors based on current font size
-            float fontScale = ImGui.GetIO().FontGlobalScale;
             float textLineHeight = ImGui.GetTextLineHeight();
-            float scaledSpacing = ImGui.GetStyle().ItemSpacing.Y * fontScale;
+            float scaledSpacing = ImGui.GetStyle().ItemSpacing.Y;
             float headerPadding = textLineHeight * 1.2f;
 
             float headerHeight = textLineHeight + headerPadding * 2;
@@ -1192,7 +1191,7 @@ namespace ICE.Ui
                     bool critical = missionInfo.Attributes.HasFlag(MissionAttributes.Critical);
 
                     bool dualclass = craftMission && (gatherMission || fishMission);
-                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || missionInfo.Jobs.Contains(18) || dualclass || (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList) && critical);
+                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || missionInfo.Jobs.Contains(18) || (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList) && critical);
                     bool hideUnsupported = C.HideUnsupportedMissions;
 
                     if (unsupported && hideUnsupported)
@@ -1521,9 +1520,19 @@ namespace ICE.Ui
                         if (notesCount > 0)
                             ImGui.SameLine();
 
-                        ImGui.PushFont(UiBuilder.IconFont);
-                        ImGui.Text(FontAwesomeIcon.Cloud.ToIconString());
-                        ImGui.PopFont();
+                        if (CosmicHelper.WeatherIds.ContainsKey(missionInfo.Weather))
+                        {
+                            ISharedImmediateTexture? weatherIcon = WeatherIconDict[missionInfo.Weather];
+                            Vector2 ImageSize = new Vector2(23, 23);
+                            ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, ImageSize);
+                        }
+                        else
+                        {
+                            ImGui.PushFont(UiBuilder.IconFont);
+                            ImGui.Text(FontAwesomeIcon.Cloud.ToIconString());
+                            ImGui.PopFont();
+                        }
+
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();

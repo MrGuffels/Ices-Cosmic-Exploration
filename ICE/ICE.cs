@@ -82,7 +82,6 @@ public sealed partial class ICE : IDalamudPlugin
         Config = EzConfig.Init<Configuration>();
 
         //IPC's that are used
-        TaskManager = new();
         Lifestream = new();
         Navmesh = new();
         Pandora = new();
@@ -112,7 +111,7 @@ public sealed partial class ICE : IDalamudPlugin
         Init();
         Svc.Framework.Update += Tick;
 
-        TaskManager = new(new(showDebug: false));
+        TaskManager = new(new(showDebug: true));
         Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
         Svc.PluginInterface.UiBuilder.OpenMainUi += () =>
         {
@@ -140,7 +139,8 @@ public sealed partial class ICE : IDalamudPlugin
         if (Svc.ClientState.LocalPlayer != null)
         {
             PlayerHandlers.Tick();
-            SchedulerMain.Tick();
+            if (SchedulerMain.State != IceState.Idle)
+                SchedulerMain.Tick();
             WeatherForecastHandler.Tick();
         }
         else

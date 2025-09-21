@@ -25,6 +25,13 @@ public static unsafe partial class CosmicHelper
     public static readonly HashSet<uint> WeatherSelection = new() { 13, 14, 15, 16 };
 
     public static List<int> GreyIconList = new List<int>() { 91031, 91032, 91033, 91034, 91035, 91036, 91037, 91038, 91039, 91040, 91041 };
+    public static Dictionary<CosmicWeather, int> WeatherIds = new()
+    {
+        [CosmicWeather.UmbralWind] = 60219,
+        [CosmicWeather.MoonDust] = 60222,
+        [CosmicWeather.Clouds] = 60203,
+        [CosmicWeather.Rain] = 60207,
+    };
 
     public static readonly int MinimumLevel = 10;
     public static readonly int MaximumLevel = Player.MaxLevel;
@@ -117,6 +124,7 @@ public static unsafe partial class CosmicHelper
     public static Dictionary<uint, ISharedImmediateTexture> GreyTexture = new Dictionary<uint, ISharedImmediateTexture>();
 
     public static Dictionary<uint, ISharedImmediateTexture> JobIconDict = new Dictionary<uint, ISharedImmediateTexture>();
+    public static Dictionary<CosmicWeather, ISharedImmediateTexture> WeatherIconDict = new();
 
     public static Dictionary<uint, uint> MissionScoreDict = new Dictionary<uint, uint>
     {

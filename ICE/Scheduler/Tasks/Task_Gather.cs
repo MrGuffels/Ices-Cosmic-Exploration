@@ -2,10 +2,6 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ICE.Config;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -34,7 +30,7 @@ namespace ICE.Scheduler.Tasks
             }
         }
 
-        private static bool? CheckGatherLocation()
+        public static bool? CheckGatherLocation()
         {
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
@@ -105,10 +101,19 @@ namespace ICE.Scheduler.Tasks
             var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
             var location = gatherInfo[Mission_Settings.nodeCounter];
 
-            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) < 5)
+            if (EzThrottler.Throttle("Distance to node debugger"))
+            {
+                IceLogging.Debug($"Distance to node position: {Player.DistanceTo(location.Position)}");
+            }
+
+            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 3)
             {
                 // Time to check to see if the node is targetable 
-                if (Svc.Objects.Where(x => x.DataId == location.NodeId).Where(t => t.IsTargetable) != null)
+                if (Svc.Condition[ConditionFlag.Gathering])
+                {
+                    P.TaskManager.Insert(() => GatheringInteraction(), "Gathering mode", Utils.TaskConfig);
+                }
+                else if (Svc.Objects.Where(x => x.DataId == location.NodeId).Where(t => t.IsTargetable) != null)
                 {
                     // Target was a valid target, going to add a task to try and interact w/ the node now and get the gathering window up
                     IceLogging.Info("Targeting the target for gathering", "[Task_Gathering]");
@@ -124,7 +129,7 @@ namespace ICE.Scheduler.Tasks
                 }
 
             }
-            if (P.Navmesh.IsRunning())
+            else if (P.Navmesh.IsRunning())
             {
                 if (C.UseMountInMission && (Player.DistanceTo(location.Position) > C.MountRadius))
                 {
@@ -132,6 +137,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (EzThrottler.Throttle("Mounting for mission"))
                         {
+                            IceLogging.Debug($"Distance to node: {Player.DistanceTo(location.Position)} | Mount checking says you should mount so... mounting", "[Gather Task: Pathfind]");
                             Utils.MountAction();
                         }
                     }
@@ -140,6 +146,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Dismounting mount in mission"))
                     {
+                        IceLogging.Debug($"Distance to node: {Player.DistanceTo(location.Position)} | Mount checking says you should not be on a mount, dismounting", "[Gather Task: Pathfind]");
                         Utils.Dismount();
                     }
                 }
@@ -206,6 +213,12 @@ namespace ICE.Scheduler.Tasks
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;
             var collectorAction = GatheringUtil.GathCollectableActions;
             var jobId = Player.JobId;
+
+            if (P.Navmesh.IsRunning())
+            {
+                if (EzThrottler.Throttle("Stopping navmesh, cause we shouldn't be running here"))
+                    P.Navmesh.Stop();
+            }
 
             if (Svc.Condition[ConditionFlag.Gathering])
             {
@@ -354,7 +367,10 @@ namespace ICE.Scheduler.Tasks
         private static bool? WaitToGather()
         {
             if (!Svc.Condition[ConditionFlag.ExecutingGatheringAction])
+            {
+                IceLogging.Info("No longer executing a gathering action", "[Task Gather: Wait To Gather]");
                 return true;
+            }
             else
             {
                 if (Mission_Settings.NextCollectableStep != Mission_Settings.CollectableStep)
@@ -366,7 +382,7 @@ namespace ICE.Scheduler.Tasks
             }
         }
 
-        private static bool CanUseGatheringAction(string actionName, int profileId, bool missingDur, int? boonChance = null, bool gather1More = true)
+        public static bool CanUseGatheringAction(string actionName, int profileId, bool missingDur, int? boonChance = null, bool gather1More = true)
         {
             var actionInfo = GatheringUtil.GathActionDict[actionName];
             bool hasStatus = PlayerHelper.HasStatusId(actionInfo.StatusId);
@@ -456,7 +472,7 @@ namespace ICE.Scheduler.Tasks
 
         public static bool NormalGpRotation(int collectability, bool missingDur = false)
         {
-            if (EzThrottler.Throttle("Executing HighGPRotation"))
+            if (EzThrottler.Throttle("Executing HighGPRotation", 100))
             {
                 // 400+ gp
                 int step = Mission_Settings.CollectableStep;
@@ -603,6 +619,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (Svc.Condition[ConditionFlag.Occupied39])
             {
+                IceLogging.Info("We're currently desynthing an item, continuing on to wait to stop", "[Task Gather: Reducing Item Check]");
                 return true;
             }
             else

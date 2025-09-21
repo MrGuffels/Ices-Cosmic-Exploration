@@ -29,10 +29,8 @@ namespace ICE.Scheduler.Tasks
                 if (C.StopWhenLevel && Player.Level >= C.TargetLevel)
                 {
                     SchedulerMain.State = IceState.Idle;
-                    IceLogging.Info("Stop At Player Level is enabled. \n" +
-                                   $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
-                    Svc.Chat.Print("Stop At Player Level is enabled. \n" +
-                                   $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
+                    IceLogging.ChatInfo("Stop At Player Level is enabled. \n" +
+                                       $"Your current level is: {Player.Level} and Goal: {C.TargetLevel}", "[I.C.E.]");
                     return true;
                 }
                 if (C.StopOnceHitCosmicScore)
@@ -41,8 +39,8 @@ namespace ICE.Scheduler.Tasks
 
                     if (scores.classScore >= C.CosmicScoreCap)
                     {
-                        Svc.Chat.Print("Stop At Cosmic Score is enabled. \n" +
-                                      $"Your current level is: {scores.classScore} and Goal: {C.CosmicScoreCap}", "[I.C.E.]");
+                        IceLogging.ChatInfo("Stop At Cosmic Score is enabled. \n" +
+                                           $"Your current level is: {scores.classScore} and Goal: {C.CosmicScoreCap}", "[I.C.E.]");
                         SchedulerMain.State = IceState.Idle;
                         return true;
                     }
@@ -54,25 +52,22 @@ namespace ICE.Scheduler.Tasks
                     var zoneId = *((byte*)manager + 0x5D);
                     var itemId = currencies[zoneId];
 
-                    if (PlayerHelper.GetItemCount(itemId, out var credits))
+                    PlayerHelper.GetItemCount(itemId, out var credits);
+                    if (credits >= C.LunarCreditsCap)
                     {
-                        if (credits >= C.LunarCreditsCap)
-                        {
-                            SchedulerMain.State = IceState.Idle;
-                            return true;
-                        }
+                        IceLogging.ChatInfo($"You've either hit the Lunar Credit threshold, or gone above it.\n" +
+                                            $"Stopping I.C.E.", "[I.C.E.]");
+                        SchedulerMain.State = IceState.Idle;
+                        return true;
                     }
                 }
                 if (C.StopOnceHitCosmoCredits)
                 {
-                    if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady)
+                    if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady && (hud.CosmoCredit >= C.CosmoCreditsCap))
                     {
-                        if (hud.CosmoCredit >= C.CosmoCreditsCap)
-                        {
-                            DuoLog.Information($"Stopping the plugin as you have {hud.CosmoCredit} Cosmocredits.");
-                            SchedulerMain.State = IceState.Idle;
-                            return true;
-                        }
+                        IceLogging.ChatInfo($"Stopping the plugin as you have {hud.CosmoCredit} Cosmocredits.", "[I.C.E.]");
+                        SchedulerMain.State = IceState.Idle;
+                        return true;
                     }
                 }
                 if (C.StopOnceRelicFinished)
@@ -125,14 +120,17 @@ namespace ICE.Scheduler.Tasks
                         SchedulerMain.State = IceState.Idle;
                         return true;
                     }
+                    else
+                    {
+                        IceLogging.Info($"Stop on relic completion is checked, but you also aren't done. So going to continue on", "[Task: CheckState]");
+                    }
                 }
-
                 if (currentMissionId != 0)
                 {
-                    // A mission was found to be active [aka not 0]
+                    IceLogging.Debug($"Current mission id is not 0, which means we're in the middle of a mission");
                     if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
                     {
-                        // Mission info window is now ready to be read, time to check out the current progress.
+                        IceLogging.Debug($"Mission Infomation was active, checking if a mission is timed out.");
                         if (CosmicHandler.IsMissionTimedOut())
                         {
                             // Mission time has reached 0, checking the score/aborting if necessary
@@ -143,18 +141,12 @@ namespace ICE.Scheduler.Tasks
                         }
                         else
                         {
-                            // Mission is still active. Time to check if it's a crafting or gathering mission
+                            IceLogging.Debug($"Mission isn't timed out... checking other states");
                             UpdateMissionState(currentMissionId);
                             C.MissionConfig.TryGetValue(currentMissionId, out var config);
 
                             var s = SchedulerMain.MissionState;
                             bool dualMission = s.HasFlag(MissionAttributes.Craft) && s.HasFlag(MissionAttributes.Gather);
-                            if (s.HasFlag(MissionAttributes.Critical))
-                            {
-                                // Critical mission info. Need to grab/update where to turn these into. 
-                                // Really... only matters for gathering (specifically, the PITA ones where the gather points are off in narnia
-                                // TODO: Grab/tell where the turnin point is for that mission
-                            }
                             // In the middle of a dual mission. 
                             // First, checking to see if you're in the middle of a gathering or crafting action
                             if (C.OnlyGrabMission || config.ManualMode || s.HasFlag(MissionAttributes.Fish))
@@ -166,10 +158,15 @@ namespace ICE.Scheduler.Tasks
                                 }
                                 else
                                 {
-
                                     IceLogging.Info($"You have either manual mode enabled, or you have OnlyGrabMission enabled. Swapping to manual mode state");
                                 }
                                 SchedulerMain.State = IceState.ManualMode;
+                            }
+                            else if (dualMission)
+                            {
+                                IceLogging.Info("We're in a dual craft mission, going to kick it over there", "[Task: Check State]");
+                                Mission_Settings.ResetNodeCounter();
+                                SchedulerMain.State = IceState.DualClass;
                             }
                             else if (Svc.Condition[ConditionFlag.Crafting] || P.Artisan.IsBusy())
                             {
@@ -212,7 +209,7 @@ namespace ICE.Scheduler.Tasks
                     bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.GatheringJobList.Contains(currentJob);
                     bool extractSpiritbond = C.SelfSpiritbondGather && Task_Spiritbond.IsSpiritbondReadyAny();
 
-                    if (extractSpiritbond)
+                    if (extractSpiritbond && CosmicHelper.GatheringJobList.Contains(currentJob))
                     {
                         IceLogging.Info("Extracting spiritbond is enabled. And you have some to extract. Going to go do so now", "[Task: Check State]");
                         SchedulerMain.State = IceState.Spiritbond;
@@ -227,10 +224,11 @@ namespace ICE.Scheduler.Tasks
                         IceLogging.Info("Not in the middle of a mission, and don't need to repair/extract materia. So going to grab mission", "[Task: Check State]");
                         SchedulerMain.State = IceState.GrabMission;
                     }
+
+                    IceLogging.Info($"There is no physical possible way for you to not be in a different state here. . . So reporting back the current state upon exiting here: {SchedulerMain.State}");
+                    return true;
                 }
             }
-
-            return true;
         }
 
         private static void UpdateMissionState(uint missionId)

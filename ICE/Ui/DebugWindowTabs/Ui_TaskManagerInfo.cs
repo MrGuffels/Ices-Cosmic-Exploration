@@ -17,10 +17,11 @@ namespace ICE.Ui.DebugWindowTabs
 
         public static void Draw()
         {
-            bool runningTask = P.TaskManager.NumQueuedTasks != 0;
-            ImGui.Text($"Running task: {runningTask}");
+            ImGui.Text($"Running task: {P.TaskManager.NumQueuedTasks != 0} | Amount of queue'd task: {P.TaskManager.NumQueuedTasks}");
             string currentTask = P.TaskManager.CurrentTask?.Name ?? "";
             ImGui.Text($"Current task running: {currentTask}");
+            ImGui.Text($"Current State: {SchedulerMain.State}");
+            ImGui.Text($"Task Count: {P.TaskManager.Tasks.Count}");
             if (ImGui.Button("Set State to Idle"))
             {
                 SchedulerMain.State = IceState.Idle; 

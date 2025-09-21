@@ -14,6 +14,9 @@ namespace ICE.Ui.DebugWindowTabs
         private static int Radius = 10;
         private static int XLoc = 0;
         private static int YLoc = 0;
+        private static string PandoraFeature = "";
+        private static int amount = 1000;
+
         private static string importString = new string('\0', 2048); // Pre-allocate buffer
         private static string SwapToPreset = string.Empty;
         private static uint missionId = 0;
@@ -44,6 +47,13 @@ namespace ICE.Ui.DebugWindowTabs
                 var agent = AgentMap.Instance();
 
                 Utils.SetGatheringRing(agent->CurrentTerritoryId, XLoc, YLoc, Radius);
+            }
+
+            ImGui.Separator();
+            ImGui.InputText("Pandora Feature", ref PandoraFeature);
+            if (ImGui.Button("Pause Feature"))
+            {
+                P.Pandora.PauseFeature(PandoraFeature, amount);
             }
 
             ImGui.Separator();

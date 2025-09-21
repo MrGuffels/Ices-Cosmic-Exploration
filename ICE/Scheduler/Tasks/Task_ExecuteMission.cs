@@ -52,10 +52,15 @@ namespace ICE.Scheduler.Tasks
                     SchedulerMain.State = IceState.Fish;
                     IceLogging.Debug("Mission is a fishing mission, might also contain crafting in it but. For now starting off with the fishing portion");
                 }
+                else if (mission.Attributes.HasFlag(MissionAttributes.Gather) && mission.Attributes.HasFlag(MissionAttributes.Craft))
+                {
+                    IceLogging.Info("We've found a dual class mission! Kicking it off with that.", "[Task: Execute Mission]");
+                    SchedulerMain.State = IceState.DualClass;
+                }
                 else if (mission.Attributes.HasFlag(MissionAttributes.Gather))
                 {
                     SchedulerMain.State = IceState.Gather;
-                    IceLogging.Debug("Mission is a gathering mission. Need to gather inial resources. But first going to do a check to make sure where we're at.", "[Task_ExecuteMission]");
+                    IceLogging.Info("Mission is a gathering mission. Need to gather inial resources. But first going to do a check to make sure where we're at.", "[Task_ExecuteMission]");
                 }
                 else if (mission.Attributes.HasFlag(MissionAttributes.Craft))
                 {

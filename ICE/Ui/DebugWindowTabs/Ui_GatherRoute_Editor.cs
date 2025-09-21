@@ -72,7 +72,11 @@ namespace ICE.Ui.DebugWindowTabs
                     foreach (var moon in GatheringUtil.MoonGatherLocations)
                     {
                         ImGui.Text($"ZoneId: {moon.Key}");
-                        foreach (var flag in moon.Value)
+
+                        var sortedFlags = moon.Value.OrderBy(flag => GetJobIdForFlag(moon.Key, flag.Key))
+                                                    .ThenBy(flag => flag.Key.X);
+
+                        foreach (var flag in sortedFlags)
                         {
                             var isSelected = selectedZone == moon.Key && selectedFlag == flag.Key;
 
@@ -154,11 +158,11 @@ namespace ICE.Ui.DebugWindowTabs
 
                     ImGui.Separator();
 
-                    if (ImGui.BeginTable("NodeEditTable", 3, ImGuiTableFlags.Resizable))
+                    if (ImGui.BeginTable("NodeEditTable", 3, ImGuiTableFlags.SizingFixedFit))
                     {
                         // Set up column widths
-                        ImGui.TableSetupColumn("NodeSelector", ImGuiTableColumnFlags.WidthStretch, 0.4f);
-                        ImGui.TableSetupColumn("NodeViewer", ImGuiTableColumnFlags.WidthStretch, 0.4f);
+                        ImGui.TableSetupColumn("NodeSelector", ImGuiTableColumnFlags.WidthStretch, 200);
+                        ImGui.TableSetupColumn("NodeViewer", ImGuiTableColumnFlags.WidthStretch, 200);
                         ImGui.TableSetupColumn("Buttons", ImGuiTableColumnFlags.WidthFixed, 100f);
 
                         ImGui.TableNextRow();
