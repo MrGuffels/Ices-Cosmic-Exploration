@@ -50,6 +50,25 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 AddonHelper.OpenRecipeNote();
             }
+            if (ImGui.TreeNode("All Current objects"))
+            {
+                if (Player.Available)
+                {
+                    foreach(var ffObjects in Svc.Objects.OrderBy(x => Player.DistanceTo(x.Position)))
+                    {
+                        if (ffObjects.DataId == 2014616 || ffObjects.DataId == 2014618)
+                        {
+                            ImGui.Text($"--> Name: {ffObjects.Name} | ID: {ffObjects.DataId}");
+                        }
+                        else
+                        {
+                            ImGui.Text($"Name: {ffObjects.Name} | ID: {ffObjects.DataId}");
+                        }
+                    }
+                }
+
+                ImGui.TreePop();
+            }
             var gameObject = Utils.TryGetObjectNearestEventObject();
             float gameObjectDistance = 0;
             if (gameObject is not null)

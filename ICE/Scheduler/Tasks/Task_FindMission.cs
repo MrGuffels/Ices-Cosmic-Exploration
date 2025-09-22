@@ -745,7 +745,6 @@ namespace ICE.Scheduler.Tasks
                 new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
                 new(() => FrameDelay(8), "Waiting 8 frames before next action"),
                 new(() => GrabMission(missionId), "Selecting mission for grabbing"),
-                new(() => Mission_Settings.nodeTotal = 0, "Resetting total node counter"),
                 new(() => FrameDelay(16), "Giving time before you kick in the mission")
             );
         }
@@ -770,6 +769,7 @@ namespace ICE.Scheduler.Tasks
                             SchedulerMain.State = IceState.ExecutingMission;
                         IceLogging.Debug($"Current State upon  grabbing mission: {SchedulerMain.State}");
                         P.TaskManager.Tasks.Clear();
+                        Mission_Settings.nodeTotal = 0;
                         P.TaskManager.Insert(() => CosmicHelper.CurrentLunarMission != 0);
                         IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
                         return true;

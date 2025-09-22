@@ -40,7 +40,7 @@ internal class DebugWindow : Window
                                    "Navmesh Testing", "Relic Info",
                                    "TaskManager Testing", "Table: Item List",
                                    "Table: Gathering Missions", "Table: Special Missions",
-                                   "Table: Mission Text", "Table: Recipies", "Hud: Gather Collectable"];
+                                   "Table: Mission Text", "Table: Recipies", "Hud: Gather Collectable",];
 
     int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
 
