@@ -18,8 +18,8 @@ namespace ICE.Ui.DebugWindowTabs
         private static Vector2 selectedFlag = Vector2.Zero;
 
         // Gathering Node Settings
-        private static bool ViewOnlyTargeable = true;
-        private static bool AddPictoCircle = true;
+        private static bool PictoCircle = false;
+        private static bool PictoDot = false;
         private static float maxDistance = 25;
 
         // Node Viewier
@@ -27,9 +27,6 @@ namespace ICE.Ui.DebugWindowTabs
 
         // Selected Node Entry
         private static int selectedNodeIndex = 0;
-
-        private static bool PictoCircle = false;
-        private static bool PictoDot = false;
 
         private static List<uint> MissionIds = new();
         private static Dictionary<uint, bool> IsNodeValid = new();

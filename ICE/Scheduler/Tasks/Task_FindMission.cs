@@ -899,58 +899,7 @@ namespace ICE.Scheduler.Tasks
                 // Then need to add the last path to it once the base has been generated, to make sure that you're facing to the fishing hole properly.
                 var location = missionEntry.MapPosition;
                 var distance = Player.DistanceTo(location);
-                if (GatheringUtil.FishingLocation.TryGetValue(location, out var fisherSpotInfos))
-                {
-                    if (!P.Navmesh.IsRunning())
-                    {
-                        foreach (var spot in fisherSpotInfos)
-                        {
-                            if (Player.DistanceTo(spot.FishingSpot) < 2)
-                            {
-                                return true;
-                            }
-                        }
-
-                        // Not in any of the pre-made fishing spots. So time to calculate a path and move to it.
-                        if (fishingPath.Count == 0 && !P.Navmesh.PathfindInProgress())
-                        {
-                            // The current pathfinding does not have a route already made up. Time to create one. 
-                            // Make sure to store the route that is selected somewhere, so it knows which one to pathfind to next
-                            if (EzThrottler.Throttle("Starting to find path"))
-                            {
-                                int randomIndex = _random.Next(fisherSpotInfos.Count);
-                                fishingEntry = fisherSpotInfos[randomIndex];
-
-                                UpdateFishingPath(fishingEntry.NavtoSpot);
-                                // Fire and forget - this will update pathTo when complete
-                            }
-                        }
-                        else if (fishingPath.Count > 0 && !P.Navmesh.IsRunning())
-                        {
-                            if (EzThrottler.Throttle("Telling navmesh to move to the fishing spot"))
-                            {
-                                // A path has been made up! Time to
-                                // -> Randomly select a spot to move to
-                                // -> Add that spot to the end of the route
-                                // -> Proceed to move to that route
-                                fishingPath.Add(fishingEntry.FishingSpot);
-                                P.Navmesh.MoveTo(new List<Vector3>(fishingPath), false);
-                                fishingPath.Clear(); // this just exist to reset the current path in case you stop navmesh somehow
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (PlayerHelper.IsPlayerNotBusy() && !Svc.Condition[ConditionFlag.Mounted] && C.UseMountOutsideMission && distance > C.MountRadius)
-                        {
-                            if (EzThrottler.Throttle("Attempting to mount up"))
-                            {
-                                Utils.MountAction();
-                            }
-                        }
-                        return false;
-                    }
-                }
+                // TODO: Fix this for fisher
             }
             else
             {

@@ -24,6 +24,7 @@ namespace ICE.Scheduler.Tasks
                 Task_CheckScore.Enqueue();
                 P.TaskManager.Enqueue(() => CheckReduceMission(), "Checking to see if we need to reduce items");
                 P.TaskManager.Enqueue(() => Mission_Settings.ResetCollectableState());
+                Task_CheckScore.Enqueue();
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathToNode());
                 P.TaskManager.Enqueue(() => NavmeshMovement());

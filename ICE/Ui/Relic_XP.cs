@@ -13,7 +13,7 @@ namespace ICE.Ui
             public uint NeededXP { get; set; }
             public uint MaxXP { get; set; }
         }
-        public static unsafe void DrawRelicXP(uint selectedJob)
+        public static unsafe void DrawRelicXP(uint selectedJob, bool useSelectedJob = false)
         {
             var wksManager = WKSManager.Instance();
             if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
@@ -88,7 +88,7 @@ namespace ICE.Ui
                 float windowSize = ImGui.GetWindowSize().X - 20;
                 Vector2 size = new Vector2(windowSize, 10);
 
-                var (classScore, cappedClassScore, totalScores, classId) = CosmicHelper.GetCosmicClassScores();
+                var (classScore, cappedClassScore, totalScores, classId) = CosmicHelper.GetCosmicClassScores(useSelectedJob);
 
                 DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
             }
@@ -96,19 +96,8 @@ namespace ICE.Ui
 
         private static void DrawXPBar(string label, uint currentXP, uint neededXP, Vector2 size, uint maxXP = 0)
         {
-            // Handle capped and invalid data
-            float fraction;
-            if (neededXP == 0)
-            {
-                fraction = Math.Clamp((float)currentXP / (float)maxXP, 0f, 1f);
-            }
-            else
-            {
-                fraction = Math.Clamp((float)currentXP / (float)neededXP, 0f, 1f);
-            }
-
-            // Display correct text
-            string displayText = (neededXP == 0 && maxXP > 0)
+            // Display text - keep showing current/needed unless neededXP is 0
+            string displayText = (neededXP == 0)
                 ? $"{label}: {currentXP:N0} / {maxXP:N0}"
                 : $"{label}: {currentXP:N0} / {neededXP:N0}";
 
@@ -121,36 +110,96 @@ namespace ICE.Ui
             var barStart = pos;
             var barEnd = new Vector2(pos.X + size.X, pos.Y + size.Y);
 
+            // Draw background (dark gray)
             drawList.AddRectFilled(barStart, barEnd, ImGui.GetColorU32(new Vector4(0.15f, 0.15f, 0.15f, 1f)));
 
-            float filledWidth = size.X * fraction;
-            if (filledWidth > 0f)
+            // Case 1: Current XP hasn't reached needed XP yet
+            if (currentXP <= neededXP && neededXP > 0)
             {
-                var filledEnd = new Vector2(pos.X + filledWidth, pos.Y + size.Y);
-                var left = new Vector4(0.2f, 0.6f, 1f, 1f); // Blue #3399ff
-                var right = new Vector4(0.6f, 1f, 0.8f, 1f); // Green #99ffcc
-                if (currentXP > neededXP)
+                // Special case: if needed XP equals max XP and we're at full, show gold
+                if (neededXP == maxXP && currentXP >= neededXP)
                 {
-                    if (currentXP >= maxXP)
+                    var goldColor = new Vector4(1f, 0.84f, 0f, 1f); // Gold #ffd600
+                    drawList.AddRectFilled(barStart, barEnd, ImGui.GetColorU32(goldColor));
+                }
+                else
+                {
+                    // Draw blue to green gradient up to current XP
+                    float fraction = Math.Clamp((float)currentXP / (float)neededXP, 0f, 1f);
+                    float filledWidth = size.X * fraction;
+
+                    if (filledWidth > 0f)
                     {
-                        left = new Vector4(1f, 0.84f, 0f, 1f); // Gold #ffd600
-                        right = new Vector4(1f, 0.84f, 0f, 1f); // Gold #ffd600
-                    }
-                    else
-                    {
-                        left = new Vector4(0.2f, 0.6f, 1f, 1f); // Blue #3399ff
-                        right = new Vector4(0.6f, 1f, 0.8f, 1f); // Green #99ffcc
+                        var filledEnd = new Vector2(pos.X + filledWidth, pos.Y + size.Y);
+                        var left = new Vector4(0.2f, 0.6f, 1f, 1f); // Blue #3399ff
+                        var right = new Vector4(0.6f, 1f, 0.8f, 1f); // Green #99ffcc
+
+                        drawList.AddRectFilledMultiColor(
+                            barStart,
+                            filledEnd,
+                            ImGui.GetColorU32(left), // top-left
+                            ImGui.GetColorU32(right), // top-right
+                            ImGui.GetColorU32(right), // bottom-right
+                            ImGui.GetColorU32(left)  // bottom-left
+                        );
                     }
                 }
+            }
+            // Case 2: Current XP has exceeded needed XP (overcapped)
+            else if (currentXP > neededXP && maxXP > 0)
+            {
+                // Drawing the inital xp bar filling for blue/green
+                if (neededXP > 0)
+                {
+                    var neededEnd = new Vector2(pos.X + size.X, pos.Y + size.Y);
+                    var left = new Vector4(0.2f, 0.6f, 1f, 1f); // Blue #3399ff
+                    var right = new Vector4(0.6f, 1f, 0.8f, 1f); // Green #99ffcc
 
-                drawList.AddRectFilledMultiColor(
-                    barStart,
-                    filledEnd,
-                    ImGui.GetColorU32(left), // top-left
-                    ImGui.GetColorU32(right), // top-right
-                    ImGui.GetColorU32(right), // bottom-right
-                    ImGui.GetColorU32(left)  // bottom-left
-                );
+                    drawList.AddRectFilledMultiColor(
+                        barStart,
+                        neededEnd,
+                        ImGui.GetColorU32(left), // top-left
+                        ImGui.GetColorU32(right), // top-right
+                        ImGui.GetColorU32(right), // bottom-right
+                        ImGui.GetColorU32(left)  // bottom-left
+                    );
+                }
+
+                // Draw the overcap portion (gold) filling from left to right
+                uint overcapAmount = currentXP - neededXP;
+                uint overcapRange = maxXP - neededXP;
+
+                if (overcapRange > 0)
+                {
+                    float overcapFraction = Math.Clamp((float)overcapAmount / (float)overcapRange, 0f, 1f);
+                    float goldWidth = size.X * overcapFraction;
+
+                    if (goldWidth > 0f)
+                    {
+                        var goldEnd = new Vector2(pos.X + goldWidth, pos.Y + size.Y);
+                        var goldColor = new Vector4(1f, 0.84f, 0f, 1f); // Gold #ffd600
+
+                        drawList.AddRectFilled(
+                            barStart,
+                            goldEnd,
+                            ImGui.GetColorU32(goldColor)
+                        );
+                    }
+                }
+            }
+            // Special handling when neededXP is 0 (like the cosmic score case)
+            else if (neededXP == 0 && maxXP > 0)
+            {
+                float fraction = Math.Clamp((float)currentXP / (float)maxXP, 0f, 1f);
+                float filledWidth = size.X * fraction;
+
+                if (filledWidth > 0f)
+                {
+                    var filledEnd = new Vector2(pos.X + filledWidth, pos.Y + size.Y);
+                    var goldColor = new Vector4(1f, 0.84f, 0f, 1f); // Gold #ffd600
+
+                    drawList.AddRectFilled(barStart, filledEnd, ImGui.GetColorU32(goldColor));
+                }
             }
 
             ImGui.Dummy(new Vector2(size.X, size.Y + 5));

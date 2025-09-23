@@ -7,6 +7,7 @@ using Dalamud.Interface.Utility.Table;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using ICE.Enums;
 using ICE.Utilities.Cosmic;
 using Lumina.Excel.Sheets;
@@ -155,6 +156,9 @@ namespace ICE.Ui
         private uint selectedMission = 0;
 
         private static HashSet<uint> VisibleZones = new HashSet<uint>() { 1237, 1291 };
+
+        private readonly Sounds[] soundValues = Enum.GetValues(typeof(Sounds)).Cast<Sounds>().ToArray();
+        private readonly string[] soundNames = Enum.GetValues(typeof(Sounds)).Cast<Sounds>().Select(s => s.ToName()).ToArray();
 
         public override void Draw()
         {
@@ -321,6 +325,24 @@ namespace ICE.Ui
                     C.StopOnceRelicFinished = relicStop;
                     C.Save();
                 }
+                bool playSoundAlert = C.PlaySoundAlert;
+                if (ImGui.Checkbox("Play Sound Alert on Stop", ref playSoundAlert))
+                {
+                    C.PlaySoundAlert = playSoundAlert;
+                    C.Save();
+                }
+                if (playSoundAlert)
+                {
+                    var selectedSound = C.Sounds;
+                    int currentIndex = Array.IndexOf(soundValues, selectedSound);
+                    if (ImGui.Combo("###Select Sound_LeveSE", ref currentIndex, soundNames, soundNames.Length))
+                    {
+                        selectedSound = soundValues[currentIndex]; // Update your selected sound
+                        C.Sounds = selectedSound; // Set the variable in C
+                        UIGlobals.PlaySoundEffect((uint)selectedSound);
+                        C.Save();
+                    }
+                }
 
                 ImGui.Spacing();
 
@@ -334,6 +356,9 @@ namespace ICE.Ui
                     C.XPRelicGrind = EnableRelicXp;
                     C.Save();
                 }
+                ImGui.SameLine();
+                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle, "Please note. This will ONLY grind for relic Exp under the basic mission tab. \n" +
+                                                                        "This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions");
                 if (EnableRelicXp)
                 {
                     bool IgnoreManual = C.XPRelicIgnoreManual;
@@ -463,7 +488,7 @@ namespace ICE.Ui
 
                 ImGui.Dummy(new Vector2(0, 5));
 
-                Relic_XP.DrawRelicXP(selectedJob);
+                Relic_XP.DrawRelicXP(selectedJob, true);
             }
 
             ImGui.EndChild();
@@ -1437,22 +1462,20 @@ namespace ICE.Ui
                         }
                         if (ImGui.BeginPopup("Selecting Gathering Profile"))
                         {
-                            if (missionConfig.GatherProfileId > C.GatherSettings.Count - 1)
-                            {
-                                missionConfig.GatherProfileId = 0;
-                            }
-
                             ImGui.Text($"Currently Selected: {profileName}");
                             ImGui.Separator();
-                            for (int i = 0; i < C.GatherSettings.Count; i++)
-                            {
-                                var GProfile = C.GatherSettings[i];
-                                bool GProfileSelected = missionConfig.GatherProfileId == i;
 
-                                if (ImGui.RadioButton(GProfile.Name, GProfileSelected))
+                            foreach (var profile in C.GatherSettings)
+                            {
+                                if (profile != null)
                                 {
-                                    missionConfig.GatherProfileId = i;
-                                    C.Save();
+                                    var profileId = profile.Id;
+                                    bool profileSelected = missionConfig.GatherProfileId == profileId;
+                                    if (ImGui.RadioButton(profile.Name, profileSelected))
+                                    {
+                                        missionConfig.GatherProfileId = profileId;
+                                        C.Save();
+                                    }
                                 }
                             }
 

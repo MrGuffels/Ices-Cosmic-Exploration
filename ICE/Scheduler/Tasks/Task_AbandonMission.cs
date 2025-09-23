@@ -72,7 +72,15 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.CurrentLunarMission == 0)
             {
                 IceLogging.Info("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
-                SchedulerMain.State = IceState.Start;
+                if (Mission_Settings.StopAfterCurrent)
+                {
+                    SchedulerMain.State = IceState.Idle;
+                    P.TaskManager.Tasks.Clear();
+                }
+                else
+                {
+                    SchedulerMain.State = IceState.Start;
+                }
                 return true;
             }
             else
@@ -85,7 +93,15 @@ namespace ICE.Scheduler.Tasks
                         {
                             IceLogging.Debug($"Expected abandon mission text... abandoning mission", "[Abandon Mission]");
                             select.Yes();
-                            SchedulerMain.State = IceState.Start;
+                            if (Mission_Settings.StopAfterCurrent)
+                            {
+                                SchedulerMain.State = IceState.Idle;
+                                P.TaskManager.Tasks.Clear();
+                            }
+                            else
+                            {
+                                SchedulerMain.State = IceState.Start;
+                            }
                             return true;
                         }
                     }
