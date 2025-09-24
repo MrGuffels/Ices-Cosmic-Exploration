@@ -147,7 +147,7 @@ namespace ICE.Ui.SettingTabs
                     {
                         int minGp = currentMinGp;
                         ImGui.AlignTextToFramePadding();
-                        ImGui.Text("Minimum GP");
+                        ImGui.Text("Use Cordial Below GP");
                         ImGui.SameLine();
                         ImGui.SetNextItemWidth(200);
                         if (ImGui.SliderInt($"###Slider{uniqueId}{entryName}", ref minGp, minGpLimit, maxGpLimit))
@@ -298,7 +298,7 @@ namespace ICE.Ui.SettingTabs
                         C.Save();
                     }
                     ImGui.SetNextItemWidth(200);
-                    if (ImGui.SliderInt("Gp Threshold", ref CordialMinGp, 0, maxGp))
+                    if (ImGui.SliderInt("Use cordial when below the following GP", ref CordialMinGp, 0, maxGp))
                     {
                         C.CordialMinGp = CordialMinGp;
                         C.Save();

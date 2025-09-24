@@ -22,7 +22,10 @@ namespace ICE.Utilities
                                                           "Êtes-vous sûr de vouloir abandonner la mission en cours ?",
                                                           "受注中のミッションを破棄します。", // Japanese
                                                           "确定要放弃已领取的任务吗？",      // Chinese
-                                                          "수락한 임무를 포기하시겠습니까?"  // Korean?
+                                                          "選択したミッションを開始します。よろしいですか？",
+                                                          "确定要开始此任务吗？",
+                                                          "確定要開始此任務嗎？", 
+                                                          "수락한 임무를 포기하시겠습니까?"
                                                           ]; 
 
         internal unsafe static bool IsMissionTimedOut()
