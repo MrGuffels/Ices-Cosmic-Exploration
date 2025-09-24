@@ -15,7 +15,7 @@ namespace ICE.Ui
     internal class OverlayWindow : Window
     {
         private uint selectedJob = C.SelectedJob;
-        public OverlayWindow() : base("ICE Overlay", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize)
+        public OverlayWindow() : base("ICE Overlay", ImGuiWindowFlags.AlwaysAutoResize)
         {
             P.windowSystem.AddWindow(this);
         }

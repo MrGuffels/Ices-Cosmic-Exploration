@@ -22,6 +22,14 @@ namespace ICE.Scheduler.Tasks
 
             if (id == 0)
             {
+                if (Player.JobId != Mission_Settings.StartJob)
+                {
+                    if (EzThrottler.Throttle("Swapping to crafter job", 1000))
+                        GearsetHandler.TaskClassChange((Job)Mission_Settings.StartJob);
+
+                    return false;
+                }
+
                 if (Mission_Settings.StopAfterCurrent)
                 {
                     IceLogging.Debug($"Stop after current was enabled. Stopping now", "[Task Turnin]");

@@ -447,6 +447,27 @@ namespace ICE.Scheduler.Tasks
                     if (C.XPRelicOnlyEnabled && BasicMissionCount != 0)
                     {
                         IceLogging.Debug($"Only relic grind was enabled. Continuing to re-roll mission now");
+                        HashSet<uint> EnabledMissions = new();
+                        foreach (var mission in C.MissionConfig.Where(x => x.Value.Enabled && SheetMissionDict[x.Key].Jobs.Contains(Player.JobId)))
+                        {
+                            EnabledMissions.Add(mission.Key);
+                        }
+
+
+                        string exARankStr = string.Join(", ", ExARankMissions);
+                        string aRankStr = string.Join(", ", ARankMissions);
+                        string bRankStr = string.Join(", ", BRankMissions);
+                        string cRankStr = string.Join(", ", CRankMissions);
+                        string dRankStr = string.Join(", ", DRankMissions);
+                        string enabledStr = string.Join(", ", EnabledMissions);
+
+                        IceLogging.Debug($"ExA Rank: {exARankStr}");
+                        IceLogging.Debug($"A Rank: {aRankStr}");
+                        IceLogging.Debug($"B Rank: {bRankStr}");
+                        IceLogging.Debug($"C Rank: {cRankStr}");
+                        IceLogging.Debug($"D Rank: {dRankStr}");
+                        IceLogging.Debug($"Enabled Missions: {enabledStr}");
+                        IceLogging.Debug($"Planet: {Player.Territory}");
                         P.TaskManager.Insert(() => FindReroll(), "Finding Reroll mission for Relic Grind");
                         return true;
                     }
@@ -772,6 +793,8 @@ namespace ICE.Scheduler.Tasks
                         Mission_Settings.nodeTotal = 0;
                         P.TaskManager.Insert(() => CosmicHelper.CurrentLunarMission != 0);
                         IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
+                        Mission_Settings.StartJob = Player.JobId;
+
                         return true;
                     }
                     else
