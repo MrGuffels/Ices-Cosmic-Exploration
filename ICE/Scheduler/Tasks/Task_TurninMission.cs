@@ -19,6 +19,7 @@ namespace ICE.Scheduler.Tasks
         public static void Enqueue()
         {
             P.TaskManager.Enqueue(() => TurninMission(), "Turning in the mission to the moon gods", Utils.TaskConfig);
+            P.TaskManager.Enqueue(() => JobSwapCheck(), "Checking to see if you need to swap jobs");
         }
 
         public static unsafe bool? TurninMission()
@@ -27,14 +28,6 @@ namespace ICE.Scheduler.Tasks
 
             if (id == 0)
             {
-                if (Player.JobId != Mission_Settings.StartJob && Mission_Settings.StartJob != 0)
-                {
-                    if (EzThrottler.Throttle("Swapping to crafter job", 1000))
-                        GearsetHandler.TaskClassChange((Job)Mission_Settings.StartJob);
-
-                    return false;
-                }
-
                 if (Mission_Settings.StopAfterCurrent)
                 {
                     IceLogging.Debug($"Stop after current was enabled. Stopping now", "[Task Turnin]");
@@ -95,6 +88,26 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+
+        public static bool? JobSwapCheck()
+        {
+            if (Player.JobId != Mission_Settings.StartJob && Mission_Settings.StartJob != 0)
+            {
+                if (EzThrottler.Throttle("Swapping to crafter job", 1000))
+                    GearsetHandler.TaskClassChange((Job)Mission_Settings.StartJob);
+
+                return false;
+            }
+            else
+            {
+                if (Mission_Settings.StartJob != 0)
+                {
+                    P.TaskManager.InsertDelay(3000);
+                }
+
+                return true;
+            }
         }
 
         public static unsafe bool? GoldCheck()

@@ -233,6 +233,13 @@ namespace ICE.Scheduler.Tasks
             {
                 if (missionInfo.Addon->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
                 {
+                    if (CosmicHandler.IsMissionTimedOut())
+                    {
+                        SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
+
                     var Id = CosmicHelper.CurrentLunarMission;
                     // var mission = CosmicHelper.Dict_CosmicMissions[Id];
                     var mission = CosmicHelper.SheetMissionDict[Id];
@@ -367,6 +374,7 @@ namespace ICE.Scheduler.Tasks
                     if (CosmicHandler.IsMissionTimedOut())
                     {
                         SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
                         return true;
                     }
 
@@ -543,6 +551,13 @@ namespace ICE.Scheduler.Tasks
             {
                 if (missionInfo.Addon->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
                 {
+                    if (CosmicHandler.IsMissionTimedOut())
+                    {
+                        SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
+
                     var Id = CosmicHelper.CurrentLunarMission;
                     // var mission = CosmicHelper.Dict_CosmicMissions[Id];
                     var mission = CosmicHelper.SheetMissionDict[Id];
