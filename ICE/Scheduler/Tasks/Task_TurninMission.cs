@@ -111,9 +111,9 @@ namespace ICE.Scheduler.Tasks
             }
             if (C.RemoveAfterGold && !isGold)
             {
-                if (MainWindowV2.GetOnlyPreviousMissionsRecursive(PreviousMissionId).Count > 0)
+                if (MainWindow.GetOnlyPreviousMissionsRecursive(PreviousMissionId).Count > 0)
                 {
-                    foreach (var prevMission in MainWindowV2.GetOnlyPreviousMissionsRecursive(PreviousMissionId))
+                    foreach (var prevMission in MainWindow.GetOnlyPreviousMissionsRecursive(PreviousMissionId))
                     {
                         C.MissionConfig[prevMission].Enabled = true;
                         C.Save();

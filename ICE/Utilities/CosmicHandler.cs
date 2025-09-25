@@ -10,24 +10,28 @@ namespace ICE.Utilities
 {
     internal class CosmicHandler
     {
-        internal static HashSet<string> commenceStrings = ["Commence selected mission?",
-                                                           "Ausgewählte Mission wird gestartet.Fortfahren?",
-                                                           "Commencer la mission sélectionnée ?",
-                                                           "選択したミッションを開始します。よろしいですか？",
-                                                           "确定要开始此任务吗？", "선택한 임무를 시작하시겠습니까?"
-                                                          ];
+        internal static HashSet<string> commenceStrings =
+        [
+            "Commence selected mission?",                     // English
+            "Ausgewählte Mission wird gestartet.Fortfahren?", // German
+            "Commencer la mission sélectionnée ?",            // French
+            "選択したミッションを開始します。よろしいですか？",      // Japanese
+            "确定要开始此任务吗？",                              // Simplified Chinese
+            "確定要開始此任務嗎？",                              // Traditional Chinese
+            "선택한 임무를 시작하시겠습니까?",                    // Korean
+        ];
 
-        internal static HashSet<string> abandonStrings = ["Abandon mission?",            // English
-                                                          "Aktuelle Mission abbrechen?", // German
-                                                          "Êtes-vous sûr de vouloir abandonner la mission en cours ?", // french
-                                                          "Êtes-vous sûre de vouloir abandonner la mission en cours ?", // also french >.>
-                                                          "受注中のミッションを破棄します。", // Japanese
-                                                          "确定要放弃已领取的任务吗？",      // Chinese
-                                                          "選択したミッションを開始します。よろしいですか？",
-                                                          "确定要开始此任务吗？",
-                                                          "確定要開始此任務嗎？", 
-                                                          "수락한 임무를 포기하시겠습니까?"
-                                                          ]; 
+        internal static HashSet<string> abandonStrings = 
+        [
+            "Abandon mission?",                                            // English
+            "Aktuelle Mission abbrechen?",                                 // German
+            "Êtes-vous sûr de vouloir abandonner la mission en cours ?",   // French - Masc
+            "Êtes-vous sûre de vouloir abandonner la mission en cours ?",  // French - Fem
+            "受注中のミッションを破棄します。\rよろしいですか？",                 // Japanese
+            "确定要放弃已领取的任务吗？",                                      // Simplified Chinese
+            "수락한 임무를 포기하시겠습니까?",                                 // Korean
+            "確定要放棄已領取的任務嗎？"                                       // Traditional Chinese abandon
+        ];
 
         internal unsafe static bool IsMissionTimedOut()
         {

@@ -6,6 +6,20 @@ namespace ICE.Ui.DebugWindowTabs
     internal class Ui_RelicInfo
     {
         public static List<string> XPtypes = ["I", "II", "III", "IV"];
+        public static List<(string Name, uint Id)> jobOptions = new()
+        {
+            ("CRP", 8),
+            ("BSM", 9),
+            ("ARM", 10),
+            ("GSM", 11),
+            ("LTW", 12),
+            ("WVR", 13),
+            ("ALC", 14),
+            ("CUL", 15),
+            ("MIN", 16),
+            ("BTN", 17),
+            ("FSH", 18),
+        };
 
         public static unsafe void Draw()
         {
@@ -27,7 +41,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 ImGui.TableHeadersRow();
 
-                foreach (var job in MainWindowV2.jobOptions)
+                foreach (var job in jobOptions)
                 {
                     ImGui.TableNextRow();
 

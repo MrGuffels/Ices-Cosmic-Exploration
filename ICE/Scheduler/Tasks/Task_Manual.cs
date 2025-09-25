@@ -26,6 +26,7 @@ namespace ICE.Scheduler.Tasks
                 else
                 {
                     SchedulerMain.State = IceState.Start;
+                    P.TaskManager.Tasks.Clear();
                 }
                 return true;
             }

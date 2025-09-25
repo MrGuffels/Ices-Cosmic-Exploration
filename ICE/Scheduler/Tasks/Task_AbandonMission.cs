@@ -19,54 +19,6 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.Enqueue(() => CosmicHelper.CurrentLunarMission == 0, "Waiting till the current mission is 0");
         }
 
-        public static unsafe bool? ForceTurnin()
-        {
-            if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady && (missionInfo.Addon->AtkValuesCount > 4))
-            {
-                var Id = CosmicHelper.CurrentLunarMission;
-
-                if (Id == 0)
-                {
-                    IceLogging.Debug($"You can't abandon a mission that was not started to begin with. Idk how you got here but... yeah.");
-                    return true;
-                }
-                else
-                {
-                    var mission = CosmicHelper.SheetMissionDict[Id];
-                    if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
-                    {
-                        // Checking crafters for atleast minimum score turnin
-                        if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
-                        {
-                            IceLogging.Debug("You didn't meet the minimum score for bronze on crafters. Force abandoning");
-                            return true;
-                        }
-                        else
-                        {
-                            // them minimum score has been met, just straight up turning in.
-                            P.TaskManager.Tasks.Clear();
-                            SchedulerMain.State = IceState.TurninMission;
-                        }
-                    }
-
-                    return true;
-                }
-            }
-            else
-            {
-                if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
-                {
-                    if (EzThrottler.Throttle("Opening the moon hud", 1000))
-                    {
-                        moonHud.Mission();
-                        IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
-                    }
-                }
-            }
-
-            return false;
-        }
-
         public static bool? AbandonMission()
         {
             if (CosmicHelper.CurrentLunarMission == 0)
@@ -87,7 +39,7 @@ namespace ICE.Scheduler.Tasks
             {
                 if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
                 {
-                    if (CosmicHandler.abandonStrings.Any(s => select.Text.Contains(s)) || !C.RejectUnknownYesno)
+                    if (CosmicHandler.abandonStrings.Any(s => string.Equals(NormalizeWhitespace(select.Text), NormalizeWhitespace(s), StringComparison.OrdinalIgnoreCase)) || !C.RejectUnknownYesno)
                     {
                         if (EzThrottler.Throttle("Selecting Yes, mission is properly abandoning"))
                         {
@@ -107,8 +59,32 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
+                        IceLogging.Debug($"Actual text: '{select.Text}'");
+                        IceLogging.Debug($"Actual text length: {select.Text.Length}");
+                        IceLogging.Debug($"Trimmed text: '{select.Text.Trim()}'");
+                        IceLogging.Debug($"Trimmed length: {select.Text.Trim().Length}");
+
                         if (EzThrottler.Throttle("Unexpected Abandon Window..."))
                         {
+                            var actualText = select.Text.Trim();
+                            var expectedFrench = "Êtes-vous sûre de vouloir abandonner la mission en cours ?";
+
+                            // Debug the ACTUAL text character by character
+                            IceLogging.Error("=== ACTUAL TEXT BREAKDOWN ===");
+                            for (int i = 0; i < actualText.Length; i++)
+                            {
+                                IceLogging.Error($"Actual char {i}: '{actualText[i]}' (Unicode: {(int)actualText[i]})");
+                            }
+
+                            // Debug the EXPECTED text character by character
+                            IceLogging.Error("=== EXPECTED TEXT BREAKDOWN ===");
+                            IceLogging.Error($"Expected: '{expectedFrench}'");
+                            IceLogging.Error($"Expected length: {expectedFrench.Length}");
+                            for (int i = 0; i < expectedFrench.Length; i++)
+                            {
+                                IceLogging.Error($"Expected char {i}: '{expectedFrench[i]}' (Unicode: {(int)expectedFrench[i]})");
+                            }
+
                             IceLogging.Error($"Unexpected abandon window??? {select.Text}", "[Abandon Mission]");
                             select.No();
                         }
@@ -137,6 +113,15 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+
+        private static string NormalizeWhitespace(string text)
+        {
+            return text.Trim()
+                       .Replace('\u00A0', ' ')  // Non-breaking space to regular space
+                       .Replace('\u2009', ' ')  // Thin space to regular space
+                       .Replace('\u202F', ' ')  // Narrow no-break space to regular space
+                       .Replace('\u3000', ' '); // Ideographic space to regular space
         }
     }
 }

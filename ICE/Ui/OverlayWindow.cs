@@ -99,9 +99,9 @@ namespace ICE.Ui
             ImGui.Separator();
             ImGuiHelpers.ScaledDummy(2);
 
-            if (ImGuiEx.IconButton("\uf013##Config", "Open ICE"))
+            if (ImGuiEx.IconButton(FontAwesomeIcon.Home, "Open ICE"))
             {
-                P.mainWindow2.IsOpen = true;
+                P.mainWindow.IsOpen = true;
             }
             ImGui.SameLine();
 

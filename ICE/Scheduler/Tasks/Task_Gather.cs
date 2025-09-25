@@ -602,7 +602,10 @@ namespace ICE.Scheduler.Tasks
             var jobId = Player.JobId;
 
             var actionId = collectorBuffs[action].ClassAction[jobId].ActionId;
-            ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+            if (EzThrottler.Throttle("Using Action Buff", 500))
+            {
+                ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+            }
         }
 
         public static unsafe void UseCollectableAction(string action)
@@ -611,7 +614,10 @@ namespace ICE.Scheduler.Tasks
             var jobId = Player.JobId;
 
             var actionId = collectorAction[action].ClassAction[jobId].ActionId;
-            ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+            if (EzThrottler.Throttle("using Action Action for collectables"))
+            {
+                ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+            }
         }
 
         public static bool? CheckReduceMission()
