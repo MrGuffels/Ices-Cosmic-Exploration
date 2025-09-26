@@ -78,6 +78,10 @@ namespace ICE.Config
         public bool ShowManualMode { get; set; } = false;
         public bool HideUnsupportedMissions { get; set; } = false;
         public bool AutoPickCurrentJob { get; set; } = false;
+        public bool ShowCompletionWindow { get; set; } = false;
+        public bool ShowCompletionOnlyJob { get; set; } = false;
+        public bool ShowSelectedJobOnly { get; set; } = false;
+        public bool ShowCompletion_MissingGold { get; set; } = false;
 
         #endregion
 

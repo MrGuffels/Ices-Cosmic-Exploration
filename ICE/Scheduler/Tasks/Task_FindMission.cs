@@ -793,7 +793,6 @@ namespace ICE.Scheduler.Tasks
                         Mission_Settings.nodeTotal = 0;
                         P.TaskManager.Insert(() => CosmicHelper.CurrentLunarMission != 0);
                         IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
-                        Mission_Settings.StartJob = Player.JobId;
 
                         return true;
                     }
@@ -909,12 +908,19 @@ namespace ICE.Scheduler.Tasks
                         if (EzThrottler.Throttle("Inializing movement for pathfinding"))
                         {
                             P.Navmesh.PathfindAndMoveTo(closestNode, false);
-                            P.Navmesh.SetTolerance(0.25f);
                         }
                     }
                 }
                 else if (P.Navmesh.IsRunning())
                 {
+                    if (Svc.Condition[ConditionFlag.Unknown101])
+                    {
+                        // We're currently using the cosmoliners, telling it to stop the current navmesh in the mean time
+                        if (EzThrottler.Throttle("Stopping navmesh temp"))
+                        {
+                            P.Navmesh.Stop();
+                        }
+                    }
                     if (C.UseMountOutsideMission && !Svc.Condition[ConditionFlag.Mounted] && !Player.IsBusy)
                     {
                         if (Player.DistanceTo(closestNode) > C.MountRadius)

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static System.Windows.Forms.AxHost;
 
 namespace ICE.Ui
@@ -68,7 +69,14 @@ namespace ICE.Ui
                 ImGui.TableSetColumnIndex(1);
                 if (ImGui.BeginChild("Mission Selection Window", childWindowSize, true))
                 {
-                    MiddleWindow();
+                    if (C.ShowCompletionWindow)
+                    {
+                        CompletionWindow();
+                    }
+                    else
+                    {
+                        MiddleWindow();
+                    }
                 }
                 ImGui.EndChild();
 
@@ -178,6 +186,44 @@ namespace ICE.Ui
             {
                 C.RemoveAfterGold = removeGold;
                 C.Save();
+            }
+
+            if (ImGui.CollapsingHeader("Completion Window Settings"))
+            {
+                bool showCompletionWindow = C.ShowCompletionWindow;
+                if (ImGui.Checkbox("Show Mission Completions", ref showCompletionWindow))
+                {
+                    C.ShowCompletionWindow = showCompletionWindow;
+                    C.Save();
+                }
+                if (showCompletionWindow)
+                {
+                    bool onlyCurrentJob = C.ShowCompletionOnlyJob;
+                    if (ImGui.Checkbox("Show only current job", ref onlyCurrentJob))
+                    {
+                        C.ShowCompletionOnlyJob = onlyCurrentJob;
+                        if (onlyCurrentJob)
+                            C.ShowSelectedJobOnly = false;
+                        C.Save();
+                    }
+
+                    bool showSelectedJobOnly = C.ShowSelectedJobOnly;
+                    if (ImGui.Checkbox("Show only selected job", ref showSelectedJobOnly))
+                    {
+                        C.ShowSelectedJobOnly = showSelectedJobOnly;
+                        if (showSelectedJobOnly)
+                            C.ShowCompletionOnlyJob = false;
+                        C.Save();
+                    }
+
+                    bool nonGold = C.ShowCompletion_MissingGold;
+                    if (ImGui.Checkbox("Show Non-Gold Missions", ref nonGold))
+                    {
+                        C.ShowCompletion_MissingGold = nonGold;
+                        C.Save();
+                    }
+                }
+
             }
             WindowSpacer();
 
@@ -1473,6 +1519,165 @@ namespace ICE.Ui
             }
         }
 
+        private unsafe void CompletionWindow()
+        {
+            ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
+                            ImGuiTableFlags.Borders |
+                            ImGuiTableFlags.Reorderable |         // Allow column reordering
+                            ImGuiTableFlags.Hideable |             // Allow hiding columns via right-click
+                            ImGuiTableFlags.SizingFixedFit;
+
+            if (ImGui.BeginTable("Completion Window", 6, tableFlags))
+            {
+                ImGui.TableSetupColumn("Class");
+                ImGui.TableSetupColumn("CompletionStatus");
+                ImGui.TableSetupColumn("Enabled");
+                ImGui.TableSetupColumn("ID");
+                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn("Manual Mode");
+
+                ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
+
+                // Column 0: Enabled
+                ImGui.TableSetColumnIndex(0);
+                ImGui.TableHeader("Class");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Class(s) for mission");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 1: Completion Status
+                ImGui.TableSetColumnIndex(1);
+                ImGui.TableHeader("✓");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Completion Status");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 2: Enabled
+                ImGui.TableSetColumnIndex(2);
+                ImGui.TableHeader("Enabled");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Enable the mission for completion");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 3: ID
+                ImGui.TableSetColumnIndex(3);
+                ImGui.TableHeader("ID");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Mission ID number");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 4: Mission Name
+                ImGui.TableSetColumnIndex(4);
+                ImGui.TableHeader("Name");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Mission Name");
+                    ImGui.EndTooltip();
+                }
+
+                // Column 5: Manual Mode
+                ImGui.TableSetColumnIndex(5);
+                ImGui.TableHeader("Manual");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Quick way to toggle on/off manual mode");
+                    ImGui.EndTooltip();
+                }
+
+                foreach (var mission in CosmicHelper.SheetMissionDict)
+                {
+                    if (C.ShowCompletionOnlyJob && !mission.Value.Jobs.Contains(Player.JobId))
+                        continue;
+
+                    if (C.ShowSelectedJobOnly && !mission.Value.Jobs.Contains(C.SelectedJob))
+                        continue;
+
+                    if (!C.ShowSinusMissions && mission.Value.TerritoryId == 1237)
+                    {
+                        continue;
+                    }
+
+                    if (!C.ShowPhaennaMissions && mission.Value.TerritoryId == 1291)
+                        continue;
+
+                    if (C.ShowCompletion_MissingGold)
+                    {
+                        var managerPtr = WKSManager.Instance();
+                        if (managerPtr == null) continue;
+
+                        var manager = (WKSManagerCustom*)managerPtr;
+                        var isGold = manager->IsMissionGolded(mission.Key);
+
+                        if (isGold)
+                            continue;
+                    }
+
+                    ImGui.PushID($"{mission.Value.Name}_{mission.Key}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    foreach (var job in mission.Value.Jobs)
+                    {
+                        ISharedImmediateTexture? icon = CosmicHelper.JobIconDict[job];
+                        Vector2 size = new Vector2(25, 25);
+                        ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
+                        ImGui.SameLine();
+                    }
+
+                    ImGui.TableNextColumn();
+                    CompletionStatus_Normal(mission.Key);
+                    UpdateSelectedMission(mission.Key);
+
+                    ImGui.TableNextColumn();
+                    if (C.MissionConfig.TryGetValue(mission.Key, out var config))
+                    {
+                        bool enabled = config.Enabled;
+                        if (ImGui.Checkbox($"##Enabled", ref enabled))
+                        {
+                            config.Enabled = enabled;
+                            C.Save();
+                        }
+                        UpdateSelectedMission(mission.Key);
+                    }
+
+                    ImGui.TableNextColumn();
+                    CenterTextInTableCell($"{mission.Key}");
+                    UpdateSelectedMission(mission.Key);
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{mission.Value.Name}");
+                    UpdateSelectedMission(mission.Key);
+
+                    ImGui.TableNextColumn();
+                    bool manual = config.ManualMode;
+                    if (ImGui.Checkbox($"##Manual", ref manual))
+                    {
+                        config.ManualMode = manual;
+                        C.Save();
+                    }
+                    UpdateSelectedMission(mission.Key);
+
+                    ImGui.PopID();
+                }
+
+                ImGui.EndTable();
+            }
+        }
+
         #endregion
 
         #region Right Window
@@ -1600,7 +1805,7 @@ namespace ICE.Ui
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"Siler Requirement: ");
+                    ImGui.Text($"Silver Requirement: ");
 
                     ImGui.TableNextColumn();
                     ImGui.Text($"{mission.SilverScore}");
@@ -1632,6 +1837,18 @@ namespace ICE.Ui
                             ImGui.Text(flag.ToString());
                         }
                     }
+                }
+
+                if (CosmicHelper.MissionUnlock.TryGetValue(selectedMission, out var unlock))
+                {
+                    ImGui.Text("The following missions are required to have gold before you can do this one");
+                    foreach (var lockedMission in unlock)
+                    {
+                        CompletionStatus_Normal(lockedMission);
+                        ImGui.SameLine();
+                        ImGui.Text($"[{lockedMission}] - {CosmicHelper.SheetMissionDict[lockedMission].Name}");
+                    }
+
                 }
             }
             else
@@ -1771,6 +1988,13 @@ namespace ICE.Ui
             var isCompleted = manager->IsMissionCompleted(id);
             var isGold = manager->IsMissionGolded(id);
 
+            var containerSize = new Vector2(23, 23);
+
+            // Create a consistent container for all elements
+            var cursorPos = ImGui.GetCursorPos();
+            ImGui.InvisibleButton("##status_container", containerSize);
+            ImGui.SetCursorPos(cursorPos);
+
             if (isCompleted)
             {
                 if (isGold)
@@ -1779,18 +2003,36 @@ namespace ICE.Ui
                     {
                         if (tex.TryGetWrap(out var wrap, out var exc))
                         {
-                            ImGui.Image(wrap.Handle, new Vector2(23, 23), new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
+                            ImGui.Image(wrap.Handle, containerSize, new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
                         }
                     }
                 }
                 else
                 {
+                    // Center the FontAwesome icon within the container
+                    var textSize = ImGui.CalcTextSize(FontAwesome.Check);
+                    var offset = (containerSize - textSize) * 0.5f;
+                    ImGui.SetCursorPos(cursorPos + offset);
                     FontAwesome.Print(EColor.Green, FontAwesome.Check);
                 }
             }
             else
             {
+                var textSize = ImGui.CalcTextSize(FontAwesome.Cross);
+                var offset = (containerSize - textSize) * 0.5f;
+                ImGui.SetCursorPos(cursorPos + offset);
                 FontAwesome.Print(EColor.Red, FontAwesome.Cross);
+            }
+
+            // Reset cursor to after the container
+            ImGui.SetCursorPos(cursorPos + new Vector2(containerSize.X, 0));
+        }
+
+        private void UpdateSelectedMission(uint missionId)
+        {
+            if (ImGui.IsItemClicked())
+            {
+                selectedMission = missionId;
             }
         }
 

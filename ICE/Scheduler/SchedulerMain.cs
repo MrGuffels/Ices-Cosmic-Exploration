@@ -9,7 +9,8 @@ namespace ICE.Scheduler
         internal static bool EnablePlugin()
         {
             State = Start;
-            IceLogging.Info($"Setting State to: {State} & Enabling Plugin");
+            IceLogging.Info($"Setting State to: {State} / Enabling Plugin");
+            Mission_Settings.StartJob = Player.JobId;
             return true;
         }
         internal static bool DisablePlugin()

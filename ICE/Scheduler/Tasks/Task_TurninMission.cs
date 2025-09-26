@@ -14,7 +14,7 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_TurninMission
     {
-        private static uint PreviousMissionId = 0;
+        public static uint PreviousMissionId = 0;
 
         public static void Enqueue()
         {
@@ -101,11 +101,6 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                if (Mission_Settings.StartJob != 0)
-                {
-                    P.TaskManager.InsertDelay(3000);
-                }
-
                 return true;
             }
         }

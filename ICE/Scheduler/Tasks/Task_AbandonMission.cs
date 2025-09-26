@@ -24,6 +24,8 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.CurrentLunarMission == 0)
             {
                 IceLogging.Info("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
+                Task_TurninMission.GoldCheck();
+
                 if (Mission_Settings.StopAfterCurrent)
                 {
                     SchedulerMain.State = IceState.Idle;
@@ -37,6 +39,8 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
+                Task_TurninMission.PreviousMissionId = CosmicHelper.CurrentLunarMission;
+
                 if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
                 {
                     if (CosmicHandler.abandonStrings.Any(s => string.Equals(NormalizeWhitespace(select.Text), NormalizeWhitespace(s), StringComparison.OrdinalIgnoreCase)) || !C.RejectUnknownYesno)
