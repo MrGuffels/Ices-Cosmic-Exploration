@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -25,16 +26,25 @@ namespace ICE.Sounds
                 memoryStream.Position = 0;
 
                 using var reader = new Mp3FileReader(memoryStream);
+
+                var sampleProvider = reader.ToSampleProvider();
+                var volumeProvider = new VolumeSampleProvider(sampleProvider)
+                {
+                    Volume = C.SoundVolume // Apply volume at sample level (0.0 to 1.0)
+                };
+
                 using var waveOut = new WaveOutEvent();
+                // Keep waveOut.Volume at 1.0 (full) so it doesn't affect system volume
+                waveOut.Volume = 1.0f;
 
                 var tcs = new TaskCompletionSource<bool>();
                 waveOut.PlaybackStopped += (sender, args) => tcs.SetResult(true);
 
-                waveOut.Init(reader);
-                waveOut.Volume = C.SoundVolume;
+                // Convert back to WaveProvider for WaveOut
+                waveOut.Init(volumeProvider.ToWaveProvider16());
                 waveOut.Play();
 
-                await tcs.Task; // Wait for playback to complete
+                await tcs.Task;
             }
             catch (Exception ex)
             {

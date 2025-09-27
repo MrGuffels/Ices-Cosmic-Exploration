@@ -1334,6 +1334,9 @@ namespace ICE.Ui
             }
         }
 
+        private string _idSearchText = "";
+        private string _nameSearchText = "";
+
         private void MiddleWindow()
         {
             bool hideUnsupported = C.HideUnsupportedMissions;
@@ -1527,14 +1530,15 @@ namespace ICE.Ui
                             ImGuiTableFlags.Hideable |             // Allow hiding columns via right-click
                             ImGuiTableFlags.SizingFixedFit;
 
-            if (ImGui.BeginTable("Completion Window", 6, tableFlags))
+            if (ImGui.BeginTable("Completion Window", 7, tableFlags))
             {
                 ImGui.TableSetupColumn("Class");
                 ImGui.TableSetupColumn("CompletionStatus");
                 ImGui.TableSetupColumn("Enabled");
-                ImGui.TableSetupColumn("ID");
-                ImGui.TableSetupColumn("Mission Name");
+                ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, -1);
+                ImGui.TableSetupColumn("Mission Name", ImGuiTableColumnFlags.WidthFixed , -1);
                 ImGui.TableSetupColumn("Manual Mode");
+                ImGui.TableSetupColumn("Rank");
 
                 ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
 
@@ -1570,21 +1574,27 @@ namespace ICE.Ui
 
                 // Column 3: ID
                 ImGui.TableSetColumnIndex(3);
-                ImGui.TableHeader("ID");
+                ImGui.SetNextItemWidth(25); // Use full column width
+                if (ImGui.InputTextWithHint("##IDSearch", "ID", ref _idSearchText, 100))
+                {
+
+                }
                 if (ImGui.IsItemHovered())
                 {
-                    ImGui.BeginTooltip();
-                    ImGui.Text("Mission ID number");
-                    ImGui.EndTooltip();
+                    ImGui.SetTooltip("Search by Mission ID Number");
                 }
 
                 // Column 4: Mission Name
                 ImGui.TableSetColumnIndex(4);
-                ImGui.TableHeader("Name");
+                ImGui.SetNextItemWidth(-1);
+                if (ImGui.InputTextWithHint("##NameSearch", "Name", ref _nameSearchText, 1000))
+                {
+
+                }
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text("Mission Name");
+                    ImGui.Text("Search by Mission Name");
                     ImGui.EndTooltip();
                 }
 
@@ -1596,6 +1606,14 @@ namespace ICE.Ui
                     ImGui.BeginTooltip();
                     ImGui.Text("Quick way to toggle on/off manual mode");
                     ImGui.EndTooltip();
+                }
+
+                // Column 6: Ranking
+                ImGui.TableSetColumnIndex(6);
+                ImGui.TableHeader("Rank");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Rank of the mission");
                 }
 
                 foreach (var mission in CosmicHelper.SheetMissionDict)
@@ -1625,6 +1643,12 @@ namespace ICE.Ui
                         if (isGold)
                             continue;
                     }
+
+                    if (!string.IsNullOrEmpty(_idSearchText) && !mission.Key.ToString().Contains(_idSearchText, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (!string.IsNullOrEmpty(_nameSearchText) && !mission.Value.Name.Contains(_nameSearchText, StringComparison.OrdinalIgnoreCase))
+                        continue;
 
                     ImGui.PushID($"{mission.Value.Name}_{mission.Key}");
 
@@ -1670,6 +1694,19 @@ namespace ICE.Ui
                         C.Save();
                     }
                     UpdateSelectedMission(mission.Key);
+
+                    ImGui.TableNextColumn();
+                    string rank = mission.Value.Rank switch
+                    {
+                        1 => "D",
+                        2 => "C",
+                        3 => "B",
+                        4 => "A",
+                        5 => "EX",
+                        6 => "Ex+",
+                        _ => "???"
+                    };
+                    CenterTextInTableCell(rank);  
 
                     ImGui.PopID();
                 }
@@ -2012,6 +2049,7 @@ namespace ICE.Ui
                     // Center the FontAwesome icon within the container
                     var textSize = ImGui.CalcTextSize(FontAwesome.Check);
                     var offset = (containerSize - textSize) * 0.5f;
+                    offset += new Vector2(-2f, 1f);
                     ImGui.SetCursorPos(cursorPos + offset);
                     FontAwesome.Print(EColor.Green, FontAwesome.Check);
                 }
@@ -2020,6 +2058,7 @@ namespace ICE.Ui
             {
                 var textSize = ImGui.CalcTextSize(FontAwesome.Cross);
                 var offset = (containerSize - textSize) * 0.5f;
+                offset += new Vector2(-2f, 1f);
                 ImGui.SetCursorPos(cursorPos + offset);
                 FontAwesome.Print(EColor.Red, FontAwesome.Cross);
             }

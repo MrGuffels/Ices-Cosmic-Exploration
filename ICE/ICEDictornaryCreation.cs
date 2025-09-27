@@ -496,6 +496,48 @@ public sealed partial class ICE
             }
         }
 
+        foreach (var supply in Svc.Data.GetExcelSheet<WKSItemInfo>())
+        {
+            if (supply.Item.RowId == 0) continue;
+            if (supply.WKSItemSubCategory.RowId != 2 && supply.WKSItemSubCategory.RowId != 5) continue;
+
+            var itemId = supply.Item.RowId;
+            var kind = supply.WKSItemSubCategory.RowId;
+            var name = Svc.Data.GetExcelSheet<Item>().GetRow(itemId).Name.ToString();
+            IceLogging.Info($"Name: {name} | ItemID: {itemId} | kind: {kind}");
+
+            // Seafood/fish
+            if (kind == 2)
+            {
+                if (GatheringUtil.MoonFish.TryGetValue(name, out var fishList))
+                {
+                    if (!fishList.Contains(itemId))
+                    {
+                        fishList.Add(itemId);
+                    }
+                }
+                else
+                {
+                    GatheringUtil.MoonFish[name] = new() { itemId };
+                }
+            }
+            // Baits
+            else if (kind == 5)
+            {
+                if (GatheringUtil.MoonBaits.TryGetValue(name, out var fishBait))
+                {
+                    if (!fishBait.Contains(itemId))
+                    {
+                        fishBait.Add(itemId);
+                    }
+                }
+                else
+                {
+                    GatheringUtil.MoonBaits[name] = new() { itemId };
+                }
+            }
+        }
+
         // UpdateSheetMissionDict();
     }
     private static MissionType GetMissionType(CosmicInfo mission)

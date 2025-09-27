@@ -110,6 +110,8 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool? CheckGatheringState()
         {
+            IceLogging.Debug("Starting 'Check Gather State'");
+
             var id = CosmicHelper.CurrentLunarMission;
             var mission = CosmicHelper.SheetMissionDict[id];
             var crafterJobId = mission.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
@@ -126,6 +128,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gatheringAddon))
             {
+                IceLogging.Info($"We're currently in the middle of gathering, so going to just swap over to interacting with the gathering node");
                 P.TaskManager.Enqueue(() => GatheringInteraction(), "Interacting with the gathering node");
                 return true;
             }
@@ -141,6 +144,7 @@ namespace ICE.Scheduler.Tasks
 
                 if (selfRepairGather)
                 {
+                    IceLogging.Info("You have enabled self repair, and you are need in repair. throwing in task to repair self", "[Task_DualClass | Check Gather State]");
                     P.TaskManager.EnqueueMulti
                     (
                         new(Task_Repair.OpenSelfRepair, "Opening the self repair window"),
@@ -150,6 +154,7 @@ namespace ICE.Scheduler.Tasks
                 }
 
                 // Us getting here means that we're fresh into the node gathering. So just going to queue up the rest of the gathering process.
+                IceLogging.Info("You've gotten to this point so. Queueing up checking the gathering location, pathing to node, and navmesh movement", "[Task_DualClass | Check Gather State]");
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking Gathering Location Info");
                 P.TaskManager.Enqueue(() => PathToNode(), "Pathing to the gathering node");
                 P.TaskManager.Enqueue(() => NavmeshMovement(), "Navmesh moving to the node, then checking for targetability");

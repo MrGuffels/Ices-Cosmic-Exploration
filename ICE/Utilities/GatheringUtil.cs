@@ -3477,11 +3477,11 @@ public static unsafe class GatheringUtil
         },
     };
 
-
     public class FishingTools
     {
         public List<string> FishingPreset = new List<string>();
-        public HashSet<uint> Baits = new HashSet<uint>();
+        public Dictionary<string, List<uint>> Baits = new();
+        public Dictionary<string, List<uint>> RequiredFish = new();
     }
 
     public static Dictionary<uint, FishingTools> FishingPreset = new()
@@ -3494,7 +3494,6 @@ public static unsafe class GatheringUtil
             {
                 "AH4_H4sIAAAAAAAACu1WS2/jOAz+K4XONuCH5NctzaadAmmnmHSxh2IOjE0nQhwrI8vTyRT57wvZVmKnSTsdFIs9zE2gyI8fKYrkMxnVSoyhUtU4X5DkmUxKmBc4KgqSKFmjRfTllJd4uMzM1U1GEi+KLXIvuZBcbUniWuSmmvxIizrD7CDW+rsW61aIdKnBmoOnTw1OEFnkevOwlFgtRZGRxHWcAfLr0A1GHA4snDfJjJf1+kxg1HXoG4wMiCgKTJWJhLqO21fz3mYhZMahMACBSwcAtFO74tVyssWq54gdMWRswDAwOYcVzpY8V5fAG55aUBnBTEG6qkjCuiwG0UvcPmrcod6D4lim2OMTHNsFw4x5xlTynzgG1VaC8Xps7R3l2++sH5ZQcFhVV/BdSA0wEJhwfGso/4Kp+I6SJK5OkvFJBx5Mwi754hrWTWSjclGgrAyqfs2MJH7o0Bd0B1DRbmeRyQ8lYfCz9jWmM/8gZk+wuSlVzRUX5TXw0uTDdi0yrSXeYlXBAklCiEXuGk7kTpRIOoTtBkmiE3MCbyoq9dt49xIrPM2Q2OTMfeuxuT/wmW0wVRKKcS0lluqDojxC/bBYT7J9EfFJ743WlZApNt/qCTbmsRthpqXNR2ExDa2usmZKbPTP5uVipnDTtNBDlF31jeTHBNeHa9j+XfJvNWpc4gQsyDygNpvHmU1p5tgxQG6nUYoUAiePPZfsLDLllfqcax8VSR6fG286gH0bYDGNznO8FaK8uISi0Fh3Qq6h+CTESlubhvIPwurwY/RthYN0dqI2RuqGuiMZ45mSoly8x9zxe+ZTXGCZgdy+G+EvUc+LPfeBhhfEe4UDv7MqAw4ntB4k35zzFDLP36uc8zVQesVbp6dLdJQrlGOoF0s15Ws9Rdz24rh2m32hlu2Y0odeP247J4tfDtZXZqQe7qa/mEr5gt9qLjGbKVC1Hl16ezgun1+rkl8uhj9v/p++ea8zBeCmIUapHQMNbOp4aM/dMLIj1w/mcUZZECPZfTWtqdswH/eCtjs9PpN+m3p3Hz2bkZsMS8VTKHQaNHyrMFqLuhyoNb3xeGvwhytbpD3VMocUZ4VuOPumyt7YjtjOIv+b5fowwX4/30+w0ZKxTmOTwf4k6+aXPrbig9qpCu1VU8giABbkNmM52NSPqB3TOdhuRCFklNIoC5tqanE7io+UuV8vpnWZLi8ma5QLLNPtcICGaRwCi3N7HrLIplmIduzGno1+4LOMprFLfbL7F1DkJiNzDQAA"
             },
-            Baits = new HashSet<uint>()
         },
         [452] = new FishingTools
         {
@@ -3715,4 +3714,7 @@ public static unsafe class GatheringUtil
 
         #endregion
     };
+
+    public static Dictionary<string, List<uint>> MoonBaits = new();
+    public static Dictionary<string, List<uint>> MoonFish = new();
 }

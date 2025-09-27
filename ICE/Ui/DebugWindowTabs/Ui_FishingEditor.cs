@@ -99,8 +99,8 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.PopID();
                         }
                     }
-                    ImGui.EndChild();
                 }
+                ImGui.EndChild();
 
                 // Second Column, Editor for that route
                 ImGui.TableNextColumn();
@@ -234,8 +234,8 @@ namespace ICE.Ui.DebugWindowTabs
                             }
                         }
                     }
-                    ImGui.EndChild();
                 }
+                ImGui.EndChild();
 
                 ImGui.EndTable();
             }
