@@ -58,14 +58,13 @@ namespace ICE.Scheduler.Tasks
                         // Scoring mission based on the time. Divides up into 2 different types. Normal, and variety of fish
                         if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreVariety))
                         {
-                            // mission requires atleast a minimum amount of items, and they all have to be different. 
                             uint requiredAmount = fishingEntry.FishCountRequired;
                             uint currentAmount = 0;
-                            foreach (var requiredFish in fishingEntry.RequiredFish)
+                            foreach (var fishEntry in GatheringUtil.MoonFish)
                             {
-                                foreach (var fishId in requiredFish.Value)
+                                foreach (var fishId in fishEntry.Value)
                                 {
-                                    if (PlayerHelper.GetItemCount(fishId, out int count) && count > 0)
+                                    if (PlayerHelper.GetItemCount(fishId, out var count) && count > 0)
                                     {
                                         currentAmount += 1;
                                         break;
@@ -84,16 +83,16 @@ namespace ICE.Scheduler.Tasks
                         else
                         {
                             uint requiredAmount = fishingEntry.FishCountRequired;
-                            uint currentAmount = 0;
+                            var currentAmount = 0;
 
                             // mission just requires a set amount of fish period. 
-                            foreach (var requiredFish in fishingEntry.RequiredFish)
+                            foreach (var fishEntry in GatheringUtil.MoonFish)
                             {
-                                foreach (var fishId in requiredFish.Value)
+                                foreach (var fishId in fishEntry.Value)
                                 {
-                                    if (PlayerHelper.GetItemCount(fishId, out var count))
+                                    if (PlayerHelper.GetItemCount(fishId, out var count) && count > 0)
                                     {
-                                        currentAmount += (uint)count;
+                                        currentAmount += count;
                                     }
                                 }
                             }
@@ -120,16 +119,15 @@ namespace ICE.Scheduler.Tasks
 
                         bool canTurnin = false;
 
-                        if (minAmount != 0 && !missionEntry.Attributes.HasFlag(MissionAttributes.Craft))
+                        if (minAmount != 0)
                         {
                             var currentAmount = 0;
 
-                            // There is a minimum requirement to be able to turn this in, even on bronze. Checking to see if we meet that condition first
-                            foreach (var fishEntry in fishingEntry.RequiredFish)
+                            foreach (var fishEntry in GatheringUtil.MoonFish)
                             {
                                 foreach (var fishId in fishEntry.Value)
                                 {
-                                    if (!PlayerHelper.GetItemCount(fishId, out var count))
+                                    if (PlayerHelper.GetItemCount(fishId, out var count) && count > 0)
                                     {
                                         currentAmount += count;
                                     }
@@ -151,7 +149,6 @@ namespace ICE.Scheduler.Tasks
                                 IceLogging.Debug($"Minimum scoring has met bronze scoring.", "[Fish Scoring]");
                             }
                         }
-
                         if (canTurnin)
                         {
                             bool shouldTurnin = false;

@@ -3480,6 +3480,7 @@ public static unsafe class GatheringUtil
     public class FishingTools
     {
         public List<string> FishingPreset = new List<string>();
+        public int AmountRequired = 0;
         public Dictionary<string, List<uint>> Baits = new();
         public Dictionary<string, List<uint>> RequiredFish = new();
     }

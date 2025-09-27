@@ -160,6 +160,10 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(() => NavmeshMovement(), "Navmesh moving to the node, then checking for targetability");
                 return true;
             }
+            else if (Player.JobId == 18)
+            {
+
+            }
 
             return false;
         }
@@ -197,6 +201,9 @@ namespace ICE.Scheduler.Tasks
         {
             P.TaskManager.Insert(() => WaitingForArtisan(), "Waiting for artisan to finish", Utils.TaskConfig);
         }
+
+        #region Gathering
+
         public static bool? CheckGatherLocation()
         {
             var zoneId = Player.Territory;
@@ -463,8 +470,78 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Info("No longer executing a gathering action", "[Task Gather: Wait To Gather]");
                 return true;
             }
-            
+
             return false;
         }
+
+        #endregion
+
+        #region Fishing
+
+        private static unsafe bool? FishingCheck()
+        {
+            if (!Svc.Condition[ConditionFlag.Gathering])
+            {
+                if (EzThrottler.Throttle("Starting to fish", 1000))
+                {
+                    ActionManager.Instance()->UseAction(ActionType.Action, 289);
+                }
+                return false;
+            }
+            else
+            {
+                // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
+                P.AutoHook.SetState(true);
+                P.TaskManager.Insert(() => CheckItems(), "Checking for items to meet the quantity set", Utils.TaskConfig);
+                return true;
+            }
+        }
+
+        private static unsafe bool? CheckItems()
+        {
+            if (!Svc.Condition[ConditionFlag.Gathering])
+            {
+                IceLogging.Info("We've stopped fishing for some reason... going to go back and check if we have enough of the materials, or just ran out of bait");
+                return true;
+            }
+            else
+            {
+                // Currently in the middle of gathering here. Going to check for just general item progress.
+                var mission = CosmicHelper.CurrentMissionInfo;
+                if (EzThrottler.Throttle("Checking for current item count"))
+                {
+                    var mainCraft = mission.Crafts_Main.Values.FirstOrDefault();
+                    var missionConfig = C.MissionConfig[CosmicHelper.CurrentLunarMission];
+                    var itemAmount = 3;
+                    if (missionConfig.TurninSilver)
+                    {
+                        itemAmount = 2;
+                    }
+
+                    foreach (var requiredItem in mainCraft.RequiredItems)
+                    {
+                        uint crateId = 48233;
+                        var materialItemId = requiredItem.Key;
+                        var amountNeeded = requiredItem.Value;
+                        if (materialItemId == crateId) continue;
+
+                        if (PlayerHelper.GetItemCount(materialItemId, out var mainItemCount) && mainItemCount < itemAmount)
+                        {
+                            // Still don't have enough items, so continuing on
+                        }
+                        else
+                        {
+                            // We have enough of the fish to dual craft, so going to stop -> tell it to craft.
+                            P.AutoHook.SetState(false);
+                            ActionManager.Instance()->UseAction(ActionType.Action, 289);
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        #endregion
     }
 }

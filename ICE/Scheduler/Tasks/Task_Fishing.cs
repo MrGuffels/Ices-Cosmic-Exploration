@@ -39,7 +39,6 @@ namespace ICE.Scheduler.Tasks
         {
             // Things to do here
             // Check to see if you currently have bait / have it equipped.
-
             if (CosmicHelper.CurrentBait == 0)
             {
                 uint baitId = 0;
