@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using ECommons.Automation;
 using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Pictomancy;
 using System;
 using System.Collections.Generic;
@@ -195,22 +196,32 @@ namespace ICE.Ui.DebugWindowTabs
                                 spot.FishingSpot = Player.Position;
                             }
 
-                            var nav = spot.NavtoSpot;
+                            var nav = spot.FacePosition;
                             ImGui.SetNextItemWidth(200);
                             if (ImGui.InputFloat3("Nav Position", ref nav))
                             {
-                                spot.NavtoSpot = nav;
+                                spot.FacePosition = nav;
                             }
                             ImGui.SameLine();
-                            if (ImGui.Button("Set nav to current"))
+                            if (ImGui.Button("Set Fishing Rotation"))
                             {
-                                spot.NavtoSpot = Player.Position;
+                                var currentRotation = Player.Rotation;
+                                spot.FacePosition = GetPositionInFrontOfPlayer(Player.Position, currentRotation);
                             }
+                            ImGui.SameLine();
+                            ImGui.Text($"{Player.Rotation}");
 
-                            if (ImGui.Button("Test Naving to"))
+                            if (ImGui.Button("Test Naving to [Old]"))
                             {
                                 fishingPath.Clear();
-                                P.TaskManager.Enqueue(() => TestPath(spot.NavtoSpot, spot.FishingSpot));
+                                P.TaskManager.Enqueue(() => TestPath(spot.FacePosition, spot.FishingSpot));
+                            }
+                            if (ImGui.Button("Test Naving to [New]"))
+                            {
+                                P.TaskManager.Enqueue(() => StartNavmesh(spot.FishingSpot));
+                                P.TaskManager.Enqueue(() => TestPathV2());
+                                P.TaskManager.EnqueueDelay(100);
+                                P.TaskManager.Enqueue(() => FacePosition(spot.FacePosition));
                             }
                         }
 
@@ -228,8 +239,8 @@ namespace ICE.Ui.DebugWindowTabs
                                 foreach (var navPoint in fishingHole)
                                 {
                                     drawList.AddDot(navPoint.FishingSpot, 5f, C.PictoColor_Dot);
-                                    drawList.AddDot(navPoint.NavtoSpot, 5f, C.PictoColor_Dot);
-                                    drawList.AddLine(navPoint.FishingSpot, navPoint.NavtoSpot, 0f, C.PictoColor_Circle);
+                                    drawList.AddDot(navPoint.FacePosition, 5f, C.PictoColor_Dot);
+                                    drawList.AddLine(navPoint.FishingSpot, navPoint.FacePosition, 0f, C.PictoColor_Circle);
                                 }
                             }
                         }
@@ -265,7 +276,7 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         sb.AppendLine("\t\t\tnew FisherSpotInfo()");
                         sb.AppendLine("\t\t\t{");
-                        sb.AppendLine($"\t\t\t\tNavtoSpot = new Vector3({spot.NavtoSpot.X:F2}f, {spot.NavtoSpot.Y:F2}f, {spot.NavtoSpot.Z:F2}f),");
+                        sb.AppendLine($"\t\t\t\tNavtoSpot = new Vector3({spot.FacePosition.X:F2}f, {spot.FacePosition.Y:F2}f, {spot.FacePosition.Z:F2}f),");
                         sb.AppendLine($"\t\t\t\tFishingSpot = new Vector3({spot.FishingSpot.X:F2}f, {spot.FishingSpot.Y:F2}f, {spot.FishingSpot.Z:F2}f),");
                         sb.AppendLine("\t\t\t},");
                     }
@@ -297,7 +308,7 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 sb.AppendLine("\t\t\t\tnew FisherSpotInfo()");
                 sb.AppendLine("\t\t\t\t{");
-                sb.AppendLine($"\t\t\t\t\tNavtoSpot = new Vector3({spot.NavtoSpot.X:F2}f, {spot.NavtoSpot.Y:F2}f, {spot.NavtoSpot.Z:F2}f),");
+                sb.AppendLine($"\t\t\t\t\tFacePosition = new Vector3({spot.FacePosition.X:F2}f, {spot.FacePosition.Y:F2}f, {spot.FacePosition.Z:F2}f),");
                 sb.AppendLine($"\t\t\t\t\tFishingSpot = new Vector3({spot.FishingSpot.X:F2}f, {spot.FishingSpot.Y:F2}f, {spot.FishingSpot.Z:F2}f),");
                 sb.AppendLine("\t\t\t\t},");
             }
@@ -345,6 +356,80 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             return false;
+        }
+        public static Vector3 GetPositionInFrontOfPlayer(Vector3 currentPosition, float rotationRadians, float distance = 2f)
+        {
+            // No conversion needed - already in radians!
+            Vector3 direction = new Vector3(
+                (float)Math.Sin(rotationRadians),
+                0,
+                (float)Math.Cos(rotationRadians)
+            );
+
+            return currentPosition + (direction * distance);
+        }
+
+        private static bool? StartNavmesh(Vector3 moveTo)
+        {
+            if (P.Navmesh.IsRunning())
+                return true;
+            else
+            {
+                if (EzThrottler.Throttle("Starting Test Navmesh"))
+                {
+                    P.Navmesh.PathfindAndMoveTo(moveTo, false);
+                }
+                return false;
+            }
+        }
+
+        private static bool? TestPathV2()
+        {
+            if (!P.Navmesh.IsRunning())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        private static unsafe bool? FacePosition(Vector3 pos)
+        {
+            // Store current rotation
+            float currentRotation = Player.Rotation;
+
+            // If rotation is still changing, wait for it to stabilize
+            if (Math.Abs(Player.Rotation - currentRotation) > 0.01f)
+            {
+                return null; // Still moving, try again later
+            }
+
+            Vector3 direction = pos - Player.Position;
+            float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
+
+            float angleDifference = GetShortestAngleDifference(Player.Rotation, targetRotation);
+
+            if (Math.Abs(angleDifference) < 0.3f)
+            {
+                return true;
+            }
+
+            Vector3 temp = pos;
+            ActionManager.Instance()->AutoFaceTargetPosition(&temp);
+
+            return false;
+        }
+
+        private static float GetShortestAngleDifference(float currentAngle, float targetAngle)
+        {
+            float difference = targetAngle - currentAngle;
+
+            // Normalize to [-π, π] for shortest path
+            while (difference > Math.PI) difference -= (float)(2 * Math.PI);
+            while (difference < -Math.PI) difference += (float)(2 * Math.PI);
+
+            return difference;
         }
     }
 }

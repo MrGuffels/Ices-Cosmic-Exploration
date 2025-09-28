@@ -659,7 +659,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Desynthing the item"))
                     {
-                        ECommons.Automation.Callback.Fire(desynthWindow, true, 12, 0);
+                        if (!Player.IsBusy)
+                            ECommons.Automation.Callback.Fire(desynthWindow, true, 12, 0);
                     }
                 }
                 else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)

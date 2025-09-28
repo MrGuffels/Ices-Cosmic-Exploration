@@ -2,6 +2,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ICE.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace ICE.Scheduler.Tasks
         {
             var id = CosmicHelper.CurrentLunarMission;
             var mission = CosmicHelper.SheetMissionDict[id];
+            var missionConfig = C.MissionConfig[id];
             var crafterJobId = mission.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
             var gatheringJobId = mission.Jobs.Where(x => CosmicHelper.GatheringJobList.Contains(x)).FirstOrDefault();
 
@@ -33,7 +35,24 @@ namespace ICE.Scheduler.Tasks
             var itemId = mainCraft.ItemId;
 
             var gatherProfileId = C.MissionConfig[id].GatherProfileId;
-            var dualCraftAmount = C.GatherSettings[gatherProfileId].DualClassCraftAmount;
+            var dualCraftAmount = 3;
+
+
+            if (missionConfig.TurninGold || missionConfig.AutoTurnin)
+            {
+                // Currently, gold needs x3 of the items
+                dualCraftAmount = 3;
+            }
+            else if (missionConfig.TurninSilver)
+            {
+                // Currently, silver needs x2 of the items
+                dualCraftAmount = 2;
+            }
+            if (PlayerHelper.GetItemCount(mainCraft.ItemId, out var craftAmount) && craftAmount >= dualCraftAmount)
+            {
+                // Anything extra after we initial crafts, really just want to only craft x1
+                dualCraftAmount = 1;
+            }
 
             foreach (var requiredItem in mainCraft.RequiredItems)
             {
@@ -60,6 +79,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         // We don't have enough to craft. So going to actually exit out and enter the gathering state.
                         IceLogging.Info("We don't have enough to craft the dual class item, so proceeding to gather");
+                        P.TaskManager.Tasks.Clear();
                         P.TaskManager.Insert(() => CheckGatheringState(), "Checking the current state of gathering");
                         return true;
                     }
@@ -79,6 +99,10 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Closing Gathering Window"))
                         ECommons.Automation.Callback.Fire(gather, true, -1);
+                }
+                else if (Player.JobId == 18)
+                {
+                    StopFishing();
                 }
                 return false;
             }
@@ -162,7 +186,21 @@ namespace ICE.Scheduler.Tasks
             }
             else if (Player.JobId == 18)
             {
+                bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent);
 
+                if (selfRepairGather)
+                {
+                    IceLogging.Info("You have enabled self repair, and you are need in repair. throwing in task to repair self", "[Task_DualClass | Check Gather State]");
+                    P.TaskManager.EnqueueMulti
+                    (
+                        new(Task_Repair.OpenSelfRepair, "Opening the self repair window"),
+                        new(Task_Repair.SelfRepair, "Executing the self repair"),
+                        new(Task_Repair.CloseRepair, "Closing Self Repair")
+                    );
+                }
+
+                P.TaskManager.Enqueue(() => FishingCheck(), "Checking to see what to fish for");
+                return true;
             }
 
             return false;
@@ -269,8 +307,8 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? NavmeshMovement()
         {
-            var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
+            var zoneId = missionEntry.TerritoryId;
             var missionFlag = missionEntry.MapPosition;
             var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
             var location = gatherInfo[Mission_Settings.nodeCounter];
@@ -502,6 +540,7 @@ namespace ICE.Scheduler.Tasks
             if (!Svc.Condition[ConditionFlag.Gathering])
             {
                 IceLogging.Info("We've stopped fishing for some reason... going to go back and check if we have enough of the materials, or just ran out of bait");
+                P.TaskManager.Tasks.Clear();
                 return true;
             }
             else
@@ -512,10 +551,31 @@ namespace ICE.Scheduler.Tasks
                 {
                     var mainCraft = mission.Crafts_Main.Values.FirstOrDefault();
                     var missionConfig = C.MissionConfig[CosmicHelper.CurrentLunarMission];
-                    var itemAmount = 3;
-                    if (missionConfig.TurninSilver)
+
+                    // Need to really figure out what all we need... 
+                    // If going for gold, should really only need x3 of the item
+                    // If going for silver, should really only need x2 of the item
+                    // Once we get the initial multiplier amount, should only go for x1 more for the crafts
+
+                    var itemAmount = 1;
+                    if (missionConfig.TurninGold || missionConfig.AutoTurnin)
                     {
+                        // Currently, gold needs x3 of the items
+                        itemAmount = 3;
+                    }
+                    else if (missionConfig.TurninSilver)
+                    {
+                        // Currently, silver needs x2 of the items
                         itemAmount = 2;
+                    }
+                    if (PlayerHelper.GetItemCount(mainCraft.ItemId, out var craftAmount) && craftAmount >= itemAmount)
+                    {
+                        // Anything extra after we initial crafts, really just want to only craft x1
+                        itemAmount = 1;
+                    }
+                    if (EzThrottler.Throttle("Item Multiplier Amount", 5000))
+                    {
+                        IceLogging.Info($"[Fishing] Item Multiplier: {itemAmount}", debugOnly: true);
                     }
 
                     foreach (var requiredItem in mainCraft.RequiredItems)
@@ -524,21 +584,30 @@ namespace ICE.Scheduler.Tasks
                         var materialItemId = requiredItem.Key;
                         var amountNeeded = requiredItem.Value;
                         if (materialItemId == crateId) continue;
+                        amountNeeded = amountNeeded * itemAmount; // This is to make sure the multiplier is there if needing to craft multiple (aka if 7 * 3 for gold)
 
-                        if (PlayerHelper.GetItemCount(materialItemId, out var mainItemCount) && mainItemCount < itemAmount)
+                        if (PlayerHelper.GetItemCount(materialItemId, out var mainItemCount) && mainItemCount < amountNeeded)
                         {
                             // Still don't have enough items, so continuing on
                         }
                         else
                         {
-                            // We have enough of the fish to dual craft, so going to stop -> tell it to craft.
-                            P.AutoHook.SetState(false);
-                            ActionManager.Instance()->UseAction(ActionType.Action, 289);
+                            IceLogging.Info($"Current Amount: {mainItemCount} | Amount needed: {amountNeeded} is complete", debugOnly: true);
+                            StopFishing();
                         }
                     }
                 }
 
                 return false;
+            }
+        }
+
+        private static unsafe void StopFishing()
+        {
+            if (EzThrottler.Throttle("Telling it to stop fishing"))
+            {
+                P.AutoHook.SetState(false);
+                ActionManager.Instance()->UseAction(ActionType.Action, 299);
             }
         }
 

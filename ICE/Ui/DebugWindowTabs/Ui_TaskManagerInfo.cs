@@ -77,7 +77,6 @@ namespace ICE.Ui.DebugWindowTabs
             }
             if (ImGui.Button("Test Fishing Moveto"))
             {
-                P.TaskManager.Enqueue(() => Task_FindMission.ClearNavFishing(), "Clearing the current fishing queue");
                 P.TaskManager.Enqueue(() => Task_FindMission.Navmesh_MoveToMission(mission), "Testing fishing moveto",configuration: Utils.TaskConfig);
             }
             if (ImGui.Button("Test Crafting"))

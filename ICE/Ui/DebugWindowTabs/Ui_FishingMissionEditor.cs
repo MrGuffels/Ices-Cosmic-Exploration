@@ -61,6 +61,14 @@ namespace ICE.Ui.DebugWindowTabs
                 }
             }
 
+            ImGui.SameLine();
+            if (ImGui.Button("Copy All Mission IDs"))
+            {
+                var missionIds = string.Join(",", GatheringUtil.FishingPreset.Keys.OrderBy(x => x));
+                ImGui.SetClipboardText(missionIds);
+                Svc.Chat.Print($"All mission IDs copied to clipboard! ({GatheringUtil.FishingPreset.Count} missions)");
+            }
+
             ImGui.Separator();
 
             if (ImGui.BeginTable("Fishing Mission Editor", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit))

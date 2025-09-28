@@ -882,7 +882,7 @@ namespace ICE.Ui
                     bool critical = missionInfo.Attributes.HasFlag(MissionAttributes.Critical);
 
                     bool dualclass = craftMission && (gatherMission || fishMission);
-                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || missionInfo.Jobs.Contains(18) || (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList) && critical);
+                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList) && critical);
                     bool hideUnsupported = C.HideUnsupportedMissions;
 
                     if (unsupported && hideUnsupported)

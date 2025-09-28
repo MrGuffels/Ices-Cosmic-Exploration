@@ -319,7 +319,7 @@ public static unsafe class GatheringUtil
 
     public class FisherSpotInfo
     {
-        public Vector3 NavtoSpot { get; set; }
+        public Vector3 FacePosition { get; set; }
         public Vector3 FishingSpot { get; set; }
     }
 
@@ -331,150 +331,151 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-681.51f, 56.73f, 452.61f),
+                    FacePosition = new Vector3(-681.51f, 56.73f, 452.61f),
                     FishingSpot = new Vector3(-684.29f, 57.14f, 449.44f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-679.39f, 56.64f, 406.97f),
+                    FacePosition = new Vector3(-679.39f, 56.64f, 406.97f),
                     FishingSpot = new Vector3(-681.86f, 56.15f, 409.36f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(0.00f, 0.00f, 0.00f),
+                    FacePosition = new Vector3(0.00f, 0.00f, 0.00f),
                     FishingSpot = new Vector3(0.00f, 0.00f, 0.00f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-717.31f, 57.61f, 396.69f),
+                    FacePosition = new Vector3(-717.31f, 57.61f, 396.69f),
                     FishingSpot = new Vector3(-715.62f, 57.07f, 398.90f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(0.00f, 0.00f, 0.00f),
+                    FacePosition = new Vector3(0.00f, 0.00f, 0.00f),
                     FishingSpot = new Vector3(0.00f, 0.00f, 0.00f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-723.78f, 57.86f, 430.71f),
+                    FacePosition = new Vector3(-723.78f, 57.86f, 430.71f),
                     FishingSpot = new Vector3(-720.61f, 57.15f, 429.68f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-713.74f, 57.47f, 454.12f),
+                    FacePosition = new Vector3(-713.74f, 57.47f, 454.12f),
                     FishingSpot = new Vector3(-711.97f, 57.13f, 451.87f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-739.04f, 70.08f, 510.99f),
+                    FacePosition = new Vector3(-739.04f, 70.08f, 510.99f),
                     FishingSpot = new Vector3(-742.36f, 69.99f, 511.54f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-746.67f, 70.33f, 495.85f),
+                    FacePosition = new Vector3(-746.67f, 70.33f, 495.85f),
                     FishingSpot = new Vector3(-750.49f, 70.21f, 496.88f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-768.05f, 72.84f, 490.57f),
+                    FacePosition = new Vector3(-768.05f, 72.84f, 490.57f),
                     FishingSpot = new Vector3(-766.88f, 72.81f, 493.54f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-790.76f, 76.47f, 511.84f),
+                    FacePosition = new Vector3(-790.76f, 76.47f, 511.84f),
                     FishingSpot = new Vector3(-787.50f, 75.94f, 511.36f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-783.67f, 73.19f, 534.13f),
+                    FacePosition = new Vector3(-783.67f, 73.19f, 534.13f),
                     FishingSpot = new Vector3(-780.99f, 73.10f, 532.39f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-756.48f, 69.96f, 540.26f),
+                    FacePosition = new Vector3(-756.48f, 69.96f, 540.26f),
                     FishingSpot = new Vector3(-754.94f, 70.47f, 536.35f),
                 },
             },
+            // Export for Fishing Zone 1237, Flag (-642, -631)
             [new Vector2(-642f, -631f)] = new()
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-699.09f, 78.36f, -625.97f),
+                    FacePosition = new Vector3(-704.47f, 78.86f, -624.86f),
                     FishingSpot = new Vector3(-702.74f, 78.86f, -625.20f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-702.25f, 80.00f, -653.92f),
+                    FacePosition = new Vector3(-706.16f, 80.15f, -655.53f),
                     FishingSpot = new Vector3(-704.44f, 80.15f, -654.71f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-720.19f, 81.60f, -679.93f),
+                    FacePosition = new Vector3(-719.40f, 81.29f, -674.84f),
                     FishingSpot = new Vector3(-719.62f, 81.27f, -676.77f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-753.22f, 83.10f, -656.88f),
+                    FacePosition = new Vector3(-748.08f, 82.86f, -653.60f),
                     FishingSpot = new Vector3(-749.59f, 82.81f, -654.64f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-739.29f, 79.19f, -619.63f),
+                    FacePosition = new Vector3(-734.22f, 78.50f, -622.21f),
                     FishingSpot = new Vector3(-735.90f, 78.47f, -621.42f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-761.02f, 80.62f, -593.05f),
+                    FacePosition = new Vector3(-756.54f, 79.55f, -589.94f),
                     FishingSpot = new Vector3(-757.96f, 79.48f, -590.99f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-745.54f, 79.10f, -546.29f),
+                    FacePosition = new Vector3(-740.87f, 78.75f, -550.59f),
                     FishingSpot = new Vector3(-742.23f, 78.70f, -549.42f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-719.61f, 77.63f, -526.75f),
+                    FacePosition = new Vector3(-718.82f, 78.06f, -533.16f),
                     FishingSpot = new Vector3(-719.09f, 78.02f, -531.37f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-689.02f, 76.24f, -542.33f),
+                    FacePosition = new Vector3(-693.19f, 76.95f, -546.06f),
                     FishingSpot = new Vector3(-691.86f, 76.91f, -544.77f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-680.58f, 75.87f, -561.28f),
+                    FacePosition = new Vector3(-683.75f, 76.02f, -565.56f),
                     FishingSpot = new Vector3(-682.70f, 75.97f, -564.08f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-592.88f, 69.19f, -647.99f),
+                    FacePosition = new Vector3(-587.65f, 69.48f, -650.96f),
                     FishingSpot = new Vector3(-589.30f, 69.46f, -650.02f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-593.46f, 69.77f, -673.84f),
+                    FacePosition = new Vector3(-588.52f, 69.70f, -672.03f),
                     FishingSpot = new Vector3(-590.26f, 69.65f, -672.61f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-585.11f, 70.27f, -699.58f),
+                    FacePosition = new Vector3(-580.89f, 69.61f, -696.34f),
                     FishingSpot = new Vector3(-582.38f, 69.56f, -697.39f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-550.65f, 69.18f, -702.18f),
+                    FacePosition = new Vector3(-551.81f, 69.04f, -697.00f),
                     FishingSpot = new Vector3(-551.48f, 68.99f, -698.79f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-530.52f, 68.08f, -673.64f),
+                    FacePosition = new Vector3(-536.81f, 68.99f, -673.98f),
                     FishingSpot = new Vector3(-534.98f, 68.99f, -673.93f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-545.07f, 68.55f, -649.36f),
+                    FacePosition = new Vector3(-548.28f, 69.07f, -654.38f),
                     FishingSpot = new Vector3(-547.26f, 69.03f, -652.89f),
                 },
             },
@@ -482,42 +483,42 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-325.62f, 47.98f, 607.32f),
+                    FacePosition = new Vector3(-325.62f, 47.98f, 607.32f),
                     FishingSpot = new Vector3(-329.34f, 47.71f, 605.86f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-320.30f, 47.83f, 579.08f),
+                    FacePosition = new Vector3(-320.30f, 47.83f, 579.08f),
                     FishingSpot = new Vector3(-322.90f, 47.62f, 580.78f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-347.21f, 47.86f, 562.18f),
+                    FacePosition = new Vector3(-347.21f, 47.86f, 562.18f),
                     FishingSpot = new Vector3(-347.55f, 47.62f, 565.18f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-374.60f, 47.86f, 575.96f),
+                    FacePosition = new Vector3(-374.60f, 47.86f, 575.96f),
                     FishingSpot = new Vector3(-371.96f, 47.67f, 577.85f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-373.32f, 47.81f, 612.22f),
+                    FacePosition = new Vector3(-373.32f, 47.81f, 612.22f),
                     FishingSpot = new Vector3(-370.08f, 46.95f, 610.97f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-361.07f, 47.95f, 639.70f),
+                    FacePosition = new Vector3(-361.07f, 47.95f, 639.70f),
                     FishingSpot = new Vector3(-358.79f, 47.78f, 636.85f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-335.31f, 47.81f, 647.01f),
+                    FacePosition = new Vector3(-335.31f, 47.81f, 647.01f),
                     FishingSpot = new Vector3(-336.22f, 47.66f, 644.39f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-318.74f, 47.84f, 627.92f),
+                    FacePosition = new Vector3(-318.74f, 47.84f, 627.92f),
                     FishingSpot = new Vector3(-322.40f, 47.62f, 629.60f),
                 },
             },
@@ -525,32 +526,32 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-301.10f, 24.28f, -98.02f),
+                    FacePosition = new Vector3(-296.67f, 23.60f, -99.04f),
                     FishingSpot = new Vector3(-298.62f, 23.61f, -98.77f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-292.39f, 23.03f, -79.07f),
+                    FacePosition = new Vector3(-288.99f, 22.55f, -82.12f),
                     FishingSpot = new Vector3(-290.41f, 22.56f, -80.72f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-276.65f, 23.08f, -65.97f),
+                    FacePosition = new Vector3(-277.21f, 22.42f, -71.16f),
                     FishingSpot = new Vector3(-276.94f, 22.39f, -69.24f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-259.08f, 23.13f, -72.30f),
+                    FacePosition = new Vector3(-261.90f, 22.32f, -76.85f),
                     FishingSpot = new Vector3(-260.88f, 22.31f, -75.17f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-260.06f, 22.88f, -95.80f),
+                    FacePosition = new Vector3(-265.77f, 22.11f, -93.86f),
                     FishingSpot = new Vector3(-263.89f, 22.11f, -94.51f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-261.62f, 25.84f, -120.68f),
+                    FacePosition = new Vector3(-267.32f, 25.05f, -119.22f),
                     FishingSpot = new Vector3(-265.36f, 25.07f, -119.82f),
                 },
             },
@@ -558,37 +559,37 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-121.13f, 20.16f, -282.06f),
+                    FacePosition = new Vector3(-121.13f, 20.16f, -282.06f),
                     FishingSpot = new Vector3(-125.02f, 19.49f, -282.55f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-116.87f, 21.07f, -295.31f),
+                    FacePosition = new Vector3(-116.87f, 21.07f, -295.31f),
                     FishingSpot = new Vector3(-120.34f, 21.01f, -296.72f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-133.53f, 22.10f, -311.44f),
+                    FacePosition = new Vector3(-133.53f, 22.10f, -311.44f),
                     FishingSpot = new Vector3(-133.89f, 21.89f, -307.83f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-149.53f, 21.87f, -301.28f),
+                    FacePosition = new Vector3(-149.53f, 21.87f, -301.28f),
                     FishingSpot = new Vector3(-147.11f, 21.38f, -300.01f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-156.93f, 21.11f, -274.46f),
+                    FacePosition = new Vector3(-156.93f, 21.11f, -274.46f),
                     FishingSpot = new Vector3(-153.78f, 20.48f, -275.65f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-139.95f, 20.60f, -259.87f),
+                    FacePosition = new Vector3(-139.95f, 20.60f, -259.87f),
                     FishingSpot = new Vector3(-140.35f, 20.74f, -263.50f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-123.05f, 20.56f, -265.43f),
+                    FacePosition = new Vector3(-123.05f, 20.56f, -265.43f),
                     FishingSpot = new Vector3(-126.56f, 19.80f, -267.38f),
                 },
             },
@@ -596,42 +597,42 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(77.32f, 18.30f, -247.04f),
+                    FacePosition = new Vector3(77.32f, 18.30f, -247.04f),
                     FishingSpot = new Vector3(79.81f, 18.34f, -249.27f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(87.04f, 17.93f, -228.42f),
+                    FacePosition = new Vector3(87.04f, 17.93f, -228.42f),
                     FishingSpot = new Vector3(90.35f, 17.72f, -230.32f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(111.18f, 19.02f, -226.39f),
+                    FacePosition = new Vector3(111.18f, 19.02f, -226.39f),
                     FishingSpot = new Vector3(110.04f, 18.81f, -229.60f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(152.24f, 24.84f, -257.98f),
+                    FacePosition = new Vector3(152.24f, 24.84f, -257.98f),
                     FishingSpot = new Vector3(147.53f, 24.62f, -258.54f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(146.35f, 28.85f, -282.43f),
+                    FacePosition = new Vector3(146.35f, 28.85f, -282.43f),
                     FishingSpot = new Vector3(143.39f, 28.23f, -279.23f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(126.45f, 28.76f, -294.49f),
+                    FacePosition = new Vector3(126.45f, 28.76f, -294.49f),
                     FishingSpot = new Vector3(124.30f, 28.83f, -293.16f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(95.25f, 28.89f, -300.15f),
+                    FacePosition = new Vector3(95.25f, 28.89f, -300.15f),
                     FishingSpot = new Vector3(95.97f, 29.03f, -297.06f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(62.61f, 25.80f, -293.60f),
+                    FacePosition = new Vector3(62.61f, 25.80f, -293.60f),
                     FishingSpot = new Vector3(65.88f, 25.24f, -292.10f),
                 },
             },
@@ -639,32 +640,32 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(190.55f, 18.07f, 182.66f),
+                    FacePosition = new Vector3(191.93f, 17.58f, 188.29f),
                     FishingSpot = new Vector3(191.46f, 17.58f, 186.35f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(180.38f, 18.08f, 189.04f),
+                    FacePosition = new Vector3(184.14f, 17.50f, 193.09f),
                     FishingSpot = new Vector3(182.83f, 17.50f, 191.59f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(180.24f, 18.48f, 204.87f),
+                    FacePosition = new Vector3(182.53f, 17.60f, 200.46f),
                     FishingSpot = new Vector3(181.67f, 17.55f, 201.99f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(196.98f, 19.54f, 211.34f),
+                    FacePosition = new Vector3(196.90f, 19.35f, 206.23f),
                     FishingSpot = new Vector3(196.96f, 19.35f, 208.23f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(205.70f, 19.68f, 207.02f),
+                    FacePosition = new Vector3(202.64f, 19.47f, 202.95f),
                     FishingSpot = new Vector3(203.70f, 19.47f, 204.47f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(212.92f, 19.44f, 196.79f),
+                    FacePosition = new Vector3(208.40f, 19.45f, 196.68f),
                     FishingSpot = new Vector3(210.37f, 19.45f, 197.03f),
                 },
             },
@@ -672,82 +673,82 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(614.45f, 54.89f, 584.00f),
+                    FacePosition = new Vector3(609.12f, 54.33f, 580.25f),
                     FishingSpot = new Vector3(610.75f, 54.33f, 581.42f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(627.91f, 53.82f, 532.97f),
+                    FacePosition = new Vector3(622.91f, 53.68f, 534.43f),
                     FishingSpot = new Vector3(624.69f, 53.68f, 533.99f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(621.78f, 55.25f, 512.08f),
+                    FacePosition = new Vector3(617.22f, 54.78f, 513.61f),
                     FishingSpot = new Vector3(619.07f, 54.78f, 512.96f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(620.98f, 54.96f, 497.74f),
+                    FacePosition = new Vector3(616.89f, 54.38f, 495.02f),
                     FishingSpot = new Vector3(618.41f, 54.36f, 496.12f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(618.65f, 51.65f, 475.87f),
+                    FacePosition = new Vector3(615.84f, 50.98f, 479.81f),
                     FishingSpot = new Vector3(616.91f, 50.92f, 478.42f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(602.19f, 50.43f, 476.22f),
+                    FacePosition = new Vector3(603.52f, 50.28f, 480.78f),
                     FishingSpot = new Vector3(603.09f, 50.27f, 479.07f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(588.93f, 50.19f, 488.54f),
+                    FacePosition = new Vector3(593.25f, 50.03f, 491.32f),
                     FishingSpot = new Vector3(591.76f, 50.03f, 490.30f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(582.42f, 50.55f, 498.78f),
+                    FacePosition = new Vector3(586.13f, 50.49f, 502.14f),
                     FishingSpot = new Vector3(584.81f, 50.48f, 500.88f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(572.00f, 51.04f, 512.07f),
+                    FacePosition = new Vector3(576.58f, 50.34f, 514.46f),
                     FishingSpot = new Vector3(575.03f, 50.29f, 513.57f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(560.95f, 51.25f, 529.94f),
+                    FacePosition = new Vector3(562.37f, 51.04f, 534.96f),
                     FishingSpot = new Vector3(561.92f, 51.03f, 533.17f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(526.88f, 51.59f, 533.19f),
+                    FacePosition = new Vector3(529.04f, 51.24f, 538.05f),
                     FishingSpot = new Vector3(528.37f, 51.21f, 536.42f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(508.88f, 52.80f, 557.95f),
+                    FacePosition = new Vector3(514.62f, 52.87f, 559.11f),
                     FishingSpot = new Vector3(512.91f, 52.87f, 558.70f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(513.27f, 51.80f, 581.63f),
+                    FacePosition = new Vector3(518.79f, 51.11f, 580.81f),
                     FishingSpot = new Vector3(516.99f, 51.06f, 581.01f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(521.30f, 53.55f, 598.79f),
+                    FacePosition = new Vector3(527.99f, 53.66f, 597.43f),
                     FishingSpot = new Vector3(526.16f, 53.66f, 597.76f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(515.92f, 53.48f, 617.23f),
+                    FacePosition = new Vector3(521.59f, 53.16f, 619.16f),
                     FishingSpot = new Vector3(519.88f, 53.14f, 618.53f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(514.97f, 51.97f, 640.35f),
+                    FacePosition = new Vector3(520.15f, 51.23f, 638.33f),
                     FishingSpot = new Vector3(518.43f, 51.19f, 638.93f),
                 },
             },
@@ -755,32 +756,32 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(912.58f, -58.25f, -328.75f),
+                    FacePosition = new Vector3(912.58f, -58.25f, -328.75f),
                     FishingSpot = new Vector3(914.87f, -58.35f, -328.79f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(916.20f, -58.75f, -338.51f),
+                    FacePosition = new Vector3(916.20f, -58.75f, -338.51f),
                     FishingSpot = new Vector3(918.65f, -58.90f, -337.07f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(932.74f, -57.69f, -359.17f),
+                    FacePosition = new Vector3(932.74f, -57.69f, -359.17f),
                     FishingSpot = new Vector3(934.37f, -57.65f, -356.92f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(933.92f, -57.13f, -362.23f),
+                    FacePosition = new Vector3(933.92f, -57.13f, -362.23f),
                     FishingSpot = new Vector3(936.45f, -56.75f, -360.90f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(939.04f, -55.44f, -368.28f),
+                    FacePosition = new Vector3(939.04f, -55.44f, -368.28f),
                     FishingSpot = new Vector3(940.42f, -55.71f, -366.29f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(941.76f, -54.56f, -370.87f),
+                    FacePosition = new Vector3(941.76f, -54.56f, -370.87f),
                     FishingSpot = new Vector3(943.26f, -54.79f, -368.71f),
                 },
             },
@@ -791,37 +792,37 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-676.44f, -2.99f, -653.59f),
+                    FacePosition = new Vector3(-676.44f, -2.99f, -653.59f),
                     FishingSpot = new Vector3(-680.97f, -4.06f, -653.59f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-682.00f, -3.00f, -664.97f),
+                    FacePosition = new Vector3(-682.00f, -3.00f, -664.97f),
                     FishingSpot = new Vector3(-685.18f, -3.94f, -662.78f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-694.13f, -2.88f, -672.60f),
+                    FacePosition = new Vector3(-694.13f, -2.88f, -672.60f),
                     FishingSpot = new Vector3(-695.36f, -3.98f, -668.60f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-712.22f, -2.99f, -668.82f),
+                    FacePosition = new Vector3(-712.22f, -2.99f, -668.82f),
                     FishingSpot = new Vector3(-710.34f, -3.99f, -665.82f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-720.01f, -2.92f, -650.55f),
+                    FacePosition = new Vector3(-720.01f, -2.92f, -650.55f),
                     FishingSpot = new Vector3(-717.04f, -3.96f, -651.28f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-712.97f, -3.14f, -634.80f),
+                    FacePosition = new Vector3(-712.97f, -3.14f, -634.80f),
                     FishingSpot = new Vector3(-711.18f, -4.07f, -637.41f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-693.99f, -3.06f, -630.53f),
+                    FacePosition = new Vector3(-693.99f, -3.06f, -630.53f),
                     FishingSpot = new Vector3(-695.14f, -4.13f, -633.54f),
                 },
             },
@@ -832,37 +833,37 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-458.07f, -8.02f, -671.92f),
+                    FacePosition = new Vector3(-458.07f, -8.02f, -671.92f),
                     FishingSpot = new Vector3(-454.69f, -9.23f, -673.17f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-455.46f, -8.39f, -659.50f),
+                    FacePosition = new Vector3(-455.46f, -8.39f, -659.50f),
                     FishingSpot = new Vector3(-452.35f, -9.21f, -662.55f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-443.30f, -8.86f, -658.08f),
+                    FacePosition = new Vector3(-443.30f, -8.86f, -658.08f),
                     FishingSpot = new Vector3(-444.48f, -9.18f, -659.68f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-438.66f, -9.10f, -666.39f),
+                    FacePosition = new Vector3(-438.66f, -9.10f, -666.39f),
                     FishingSpot = new Vector3(-440.41f, -9.82f, -666.91f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-438.30f, -8.79f, -674.51f),
+                    FacePosition = new Vector3(-438.30f, -8.79f, -674.51f),
                     FishingSpot = new Vector3(-439.83f, -8.77f, -674.59f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-445.84f, -8.57f, -688.73f),
+                    FacePosition = new Vector3(-445.84f, -8.57f, -688.73f),
                     FishingSpot = new Vector3(-446.96f, -9.69f, -686.45f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-457.90f, -7.80f, -693.78f),
+                    FacePosition = new Vector3(-457.90f, -7.80f, -693.78f),
                     FishingSpot = new Vector3(-457.68f, -8.38f, -690.98f),
                 },
             },
@@ -870,57 +871,57 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-248.41f, -10.09f, -79.94f),
+                    FacePosition = new Vector3(-248.41f, -10.09f, -79.94f),
                     FishingSpot = new Vector3(-249.49f, -10.25f, -77.68f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-240.29f, -11.00f, -81.46f),
+                    FacePosition = new Vector3(-240.29f, -11.00f, -81.46f),
                     FishingSpot = new Vector3(-240.33f, -11.62f, -78.31f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-229.02f, -11.08f, -79.22f),
+                    FacePosition = new Vector3(-229.02f, -11.08f, -79.22f),
                     FishingSpot = new Vector3(-230.43f, -11.45f, -77.20f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-228.38f, -10.86f, -70.23f),
+                    FacePosition = new Vector3(-228.38f, -10.86f, -70.23f),
                     FishingSpot = new Vector3(-231.23f, -11.10f, -72.50f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-239.20f, -10.76f, -65.61f),
+                    FacePosition = new Vector3(-239.20f, -10.76f, -65.61f),
                     FishingSpot = new Vector3(-238.98f, -11.25f, -68.43f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-241.46f, -10.73f, -65.75f),
+                    FacePosition = new Vector3(-241.46f, -10.73f, -65.75f),
                     FishingSpot = new Vector3(-243.54f, -11.18f, -67.34f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-252.66f, -10.25f, -60.48f),
+                    FacePosition = new Vector3(-252.66f, -10.25f, -60.48f),
                     FishingSpot = new Vector3(-252.52f, -10.07f, -63.13f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-262.36f, -9.73f, -63.18f),
+                    FacePosition = new Vector3(-262.36f, -9.73f, -63.18f),
                     FishingSpot = new Vector3(-260.30f, -9.90f, -65.25f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-273.79f, -10.23f, -74.13f),
+                    FacePosition = new Vector3(-273.79f, -10.23f, -74.13f),
                     FishingSpot = new Vector3(-270.98f, -10.83f, -74.62f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-268.01f, -10.07f, -81.27f),
+                    FacePosition = new Vector3(-268.01f, -10.07f, -81.27f),
                     FishingSpot = new Vector3(-266.49f, -10.29f, -78.99f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-257.65f, -10.91f, -85.84f),
+                    FacePosition = new Vector3(-257.65f, -10.91f, -85.84f),
                     FishingSpot = new Vector3(-257.52f, -11.08f, -82.96f),
                 },
             },
@@ -928,67 +929,67 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-239.70f, -6.63f, -359.42f),
+                    FacePosition = new Vector3(-239.70f, -6.63f, -359.42f),
                     FishingSpot = new Vector3(-239.26f, -6.63f, -355.69f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-236.09f, -6.43f, -360.86f),
+                    FacePosition = new Vector3(-236.09f, -6.43f, -360.86f),
                     FishingSpot = new Vector3(-234.13f, -7.05f, -358.69f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-216.25f, -4.51f, -363.22f),
+                    FacePosition = new Vector3(-216.25f, -4.51f, -363.22f),
                     FishingSpot = new Vector3(-218.18f, -4.50f, -361.86f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-217.15f, -6.62f, -353.96f),
+                    FacePosition = new Vector3(-217.15f, -6.62f, -353.96f),
                     FishingSpot = new Vector3(-220.26f, -7.21f, -353.64f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-215.15f, -6.68f, -346.41f),
+                    FacePosition = new Vector3(-215.15f, -6.68f, -346.41f),
                     FishingSpot = new Vector3(-218.17f, -6.95f, -345.71f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-211.91f, -7.40f, -332.87f),
+                    FacePosition = new Vector3(-211.91f, -7.40f, -332.87f),
                     FishingSpot = new Vector3(-213.56f, -7.57f, -334.14f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-226.48f, -8.44f, -328.96f),
+                    FacePosition = new Vector3(-226.48f, -8.44f, -328.96f),
                     FishingSpot = new Vector3(-224.87f, -9.06f, -331.05f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-230.26f, -7.42f, -340.99f),
+                    FacePosition = new Vector3(-230.26f, -7.42f, -340.99f),
                     FishingSpot = new Vector3(-228.63f, -6.71f, -343.76f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-239.19f, -8.53f, -337.74f),
+                    FacePosition = new Vector3(-239.19f, -8.53f, -337.74f),
                     FishingSpot = new Vector3(-239.12f, -8.75f, -340.62f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-248.03f, -8.91f, -342.80f),
+                    FacePosition = new Vector3(-248.03f, -8.91f, -342.80f),
                     FishingSpot = new Vector3(-246.44f, -9.14f, -345.84f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-257.40f, -8.99f, -348.86f),
+                    FacePosition = new Vector3(-257.40f, -8.99f, -348.86f),
                     FishingSpot = new Vector3(-255.05f, -9.66f, -349.50f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-262.06f, -7.95f, -361.69f),
+                    FacePosition = new Vector3(-262.06f, -7.95f, -361.69f),
                     FishingSpot = new Vector3(-260.39f, -8.70f, -359.37f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(-249.80f, -7.29f, -359.88f),
+                    FacePosition = new Vector3(-249.80f, -7.29f, -359.88f),
                     FishingSpot = new Vector3(-250.22f, -6.85f, -357.14f),
                 },
             },
@@ -996,82 +997,82 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(0.08f, -11.95f, 63.10f),
+                    FacePosition = new Vector3(0.08f, -11.95f, 63.10f),
                     FishingSpot = new Vector3(2.85f, -12.51f, 64.48f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(12.05f, -13.19f, 62.90f),
+                    FacePosition = new Vector3(12.05f, -13.19f, 62.90f),
                     FishingSpot = new Vector3(10.25f, -14.11f, 64.94f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(20.01f, -12.15f, 71.47f),
+                    FacePosition = new Vector3(20.01f, -12.15f, 71.47f),
                     FishingSpot = new Vector3(18.04f, -12.19f, 73.60f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(28.99f, -11.83f, 73.88f),
+                    FacePosition = new Vector3(28.99f, -11.83f, 73.88f),
                     FishingSpot = new Vector3(27.43f, -12.32f, 76.54f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(35.22f, -11.77f, 83.39f),
+                    FacePosition = new Vector3(35.22f, -11.77f, 83.39f),
                     FishingSpot = new Vector3(32.59f, -12.18f, 83.39f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(43.19f, -12.01f, 97.75f),
+                    FacePosition = new Vector3(43.19f, -12.01f, 97.75f),
                     FishingSpot = new Vector3(40.23f, -12.72f, 98.95f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(45.91f, -11.38f, 106.61f),
+                    FacePosition = new Vector3(45.91f, -11.38f, 106.61f),
                     FishingSpot = new Vector3(43.90f, -11.44f, 108.78f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(54.43f, -11.36f, 120.65f),
+                    FacePosition = new Vector3(54.43f, -11.36f, 120.65f),
                     FishingSpot = new Vector3(50.35f, -12.65f, 120.35f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(62.81f, -11.04f, 128.76f),
+                    FacePosition = new Vector3(62.81f, -11.04f, 128.76f),
                     FishingSpot = new Vector3(60.76f, -12.09f, 131.02f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(66.74f, -11.19f, 139.08f),
+                    FacePosition = new Vector3(66.74f, -11.19f, 139.08f),
                     FishingSpot = new Vector3(63.89f, -12.32f, 138.41f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(47.85f, -12.66f, 142.70f),
+                    FacePosition = new Vector3(47.85f, -12.66f, 142.70f),
                     FishingSpot = new Vector3(48.68f, -13.80f, 138.88f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(31.86f, -12.06f, 133.57f),
+                    FacePosition = new Vector3(31.86f, -12.06f, 133.57f),
                     FishingSpot = new Vector3(32.15f, -13.68f, 129.67f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(16.78f, -12.14f, 124.23f),
+                    FacePosition = new Vector3(16.78f, -12.14f, 124.23f),
                     FishingSpot = new Vector3(20.85f, -13.00f, 121.99f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(12.42f, -12.02f, 113.60f),
+                    FacePosition = new Vector3(12.42f, -12.02f, 113.60f),
                     FishingSpot = new Vector3(14.83f, -12.12f, 111.30f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(6.02f, -10.97f, 100.08f),
+                    FacePosition = new Vector3(6.02f, -10.97f, 100.08f),
                     FishingSpot = new Vector3(9.58f, -12.16f, 101.33f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(15.25f, -10.81f, 90.49f),
+                    FacePosition = new Vector3(15.25f, -10.81f, 90.49f),
                     FishingSpot = new Vector3(19.14f, -10.52f, 89.53f),
                 },
             },
@@ -1079,37 +1080,37 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(42.45f, 9.45f, -336.36f),
+                    FacePosition = new Vector3(42.45f, 9.45f, -336.36f),
                     FishingSpot = new Vector3(41.51f, 9.79f, -339.41f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(30.07f, 8.43f, -325.01f),
+                    FacePosition = new Vector3(30.07f, 8.43f, -325.01f),
                     FishingSpot = new Vector3(31.79f, 7.84f, -329.47f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(31.76f, 8.42f, -338.79f),
+                    FacePosition = new Vector3(31.76f, 8.42f, -338.79f),
                     FishingSpot = new Vector3(33.50f, 8.40f, -338.15f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(37.46f, 9.62f, -348.96f),
+                    FacePosition = new Vector3(37.46f, 9.62f, -348.96f),
                     FishingSpot = new Vector3(38.50f, 8.76f, -346.58f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(49.10f, 13.05f, -357.40f),
+                    FacePosition = new Vector3(49.10f, 13.05f, -357.40f),
                     FishingSpot = new Vector3(50.84f, 11.86f, -355.20f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(62.91f, 12.84f, -351.41f),
+                    FacePosition = new Vector3(62.91f, 12.84f, -351.41f),
                     FishingSpot = new Vector3(60.05f, 11.59f, -350.42f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(58.30f, 10.77f, -338.69f),
+                    FacePosition = new Vector3(58.30f, 10.77f, -338.69f),
                     FishingSpot = new Vector3(55.84f, 10.34f, -341.09f),
                 },
             },
@@ -1117,37 +1118,37 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(217.07f, 134.03f, -754.25f),
+                    FacePosition = new Vector3(217.07f, 134.03f, -754.25f),
                     FishingSpot = new Vector3(217.51f, 133.57f, -750.65f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(206.88f, 133.68f, -745.50f),
+                    FacePosition = new Vector3(206.88f, 133.68f, -745.50f),
                     FishingSpot = new Vector3(209.77f, 133.82f, -744.00f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(205.17f, 133.64f, -741.28f),
+                    FacePosition = new Vector3(205.17f, 133.64f, -741.28f),
                     FishingSpot = new Vector3(205.18f, 133.59f, -738.54f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(206.42f, 133.97f, -726.84f),
+                    FacePosition = new Vector3(206.42f, 133.97f, -726.84f),
                     FishingSpot = new Vector3(206.03f, 133.68f, -729.59f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(221.92f, 134.34f, -731.40f),
+                    FacePosition = new Vector3(221.92f, 134.34f, -731.40f),
                     FishingSpot = new Vector3(218.78f, 133.40f, -732.39f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(220.82f, 134.18f, -739.20f),
+                    FacePosition = new Vector3(220.82f, 134.18f, -739.20f),
                     FishingSpot = new Vector3(217.94f, 133.71f, -740.18f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(227.07f, 133.59f, -746.64f),
+                    FacePosition = new Vector3(227.07f, 133.59f, -746.64f),
                     FishingSpot = new Vector3(224.13f, 133.67f, -747.62f),
                 },
             },
@@ -1155,62 +1156,62 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(522.39f, 3.72f, 6.38f),
+                    FacePosition = new Vector3(522.39f, 3.72f, 6.38f),
                     FishingSpot = new Vector3(526.37f, 1.46f, 6.78f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(514.93f, 5.06f, -5.50f),
+                    FacePosition = new Vector3(514.93f, 5.06f, -5.50f),
                     FishingSpot = new Vector3(517.66f, 3.72f, -7.25f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(534.45f, 2.90f, 20.02f),
+                    FacePosition = new Vector3(534.45f, 2.90f, 20.02f),
                     FishingSpot = new Vector3(532.72f, 2.09f, 17.03f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(530.05f, 4.40f, -7.54f),
+                    FacePosition = new Vector3(530.05f, 4.40f, -7.54f),
                     FishingSpot = new Vector3(530.28f, 3.94f, -4.81f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(547.62f, 5.78f, -12.96f),
+                    FacePosition = new Vector3(547.62f, 5.78f, -12.96f),
                     FishingSpot = new Vector3(545.12f, 4.14f, -11.22f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(543.05f, 4.01f, 6.34f),
+                    FacePosition = new Vector3(543.05f, 4.01f, 6.34f),
                     FishingSpot = new Vector3(540.22f, 2.90f, 3.38f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(395.64f, 29.33f, -82.69f),
+                    FacePosition = new Vector3(395.64f, 29.33f, -82.69f),
                     FishingSpot = new Vector3(392.52f, 28.75f, -82.02f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(393.66f, 26.52f, -68.54f),
+                    FacePosition = new Vector3(393.66f, 26.52f, -68.54f),
                     FishingSpot = new Vector3(392.21f, 26.54f, -70.02f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(380.67f, 25.86f, -61.85f),
+                    FacePosition = new Vector3(380.67f, 25.86f, -61.85f),
                     FishingSpot = new Vector3(380.79f, 25.43f, -65.96f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(372.12f, 26.73f, -73.69f),
+                    FacePosition = new Vector3(372.12f, 26.73f, -73.69f),
                     FishingSpot = new Vector3(375.33f, 26.09f, -72.63f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(378.86f, 28.80f, -80.56f),
+                    FacePosition = new Vector3(378.86f, 28.80f, -80.56f),
                     FishingSpot = new Vector3(381.41f, 27.31f, -78.12f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(384.36f, 31.21f, -89.83f),
+                    FacePosition = new Vector3(384.36f, 31.21f, -89.83f),
                     FishingSpot = new Vector3(386.65f, 29.25f, -85.66f),
                 },
             },
@@ -1221,62 +1222,62 @@ public static unsafe class GatheringUtil
             {
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(568.49f, -255.60f, 443.19f),
+                    FacePosition = new Vector3(568.49f, -255.60f, 443.19f),
                     FishingSpot = new Vector3(566.70f, -255.60f, 443.12f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(563.41f, -255.53f, 423.46f),
+                    FacePosition = new Vector3(563.41f, -255.53f, 423.46f),
                     FishingSpot = new Vector3(558.72f, -255.60f, 422.97f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(564.38f, -255.60f, 392.22f),
+                    FacePosition = new Vector3(564.38f, -255.60f, 392.22f),
                     FishingSpot = new Vector3(561.69f, -255.60f, 394.55f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(543.42f, -255.60f, 377.75f),
+                    FacePosition = new Vector3(543.42f, -255.60f, 377.75f),
                     FishingSpot = new Vector3(543.87f, -255.60f, 382.61f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(518.68f, -255.60f, 381.85f),
+                    FacePosition = new Vector3(518.68f, -255.60f, 381.85f),
                     FishingSpot = new Vector3(521.64f, -255.60f, 384.93f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(495.36f, -255.60f, 394.65f),
+                    FacePosition = new Vector3(495.36f, -255.60f, 394.65f),
                     FishingSpot = new Vector3(497.47f, -255.60f, 396.45f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(487.47f, -255.60f, 418.04f),
+                    FacePosition = new Vector3(487.47f, -255.60f, 418.04f),
                     FishingSpot = new Vector3(491.50f, -255.60f, 418.84f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(497.92f, -255.60f, 441.74f),
+                    FacePosition = new Vector3(497.92f, -255.60f, 441.74f),
                     FishingSpot = new Vector3(501.92f, -255.60f, 441.30f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(507.45f, -255.60f, 469.76f),
+                    FacePosition = new Vector3(507.45f, -255.60f, 469.76f),
                     FishingSpot = new Vector3(510.07f, -255.60f, 469.08f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(523.13f, -255.60f, 492.38f),
+                    FacePosition = new Vector3(523.13f, -255.60f, 492.38f),
                     FishingSpot = new Vector3(523.15f, -255.60f, 490.31f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(553.21f, -255.60f, 511.88f),
+                    FacePosition = new Vector3(553.21f, -255.60f, 511.88f),
                     FishingSpot = new Vector3(554.02f, -255.60f, 510.50f),
                 },
                 new FisherSpotInfo()
                 {
-                    NavtoSpot = new Vector3(575.75f, -255.60f, 512.97f),
+                    FacePosition = new Vector3(575.75f, -255.60f, 512.97f),
                     FishingSpot = new Vector3(574.34f, -255.60f, 510.77f),
                 },
             },
@@ -3694,14 +3695,38 @@ public static unsafe class GatheringUtil
         [493] = new FishingTools { },
         [494] = new FishingTools { },
         [495] = new FishingTools { },
-        [508] = new FishingTools 
+        // Export for Mission [508] - EX: Processed Aquatic Metals
+        [508] = new FishingTools()
         {
-
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACtVXXXObOBT9Kx49ww7CAgNvjpukmbHTTHFmHzr7IOCCNcHIkUQaN+P/viM+bMB2s+142u6budI9OudIV1d+Q9NS8RmVSs7SDAVv6LqgUQ7TPEeBEiUYSA/OWQF68C4ruIAF5/EKBSnNJRhNQtJOv0tQYHu+gR4E44KpLQqwge7k9Wuclwkkh7Cev6vxG8Q3VP2wq6U0jusZ6HazXAmQK54nKMCW1UP+PnSF4U96Gda7ZGarcn1woieMYIsMGHkDRi0Iz3OI1Xkc3M2y3yfFRcJofgYP267bs5w0aTdMrq63IFtHCbacgQDH6Qlw2y2hTxCuWKquKKtk6IBsA6Gi8ZNEgdOY7HrHuF1Uv0F9oIpBEUOHjzvMc/uG2m2qYN9gRlV9UE6dOtc7AvO8Pti4AVuuaM7ok7yhL1xovF6gVTc2+vHPEPMXECjA2rMzFEhvwdbOK5bd0nWle1pkOQjZLqL3PkHBeGKRIXu7B+Xtdga6flWC9kp1T0Dvy5KHX+nmrlAlU4wXt5QVrdUmNtC8FLAAKWkGKEDIQPcVJ3TPC0ANwnYDKNA+ncCbc6l+Gu9BgITTDJGJzozXK1bjBz7hBmIlaD4rhYBCXUjlAPViWk+yPVJ8cvVq1g0XMVRF95Vu2s2uD1Go+EaXOCuyUMGmumoPgpqDNhWX0dGFq4g9Fuy5BI2LiGUR4sXETBIHTOLB2PTiyDNh4tru2Ce+gwnaGWjOpPqU6jUkCr68VatpAXuCvn+e4TTPR3XqkOY9F2uaf+T8SQO1l8zfQKtvHZeg9uXSa1zNYNfbJlTDEzzRl1eLGSrBi+wCqNa4gzqHDIqEiu2hrM8gLNkaxKDwF6zYD+kL8y/LQLqJnZqr4/35rp5+itwHXkb5eyb2Em3X3+e9a9TZzJ4ZZ5IX9LUr+UhCjfcoYSnYpjazdaCO/JCsiWNrQ+rMHxTWyz2S9iu2s6WgL4tpqkDMaJmt1JytdWPH9cDwFqlefaWoXw76R6cn1u3K8YdPoe++rfRzrL3U20L9DM8lE5CEiqpSvyb0e+9/Xr2XAP6TK+9E8h9VUf81/bdXw+Ohe44jgiMX2yaJ49QkjhWZUWRhM3U8O47tyCZWgnb/tO2z+bf0ZR+oO6j+rvt10y+vwsXIHD0IHoOUkIymzyVVLB4tQNFcjszRR6Av29FU0VemdO/vUMIxjhI7dkyM08gkvodNL0rATCI7Sid4TFPsod2/sM5WQT8OAAA=",
+            },
+            AmountRequired = 0,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
         },
-        [509] = new FishingTools 
+
+        // Export for Mission [509] - EX: Refined Moon Gel
+        [509] = new FishingTools()
         {
-
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1X227bOBD9FYPPIqALqdub66ZpACcbxFnsAkEfKHFkE5FFl6K6zQb+9wV1sSVHttHAD8UibzI5c+bM6Ghm/IqmlZYzVupyli1R/IquCpbkMM1zFGtVgYXM5VwUsL/k3dUNR7EbRha6V0IqoV9Q7Fjoprz6meYVB74/NvbbButWynRlwOoH1zzVOH5ooevN40pBuZI5R7Fj2wPk09A1RhQMPOyzZGaran0kMeLY5AyjDkTmOaS6y4Q4ttM3c8+zkIoLlh8h4ri+P6gxad2+iHJ19QJlLzA9YEzpgLHfvQP2DIuVyPQnJmre5qDsDhaapc8limlbVT98i9tHjVrUe6YFFCn0+PiHfv6wgm7nqsS/MGO6UUYX9dDbPai/13o/rlgu2HP5hf2QygAMDrp0PGt4/gCp/AEKxY4p0pi0/dBIoBewq98nsbxm6zrRabHMQZVdEPOyOYq9wCZv2A+gwu3WQlc/tWLth2cq/ygX/7DNTaEroYUsrpkounpgx0LzSsEtlCVbAooRstBdTQLdyQKQ1SC8bADFpjAjeHNZ6nfj3SsoYZwhwujIfROxvt/zWWwg1Yrls0opKPSFsjxAvViuo2zfZDwavbZqBLLQcmO+V1EsFxo2daPcc29FNFWXodyHqzn8WYjvFRhcRG3qJdyJcJLRCBOPJJg5xMGOT93UjYgbcB9tLTQXpf4jMzFKFD818jQJ7AhG0XGG0zyfNK6HNO+kWrP8q5TPBqjrGH8Bq3+b8xL07lvMWF5C9222lybB7ittjxp44gSmE3WYC61k0Rtp591tr+c+hyUUnKmXC/CqgT/LKskPM20sXD/aGexpHzUZo9a3elRicyxSQF1vZ3Is1sDoRLTWzmh7mmlQM1YtV3ou1maoOM3FoejrdaJSzdQyD732PNKDvYBGb8fwiYlqVoGu+3Qye4DvlVDAF5rpygw2s2sc0d4ZLf2qZD4k8GsSeO8773W4LAt8z3ETnJKQYwLMx0kUZdjnJCCe65HIDtD2W9fi2n30aXfQdLmnV9Rvd4RGrnu84X2Vm40olpN5VSwz49bve86pAt1wKLRIWW6qYqI1BtO1rIqe2diCSqPDFcMbrnuhCVypjKWwyE132uVCz2xWdGuh32ZR38/Jd09H42xOZqaqdUH787KdkuaxOd6bjem3p7XIjmzikQAzygJMPEhw6BMbpxC6vgseTUmKttZbLZ1I4FbKIhd6MmNqc3EdvVs44wL80NFldORxAqGd2ZjzyMfEsTPMUkox9zh1nNCB1LXHdOScWMLmVcHU5IEJtmbDRexDSP9bIfGUE+4TH4euzzCJKODE5h72sjRMvIDzDMJ6+DW4LcUnakffJld/x5MHyEQBfGKa0OQa8uGfB5cy14syD/uBTTBxuWl3SYizEGhAw8DOsgBt/wPyisUyVRIAAA==",
+            },
+            AmountRequired = 0,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
         },
+
         [510] = new FishingTools { },
         [511] = new FishingTools { },
 

@@ -1,4 +1,5 @@
 ﻿using ICE.Config;
+using ICE.Utilities.Cosmic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +24,31 @@ namespace ICE.Scheduler.Tasks
 
                 var mission = CosmicHelper.SheetMissionDict[missionId];
                 bool fishingMission = mission.Attributes.HasFlag(MissionAttributes.Fish);
-                C.MissionConfig.TryGetValue(missionId, out var config);
+                bool gatherMission = mission.Attributes.HasFlag(MissionAttributes.Gather);
+                bool craftMission = mission.Attributes.HasFlag(MissionAttributes.Craft);
 
-                if (C.OnlyGrabMission || (config != null && config.ManualMode) || mission.Attributes.HasFlag(MissionAttributes.Fish))
+                C.MissionConfig.TryGetValue(missionId, out var config);
+                bool dualClass = (gatherMission && craftMission) || (fishingMission && craftMission);
+
+                if (C.OnlyGrabMission || (config != null && config.ManualMode) || UnsupportedMissions.Ids.Contains(missionId))
                 {
                     SchedulerMain.State = IceState.ManualMode;
+                }
+                else if (dualClass)
+                {
+                    IceLogging.Info("We've found a dual class mission! Kicking it off with that.", "[Task: Execute Mission]");
+                    SchedulerMain.State = IceState.DualClass;
+                    if (fishingMission)
+                    {
+                        if (config.Use_BuildinPreset)
+                        {
+                            P.AutoHook.DeleteAllAnonymousPresets();
+                            foreach (var preset in GatheringUtil.FishingPreset[missionId].FishingPreset)
+                            {
+                                P.AutoHook.CreateAndSelectAnonymousPreset(preset);
+                            }
+                        }
+                    }
                 }
                 else if (fishingMission && !config.ManualMode)
                 {
@@ -52,17 +73,12 @@ namespace ICE.Scheduler.Tasks
                     SchedulerMain.State = IceState.Fish;
                     IceLogging.Debug("Mission is a fishing mission, might also contain crafting in it but. For now starting off with the fishing portion");
                 }
-                else if (mission.Attributes.HasFlag(MissionAttributes.Gather) && mission.Attributes.HasFlag(MissionAttributes.Craft))
-                {
-                    IceLogging.Info("We've found a dual class mission! Kicking it off with that.", "[Task: Execute Mission]");
-                    SchedulerMain.State = IceState.DualClass;
-                }
-                else if (mission.Attributes.HasFlag(MissionAttributes.Gather))
+                else if (gatherMission)
                 {
                     SchedulerMain.State = IceState.Gather;
                     IceLogging.Info("Mission is a gathering mission. Need to gather inial resources. But first going to do a check to make sure where we're at.", "[Task_ExecuteMission]");
                 }
-                else if (mission.Attributes.HasFlag(MissionAttributes.Craft))
+                else if (craftMission)
                 {
                     IceLogging.Debug("Mission is purely a crafting mission (yay), checking current state next", "[Task_ExecuteMission]");
                     SchedulerMain.State = IceState.Craft;

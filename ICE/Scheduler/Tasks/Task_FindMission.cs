@@ -3,10 +3,12 @@ using ECommons.Automation.NeoTaskManager;
 using ECommons.GameHelpers;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Config;
 using ICE.Utilities.Cosmic;
 using Lumina.Excel.Sheets;
+using NAudio.Gui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -762,9 +764,9 @@ namespace ICE.Scheduler.Tasks
         public static void InsertGrabMission(uint missionId)
         {
             P.TaskManager.InsertMulti(
-                new(() => ClearNavFishing(), "Clearing the previous navmesh pathing"),
                 new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
                 new(() => FrameDelay(8), "Waiting 8 frames before next action"),
+                new(() => FacePosition(missionId), "Checking to see if we need to face the hole"),
                 new(() => GrabMission(missionId), "Selecting mission for grabbing"),
                 new(() => FrameDelay(16), "Giving time before you kick in the mission")
             );
@@ -852,13 +854,8 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        public static bool? ClearNavFishing()
-        {
-            fishingPath.Clear();
-            fishingEntry = null;
 
-            return true;
-        }
+        private static Vector3 fishingHoleLoc = Vector3.Zero;
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
@@ -874,14 +871,13 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            if (missionConfig.ManualMode || missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
+            if (missionConfig.ManualMode || UnsupportedMissions.Ids.Contains(missionId))
             {
                 // TODO: Remove the extra 2 here until I can fix pathfinding thing
                 // This is here to make sure that you don't need to be in the area for moving. Mainly cause nodes aren't mapped out yet and it's expecting to map to that area...
                 return true;
             }
-
-            if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
+            else if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it
                 Vector2 PlayerPos = new Vector2(Player.Position.X, Player.Position.Z);
@@ -946,8 +942,58 @@ namespace ICE.Scheduler.Tasks
                 // Need to generate a path to the pre-set spot per fishing hole
                 // Then need to add the last path to it once the base has been generated, to make sure that you're facing to the fishing hole properly.
                 var location = missionEntry.MapPosition;
-                var distance = Player.DistanceTo(location);
-                // TODO: Fix this for fisher
+                var territory = missionEntry.TerritoryId;
+                var fishingHole = GatheringUtil.MoonFishingLocations[territory][location];
+
+                if (!P.Navmesh.IsRunning())
+                {
+                    if (!Svc.Condition[ConditionFlag.Unknown101])
+                    {
+                        foreach (var fishSpot in fishingHole)
+                        {
+                            if (Player.DistanceTo(fishSpot.FishingSpot) < 2)
+                            {
+                                return true;
+                            }
+                        }
+                        if (EzThrottler.Throttle("Inializing movement for pathfinding"))
+                        {
+                            var _random = new Random();
+                            var randomIndex = _random.Next(fishingHole.Count);
+                            P.Navmesh.PathfindAndMoveTo(fishingHole[randomIndex].FishingSpot, false);
+                            fishingHoleLoc = fishingHole[randomIndex].FishingSpot;
+                        }
+                    }
+                }
+                else if (P.Navmesh.IsRunning())
+                {
+                    if (Svc.Condition[ConditionFlag.Unknown101])
+                    {
+                        // We're currently using the cosmoliners, telling it to stop the current navmesh in the mean time
+                        if (EzThrottler.Throttle("Stopping navmesh temp"))
+                        {
+                            P.Navmesh.Stop();
+                            fishingPath.Clear();
+                        }
+                    }
+                    if (C.UseMountOutsideMission && !Svc.Condition[ConditionFlag.Mounted] && !Player.IsBusy)
+                    {
+                        if (Player.DistanceTo(fishingHoleLoc) > C.MountRadius)
+                        {
+                            if (EzThrottler.Throttle("Attemping to mount up for btn/min"))
+                            {
+                                Utils.MountAction();
+                            }
+                        }
+                    }
+                    else if (Svc.Condition[ConditionFlag.Mounted] && Player.DistanceTo(fishingHoleLoc) < C.DismountRadius)
+                    {
+                        if (EzThrottler.Throttle("Dismounting from mount"))
+                        {
+                            Utils.Dismount();
+                        }
+                    }
+                }
             }
             else
             {
@@ -957,19 +1003,60 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        private static void UpdateFishingPath(Vector3 pathToArea)
+        public static unsafe bool? FacePosition(uint missionId)
         {
-            Vector3 currentPos = Player.Position;
+            var mission = CosmicHelper.SheetMissionDict[missionId];
 
-            // Fire and forget - this will update pathTo when complete
-            _ = Task.Run(async () =>
+            if (!mission.Jobs.Contains(18) || UnsupportedMissions.Ids.Contains(missionId))
             {
-                fishingPath = await FindTask(currentPos, pathToArea);
-            });
+                IceLogging.Info("Not on a fishing mission. So... continuing on.", "[Find Mission: Face Position]");
+                return true;
+            }
+            else
+            {
+                var territory = mission.TerritoryId;
+                var map = mission.MapPosition;
+
+                var fishingHole = GatheringUtil.MoonFishingLocations[territory][map].Where(x => Player.DistanceTo(x.FishingSpot) < 5).FirstOrDefault();
+                if (fishingHole != null)
+                {
+                    var pos = fishingHole.FacePosition;
+
+                    // Store current rotation
+                    float currentRotation = Player.Rotation;
+
+                    // If rotation is still changing, wait for it to stabilize
+                    if (Math.Abs(Player.Rotation - currentRotation) > 0.01f)
+                    {
+                        return null; // Still moving, try again later
+                    }
+
+                    Vector3 direction = pos - Player.Position;
+                    float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
+
+                    float angleDifference = GetShortestAngleDifference(Player.Rotation, targetRotation);
+
+                    if (Math.Abs(angleDifference) < 0.3f)
+                    {
+                        return true;
+                    }
+
+                    Vector3 temp = pos;
+                    ActionManager.Instance()->AutoFaceTargetPosition(&temp);
+                }
+            }
+
+            return false;
         }
-        private static async Task<List<Vector3>> FindTask(Vector3 currentPos, Vector3 pathToArea)
+        private static float GetShortestAngleDifference(float currentAngle, float targetAngle)
         {
-            return await P.Navmesh.Pathfind(currentPos, pathToArea, false);
+            float difference = targetAngle - currentAngle;
+
+            // Normalize to [-π, π] for shortest path
+            while (difference > Math.PI) difference -= (float)(2 * Math.PI);
+            while (difference < -Math.PI) difference += (float)(2 * Math.PI);
+
+            return difference;
         }
         private static bool? CheckReroll()
         {

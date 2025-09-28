@@ -472,7 +472,28 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
 
+            ImGui.Text("Where'd the dual craft amount go?");
+            ImGui.SameLine();
+            ImGui.Dummy(new(5, 0));
+            ImGui.SameLine();
+            ImGui.TextDisabled("?");
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetNextWindowSize(new(400.0f, 0.0f)); // Fixed width, auto height
+                ImGui.BeginTooltip();
+
+                ImGui.TextWrapped("Short answer: It's built in now\n" +
+                 "Long answer: Honestly, this was a cumbersome system in itself. And with square deciding to not continue on with dual crafting missions going into the 2nd moon, I figured it would be better to just tie it into the scoring system. You realistically only need:\n" +
+                 "Gold: 3 Items\n" +
+                 "Silver: 2 Items\n" +
+                 "Bronze: 1 Item\n" +
+                 "to be able to hit the threshold. And even then, if you manage to not hit it on the first attempt, it'll just keep gathering. Plus. This makes it to where I can not have to worry about profile managing on fishing for... 4 missions? Seemed minorly reduntant in my eyes.\n" +
+                 "So now how it'll work. Select the turnin option (Gold/Any both work the same) and it will now gather up to the necessary amount -> turnin when it's ready.\n" +
+                 "NOW NONE OF YOU CAN TELL IT TO CRAFT 27 ITEMS. STOP IT. IT SAID CRAFT (╯°Д°)╯︵/(.□ . \\)");
+                ImGui.EndTooltip();
+            }
             // Multiply gathered items on FIRST gather loop only. Should only be used for Dual Class really.
+            /*
             int gatherMult = entry.DualClassCraftAmount;
             ImGui.SetNextItemWidth(100);
             if (ImGui.InputInt("Dual Class Craft Amount", ref gatherMult, 1))
@@ -481,6 +502,7 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
             ImGuiEx.HelpMarker("This increases how many items you gather before you are 'done' before switching to crafting.\nSet this to however many items you need to craft to reach your target score.\nOnly affects Dual Class missions.");
+            */
 
             // Boon Increase 2 (+30% Increase)
             DrawBuffSetting(

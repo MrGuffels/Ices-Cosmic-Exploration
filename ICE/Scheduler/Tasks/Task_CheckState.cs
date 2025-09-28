@@ -2,6 +2,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Sounds;
+using ICE.Utilities.Cosmic;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Utilities.CosmicHelper;
@@ -168,10 +169,10 @@ namespace ICE.Scheduler.Tasks
                             C.MissionConfig.TryGetValue(currentMissionId, out var config);
 
                             var s = SchedulerMain.MissionState;
-                            bool dualMission = s.HasFlag(MissionAttributes.Craft) && s.HasFlag(MissionAttributes.Gather);
+                            bool dualMission = (s.HasFlag(MissionAttributes.Craft) && (s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish)));
                             // In the middle of a dual mission. 
                             // First, checking to see if you're in the middle of a gathering or crafting action
-                            if (C.OnlyGrabMission || config.ManualMode || s.HasFlag(MissionAttributes.Fish))
+                            if (C.OnlyGrabMission || config.ManualMode || UnsupportedMissions.Ids.Contains(currentMissionId))
                             {
                                 // TODO: Remove this once properly coded
                                 if (s.HasFlag(MissionAttributes.Fish))
