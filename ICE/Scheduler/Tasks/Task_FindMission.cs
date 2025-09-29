@@ -404,7 +404,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         mission.Select();
                         InsertGrabMission(mission.MissionId);
-                        IceLogging.Debug($"Mission was found!: {mission.MissionId}. Activating it");
+                        IceLogging.Debug($"Mission was found!: {mission.MissionId}. Activating it/inserting stack to queue up mission grab");
                         return true; // Found and processed a mission
                     }
                 }
@@ -858,6 +858,8 @@ namespace ICE.Scheduler.Tasks
         private static Vector3 fishingHoleLoc = Vector3.Zero;
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
+            ThrottleMessage("Currently in a navmesh movement");
+
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
             var currentJob = Player.JobId;
@@ -875,6 +877,7 @@ namespace ICE.Scheduler.Tasks
             {
                 // TODO: Remove the extra 2 here until I can fix pathfinding thing
                 // This is here to make sure that you don't need to be in the area for moving. Mainly cause nodes aren't mapped out yet and it's expecting to map to that area...
+                IceLogging.Info("Found a mission that is either in Manual mode, or unsupported. Continuing on", "[FindMission: NavmeshMoveTo]");
                 return true;
             }
             else if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
@@ -896,6 +899,7 @@ namespace ICE.Scheduler.Tasks
                         {
                             if (Player.DistanceTo(node.Position) < 5)
                             {
+                                IceLogging.Debug("We're close to a gathering node. So continuing on.");
                                 return true;
                             }
                         }
@@ -953,6 +957,7 @@ namespace ICE.Scheduler.Tasks
                         {
                             if (Player.DistanceTo(fishSpot.FishingSpot) < 2)
                             {
+                                IceLogging.Info("We're currently at a fishing spot! Continuing onto facing position -> grabbing the mission");
                                 return true;
                             }
                         }
@@ -962,6 +967,7 @@ namespace ICE.Scheduler.Tasks
                             var randomIndex = _random.Next(fishingHole.Count);
                             P.Navmesh.PathfindAndMoveTo(fishingHole[randomIndex].FishingSpot, false);
                             fishingHoleLoc = fishingHole[randomIndex].FishingSpot;
+                            IceLogging.Debug($"Told navmesh to move to the following spot: {fishingHoleLoc}");
                         }
                     }
                 }
@@ -972,6 +978,7 @@ namespace ICE.Scheduler.Tasks
                         // We're currently using the cosmoliners, telling it to stop the current navmesh in the mean time
                         if (EzThrottler.Throttle("Stopping navmesh temp"))
                         {
+                            IceLogging.Debug("Telling navmesh to stop cause on a cosmoliner");
                             P.Navmesh.Stop();
                             fishingPath.Clear();
                         }
@@ -1084,7 +1091,6 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.InsertDelay(amount);
             return true;
         }
-
         private static string NormalizeWhitespace(string text)
         {
             return text.Trim()
@@ -1092,6 +1098,13 @@ namespace ICE.Scheduler.Tasks
                        .Replace('\u2009', ' ')  // Thin space to regular space
                        .Replace('\u202F', ' ')  // Narrow no-break space to regular space
                        .Replace('\u3000', ' '); // Ideographic space to regular space
+        }
+        private static void ThrottleMessage(string s)
+        {
+            if (EzThrottler.Throttle($"{s} _ message", 2000))
+            {
+                IceLogging.Debug(s);
+            }
         }
     }
 }

@@ -74,6 +74,14 @@ namespace ICE.Scheduler.Tasks
                 }
                 else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
                 {
+                    if (Player.JobId == 18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
+                    {
+                        if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
+                            Task_DualClass.StopFishing();
+
+                        return false;
+                    }
+
                     if (EzThrottler.Throttle("Turning in mission"))
                         missionInfo.Report();
                 }

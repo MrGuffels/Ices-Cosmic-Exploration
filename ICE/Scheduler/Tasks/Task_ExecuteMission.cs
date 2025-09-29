@@ -71,7 +71,7 @@ namespace ICE.Scheduler.Tasks
                     }
 
                     SchedulerMain.State = IceState.Fish;
-                    IceLogging.Debug("Mission is a fishing mission, might also contain crafting in it but. For now starting off with the fishing portion");
+                    IceLogging.Debug("Mission is a fishing mission, so going to the fishing task");
                 }
                 else if (gatherMission)
                 {

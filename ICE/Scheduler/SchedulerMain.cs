@@ -20,6 +20,7 @@ namespace ICE.Scheduler
             State = IceState.Idle;
             if (P.Navmesh.IsRunning() && P.Navmesh.IsReady())
                 P.Navmesh.Stop();
+
             return true;
         }
 
@@ -68,6 +69,9 @@ namespace ICE.Scheduler
                         break;
                     case Gather:
                         Task_Gather.Enqueue();
+                        break;
+                    case Fish:
+                        Task_Fishing.Enqueue();
                         break;
                     case DualClass:
                         Task_DualClass.Enqueue();

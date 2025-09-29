@@ -45,10 +45,17 @@ namespace ICE.Scheduler.Handlers
             }
         }
 
+        private static bool? PandoraGatherState = false;
+        private static bool? PandoraInteractState = false;
+        private static bool? PandoraCordialState = false;
+
         internal static void Tick()
         {
             if (SchedulerMain.State != IceState.ManualMode)
             {
+
+
+
                 if (SchedulerMain.State == IceState.Gather || SchedulerMain.State == IceState.DualClass)
                 {
                     var pandoraGatherEnabled = (P.Pandora.GetFeatureEnabled("Pandora Quick Gather") ?? false);

@@ -102,8 +102,7 @@ public static partial class CosmicHelper
         else
         {
             // For overlay that should show current/mission job
-            if (currentMissionId > 0 &&
-                CosmicHelper.Dict_CosmicMissions.TryGetValue(currentMissionId, out var missionInfo))
+            if (currentMissionId > 0 && CosmicHelper.SheetMissionDict.TryGetValue(currentMissionId, out var missionInfo))
                 classId = missionInfo.Jobs.First();
             else if (CosmicHelper.CrafterJobList.Contains(Player.JobId) || CosmicHelper.GatheringJobList.Contains(Player.JobId))
                 classId = Player.JobId;

@@ -1,4 +1,6 @@
-﻿using Lumina.Excel.Sheets;
+﻿using Dalamud.Game.ClientState.Conditions;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,49 +27,84 @@ namespace ICE.Scheduler.Tasks
             // wait for fishing to be done
 
             P.TaskManager.Enqueue(() => Task_CheckScore.Fish());
-            P.TaskManager.Enqueue(() => CheckCraft());
-            P.TaskManager.Enqueue(() => IniateFishing());
-
+            P.TaskManager.Enqueue(() => FishingCheck());
         }
 
-        public static bool? CheckCraft()
+        private static unsafe bool? FishingCheck()
         {
-            return true;
-        }
+            string handle = "[Standard Fishing: Fishing Check]";
+            IceLogging.Info("Checking to see where we need to be here", handle);
 
-        public static bool? IniateFishing()
-        {
-            // Things to do here
-            // Check to see if you currently have bait / have it equipped.
             if (CosmicHelper.CurrentBait == 0)
             {
-                uint baitId = 0;
-                var missionId = CosmicHelper.CurrentLunarMission;
-                var mission = CosmicHelper.Dict_CosmicMissions[missionId];
-
-                foreach (var bait in mission.FishingBaits)
+                if (EzThrottler.Throttle("Equipping bait"))
                 {
-                    foreach (var baitIds in mission.FishingBaits)
+                    foreach (var bait in GatheringUtil.MoonBaits)
                     {
-                        PlayerHelper.GetItemCount(baitIds, out var count);
-                        if (count > 0)
+                        foreach (var baitId in bait.Value)
                         {
-                            baitId = baitIds;
-                            break;
+                            if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
+                            {
+                                P.AutoHook.SwapBaitById(baitId);
+                                IceLogging.Debug($"Telling it to equip bait ID: {baitId}", handle);
+                                return false;
+                            }
                         }
                     }
-                }
 
-                if (EzThrottler.Throttle("Telling autohook to equip the bait by Id"))
-                    P.AutoHook.SwapBaitById(baitId);
+                    IceLogging.Info("If we've gotten here, that means we're out of bait. Proceeding to turnin/abandon the mission");
+                    SchedulerMain.State = IceState.AbandonMission;
+                    P.TaskManager.Tasks.Clear();
+                    return true;
+                }
+                return false;
+            }
+            else if (!Svc.Condition[ConditionFlag.Gathering])
+            {
+                if (EzThrottler.Throttle("Starting to fish", 1000))
+                {
+                    IceLogging.Debug("Telling it to start fishing", handle);
+                    ActionManager.Instance()->UseAction(ActionType.Action, 289);
+                }
                 return false;
             }
             else
             {
-                // Ideally, we only tell it this once and then we never had to do it again. Problem is there's not *-really-* a good way of telling this. 
+                // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
+                P.AutoHook.SetState(true);
+                IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
+                P.TaskManager.Insert(() => WaitToStartFishing(), "Waiting till we actually start fishing", Utils.TaskConfig);
+                return true;
+            }
+        }
+
+        private static unsafe bool? WaitToStartFishing()
+        {
+            if (Svc.Condition[ConditionFlag.Fishing])
+            {
+                IceLogging.Info("We've started fishing, just going to wait for it to finish", "[Fishing: Waiting]");
+                P.TaskManager.Insert(() => FinishFishing(), "Waiting for fishing to finish", Utils.TaskConfig);
+                return true;
+            }
+            if (!Svc.Condition[ConditionFlag.Gathering])
+            {
+                IceLogging.Info("Somehow, we've gotten here and we're not fishing?? Going to check the score for a timer check", "[Fishing: Waiting]");
+                P.TaskManager.Tasks.Clear();
+                return true;
             }
 
-            return true;
+            return false;
+        }
+
+        private static unsafe bool? FinishFishing()
+        {
+            if (!Svc.Condition[ConditionFlag.Fishing])
+            {
+                IceLogging.Info("We're done fishing, time to go back to the score check", "[Fishing: Finished]");
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -134,6 +134,8 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool? CheckGatheringState()
         {
+            string handle = "[Task_DualClass | Check Gather State]";
+
             IceLogging.Debug("Starting 'Check Gather State'");
 
             var id = CosmicHelper.CurrentLunarMission;
@@ -152,7 +154,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gatheringAddon))
             {
-                IceLogging.Info($"We're currently in the middle of gathering, so going to just swap over to interacting with the gathering node");
+                IceLogging.Info($"We're currently in the middle of gathering, so going to just swap over to interacting with the gathering node", handle);
                 P.TaskManager.Enqueue(() => GatheringInteraction(), "Interacting with the gathering node");
                 return true;
             }
@@ -168,7 +170,7 @@ namespace ICE.Scheduler.Tasks
 
                 if (selfRepairGather)
                 {
-                    IceLogging.Info("You have enabled self repair, and you are need in repair. throwing in task to repair self", "[Task_DualClass | Check Gather State]");
+                    IceLogging.Info("You have enabled self repair, and you are need in repair. throwing in task to repair self", handle);
                     P.TaskManager.EnqueueMulti
                     (
                         new(Task_Repair.OpenSelfRepair, "Opening the self repair window"),
@@ -178,7 +180,7 @@ namespace ICE.Scheduler.Tasks
                 }
 
                 // Us getting here means that we're fresh into the node gathering. So just going to queue up the rest of the gathering process.
-                IceLogging.Info("You've gotten to this point so. Queueing up checking the gathering location, pathing to node, and navmesh movement", "[Task_DualClass | Check Gather State]");
+                IceLogging.Info("You've gotten to this point so. Queueing up checking the gathering location, pathing to node, and navmesh movement", handle);
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking Gathering Location Info");
                 P.TaskManager.Enqueue(() => PathToNode(), "Pathing to the gathering node");
                 P.TaskManager.Enqueue(() => NavmeshMovement(), "Navmesh moving to the node, then checking for targetability");
@@ -186,6 +188,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if (Player.JobId == 18)
             {
+                IceLogging.Info("We're on a fishing job, so going fishing.", handle);
                 bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent);
 
                 if (selfRepairGather)
@@ -518,10 +521,32 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool? FishingCheck()
         {
-            if (!Svc.Condition[ConditionFlag.Gathering])
+            string handle = "[Dual Class: Fishing Check]";
+
+            if (CosmicHelper.CurrentBait == 0)
+            {
+                if (EzThrottler.Throttle("Equipping bait"))
+                {
+                    foreach (var bait in GatheringUtil.MoonBaits)
+                    {
+                        foreach (var baitId in bait.Value)
+                        {
+                            if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
+                            {
+                                P.AutoHook.SwapBaitById(baitId);
+                                IceLogging.Debug($"Telling it to equip bait ID: {baitId}", handle);
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            else if (!Svc.Condition[ConditionFlag.Gathering])
             {
                 if (EzThrottler.Throttle("Starting to fish", 1000))
                 {
+                    IceLogging.Debug("Telling it to start fishing", handle);
                     ActionManager.Instance()->UseAction(ActionType.Action, 289);
                 }
                 return false;
@@ -530,6 +555,7 @@ namespace ICE.Scheduler.Tasks
             {
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
                 P.AutoHook.SetState(true);
+                IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => CheckItems(), "Checking for items to meet the quantity set", Utils.TaskConfig);
                 return true;
             }
@@ -537,9 +563,11 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool? CheckItems()
         {
+            string handle = "[Dual Class: Check Items]";
+
             if (!Svc.Condition[ConditionFlag.Gathering])
             {
-                IceLogging.Info("We've stopped fishing for some reason... going to go back and check if we have enough of the materials, or just ran out of bait");
+                IceLogging.Info("We've stopped fishing for some reason... going to go back and check if we have enough of the materials, or just ran out of bait", handle);
                 P.TaskManager.Tasks.Clear();
                 return true;
             }
@@ -575,7 +603,7 @@ namespace ICE.Scheduler.Tasks
                     }
                     if (EzThrottler.Throttle("Item Multiplier Amount", 5000))
                     {
-                        IceLogging.Info($"[Fishing] Item Multiplier: {itemAmount}", debugOnly: true);
+                        IceLogging.Info($"[Fishing] Item Multiplier: {itemAmount}", handle ,debugOnly: true);
                     }
 
                     foreach (var requiredItem in mainCraft.RequiredItems)
@@ -588,7 +616,10 @@ namespace ICE.Scheduler.Tasks
 
                         if (PlayerHelper.GetItemCount(materialItemId, out var mainItemCount) && mainItemCount < amountNeeded)
                         {
-                            // Still don't have enough items, so continuing on
+                            if (EzThrottler.Throttle("Item Count Checker", 5000))
+                            {
+                                IceLogging.Debug($"We still need {materialItemId}, so still fishing", handle);
+                            }
                         }
                         else
                         {
@@ -602,7 +633,7 @@ namespace ICE.Scheduler.Tasks
             }
         }
 
-        private static unsafe void StopFishing()
+        public static unsafe void StopFishing()
         {
             if (EzThrottler.Throttle("Telling it to stop fishing"))
             {

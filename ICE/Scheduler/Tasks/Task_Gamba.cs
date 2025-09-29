@@ -93,6 +93,8 @@ namespace ICE.Scheduler.Tasks
 
         public static unsafe void TryHandleGamba()
         {
+            string tag = "[Gamba]";
+
             if (EzThrottler.Throttle("Gamba", C.GambaDelay))
             {
                 var currentZoneId = Player.Territory;
@@ -144,7 +146,17 @@ namespace ICE.Scheduler.Tasks
                                 rightWeight /= gamba.RightWheelItems.Length;
                             }
 
-                            if (leftWeight > rightWeight)
+                            if (gamba.LeftWheelItems.Length == 0)
+                            {
+                                IceLogging.Info($"Found a pure stellar mission gamba. Choosing left wheel", tag);
+                                SelectWheelLeft(gamba);
+                            }
+                            else if (gamba.RightWheelItems.Length == 0)
+                            {
+                                IceLogging.Info($"Found a pure stellar mission gamba. Choosing right wheel", tag);
+                                SelectWheelRight(gamba);
+                            }
+                            else if (leftWeight > rightWeight)
                             {
                                 IceLogging.Info($"[Gamba] First wheel is better with total weight: {leftWeight}");
                                 SelectWheelLeft(gamba);

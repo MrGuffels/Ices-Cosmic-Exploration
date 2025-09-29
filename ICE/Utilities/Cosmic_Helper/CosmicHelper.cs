@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface.Textures;
 using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Enums;
 using System.Collections.Generic;
 
@@ -71,7 +72,7 @@ public static unsafe partial class CosmicHelper
         /// Applies to: ScoreTimeRemaining | ScoreVariety
         /// </summary>
         public uint FishCountRequired { get; set; } = 0;
-        public HashSet<uint> FishingBaits { get; set; } = new();
+        public bool UniqueFish { get; set; } = false;
 
         // - - - Crafter Specific - - - //
         public Dictionary<ushort, CraftingInfo> Crafts_Main { get; set; } = new();
@@ -1181,11 +1182,6 @@ public static unsafe partial class CosmicHelper
         public int CurrentXP { get; set; }
         public int NeededXP { get; set; }
     }
-
-    public static Dictionary<uint, CosmicInfo> Dict_CosmicMissions = new()
-    {
-
-    };
 
     public static Dictionary<uint, List<uint>> MissionUnlock = new()
     {

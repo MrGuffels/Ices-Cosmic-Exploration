@@ -220,6 +220,22 @@ namespace ICE.Config
                 C.ConfigVersion = 1;
                 C.Save();
             }
+
+            if (C.ConfigVersion == 1)
+            {
+                foreach (var mission in C.MissionConfig)
+                {
+                    if (mission.Key == 508 || mission.Key == 509)
+                        { continue; }
+
+                    if (GatheringUtil.FishingPreset.TryGetValue(mission.Key, out var preset) && preset.FishingPreset.Count > 0)
+                    {
+                        mission.Value.Use_BuildinPreset = true;
+                    }
+                }
+                C.ConfigVersion = 2;
+                C.Save();
+            }
         }
 
         public static void UpdateConfigMissionList()

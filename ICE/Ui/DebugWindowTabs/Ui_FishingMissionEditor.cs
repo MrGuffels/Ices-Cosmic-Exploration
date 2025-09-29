@@ -23,6 +23,10 @@ namespace ICE.Ui.DebugWindowTabs
         private static string baitSearchText = "";
         private static string fishSearchText = "";
 
+        private static int baitCurrentPage = 0;
+        private static int fishCurrentPage = 0;
+        private static int itemsPerPage = 5;
+
         public static void Draw()
         {
             if (ImGui.Button("Import missing missions"))
@@ -69,7 +73,14 @@ namespace ICE.Ui.DebugWindowTabs
                 Svc.Chat.Print($"All mission IDs copied to clipboard! ({GatheringUtil.FishingPreset.Count} missions)");
             }
 
+            ImGui.SameLine();
+
+            ImGui.SetNextItemWidth(100);
+            ImGui.InputInt("Items per page", ref itemsPerPage);
+            if (itemsPerPage < 1) itemsPerPage = 1;
+            if (itemsPerPage > 50) itemsPerPage = 50;
             ImGui.Separator();
+
 
             if (ImGui.BeginTable("Fishing Mission Editor", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit))
             {
@@ -123,12 +134,17 @@ namespace ICE.Ui.DebugWindowTabs
                         CosmicHelper.SheetMissionDict.TryGetValue(SelectedMission, out var mission))
                     {
                         ImGui.Text($"Editing Mission: [{SelectedMission}] {mission.Name}");
+                        string attribute = string.Join(", ", mission.Attributes);
+                        ImGui.Text($"Mission Attributes: {attribute}");
                         ImGui.Separator();
 
                         // Amount Required Section
                         ImGui.Text("Amount Required:");
                         ImGui.SetNextItemWidth(100);
                         ImGui.InputInt("##AmountRequired", ref missionData.AmountRequired);
+                        ImGui.Text("Unique Fish:");
+                        ImGui.SameLine();
+                        ImGui.Checkbox("##UniqueFish", ref missionData.UniqueFish);
                         ImGui.Separator();
 
                         // Fishing Preset Section
@@ -194,15 +210,53 @@ namespace ICE.Ui.DebugWindowTabs
                             var filteredBaits = GatheringUtil.MoonBaits
                                 .Where(x => string.IsNullOrEmpty(baitSearchText) ||
                                            x.Key.ToLower().Contains(baitSearchText.ToLower()))
-                                .OrderBy(x => x.Key);
+                                .OrderBy(x => x.Key)
+                                .ToList();
 
-                            foreach (var baitEntry in filteredBaits)
+                            int totalPages = (int)Math.Ceiling((double)filteredBaits.Count / itemsPerPage);
+                            if (totalPages == 0) totalPages = 1;
+
+                            // Reset to first page if current page is out of bounds
+                            if (baitCurrentPage >= totalPages) baitCurrentPage = 0;
+
+                            // Display current page items
+                            var pagedBaits = filteredBaits
+                                .Skip(baitCurrentPage * itemsPerPage)
+                                .Take(itemsPerPage);
+
+                            foreach (var baitEntry in pagedBaits)
                             {
                                 if (ImGui.Selectable($"{baitEntry.Key} ({baitEntry.Value.Count} IDs)"))
                                 {
                                     selectedBaitFromDict = baitEntry.Key;
+                                    baitCurrentPage = 0; // Reset page on selection
                                     ImGui.CloseCurrentPopup();
                                 }
+                            }
+
+                            ImGui.Separator();
+
+                            // Pagination controls
+                            ImGui.Text($"Page {baitCurrentPage + 1} of {totalPages} ({filteredBaits.Count} total results)");
+
+                            if (ImGui.Button("< Previous") && baitCurrentPage > 0)
+                            {
+                                baitCurrentPage--;
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Next >") && baitCurrentPage < totalPages - 1)
+                            {
+                                baitCurrentPage++;
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("First"))
+                            {
+                                baitCurrentPage = 0;
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Last"))
+                            {
+                                baitCurrentPage = totalPages - 1;
                             }
 
                             ImGui.EndPopup();
@@ -240,26 +294,6 @@ namespace ICE.Ui.DebugWindowTabs
                                 selectedBaitFromDict = "";
                                 baitSearchText = "";
                             }
-                        }
-
-                        ImGui.Separator();
-                        ImGui.Text("Add Custom Bait:");
-
-                        // Add new bait manually
-                        ImGui.SetNextItemWidth(150);
-                        ImGui.InputText("Bait Name##NewBaitName", ref newBaitName, 50);
-                        ImGui.SameLine();
-                        ImGui.SetNextItemWidth(100);
-                        ImGui.InputUInt("Bait ID##NewBaitIdForName", ref newBaitIdForName);
-                        ImGui.SameLine();
-                        if (ImGui.Button("Add Bait") && !string.IsNullOrEmpty(newBaitName) && newBaitIdForName > 0)
-                        {
-                            if (!missionData.Baits.ContainsKey(newBaitName))
-                            {
-                                missionData.Baits[newBaitName] = new List<uint>();
-                            }
-                            missionData.Baits[newBaitName].Add(newBaitIdForName);
-                            newBaitIdForName = 0;
                         }
 
                         // List existing bait categories and IDs
@@ -347,6 +381,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.OpenPopup("FishSelector");
                         }
 
+                        // Replace the FishSelector popup section with this:
                         if (ImGui.BeginPopup("FishSelector"))
                         {
                             ImGui.Text("Search and select fish:");
@@ -359,72 +394,110 @@ namespace ICE.Ui.DebugWindowTabs
                             var filteredFish = GatheringUtil.MoonFish
                                 .Where(x => string.IsNullOrEmpty(fishSearchText) ||
                                            x.Key.ToLower().Contains(fishSearchText.ToLower()))
-                                .OrderBy(x => x.Key);
+                                .OrderBy(x => x.Key)
+                                .ToList();
 
-                            foreach (var fishEntry in filteredFish)
+                            int totalPages = (int)Math.Ceiling((double)filteredFish.Count / itemsPerPage);
+                            if (totalPages == 0) totalPages = 1;
+
+                            // Reset to first page if current page is out of bounds
+                            if (fishCurrentPage >= totalPages) fishCurrentPage = 0;
+
+                            // Display current page items
+                            var pagedFish = filteredFish
+                                .Skip(fishCurrentPage * itemsPerPage)
+                                .Take(itemsPerPage);
+
+                            foreach (var fishEntry in pagedFish)
                             {
                                 if (ImGui.Selectable($"{fishEntry.Key} ({fishEntry.Value.Count} IDs)"))
                                 {
                                     selectedFishFromDict = fishEntry.Key;
+                                    fishCurrentPage = 0; // Reset page on selection
                                     ImGui.CloseCurrentPopup();
                                 }
+                            }
+
+                            ImGui.Separator();
+
+                            // Pagination controls
+                            ImGui.Text($"Page {fishCurrentPage + 1} of {totalPages} ({filteredFish.Count} total results)");
+
+                            if (ImGui.Button("< Previous##Fish") && fishCurrentPage > 0)
+                            {
+                                fishCurrentPage--;
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Next >##Fish") && fishCurrentPage < totalPages - 1)
+                            {
+                                fishCurrentPage++;
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("First##Fish"))
+                            {
+                                fishCurrentPage = 0;
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Last##Fish"))
+                            {
+                                fishCurrentPage = totalPages - 1;
                             }
 
                             ImGui.EndPopup();
                         }
 
                         // Show selected fish and add button
+                        // Show selected fish and add button
                         if (!string.IsNullOrEmpty(selectedFishFromDict))
                         {
                             ImGui.Text($"Selected: {selectedFishFromDict}");
+
                             ImGui.SameLine();
-                            if (ImGui.Button("Add Selected Fish") && !string.IsNullOrEmpty(newFishCategory))
+                            if (ImGui.Button("Add Selected Fish"))
                             {
                                 if (GatheringUtil.MoonFish.TryGetValue(selectedFishFromDict, out var fishIds))
                                 {
-                                    if (!missionData.RequiredFish.ContainsKey(newFishCategory))
+                                    // Use the fish name as category if no category specified
+                                    string categoryToUse = string.IsNullOrEmpty(newFishCategory) ? selectedFishFromDict : newFishCategory;
+
+                                    if (!missionData.RequiredFish.ContainsKey(categoryToUse))
                                     {
-                                        missionData.RequiredFish[newFishCategory] = new List<uint>();
+                                        missionData.RequiredFish[categoryToUse] = new List<uint>();
                                     }
 
                                     // Add all IDs from the dictionary entry
+                                    int addedCount = 0;
                                     foreach (var fishId in fishIds)
                                     {
-                                        if (!missionData.RequiredFish[newFishCategory].Contains(fishId))
+                                        if (!missionData.RequiredFish[categoryToUse].Contains(fishId))
                                         {
-                                            missionData.RequiredFish[newFishCategory].Add(fishId);
+                                            missionData.RequiredFish[categoryToUse].Add(fishId);
+                                            addedCount++;
                                         }
                                     }
+
+                                    // Show feedback
+                                    if (addedCount > 0)
+                                    {
+                                        Svc.Chat.Print($"Added {addedCount} fish ID(s) to category '{categoryToUse}'");
+                                    }
+                                    else
+                                    {
+                                        Svc.Chat.Print($"All fish IDs already exist in category '{categoryToUse}'");
+                                    }
+
                                     selectedFishFromDict = "";
                                     fishSearchText = "";
+                                    newFishCategory = ""; // Clear category after adding
                                 }
                             }
+
                             ImGui.SameLine();
                             if (ImGui.Button("Clear Selection##Fish"))
                             {
                                 selectedFishFromDict = "";
                                 fishSearchText = "";
                             }
-                        }
-
-                        ImGui.Separator();
-                        ImGui.Text("Add Custom Fish:");
-
-                        // Add new fish category manually
-                        ImGui.SetNextItemWidth(150);
-                        ImGui.InputText("Category##NewCategory", ref newFishCategory, 50);
-                        ImGui.SameLine();
-                        ImGui.SetNextItemWidth(100);
-                        ImGui.InputUInt("Fish ID##NewFishId", ref newFishId);
-                        ImGui.SameLine();
-                        if (ImGui.Button("Add Fish") && !string.IsNullOrEmpty(newFishCategory) && newFishId > 0)
-                        {
-                            if (!missionData.RequiredFish.ContainsKey(newFishCategory))
-                            {
-                                missionData.RequiredFish[newFishCategory] = new List<uint>();
-                            }
-                            missionData.RequiredFish[newFishCategory].Add(newFishId);
-                            newFishId = 0;
                         }
 
                         // List existing fish categories and fish
@@ -593,15 +666,16 @@ namespace ICE.Ui.DebugWindowTabs
 
             // Export FishingPreset list
             sb.AppendLine("\tFishingPreset = new List<string>()");
-            sb.AppendLine("\t{");
+            sb.AppendLine("\t\t\t{");
             foreach (var item in preset.FishingPreset)
             {
-                sb.AppendLine($"\t\t\"{item}\",");
+                sb.AppendLine($"\t\t\t\t\"{item}\",");
             }
-            sb.AppendLine("\t},");
+            sb.AppendLine("\t\t\t},");
 
             // Export AmountRequired
             sb.AppendLine($"\tAmountRequired = {preset.AmountRequired},");
+            sb.AppendLine($"\tUniqueFish = {preset.UniqueFish.ToString().ToLower()},");
 
             // Export Baits
             sb.AppendLine("\tBaits = new Dictionary<string, List<uint>>()");
@@ -624,12 +698,12 @@ namespace ICE.Ui.DebugWindowTabs
             foreach (var category in preset.RequiredFish.OrderBy(x => x.Key))
             {
                 sb.AppendLine($"\t\t[\"{category.Key}\"] = new List<uint>()");
-                sb.AppendLine("\t\t{");
+                sb.AppendLine("\t\t\t\t{");
                 foreach (var fish in category.Value.OrderBy(x => x))
                 {
-                    sb.AppendLine($"\t\t\t{fish},");
+                    sb.AppendLine($"\t\t\t\t\t{fish},");
                 }
-                sb.AppendLine("\t\t},");
+                sb.AppendLine("\t\t\t\t},");
             }
             sb.AppendLine("\t},");
 
