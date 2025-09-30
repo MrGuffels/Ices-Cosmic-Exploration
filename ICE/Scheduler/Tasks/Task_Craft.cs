@@ -22,7 +22,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 P.TaskManager.Enqueue(() => Task_CheckScore.Enqueue(), "Checking Score");
-                P.TaskManager.Enqueue(() => CheckMaterials(), "Checking materials");
+                P.TaskManager.Enqueue(() => CheckMaterials(), "Checking materials", Utils.TaskConfig);
             }
         }
 
@@ -186,6 +186,13 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
 
+                }
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Artisan Busy Log", 3000))
+                {
+                    IceLogging.Debug("Artisan is currently busy... so we're properly waiting for it to finish");
                 }
             }
 

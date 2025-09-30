@@ -122,6 +122,17 @@ namespace ICE.Ui.DebugWindowTabs
                     IceLogging.Debug($"Current bait: {CosmicHelper.CurrentBait}");
                 }
             }
+
+            if (ImGui.Button("Enable AutoHook"))
+            {
+                P.AutoHook.SetPluginState(true);
+            }
+            if (ImGui.Button("Disable Autohook"))
+            {
+                P.AutoHook.SetPluginState(false);
+            }
+
+            ImGui.Separator();
             ImGui.Text($"Is ICE Running? | {P.IceIpc.IsRunning()}");
             if (ImGui.Button("Only Missions Via IPC"))
             {

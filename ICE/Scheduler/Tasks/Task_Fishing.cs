@@ -1,4 +1,5 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
 using System;
@@ -34,6 +35,7 @@ namespace ICE.Scheduler.Tasks
         {
             string handle = "[Standard Fishing: Fishing Check]";
             IceLogging.Info("Checking to see where we need to be here", handle);
+            bool hasBait = false;
 
             if (CosmicHelper.CurrentBait == 0)
             {
@@ -59,9 +61,59 @@ namespace ICE.Scheduler.Tasks
                 }
                 return false;
             }
+
+            // little check here for seeing if we have any baits
+            foreach (var bait in GatheringUtil.MoonBaits)
+            {
+                foreach (var baitId in bait.Value)
+                {
+                    if (PlayerHelper.GetItemCount(baitId, out var count) && count > 0)
+                    {
+                        P.AutoHook.SwapBaitById(baitId);
+                        IceLogging.Debug($"Telling it to equip bait ID: {baitId}", handle);
+                        hasBait = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasBait)
+            {
+                IceLogging.Info("If we've gotten here, that means we're out of bait. Proceeding to turnin/abandon the mission");
+                SchedulerMain.State = IceState.AbandonMission;
+                P.TaskManager.Tasks.Clear();
+                return true;
+            }
             else if (!Svc.Condition[ConditionFlag.Gathering])
             {
-                if (EzThrottler.Throttle("Starting to fish", 1000))
+                if (EzThrottler.Throttle("Making sure we're facing to fishing hole", 1000))
+                {
+                    var facePos = Vector3.Zero;
+                    var currentPos = Player.Position;
+                    var missionZone = CosmicHelper.CurrentMissionInfo.TerritoryId;
+                    var currentFlag = CosmicHelper.CurrentMissionInfo.MapPosition;
+
+                    IceLogging.Debug($"Mission Zone {missionZone} | Current Flag {currentFlag}");
+
+                    foreach (var fishingSpot in GatheringUtil.MoonFishingLocations[missionZone][currentFlag])
+                    {
+                        if (Player.DistanceTo(fishingSpot.FishingSpot) < 2)
+                        {
+                            facePos = fishingSpot.FacePosition;
+                            IceLogging.Debug($"Found! Telling it to face toward: {facePos}");
+                            break;
+                        }
+                    }
+
+                    if (facePos != Vector3.Zero)
+                    {
+                        IceLogging.Debug($"Action! Telling it to face toward: {facePos}");
+                        ActionManager.Instance()->AutoFaceTargetPosition(&facePos);
+                    }
+
+                    return false;
+                }
+                else if (EzThrottler.Throttle("Starting to fish", 1000))
                 {
                     IceLogging.Debug("Telling it to start fishing", handle);
                     ActionManager.Instance()->UseAction(ActionType.Action, 289);
@@ -71,7 +123,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
-                P.AutoHook.SetState(true);
+                P.AutoHook.SetPluginState(true);
                 IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => WaitToStartFishing(), "Waiting till we actually start fishing", Utils.TaskConfig);
                 return true;

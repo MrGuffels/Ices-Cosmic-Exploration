@@ -12,8 +12,9 @@ namespace ICE.IPC
         public const string Name = "AutoHook";
         public const string Repo = "https://github.com/PunishXIV/AutoHook";
         public AutoHookIPC() => EzIPC.Init(this, Name, SafeWrapper.AnyException);
+        public bool Installed => Utils.HasPlugin(Name);
 
-        [EzIPC] public Action<bool> SetState;
+        [EzIPC] public Action<bool> SetPluginState;
         [EzIPC] public Action<bool> SetAutoGigState;
         [EzIPC] public Action<string> SetPreset;
         [EzIPC] public Action<string> SetPresetAutogig;

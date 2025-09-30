@@ -49,56 +49,43 @@ namespace ICE.Scheduler.Handlers
         private static bool? PandoraInteractState = false;
         private static bool? PandoraCordialState = false;
 
+        private static void GrabPandoraState()
+        {
+            if (P.Pandora.Installed)
+            {
+                PandoraCordialState = P.Pandora.GetFeatureEnabled("Pandora Quick Gather");
+            }
+        }
+
         internal static void Tick()
         {
             if (SchedulerMain.State != IceState.ManualMode)
             {
+                var timer = 60000; // 1 minute = 60000
 
-
-
-                if (SchedulerMain.State == IceState.Gather || SchedulerMain.State == IceState.DualClass)
+                if (EzThrottler.Throttle("Throttling Pandora States", timer))
                 {
                     var pandoraGatherEnabled = (P.Pandora.GetFeatureEnabled("Pandora Quick Gather") ?? false);
-
                     if (pandoraGatherEnabled)
                     {
-                        if (EzThrottler.Throttle("Disabling Pandora Gathering", 1000))
-                        {
-                            P.Pandora.PauseFeature("Pandora Quick Gather", 1000);
-                        }
+                        P.Pandora.PauseFeature("Pandora Quick Gather", timer);
                     }
-                }
-                if (SchedulerMain.State != IceState.Idle)
-                {
+
                     var autoInteract = (P.Pandora.GetFeatureEnabled("Auto-interact with Gathering Nodes") ?? false);
                     if (autoInteract)
                     {
-                        if (EzThrottler.Throttle("Disabling Pandora's Auto Interaction with nodes", 1000))
-                        {
-                            P.Pandora.PauseFeature("Auto-interact with Gathering Nodes", 1000);
-                        }
+                        P.Pandora.PauseFeature("Auto-interact with Gathering Nodes", timer);
                     }
+                    var pandoraCordial = (P.Pandora.GetFeatureEnabled("Auto-Cordial") ?? false);
+                    if (pandoraCordial && (SchedulerMain.State == IceState.Gather || SchedulerMain.State == IceState.DualClass))
+                    {
+                        P.Pandora.PauseFeature("Auto-Cordial", timer);
+                    }
+
                 }
 
-                bool CosmicZone = PlayerHelper.IsInCosmicZone();
-                if (C.AutoCordial && CosmicZone)
+                if (C.AutoCordial)
                 {
-                    var pandoraCordial = (P.Pandora.GetFeatureEnabled("Auto-Cordial") ?? false);
-                    if (pandoraCordial && (C.UseOnlyInMission && (SchedulerMain.State == IceState.Gather || SchedulerMain.State == IceState.DualClass)))
-                    {
-                        if (EzThrottler.Throttle("Disabling Pandora Cordial", 1000))
-                        {
-                            P.Pandora.PauseFeature("Auto-Cordial", 1000);
-                        }
-                    }
-                    else if (pandoraCordial)
-                    {
-                        if (EzThrottler.Throttle("Disabling Pandora Cordial", 1000))
-                        {
-                            P.Pandora.PauseFeature("Auto-Cordial", 1000);
-                        }
-                    }
-
                     bool useCordial = true;
                     if (Svc.ClientState.LocalPlayer == null)
                     {

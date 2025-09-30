@@ -18,11 +18,19 @@ namespace ICE.Scheduler.Tasks
         public static void Enqueue()
         {
             Task_CheckScore.Enqueue();
-            P.TaskManager.Enqueue(() => CheckMaterials(), "Checking status for dual craft missions");
+            P.TaskManager.Enqueue(() => CheckMaterials(), "Checking status for dual craft missions", Utils.TaskConfig);
         }
 
         private static unsafe bool? CheckMaterials()
         {
+            if (P.Artisan.IsBusy())
+            {
+                if (EzThrottler.Throttle("Waiting for artisan to finish making macro's...", 3000))
+                    IceLogging.Debug("Waiting for artisan to finish making macros");
+
+                return false;
+            }
+
             var id = CosmicHelper.CurrentLunarMission;
             var mission = CosmicHelper.SheetMissionDict[id];
             var missionConfig = C.MissionConfig[id];
@@ -36,7 +44,6 @@ namespace ICE.Scheduler.Tasks
 
             var gatherProfileId = C.MissionConfig[id].GatherProfileId;
             var dualCraftAmount = 3;
-
 
             if (missionConfig.TurninGold || missionConfig.AutoTurnin)
             {
@@ -66,6 +73,7 @@ namespace ICE.Scheduler.Tasks
                     // This means we've ran out of crates. Going to just exit out and abandon
                     SchedulerMain.State = IceState.AbandonMission;
                     P.TaskManager.Tasks.Clear();
+                    IceLogging.Info("We've ran out of crates. Proceeding to turnin/abandon mission");
                     return true;
                 }
                 else
@@ -120,6 +128,7 @@ namespace ICE.Scheduler.Tasks
                 P.Artisan.CraftItem(recipeId, dualCraftAmount);
                 P.TaskManager.Tasks.Clear();
                 InsertArtisanWait();
+                IceLogging.Info($"Told artisan to craft {dualCraftAmount} of the following recipe: {recipeId}");
                 return true;
             }
             else
@@ -128,6 +137,7 @@ namespace ICE.Scheduler.Tasks
                 P.Artisan.CraftItem(recipeId, 1);
                 P.TaskManager.Tasks.Clear();
                 InsertArtisanWait();
+                IceLogging.Info($"Told Artisan to craft 1 item of the following recipe: {recipeId}");
                 return true;
             }
         }
@@ -542,6 +552,33 @@ namespace ICE.Scheduler.Tasks
                 }
                 return false;
             }
+            else if (EzThrottler.Throttle("Making sure we're facing to fishing hole", 1000))
+            {
+                var facePos = Vector3.Zero;
+                var currentPos = Player.Position;
+                var missionZone = CosmicHelper.CurrentMissionInfo.TerritoryId;
+                var currentFlag = CosmicHelper.CurrentMissionInfo.MapPosition;
+
+                IceLogging.Debug($"Mission Zone {missionZone} | Current Flag {currentFlag}");
+
+                foreach (var fishingSpot in GatheringUtil.MoonFishingLocations[missionZone][currentFlag])
+                {
+                    if (Player.DistanceTo(fishingSpot.FishingSpot) < 2)
+                    {
+                        facePos = fishingSpot.FacePosition;
+                        IceLogging.Debug($"Found! Telling it to face toward: {facePos}");
+                        break;
+                    }
+                }
+
+                if (facePos != Vector3.Zero)
+                {
+                    IceLogging.Debug($"Action! Telling it to face toward: {facePos}");
+                    ActionManager.Instance()->AutoFaceTargetPosition(&facePos);
+                }
+
+                return false;
+            }
             else if (!Svc.Condition[ConditionFlag.Gathering])
             {
                 if (EzThrottler.Throttle("Starting to fish", 1000))
@@ -554,7 +591,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 // Means we are fishing, all we need to do is enable autohook then wait for us to get the amount of fish we need
-                P.AutoHook.SetState(true);
+                P.AutoHook.SetPluginState(true);
                 IceLogging.Info("We're starting to fish. So kicking it over to checking the fish items", handle);
                 P.TaskManager.Insert(() => CheckItems(), "Checking for items to meet the quantity set", Utils.TaskConfig);
                 return true;
@@ -637,7 +674,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (EzThrottler.Throttle("Telling it to stop fishing"))
             {
-                P.AutoHook.SetState(false);
+                P.AutoHook.SetPluginState(false);
                 ActionManager.Instance()->UseAction(ActionType.Action, 299);
             }
         }

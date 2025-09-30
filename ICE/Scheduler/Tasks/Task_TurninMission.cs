@@ -28,12 +28,18 @@ namespace ICE.Scheduler.Tasks
 
             if (id == 0)
             {
+                if (P.AutoHook.Installed)
+                {
+                    P.AutoHook.DeleteAllAnonymousPresets();
+                }
+
                 if (Mission_Settings.StopAfterCurrent)
                 {
                     IceLogging.Debug($"Stop after current was enabled. Stopping now", "[Task Turnin]");
                     SchedulerMain.State = IceState.Idle;
                     Mission_Settings.StopAfterCurrent = false;
                     P.TaskManager.Tasks.Clear();
+
                     if (C.RemoveAfterGold)
                     {
                         P.TaskManager.Enqueue(() => GoldCheck());

@@ -23,6 +23,11 @@ namespace ICE.Scheduler.Tasks
         {
             if (CosmicHelper.CurrentLunarMission == 0)
             {
+                if (P.AutoHook.Installed)
+                {
+                    P.AutoHook.DeleteAllAnonymousPresets();
+                }
+
                 IceLogging.Info("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
                 Task_TurninMission.GoldCheck();
 
