@@ -376,6 +376,7 @@ namespace ICE.Scheduler.Tasks
                         Utils.Dismount();
                     }
                 }
+                Task_Gather.UseCordial();
             }
 
             return false;

@@ -154,6 +154,7 @@ namespace ICE.Scheduler.Tasks
                         Utils.Dismount();
                     }
                 }
+                UseCordial();
             }
 
             return false;
@@ -703,18 +704,20 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        public static unsafe bool? UseCordial()
+        public static unsafe void UseCordial()
         {
-            if (!Player.IsBusy)
+            if (EzThrottler.Throttle("Cordial usage check while moving"))
             {
-                IceLogging.Debug("Cordial Checkers");
-                if (C.AutoCordial)
+                if (!Player.IsBusy)
                 {
-                    IceLogging.Debug($"Min GP: {C.CordialMinGp} <= {PlayerHelper.GetGp()}");
-
-                    if (PlayerHelper.GetGp() <= C.CordialMinGp)
+                    IceLogging.Debug("Cordial Checkers");
+                    if (C.AutoCordial)
                     {
-                        Dictionary<uint, int> cordials = new()
+                        IceLogging.Debug($"Min GP: {C.CordialMinGp} <= {PlayerHelper.GetGp()}");
+
+                        if (PlayerHelper.GetGp() <= C.CordialMinGp)
+                        {
+                            Dictionary<uint, int> cordials = new()
                             {
                                 { 12669, 400}, // Hi
                                 { 1006141, 350}, // HQ Regular
@@ -723,38 +726,30 @@ namespace ICE.Scheduler.Tasks
                                 { 16911, 150} // HQ Watered
                             };
 
-                        foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
-                        {
-                            IceLogging.Debug($"Checking Cordial: {cordial.Key}");
-                            bool hq = cordial.Key >= 1_000_000;
-                            if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
+                            foreach (var cordial in C.inverseCordialPrio ? cordials.Reverse() : cordials)
                             {
-                                if (ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Key) == 0)
+                                IceLogging.Debug($"Checking Cordial: {cordial.Key}");
+                                bool hq = cordial.Key >= 1_000_000;
+                                if (PlayerHelper.GetItemCount(cordial.Key, out var amount, hq, !hq) && amount > 0)
                                 {
-                                    if (!C.PreventOvercap || (C.PreventOvercap && !WillOvercap(cordial.Value)))
+                                    if (ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Key) == 0)
                                     {
-                                        if (EzThrottler.Throttle("Using the cordial"))
+                                        if (!C.PreventOvercap || (C.PreventOvercap && !WillOvercap(cordial.Value)))
                                         {
-                                            ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
+                                            if (EzThrottler.Throttle("Using the cordial"))
+                                            {
+                                                ActionManager.Instance()->UseAction(ActionType.Item, cordial.Key, extraParam: 65535);
+                                                break;
+                                            }
                                         }
-                                        return false;
                                     }
                                 }
                             }
                         }
                     }
 
-                    return true;
+                    IceLogging.Info("Cordial Check Complete");
                 }
-
-                IceLogging.Info("Cordial Check Complete");
-                return true;
-            }
-            else
-            {
-                IceLogging.Debug("Player is currently busy in the cordial check. Waiting");
-
-                return false;
             }
         }
 

@@ -287,16 +287,6 @@ namespace ICE.Ui.SettingTabs
                         C.PreventOvercap = PreventOvercap;
                         C.Save();
                     }
-                    if (ImGui.Checkbox("Use on Fisher", ref UseOnFisher))
-                    {
-                        C.UseOnFisher = UseOnFisher;
-                        C.Save();
-                    }
-                    if (ImGui.Checkbox("Only use in mission", ref useOnlyInMission))
-                    {
-                        C.UseOnlyInMission = useOnlyInMission;
-                        C.Save();
-                    }
                     ImGui.SetNextItemWidth(200);
                     if (ImGui.SliderInt("Use cordial when below the following GP", ref CordialMinGp, 0, maxGp))
                     {
