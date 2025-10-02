@@ -144,6 +144,10 @@ namespace ICE.Scheduler.Tasks
                 if (!missionJobs.Contains(currentJobId))
                     continue;
 
+                // Territory Check, cause people seem to also be forgetting this
+                if (missionInfo.TerritoryId != Player.Territory)
+                    continue;
+
                 // Alright, mission was double checked to make sure it was enabled
                 // And also checked to make sure that the current job is on the mission, time to actually add it to the mission info
 
@@ -565,7 +569,7 @@ namespace ICE.Scheduler.Tasks
                                 break;
                         }
 
-                        bool properLevel = minLevel <= Player.Level;
+                        bool properLevel = Player.Level <= minLevel;
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
                         bool unSupported = UnsupportedMissions.Ids.Contains(id);

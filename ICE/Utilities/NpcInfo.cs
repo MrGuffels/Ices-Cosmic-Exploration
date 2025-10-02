@@ -8,7 +8,7 @@ using System.Numerics; // Add this for Vector2 and Vector3
 
 namespace ICE.Utilities;
 
-internal class NpcData // Renamed the class to avoid conflict
+internal static class NpcData // Renamed the class to avoid conflict
 {
     public enum NpcType
     {

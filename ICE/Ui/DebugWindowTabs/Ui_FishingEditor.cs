@@ -21,10 +21,15 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool viewAllFishingSpots = false;
         private static bool viewNavSpot = false;
         private static List<Vector3> fishingPath = new();
-
+        private static FishingDebug _fishingDebug = null;
 
         public static unsafe void Draw()
         {
+            if (_fishingDebug == null)
+            {
+                _fishingDebug = new FishingDebug();
+            }
+
             if (ImGui.Button("Add Missing Fishing Holes"))
             {
                 foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(18)))
@@ -65,6 +70,12 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.SetClipboardText(exportData);
                     Svc.Chat.Print($"Fishing flag data for Zone {selectedZone} at ({selectedFlag.X}, {selectedFlag.Y}) exported to clipboard!");
                 }
+            }
+
+            ImGui.Checkbox("Show fishing spot raycast", ref _fishingDebug.ShowFishRay);
+            if (Svc.ClientState.LocalPlayer is { } player && _fishingDebug.ShowFishRay)
+            {
+                _fishingDebug.Draw();
             }
 
             ImGui.Separator();

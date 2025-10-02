@@ -87,7 +87,7 @@ namespace ICE.Scheduler.Tasks
             {
                 if (EzThrottler.Throttle("Making sure we're facing to fishing hole", 1000))
                 {
-                    var facePos = Vector3.Zero;
+                    var facePos = Vector3.NegativeInfinity;
                     var currentPos = Player.Position;
                     var missionZone = CosmicHelper.CurrentMissionInfo.TerritoryId;
                     var currentFlag = CosmicHelper.CurrentMissionInfo.MapPosition;
@@ -104,7 +104,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
 
-                    if (facePos != Vector3.Zero)
+                    if (facePos != Vector3.NegativeInfinity)
                     {
                         IceLogging.Debug($"Action! Telling it to face toward: {facePos}");
                         ActionManager.Instance()->AutoFaceTargetPosition(&facePos);

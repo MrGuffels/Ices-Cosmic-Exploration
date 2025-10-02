@@ -142,6 +142,10 @@ namespace ICE.Config
 
         #endregion
 
+        #region UnlockedClass 
+
+        #endregion
+
         public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
 
         #region Debug

@@ -59,6 +59,7 @@ public sealed partial class ICE : IDalamudPlugin
     internal SettingsWindowV2 settingsWindowV2;
     internal OverlayWindow overlayWindow;
     internal DebugWindow debugWindow;
+    internal InfoWindow infoWindow;
 
     // Taskmanager from Ecommons
     internal TaskManager TaskManager;
@@ -96,6 +97,7 @@ public sealed partial class ICE : IDalamudPlugin
         settingsWindowV2 = new();
         overlayWindow = new();
         debugWindow = new();
+        infoWindow = new();
 
         EzCmd.Add("/icecosmic", OnCommand, """
             Open plugin interface
@@ -179,6 +181,11 @@ public sealed partial class ICE : IDalamudPlugin
             debugWindow.IsOpen = true;
             return;
         }
+        else if (firstArg.ToLower() == "i")
+        {
+            infoWindow.IsOpen = true;
+            return;
+        }
         else if (firstArg.ToLower() == "s" || firstArg.ToLower() == "settings")
         {
             settingsWindowV2.IsOpen = !settingsWindowV2.IsOpen;
@@ -257,7 +264,7 @@ public sealed partial class ICE : IDalamudPlugin
             }
             foreach (var id in idSet)
             {
-                if (C.MissionConfig.TryGetValue (id, out var mission))
+                if (C.MissionConfig.TryGetValue(id, out var mission))
                 {
                     mission.Enabled = true;
                 }

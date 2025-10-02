@@ -124,6 +124,10 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 GearsetHandler.TaskClassChange(Job.MIN);
             }
+            if (ImGui.Button("Relic Turnin"))
+            {
+                Task_RelicTurnin.Enqueue();
+            }
         }
     }
 }
