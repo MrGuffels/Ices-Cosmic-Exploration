@@ -5198,7 +5198,6 @@ public static unsafe class GatheringUtil
             {
             },
         },
-
     };
 
     public static Dictionary<string, List<uint>> MoonBaits = new();

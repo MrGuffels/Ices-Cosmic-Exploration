@@ -49,6 +49,9 @@ namespace ICE.Scheduler
                     case Spiritbond:
                         Task_Spiritbond.Enqueue();
                         break;
+                    case RelicTurnin:
+                        Task_RelicTurnin.Enqueue();
+                        break;
                     case GrabMission:
                         Task_FindMission.Enqueue();
                         break;
