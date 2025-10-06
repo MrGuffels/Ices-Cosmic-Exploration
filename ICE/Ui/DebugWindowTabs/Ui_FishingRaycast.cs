@@ -1,10 +1,9 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
+using System.Collections.Generic;
 
 namespace ICE.Ui.DebugWindowTabs
 {
-    // Grabbed from xan, thank you xan for giving me this. 
-
     public unsafe class FishingDebug : IDisposable
     {
         private delegate* unmanaged<BGCollisionModule*, RaycastHit*, Vector3*, Vector3*, float, int, byte> _raycastSimple;
@@ -39,6 +38,166 @@ namespace ICE.Ui.DebugWindowTabs
             };
         }
 
+        /// <summary>
+        /// Check if the current facing direction is fishable
+        /// </summary>
+        /// <param name="rotation">Player rotation to check (defaults to current player rotation)</param>
+        /// <returns>True if fishable, false otherwise</returns>
+        public bool IsFishable(float? rotation = null)
+        {
+            if (Svc.ClientState.LocalPlayer is not { } player)
+                return false;
+
+            if (_raycastSimple == null)
+                return false;
+
+            var position = player.Position;
+            var rot = rotation ?? player.Rotation;
+
+            return CheckFishableAtRotation(position, rot, out _);
+        }
+
+        /// <summary>
+        /// Find a fishable location within 360 degrees around the player
+        /// </summary>
+        /// <param name="fishablePosition">Output: The fishable position if found</param>
+        /// <param name="searchSteps">Number of angles to check (higher = more accurate but slower)</param>
+        /// <returns>True if a fishable location was found</returns>
+        public bool FindFishableLocation(out Vector3? fishablePosition, int searchSteps = 36)
+        {
+            fishablePosition = null;
+
+            if (Svc.ClientState.LocalPlayer is not { } player)
+                return false;
+
+            if (_raycastSimple == null)
+                return false;
+
+            var position = player.Position;
+            var angleStep = (2 * MathF.PI) / searchSteps;
+
+            // Check all angles around the player
+            for (int i = 0; i < searchSteps; i++)
+            {
+                var angle = i * angleStep;
+
+                if (CheckFishableAtRotation(position, angle, out var hitPoint))
+                {
+                    fishablePosition = hitPoint;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Get all fishable locations within 360 degrees
+        /// </summary>
+        /// <param name="searchSteps">Number of angles to check</param>
+        /// <returns>List of fishable positions with their corresponding rotations</returns>
+        public List<(Vector3 Position, float Rotation)> GetAllFishableLocations(int searchSteps = 36)
+        {
+            var fishableLocations = new List<(Vector3, float)>();
+
+            if (Svc.ClientState.LocalPlayer is not { } player)
+                return fishableLocations;
+
+            if (_raycastSimple == null)
+                return fishableLocations;
+
+            var position = player.Position;
+            var angleStep = (2 * MathF.PI) / searchSteps;
+
+            for (int i = 0; i < searchSteps; i++)
+            {
+                var angle = i * angleStep;
+
+                if (CheckFishableAtRotation(position, angle, out var hitPoint))
+                {
+                    fishableLocations.Add((hitPoint.Value, angle));
+                }
+            }
+
+            return fishableLocations;
+        }
+
+        private bool CheckFishableAtRotation(Vector3 position, float rotation, out Vector3? hitPoint)
+        {
+            hitPoint = null;
+
+            var v8 = MathF.Cos(rotation);
+            var v9 = MathF.Sin(rotation);
+
+            var playerRotationMatrix = new Matrix4x4()
+            {
+                M11 = v8,
+                M13 = -v9,
+                M31 = v9,
+                M33 = v8,
+                M22 = 1.0f
+            };
+
+            var v43 = new Vector3()
+            {
+                Z = 2.0f
+            };
+
+            var rodPoint = TransformVecByMatrix(v43, playerRotationMatrix);
+            rodPoint += position;
+            rodPoint.Y += 2;
+
+            var playerRayOrigin = new Vector3()
+            {
+                X = position.X,
+                Y = position.Y + 0.87f,
+                Z = position.Z
+            };
+
+            var rodDirection = rodPoint - playerRayOrigin;
+            rodDirection /= rodDirection.Length();
+
+            // Check if line of sight is blocked
+            if (BGCollisionModule.RaycastMaterialFilter(playerRayOrigin, rodDirection, out var hitInfo, 2))
+            {
+                return false;
+            }
+
+            var fishRay = TransformVecByMatrix(new Vector3(0, -80, 40), playerRotationMatrix);
+            var fishRayLen = fishRay.Length();
+            var fishRayNormalized = fishRay / fishRayLen;
+
+            RaycastHit castHitInfo;
+
+            if (_raycastSimple(Framework.Instance()->BGCollisionModule, &castHitInfo, &rodPoint, &fishRayNormalized, fishRayLen, 1) == 1)
+            {
+                // Check if material is fishable
+                if ((castHitInfo.Material & 0x8000) != 0)
+                {
+                    hitPoint = castHitInfo.Point;
+                    return true;
+                }
+
+                // Special case for material 0x2000
+                if (castHitInfo.Material == 0x2000)
+                {
+                    var extraHitTest = castHitInfo.Point + (fishRayNormalized * 0.01f);
+                    RaycastHit castHitInfo2;
+
+                    if (_raycastSimple(Framework.Instance()->BGCollisionModule, &castHitInfo2, &extraHitTest, &fishRayNormalized, fishRayLen, 1) == 1)
+                    {
+                        if ((castHitInfo2.Material & 0x8000) != 0)
+                        {
+                            hitPoint = castHitInfo2.Point;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public void Draw()
         {
             if (Svc.ClientState.LocalPlayer is not { } player)
@@ -47,7 +206,6 @@ namespace ICE.Ui.DebugWindowTabs
             if (!ShowFishRay)
                 return;
 
-            // Safety check
             if (_raycastSimple == null)
             {
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), "Raycast not initialized!");
@@ -74,7 +232,6 @@ namespace ICE.Ui.DebugWindowTabs
                 Z = 2.0f
             };
 
-            // point in 3D space, 2 units above player origin and 2 units forward in facing direction
             var rodPoint = TransformVecByMatrix(v43, playerRotationMatrix);
             rodPoint += position;
             rodPoint.Y += 2;
@@ -119,13 +276,11 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (BGCollisionModule.RaycastMaterialFilter(playerRayOrigin, rodDirection, out var hitInfo, 2))
             {
-                // player line of sight is blocked by object
                 drawCast(hitInfo.Point, null, Failure);
                 return;
             }
 
             var fishRay = TransformVecByMatrix(new Vector3(0, -80, 40), playerRotationMatrix);
-
             var fishRayLen = fishRay.Length();
             var fishRayNormalized = fishRay / fishRayLen;
 
@@ -133,7 +288,6 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (_raycastSimple(Framework.Instance()->BGCollisionModule, &castHitInfo, &rodPoint, &fishRayNormalized, fishRayLen, 1) == 1)
             {
-                // point is fishable
                 if ((castHitInfo.Material & 0x8000) != 0)
                 {
                     drawCast(rodPoint, castHitInfo.Point, Success);
@@ -142,7 +296,6 @@ namespace ICE.Ui.DebugWindowTabs
 
                 if (castHitInfo.Material == 0x2000)
                 {
-                    // dude what the fuck is this
                     var extraHitTest = castHitInfo.Point + (fishRayNormalized * 0.01f);
                     RaycastHit castHitInfo2;
 

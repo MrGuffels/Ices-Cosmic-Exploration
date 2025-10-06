@@ -1,28 +1,16 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons.Automation.NeoTaskManager;
 using ECommons.GameHelpers;
-using ECommons.UIHelpers.AddonMasterImplementations;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using ICE.Config;
 using ICE.Utilities.Cosmic;
 using Lumina.Excel.Sheets;
-using NAudio.Gui;
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Scheduler.Tasks
 {
     internal static class Task_FindMission
-    {
+    { 
         /// <summary>
         /// List of all available critical missions
         /// </summary>
@@ -489,6 +477,8 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe uint? FindBestRelicMission()
         {
+            string tip = "[Relic XP Finder]";
+
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
                 var wksManager = WKSManager.Instance();
@@ -535,7 +525,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     var bar = XPTable[i + 1];
                     urgencies[i + 1] = bar.NeededXP > 0 ? 1f - (float)bar.CurrentXP / bar.NeededXP : 0f;
-                    IceLogging.Debug($"XP Type: {i+1} | Urgency: {urgencies[i + 1]}");
+                    IceLogging.Debug($"XP Type: {i+1} | Urgency: {urgencies[i + 1]}", tip);
                 }
 
                 Dictionary<uint, Dictionary<int, float>> rewardMissions = new();
@@ -569,10 +559,16 @@ namespace ICE.Scheduler.Tasks
                                 break;
                         }
 
-                        bool properLevel = Player.Level <= minLevel;
+                        bool properLevel = Player.Level >= minLevel;
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
                         bool unSupported = UnsupportedMissions.Ids.Contains(id);
+
+                        IceLogging.Debug($"[Mission: {id}]" +
+                                         $"Is proper Level: {properLevel} | Mission Level: {minLevel} | Player Level: {Player.Level} \n" +
+                                         $"Ignoring cause of manual? {IgnoreManual}\n" +
+                                         $"Ignoring cuase of not enabled: {IgnoreNotEnabled}\n" +
+                                         $"Ignoring because of not supported: {unSupported}", tip);
 
                         if (!properLevel) continue;
                         if (IgnoreManual) continue;
@@ -585,6 +581,7 @@ namespace ICE.Scheduler.Tasks
                             rewardDict[reward.Key] = reward.Value;
                         }
                         rewardMissions[id] = rewardDict;
+                        IceLogging.Debug($"Adding {id} to the potentional missions for relic xp");
                     }
                 }
 
@@ -770,7 +767,6 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.InsertMulti(
                 new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
                 new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                new(() => FacePosition(missionId), "Checking to see if we need to face the hole"),
                 new(() => GrabMission(missionId), "Selecting mission for grabbing"),
                 new(() => FrameDelay(16), "Giving time before you kick in the mission")
             );
@@ -884,6 +880,11 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Info("Found a mission that is either in Manual mode, or unsupported. Continuing on", "[FindMission: NavmeshMoveTo]");
                 return true;
             }
+            else if (!P.Navmesh.Installed)
+            {
+                IceLogging.Error("HEY. YOU DIDN'T READ THE INFO PAGE DID YOU HUH. Navmesh isn't installed.... sooo... yeah this is unfort. Read the info page on the main page. I ain't going to hold your hand on this one");
+                return true;
+            }
             else if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it
@@ -892,6 +893,12 @@ namespace ICE.Scheduler.Tasks
                 var missionTerritory = missionEntry.TerritoryId;
                 var mapId = missionEntry.MapPosition;
                 var gatherInfo = GatheringUtil.MoonGatherLocations[missionTerritory][mapId];
+
+                if (gatherInfo.Count == 0)
+                {
+                    IceLogging.Info("HEY. This gathering location hasn't been set to gather, and should honestly be set to a manual state. Cause things are about to bug out. If it's a new area please let me know o/");
+                    return true;
+                }
 
                 Vector3 closestNode = gatherInfo[0].LandZone;
 
@@ -953,6 +960,12 @@ namespace ICE.Scheduler.Tasks
                 var territory = missionEntry.TerritoryId;
                 var fishingHole = GatheringUtil.MoonFishingLocations[territory][location];
 
+                if (fishingHole == null || fishingHole.Count == 0)
+                {
+                    IceLogging.Info("We've seemed to have ran into a problem with the fishing hole... either it's missing spots, or it doesn't exist. Please report back to me on this with logs leading up to this");
+                    IceLogging.Info($"Mission ID: {missionId} | Map Position: {missionEntry.MapPosition} | Moon Territory: {missionEntry.TerritoryId}");
+                }
+
                 if (!P.Navmesh.IsRunning())
                 {
                     if (!Svc.Condition[ConditionFlag.Unknown101])
@@ -969,9 +982,13 @@ namespace ICE.Scheduler.Tasks
                         {
                             var _random = new Random();
                             var randomIndex = _random.Next(fishingHole.Count);
-                            P.Navmesh.PathfindAndMoveTo(fishingHole[randomIndex].FishingSpot, false);
-                            fishingHoleLoc = fishingHole[randomIndex].FishingSpot;
-                            IceLogging.Debug($"Told navmesh to move to the following spot: {fishingHoleLoc}");
+                            IceLogging.Debug($"Random number generator said we're going to the following fishing hole #: {randomIndex}");
+                            if (randomIndex < fishingHole.Count)
+                            {
+                                P.Navmesh.PathfindAndMoveTo(fishingHole[randomIndex].FishingSpot, false);
+                                fishingHoleLoc = fishingHole[randomIndex].FishingSpot;
+                                IceLogging.Debug($"Told navmesh to move to the following spot: {fishingHoleLoc}");
+                            }
                         }
                     }
                 }
@@ -1013,61 +1030,6 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
-        }
-        public static unsafe bool? FacePosition(uint missionId)
-        {
-            var mission = CosmicHelper.SheetMissionDict[missionId];
-
-            if (!mission.Jobs.Contains(18) || UnsupportedMissions.Ids.Contains(missionId))
-            {
-                IceLogging.Info("Not on a fishing mission. So... continuing on.", "[Find Mission: Face Position]");
-                return true;
-            }
-            else
-            {
-                var territory = mission.TerritoryId;
-                var map = mission.MapPosition;
-
-                var fishingHole = GatheringUtil.MoonFishingLocations[territory][map].Where(x => Player.DistanceTo(x.FishingSpot) < 5).FirstOrDefault();
-                if (fishingHole != null)
-                {
-                    var pos = fishingHole.FacePosition;
-
-                    // Store current rotation
-                    float currentRotation = Player.Rotation;
-
-                    // If rotation is still changing, wait for it to stabilize
-                    if (Math.Abs(Player.Rotation - currentRotation) > 0.01f)
-                    {
-                        return null; // Still moving, try again later
-                    }
-
-                    Vector3 direction = pos - Player.Position;
-                    float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
-
-                    float angleDifference = GetShortestAngleDifference(Player.Rotation, targetRotation);
-
-                    if (Math.Abs(angleDifference) < 0.3f)
-                    {
-                        return true;
-                    }
-
-                    Vector3 temp = pos;
-                    ActionManager.Instance()->AutoFaceTargetPosition(&temp);
-                }
-            }
-
-            return false;
-        }
-        private static float GetShortestAngleDifference(float currentAngle, float targetAngle)
-        {
-            float difference = targetAngle - currentAngle;
-
-            // Normalize to [-π, π] for shortest path
-            while (difference > Math.PI) difference -= (float)(2 * Math.PI);
-            while (difference < -Math.PI) difference += (float)(2 * Math.PI);
-
-            return difference;
         }
         private static bool? CheckReroll()
         {

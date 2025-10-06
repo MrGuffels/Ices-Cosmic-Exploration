@@ -23,9 +23,9 @@ namespace ICE.Scheduler.Tasks
                 var missionId = CosmicHelper.CurrentLunarMission;
 
                 var mission = CosmicHelper.SheetMissionDict[missionId];
-                bool fishingMission = mission.Attributes.HasFlag(MissionAttributes.Fish);
-                bool gatherMission = mission.Attributes.HasFlag(MissionAttributes.Gather);
-                bool craftMission = mission.Attributes.HasFlag(MissionAttributes.Craft);
+                bool fishingMission = mission.Jobs.Contains(18);
+                bool gatherMission = mission.Jobs.Contains(16) || mission.Jobs.Contains(17);
+                bool craftMission = mission.Jobs.Overlaps(CosmicHelper.CrafterJobList);
 
                 C.MissionConfig.TryGetValue(missionId, out var config);
                 bool dualClass = (gatherMission && craftMission) || (fishingMission && craftMission);
@@ -50,7 +50,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
-                else if (fishingMission && !config.ManualMode)
+                else if (fishingMission)
                 {
                     // Check exist twice, one here is to actually enable the fishing profile that is selected.
                     var missionConfig = C.MissionConfig[missionId];

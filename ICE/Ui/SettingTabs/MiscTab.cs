@@ -29,6 +29,17 @@ namespace ICE.Ui.SettingTabs
 
         public static void Draw()
         {
+            bool showInfoButton = C.ShowInfoButton;
+            if (ImGui.Checkbox("Show Info Button", ref showInfoButton))
+            {
+                C.ShowInfoButton = showInfoButton;
+                C.Save();
+            }
+
+            ImGui.Dummy(new Vector2(0, 5));
+            ImGui.Separator();
+            ImGui.Dummy(new Vector2(0, 5));
+
             ImGui.Text("Overlay Settings");
 
             if (ImGui.Checkbox("Show Overlay", ref showOverlay))

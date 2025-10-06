@@ -15,7 +15,7 @@ namespace ICE.Ui;
 internal class DebugWindow : Window
 {
     public DebugWindow() :
-        base($"ICE {P.GetType().Assembly.GetName().Version} ###IceCosmicDebug1")
+        base($"ICE {P.GetType().Assembly.GetName().Version} Debugger ###IceCosmicDebug1")
     {
         Flags = ImGuiWindowFlags.None;
         SizeConstraints = new WindowSizeConstraints

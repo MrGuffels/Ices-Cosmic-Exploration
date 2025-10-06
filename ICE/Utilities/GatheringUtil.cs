@@ -532,8 +532,8 @@ public static unsafe class GatheringUtil
                 },
                 new FisherSpotInfo()
                 {
-                    FacePosition = new Vector3(-261.90f, 22.32f, -76.85f),
-                    FishingSpot = new Vector3(-260.88f, 22.31f, -75.17f),
+                    FacePosition = new Vector3(-259.12f, 21.82f, -84.84f),
+                    FishingSpot = new Vector3(-257.21f, 21.82f, -85.43f),
                 },
                 new FisherSpotInfo()
                 {
@@ -1901,27 +1901,9 @@ public static unsafe class GatheringUtil
             {
                 new GathNodeInfo()
                 {
-                    Position = new Vector3(-228.04f, 17.31f, -13.59f),
-                    LandZone = new Vector3(-228.84f, 16.82f, -13.53f),
-                    NodeId = 35168,
-                },
-                new GathNodeInfo()
-                {
-                    Position = new Vector3(-238.16f, 17.82f, -33.92f),
-                    LandZone = new Vector3(-237.94f, 17.22f, -33.02f),
-                    NodeId = 35167,
-                },
-                new GathNodeInfo()
-                {
-                    Position = new Vector3(-325.44f, 28.14f, -51.83f),
-                    LandZone = new Vector3(-324.69f, 27.81f, -51.55f),
-                    NodeId = 35166,
-                },
-                new GathNodeInfo()
-                {
-                    Position = new Vector3(-330.45f, 29.18f, -28.82f),
-                    LandZone = new Vector3(-330.08f, 28.69f, -29.41f),
-                    NodeId = 35165,
+                    Position = new Vector3(-273.81f, 23.78f, 44.75f),
+                    LandZone = new Vector3(-274.15f, 23.28f, 44.57f),
+                    NodeId = 35170,
                 },
                 new GathNodeInfo()
                 {
@@ -1931,9 +1913,27 @@ public static unsafe class GatheringUtil
                 },
                 new GathNodeInfo()
                 {
-                    Position = new Vector3(-273.81f, 23.78f, 44.75f),
-                    LandZone = new Vector3(-274.15f, 23.28f, 44.57f),
-                    NodeId = 35170,
+                    Position = new Vector3(-330.45f, 29.18f, -28.82f),
+                    LandZone = new Vector3(-330.08f, 28.69f, -29.41f),
+                    NodeId = 35165,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-325.44f, 28.14f, -51.83f),
+                    LandZone = new Vector3(-324.69f, 27.81f, -51.55f),
+                    NodeId = 35166,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-238.16f, 17.82f, -33.92f),
+                    LandZone = new Vector3(-237.94f, 17.22f, -33.02f),
+                    NodeId = 35167,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-228.04f, 17.31f, -13.59f),
+                    LandZone = new Vector3(-228.84f, 16.82f, -13.53f),
+                    NodeId = 35168,
                 },
             },
             [new Vector2(-121f, 368f)] = new()
@@ -5044,7 +5044,7 @@ public static unsafe class GatheringUtil
         {
             FishingPreset = new List<string>()
             {
-                "AH4_H4sIAAAAAAAACu1XyW7jOBD9FYNnERAlavPN7U4yAdzpoJ1BBgjmQIkli4gsuikq3Z7A/z6gFlvyCgQ+DDC50cXiq1elxyr6HU0qLaes1OU0XaDxO7opWJzDJM/RWKsKLGQ2Z6KA3Sbvtu45GjthZKFHJaQSeo3GxEL35c3vJK848J3Z+G8arG9SJpkBqxeOWdU4fmihu9VTpqDMZM7RmNj2APk8dI0RBYMT9kUy06xadgwosekFCt0pmeeQ6N5B0ndzLoeViguWnygpcXx/UFTaHrsVZXazhrIX2Ntj7HkDxn5XdPYK80yk+gsTNW9jKDvDXLPktURjry2jHx7i9lGjFvWRaQFFAj0+/v45f1hBpzuqxD8wZbqRwjFd+eEBmLP3OdwW7CljuWCv5S17k8rgDQxddq41tP+ARL6BQmNiatbFpIMIXf2+iMUdW9aJTopFDqrsUM3H5mjsBjY9oDuACjcbC9381oq1N81U/knOf7HVfaEroYUs7pgoumJiYqFZpeAblCVbABojZKGHmgR6kAUgq0FYrwCNTSWO4M1kqT+M96ighOMMEUYn9puI9f6Oz3wFiVYsn1ZKQaGvlOUe6tVyPcr2IOOj0WuvRiBzLVfmvopiMdewqjvjjnsroom6DuU+XM3hz0L8rMDgIsIc3w98wIRGEaaU+DiC0MU+TSLCWepGxEMbC81Eqb+nJkaJxi+NPE0C28sd+JF3muOtkf0vpkGNJkpnSuaVAoP7INWS5X9I+WqQupbxDKz+bewl6G0DSFlegtU2hHbTZNi1htbUlIGSwLSiDnOulSx6Q+zycScIe+dnsICCM7W+ArEG+aus4nw/18bF8aOtw474SZdj3PpeT0qsTkUKPMfdupyKNXA6E631M/KepBrUlFWLTM/E0swV0mzs675+QlSqGVxm0WvJ34t8/ZxB8SD1JNHiDe45FFokZjo2lT0yHNzAiw5n9Zmxax4IXYvqpPgDflZCAZ9rpisz/cwL5IQ+L+htz8t2L6hq4Pgpkosi+eg377VBh4UpZyTBUeR5mIJHcOhRinnopYSkic1ohDZ/d32wfaW+bA1NK3x5R3s9kbine+KUrcoqh9FkGYMaNHByrjrbG2BKYkI1DpOlrIqe25F7Qb1o/xHiDh+EpivNK5WyBOa56V5tIp7p7WcfW97GQv+Zt/tukn54fprDxjI1Va0L2p+o7Rw1y8a8czsm3p7QoiiMfCekmNKAY8qYjeM09DDjrhNxj4c0ZGhjHQrJPpPAOtEiyXS2Lq8uow/r5rj+PmV0HRnRmJDAiwlmLmOY+m6CY48CjokdhgAkJj4/KiPncj8ygpBp+tmR/h9SSh3ihjwIcQguxRRiF7PUcXFgJykLeZq4QOrR1+C2FJ+B6QzU6OavER51ynmUMi9HX0WplYgr85oazSv1Buvhfw7qe04AgY0JEIZpyHwcucTGjhPwmDPCXR/Q5l9NpkasfRIAAA==",
+                "AH4_H4sIAAAAAAAACu1X227bOBD9FYPPIiCKuvrNdZNsADcN6iyyQNAHShxZRGTRpai03sL/XlAXW/IVCPywwOZNHg7PXHR0ZvwbTSotp6zU5TRdoPFvdFOwOIdJnqOxVhVYyBzORAG7Q94d3XM0dsLIQo9KSCX0Go2Jhe7Lm19JXnHgO7Px3zRYX6RMMgNWPzjmqcbxQwvdrZ4yBWUmc47GxLYHyOeha4woGNywLyYzzapll4FLbPdCCt0tmeeQ6BMdcYlN+recy1lIxQXLT+ARx/cHPXbba7eizG7WUPYK8PYK8LxBAX73DtgrzDOR6k9M1GUYQ9kZ5polryUae21X/fAQt48ataiPTAsoEujl4+/f84cNdbqrSvwLU6YbZhyjmR8egDl7b4e2YE8ZywV7LW/Zm1QGb2DoqqPW0P4NEvkGCo2J6VkX0x1E6Pr3SSzu2LIudFIsclBlh2peNkdjGtjuQboDqHCzsdDNL61Y++GZzj/J+U+2ui90JbSQxR0TRddMTCw0qxR8gbJkC0BjhCz0UCeBHmQByGoQ1itAY9OJI3gzWep34z0qKOF4hgijE+dNxPp8l898BYlWLJ9WSkGhr1TlHurVaj2a7UHFR6PXXg1B5lquzPcqisVcw6oWyl3uLYkm6jop9+HqHP4uxI8KDC4KCQvS1LVxEMeAXRsoZsQmOGYJjRPuBiwN0MZCM1Hqr6mJUaLxS0NPU8D24w78yDud462h/U+mQY0mSmdK5pUCg/sg1ZLlf0n5apA6yXgGVv829hL0VgBSlpdgtYLQHpoKO2loTU0bXBIYKeow51rJojfTLl93grB3fwYLKDhT6ysk1iB/llWc79fauDh+tHXYJX7S5Vhufa8nJVanIgWeQ7cup2INnM5Ea/0MvSepBjVl1SLTM7E0c4U0B/u8rzeKSjWDyzz0JPlrka+fMygepJ4kWrzBPYdCi8RMx6azR4YDDbzocHSfGbtmX+gkqqPiN/hRCQV8rpmuzPQzC8kJfl7g256XTS+wauD4QZKLJHnvO+/JYEQd3+UQYkoThl3iERzyAHDsRS6NCHe4HaLN904H26X1ZWtopPDlN9rTREJPa+KUrcoqh9FkGYMaCDg5153tF2BaYkI1DpOlrIqe27FN1Iv2lxA6XAiNKs0rlbIE5rlRr7YQz2j72WXL21joP7PK7ybpu+enuWwsU9PVuqH9idrOUfPYmHdux8jbI5oXUp+4FLBPGMVuRHwcxp5n2GaHthO6qWvm4iGR7DMFrBMtkkxn6/LqNHo3b47z74NG16FRzDzH9wIf8zS2sQtJgsPA9TDj4EV2woIwiY7SyLmsR4YQMk0/FOn/QaXUJ2lAaYohTHzsprGDY0Y5jrlLiU1DbnOnHn0NbpviSxTR76NnYDoDNbr5Z4RHHX8epczL0WdRaiXiyuxUo3ml3mA9/Ofh+p4TQGBjAoRhN2Q+jiixseMEPOaMcOoD2vwBLZcIYZISAAA=",
             },
             AmountRequired = 0,
             UniqueFish = false,

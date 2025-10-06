@@ -3,6 +3,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -53,9 +54,35 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.SetTooltip("No fishing missions found!");
                 }
             }
-            if (ImGui.Button("Export invalid gathering"))
+            if (ImGui.Button("Export Scores to CSV"))
             {
+                try
+                {
+                    // Define the export path - adjust as needed
+                    var exportPath = Path.Combine
+                    (
+                        Svc.PluginInterface.ConfigDirectory.FullName,
+                        "Data",
+                        "MissionScores_Export.csv"
+                    );
 
+                    CosmicHelper.ExportMissionScoresToCSV(exportPath);
+
+                    // Show success tooltip
+                    ImGui.SetTooltip($"Successfully exported to {exportPath}");
+                }
+                catch (Exception ex)
+                {
+                    // Show error tooltip
+                    ImGui.SetTooltip($"Error exporting: {ex.Message}");
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("Export all mission scores to CSV file");
+                ImGui.Text("Format: MissionID, Score, Name");
+                ImGui.EndTooltip();
             }
 
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |

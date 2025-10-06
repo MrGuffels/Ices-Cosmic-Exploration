@@ -142,6 +142,15 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             Utils.MountAction();
                         }
+                        ImGui.Text($"Viable fishing spot: {_fishingDebug.IsFishable()}");
+                        if (_fishingDebug.FindFishableLocation(out var fishablePosition))
+                        {
+                            ImGui.Text($"First Available Fishing Spot: {fishablePosition.Value.X:N2}, {fishablePosition.Value.Y:N2}, {fishablePosition.Value.Z:N2}");
+                            if (ImGui.Button("Face toward spot"))
+                            {
+                                P.TaskManager.Enqueue(() => FacePosition(fishablePosition.Value));
+                            }
+                        }
 
                         ImGui.Checkbox("View Fishing Spots", ref viewAllFishingSpots);
                         ImGui.SameLine();

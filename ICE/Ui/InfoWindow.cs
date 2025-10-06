@@ -94,20 +94,26 @@ namespace ICE.Ui
                 "For missions that are supported, you don't actually need to do anything, the presets are built into the plugin and will automatically import/delete themselves when done.",
                 "If you would like to use your own preset, just make sure to enable it in the \"Select Preset\" button, and type the name of the preset that you are using",
                 "Navmesh is also required to make sure that you are in a correct spot of the fishing hole to be able to fish.",
+                "If you need help on auto-accepting collectables, there's a guide also attached as a button below (it'll open a link to the wiki page for this."
             ],
             new[]
             {
                 new SectionButton
                 {
                     Label = "Install Autohook Repo",
-                    OnClick = () => InstallNavmeshRepo(),
-                    IsVisible = () => !DalamudReflector.HasRepo("https://puni.sh/api/repository/veyn")
+                    OnClick = () => InstallAutoHookRepo(),
+                    IsVisible = () => !DalamudReflector.HasRepo("https://love.puni.sh/ment.json")
                 },
                 new SectionButton
                 {
                     Label = isInstallingArtisan ? "Installing..." : "Install Autohook",
-                    OnClick = () => _ = InstallNavmesh(),
-                    IsVisible = () => !Utils.HasPlugin("vnavmesh") && !isInstallingNavmesh
+                    OnClick = () => _ = InstallAutoHook(),
+                    IsVisible = () => !Utils.HasPlugin("AutoHook") && !isInstallingAutoHook
+                },
+                new SectionButton
+                {
+                    Label = "How to auto accept collectables",
+                    OnClick = () => GenericHelpers.ShellStart("https://github.com/PunishXIV/AutoHook/blob/main/AcceptCollectable.md")
                 }
             });
         }
@@ -157,7 +163,29 @@ namespace ICE.Ui
             }
         }
 
+        private bool isInstallingAutoHook = false;
 
+        private void InstallAutoHookRepo()
+        {
+            DalamudReflector.AddRepo("https://love.puni.sh/ment.json", true);
+            DalamudReflector.SaveDalamudConfig();
+        }
+
+        private async Task InstallAutoHook()
+        {
+            if (isInstallingAutoHook) return; // Already installing
+
+            isInstallingAutoHook = true;
+            try
+            {
+                await DalamudReflector.AddPlugin("https://love.puni.sh/ment.json", "AutoHook");
+                DalamudReflector.SaveDalamudConfig();
+            }
+            finally
+            {
+                isInstallingAutoHook = false;
+            }
+        }
 
         public class SectionButton
         {
@@ -166,10 +194,29 @@ namespace ICE.Ui
             public Func<bool> IsVisible { get; set; } // Returns true to show the button
         }
 
-        private void DrawSection(string title, string[] bulletPoints, SectionButton[] buttons = null)
+        private void DrawSection(string title, string[] bulletPoints, SectionButton[] buttons = null, string[] RequiredPlugins = null)
         {
-            using var colorBackground = ImRaii.PushColor(ImGuiCol.ChildBg, Utils.ToUintABGR(EColor.Black));
-            using var colorBorder = ImRaii.PushColor(ImGuiCol.Border, Utils.ToUintABGR(EColor.Yellow));
+            // Get the current window background color
+            uint windowBg = ImGui.GetColorU32(ImGuiCol.WindowBg);
+
+            // Convert to Vector4 for easier manipulation
+            var bgColor = ImGui.ColorConvertU32ToFloat4(windowBg);
+
+            // Darken it by a factor (e.g., 0.85 = 85% brightness)
+            bgColor.X *= 0.85f; // R
+            bgColor.Y *= 0.85f; // G
+            bgColor.Z *= 0.85f; // B
+                                // bgColor.W stays the same (alpha)
+
+            // Convert back to uint
+            uint darkerBg = ImGui.ColorConvertFloat4ToU32(bgColor);
+
+            using var colorBackground = ImRaii.PushColor(ImGuiCol.ChildBg, darkerBg);
+
+            // For border, you could also derive it from the current border or keep it as-is
+            // Option 1: Use current border color
+            uint currentBorder = ImGui.GetColorU32(ImGuiCol.Border);
+            using var colorBorder = ImRaii.PushColor(ImGuiCol.Border, currentBorder);
 
             // Calculate the height needed
             float height = ImGui.GetStyle().WindowPadding.Y; // Top padding

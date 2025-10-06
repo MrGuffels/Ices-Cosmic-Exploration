@@ -23,7 +23,7 @@ namespace ICE.Ui
     {
         public MainWindow() :
 #if DEBUG
-        base($"Ice's Cosmic Exploration {P.GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion} Debug build###ICEDebugMainWindowV2")
+        base($"Ice's Cosmic Exploration {P.GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion} [Debug Build] ###ICEMainWindow2")
 #else
         base($"Ice's Cosmic Exploration {P.GetType().Assembly.GetName().Version} ###ICEMainWindow2")
 #endif
@@ -176,6 +176,14 @@ namespace ICE.Ui
                 P.settingsWindowV2.IsOpen = !P.settingsWindowV2.IsOpen;
             }
             bool onlyGrabMission = C.OnlyGrabMission;
+            if (C.ShowInfoButton)
+            {
+                if (ImGui.Button("Extra Info", new Vector2(ImGui.GetContentRegionAvail().X, 30)))
+                {
+                    P.infoWindow.IsOpen = true;
+                }
+            }
+
             if (ImGui.Checkbox($"Only grab mission", ref onlyGrabMission))
             {
                 C.OnlyGrabMission = onlyGrabMission;
@@ -322,6 +330,7 @@ namespace ICE.Ui
                     C.StopOnceRelicFinished = relicStop;
                     C.Save();
                 }
+
                 bool playSoundAlert = C.PlaySoundAlert;
                 if (ImGui.Checkbox("Play Sound Alert on Stop", ref playSoundAlert))
                 {
@@ -351,6 +360,24 @@ namespace ICE.Ui
 
             if (ImGui.CollapsingHeader("Relic XP Settings"))
             {
+                bool relicTurnin = C.TurninRelic;
+                if (ImGui.Checkbox($"Turnin if relic is complete", ref relicTurnin))
+                {
+                    C.TurninRelic = relicTurnin;
+                    C.Save();
+                }
+                ImGui.SameLine();
+                ImGui.TextDisabled("?");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
+                                     "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
+                                     "2: You must not have the tool eqipped for this to run full auto. \n" +
+                                     "\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n" +
+                                     "3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
+                                     "4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
+                                     "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
+                }
                 bool EnableRelicXp = C.XPRelicGrind;
                 if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))
                 {

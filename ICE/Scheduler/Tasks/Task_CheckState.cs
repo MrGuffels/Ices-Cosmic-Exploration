@@ -89,7 +89,7 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
                 }
-                if (C.StopOnceRelicFinished)
+                if (C.StopOnceRelicFinished || C.TurninRelic)
                 {
                     var wksManager = WKSManager.Instance();
                     if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
@@ -133,7 +133,14 @@ namespace ICE.Scheduler.Tasks
                             allComplete = false;
                         }
                     }
-                    if (allComplete)
+                    if (allComplete && C.TurninRelic)
+                    {
+                        IceLogging.Info("We've hit a point where we can turnin the relic! Doing so now");
+                        SchedulerMain.State = IceState.RelicTurnin;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
+                    else if (allComplete && !C.StopOnceRelicFinished)
                     {
                         IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
                         SchedulerMain.State = IceState.Idle;
@@ -145,7 +152,7 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        IceLogging.Info($"Stop on relic completion is checked, but you also aren't done. So going to continue on", "[Task: CheckState]");
+                        IceLogging.Info($"We are in a relic checking progression, but we also haven't reached a completion point -> turnin, ", "[Task: CheckState]");
                     }
                 }
                 if (currentMissionId != 0)

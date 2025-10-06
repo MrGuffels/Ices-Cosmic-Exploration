@@ -18,23 +18,6 @@ namespace ICE.Ui.SettingTabs
 
         public static void Draw()
         {
-            if (ImGui.Checkbox("[Experimental] Animation Lock Unstuck", ref animationLockAbandon))
-            {
-                C.AnimationLockAbandon = animationLockAbandon;
-                C.Save();
-            }
-            // ImGui.Checkbox("[Experimental] Animation Lock Manual Unstuck", ref SchedulerMain.AnimationLockAbandonState);
-
-            if (ImGui.Checkbox("Stop on Errors", ref stopOnAbort))
-            {
-                C.StopOnAbort = stopOnAbort;
-                C.Save();
-            }
-            ImGuiEx.HelpMarker(
-                "Warning! This is a safety feature to stop if something goes wrong!\n" +
-                "You have been warned. Disable at your own risk."
-            );
-
             if (ImGui.Checkbox("Ignore non-Cosmic prompts", ref rejectUnknownYesNo))
             {
                 C.RejectUnknownYesno = rejectUnknownYesNo;

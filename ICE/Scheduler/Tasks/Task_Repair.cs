@@ -17,15 +17,17 @@ namespace ICE.Scheduler.Tasks
 
                 if (C.RepairAtVendor)
                 {
-                    P.TaskManager.EnqueueMulti(
-                        new(HubCheck, "Checking to see if we're in hub area"),
-                        new(PathToRepair, "Pathing to the repair NPC"),
-                        new(RepairAtNpc, "Repairing at the NPC Vendor"),
-                        new(CloseRepair, "Closing the repair window")
+                    P.TaskManager.EnqueueMulti
+                        (
+                            new(Task_RelicTurnin.RegisterCraftingPosition, "Registering crafting position for later"),
+                            new(HubCheck, "Checking to see if we're in hub area"),
+                            new(PathToRepair, "Pathing to the repair NPC"),
+                            new(RepairAtNpc, "Repairing at the NPC Vendor"),
+                            new(CloseRepair, "Closing the repair window"),
+                            new(Task_RelicTurnin.PathBackToCraftingSpot, "Pathing back to our crafting spot")
                         );
                 }
-                else if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(currentJob)) 
-                       || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(currentJob)))
+                else if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(currentJob)) || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(currentJob)))
                 {
                     P.TaskManager.EnqueueMulti
                     (
@@ -34,7 +36,7 @@ namespace ICE.Scheduler.Tasks
                         new(CloseRepair, "Closing Self Repair")
                     );
                 }
-                SchedulerMain.State = IceState.GrabMission;
+                P.TaskManager.Enqueue(() =>  SchedulerMain.State = IceState.GrabMission);
             }
         }
         public static unsafe bool? HubCheck()
@@ -49,7 +51,7 @@ namespace ICE.Scheduler.Tasks
 
             if (Player.DistanceTo(HubCenter) < 45)
             {
-                IceLogging.Debug("Player is in the range of the main hub area right now", "[Vendor Repair Check]");
+                IceLogging.Info("Player is in the range of the main hub area right now", "[Vendor Repair Check]");
                 return true;
             }
             else
@@ -69,13 +71,18 @@ namespace ICE.Scheduler.Tasks
             var zoneId = Player.Territory;
             var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
 
+            if (EzThrottler.Throttle("Log Throttle for repair", 2000))
+            {
+                IceLogging.Debug($"NPC: {npcEntry.Name} | {npcEntry.NpcId} | Zone: {zoneId}");
+            }
+
             if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
             {
                 if (P.Navmesh.IsRunning())
                 {
                     if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
                     {
-                        IceLogging.Debug("Pathing to NPC has reached the distance thresh, stopping");
+                        IceLogging.Info("Pathing to NPC has reached the distance thresh, stopping");
                         P.Navmesh.Stop();
                         return true;
                     }
@@ -104,9 +111,13 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? RepairAtNpc()
         {
+            var zoneId = Player.Territory;
+            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
+
             IGameObject? gameObject = null;
-            Utils.TryGetObjectByDataId(1052610, out gameObject);
+            Utils.TryGetObjectByDataId(npcEntry.NpcId, out gameObject);
             var currentTarget = Svc.Targets.Target;
+            var repairAmount = C.RepairPercent;
 
             if (!PlayerHelper.NeedsRepair(99.9f))
             {
@@ -115,7 +126,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if (GenericHelpers.TryGetAddonMaster<Repair>("Repair", out var repair) && repair.IsAddonReady)
             {
-                if (PlayerHelper.NeedsRepair(99.9f))
+                if (PlayerHelper.NeedsRepair(repairAmount))
                 {
                     if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var Yesno) && Yesno.IsAddonReady)
                     {
@@ -137,18 +148,13 @@ namespace ICE.Scheduler.Tasks
                     ECommons.Automation.Callback.Fire(iconString, true, 6);
                 }
             }
-            else if (currentTarget != null && currentTarget.DataId == 1052610)
-            {
-                if (EzThrottler.Throttle("Attempting to interact with repair NPC"))
-                {
-                    Utils.InteractWithObject(gameObject);
-                    IceLogging.Info($"Interacting with: {gameObject.DataId}");
-                }
-            }
             else
             {
-                if (EzThrottler.Throttle("Attempting to target the repair NPC"))
+                if (EzThrottler.Throttle("Attempting to target the repair NPC + Interact"))
+                {
                     Utils.TargetgameObject(gameObject);
+                    Utils.InteractWithObject(gameObject);
+                }
             }
 
             return false;

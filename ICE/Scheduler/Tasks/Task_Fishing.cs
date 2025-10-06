@@ -1,14 +1,9 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using Lumina.Excel.Sheets;
-using NAudio.Gui;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ICE.Ui.DebugWindowTabs;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Utilities.GatheringUtil;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -19,6 +14,8 @@ namespace ICE.Scheduler.Tasks
         // 42 is active when reeling in a fish
         // Something to consider, start fishing... (that's condition 42 when you start)
         // Whenever all the conditions are cleared, check the inventory for the frame, see if you have enough/meet the score
+
+        private static FishingDebug _fishingDebug = null;
 
         public static void Enqueue()
         {
@@ -34,6 +31,11 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool? FishingCheck()
         {
+            if (_fishingDebug == null)
+            {
+                _fishingDebug = new FishingDebug();
+            }
+
             string handle = "[Standard Fishing: Fishing Check]";
             IceLogging.Info("Checking to see where we need to be here", handle);
             bool hasBait = false;
@@ -86,34 +88,29 @@ namespace ICE.Scheduler.Tasks
             }
             else if (!Svc.Condition[ConditionFlag.Gathering])
             {
-                if (EzThrottler.Throttle("Making sure we're facing to fishing hole", 1000))
+                if (!_fishingDebug.IsFishable())
                 {
-                    var facePos = Vector3.NegativeInfinity;
-                    var currentPos = Player.Position;
-                    var rotation = Player.Rotation;
-                    var missionZone = CosmicHelper.CurrentMissionInfo.TerritoryId;
-                    var currentFlag = CosmicHelper.CurrentMissionInfo.MapPosition;
-
-                    IceLogging.Debug($"Mission Zone {missionZone} | Current Flag {currentFlag}");
-
-                    foreach (var fishingSpot in GatheringUtil.MoonFishingLocations[missionZone][currentFlag])
+                    if (_fishingDebug.FindFishableLocation(out var fishablePos, searchSteps:64))
                     {
-                        if (Player.DistanceTo(fishingSpot.FishingSpot) < 2)
+                        IceLogging.Info("We're not in a fishable angle, so going to face one", handle);
+                        P.TaskManager.Tasks.Clear();
+                        P.TaskManager.Enqueue(() => FacePosition(fishablePos.Value, 0.05f));
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Debug("Our current fishing position isn't viable. So going to move to the next fishing spot");
+                        var mission = CosmicHelper.CurrentMissionInfo;
+                        var flag = mission.MapPosition;
+                        var territoryId = mission.TerritoryId;
+
+                        var nextFishingSpot = GetNextFishingSpot(territoryId, flag, Player.Position);
+                        if (nextFishingSpot != null)
                         {
-                            facePos = fishingSpot.FacePosition;
-                            var tolerance = fishingSpot.RotationTolerance;
-
-                            Vector3 direction = fishingSpot.FacePosition - currentPos;
-                            float targetRotation = (float)Math.Atan2(direction.X, direction.Z);
-
-                            float angleDifference = GetShortestAngleDifference(rotation, targetRotation);
-
-                            if (rotation > angleDifference)
-                            {
-                                P.TaskManager.Tasks.Clear();
-                                P.TaskManager.Enqueue(() => FacePosition(fishingSpot.FacePosition, tolerance));
-                                return true;
-                            }
+                            IceLogging.Info($"We found another fishing spot to move to! {nextFishingSpot.FishingSpot} | moving to it");
+                            P.TaskManager.Tasks.Clear();
+                            P.TaskManager.Enqueue(() => InitiateMoving(nextFishingSpot.FishingSpot), "Vnav moving to fishing");
+                            return true;
                         }
                     }
                 }
@@ -168,7 +165,7 @@ namespace ICE.Scheduler.Tasks
             float currentRotation = Player.Rotation;
 
             // If rotation is still changing, wait for it to stabilize
-            if (Math.Abs(Player.Rotation - currentRotation) > 0.01f)
+            if (Math.Abs(Player.Rotation - currentRotation) > tolerance)
             {
                 return false;
             }
@@ -186,12 +183,15 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
-            Vector3 temp = pos;
-            ActionManager.Instance()->AutoFaceTargetPosition(&temp);
+            if (EzThrottler.Throttle("Facing toward the fishing hole"))
+            {
+                Vector3 temp = pos;
+                ActionManager.Instance()->AutoFaceTargetPosition(&temp);
+            }
 
             return false;
         }
-        private static float GetShortestAngleDifference(float currentAngle, float targetAngle)
+        public static float GetShortestAngleDifference(float currentAngle, float targetAngle)
         {
             float difference = targetAngle - currentAngle;
 
@@ -200,6 +200,54 @@ namespace ICE.Scheduler.Tasks
             while (difference < -Math.PI) difference += (float)(2 * Math.PI);
 
             return difference;
+        }
+        public static FisherSpotInfo GetNextFishingSpot(uint zone, Vector2 flag, Vector3 playerPosition)
+        {
+            // Check if the zone and flag exist
+            if (!MoonFishingLocations.TryGetValue(zone, out var zoneData) ||
+                !zoneData.TryGetValue(flag, out var spots) ||
+                spots.Count == 0)
+            {
+                return null;
+            }
+
+            // Find the index of the spot close to the player (within distance of 2)
+            int currentIndex = -1;
+            for (int i = 0; i < spots.Count; i++)
+            {
+                float distance = Vector3.Distance(playerPosition, spots[i].FacePosition);
+                if (distance < 2f)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            // If a close spot was found, return the next one (cycling back to 0 if at the end)
+            if (currentIndex != -1)
+            {
+                int nextIndex = (currentIndex + 1) % spots.Count;
+                return spots[nextIndex];
+            }
+
+            // If no close spot found, return the first entry
+            return spots[0];
+        }
+        public static bool? InitiateMoving(Vector3 fishingPos)
+        {
+            if (P.Navmesh.IsRunning())
+            {
+                P.TaskManager.Enqueue(() => !P.Navmesh.IsRunning());
+                return true;
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Navmesh movement"))
+                {
+                    P.Navmesh.PathfindAndMoveTo(fishingPos, false);
+                }
+                return false;
+            }
         }
     }
 }

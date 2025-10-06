@@ -3,6 +3,8 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Enums;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace ICE.Utilities;
 
@@ -1106,35 +1108,35 @@ public static unsafe partial class CosmicHelper
         [975] = 0,
         [976] = 0,
         [977] = 0,
-        [978] = 0,
-        [979] = 0,
-        [980] = 0,
-        [981] = 0,
-        [982] = 0,
-        [983] = 0,
-        [984] = 0,
-        [985] = 0,
-        [986] = 0,
-        [987] = 0,
-        [988] = 0,
-        [989] = 0,
-        [990] = 0,
-        [991] = 0,
-        [992] = 0,
-        [993] = 0,
-        [994] = 0,
-        [995] = 0,
-        [996] = 0,
-        [997] = 0,
-        [998] = 0,
-        [999] = 0,
-        [1000] = 0,
-        [1001] = 0,
-        [1002] = 0,
-        [1003] = 0,
-        [1004] = 0,
-        [1005] = 0,
-        [1006] = 0,
+        [978] = 12,
+        [979] = 15,
+        [980] = 9,
+        [981] = 9,
+        [982] = 14,
+        [983] = 13,
+        [984] = 29,
+        [985] = 33,
+        [986] = 37,
+        [987] = 26,
+        [988] = 48,
+        [989] = 22,
+        [990] = 23,
+        [991] = 57,
+        [992] = 40,
+        [993] = 91,
+        [994] = 16,
+        [995] = 22,
+        [996] = 22,
+        [997] = 32,
+        [998] = 69,
+        [999] = 105,
+        [1000] = 67,
+        [1001] = 159,
+        [1002] = 106,
+        [1003] = 33,
+        [1004] = 33,
+        [1005] = 48,
+        [1006] = 95,
         [1007] = 215,
         [1008] = 0,
         [1009] = 0,
@@ -1165,10 +1167,77 @@ public static unsafe partial class CosmicHelper
         [1034] = 0,
         [1035] = 0,
         [1036] = 0,
-        [1037] = 0,
-        [1038] = 0,
+        [1037] = 158,
+        [1038] = 212,
         [1039] = 0,
     };
+
+    /// <summary>
+    /// Exports mission scores to a CSV file with MissionID, Score, and Name columns
+    /// </summary>
+    public static void ExportMissionScoresToCSV(string filePath)
+    {
+        try
+        {
+            var sb = new StringBuilder();
+
+            // Write header
+            sb.AppendLine("MissionID,Score,Name");
+
+            // Write each mission entry
+            foreach (var mission in SheetMissionDict.OrderBy(kvp => kvp.Key))
+            {
+                var missionId = mission.Key;
+                var score = mission.Value.ClassScore;
+                var name = RemovePrivateUseChars(mission.Value.Name);
+
+                // Escape commas and quotes in the name
+                if (name.Contains(',') || name.Contains('"'))
+                {
+                    name = $"\"{name.Replace("\"", "\"\"")}\"";
+                }
+
+                sb.AppendLine($"{missionId},{score},{name}");
+            }
+
+            // Ensure directory exists
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // Write to file
+            File.WriteAllText(filePath, sb.ToString());
+
+            IceLogging.Debug($"Exported {SheetMissionDict.Count} mission scores to {filePath}", debugOnly:true);
+        }
+        catch (Exception ex)
+        {
+            IceLogging.Error($"Error exporting mission scores: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Helper method to remove private use characters from strings
+    /// </summary>
+    private static string RemovePrivateUseChars(string input)
+    {
+        var result = new StringBuilder();
+        foreach (char c in input)
+        {
+            int code = (int)c;
+            // Skip Private Use Areas where games often store custom symbols
+            if (!(code >= 0xE000 && code <= 0xF8FF) &&    // Private Use Area
+                !(code >= 0xF0000 && code <= 0xFFFFD) &&  // Supplementary Private Use Area A
+                !(code >= 0x100000 && code <= 0x10FFFD))  // Supplementary Private Use Area B
+            {
+                result.Append(c);
+            }
+        }
+        return result.ToString();
+    }
 
     public class GatherItemInfo
     {

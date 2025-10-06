@@ -12,6 +12,8 @@ namespace ICE.Ui.DebugWindowTabs
         private static int BestMission = 0;
         private static string MissionName = "";
 
+        public static List<int> XpKinds = new() { 1, 2, 3, 4, 5 };
+
         public static void Draw()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
@@ -82,6 +84,57 @@ namespace ICE.Ui.DebugWindowTabs
                     C.Save();
                 }
 
+                if (ImGui.CollapsingHeader("Show Following Kinds"))
+                {
+                    bool useDummyRank = C.UseDummyRanks;
+                    bool useDummyA = C.ShowDummyA;
+                    bool useDummyB = C.ShowDummyB;
+                    bool useDummyC = C.ShowDummyC;
+                    bool useDummyD = C.ShowDummyD;
+
+                    if (ImGui.Checkbox("Use Dummy Ranks", ref useDummyRank))
+                    {
+                        C.UseDummyRanks = useDummyRank;
+                        C.Save();
+                    }
+                    if (ImGui.Checkbox("Show A Ranks", ref useDummyA))
+                    {
+                        C.ShowDummyA = useDummyA;
+                        C.Save();
+                    }
+                    if (ImGui.Checkbox("Show B Ranks", ref useDummyB))
+                    {
+                        C.ShowDummyB = useDummyB;
+                        C.Save();
+                    }
+                    if (ImGui.Checkbox("Show C Ranks", ref useDummyC))
+                    {
+                        C.ShowDummyC = useDummyC;
+                        C.Save();
+                    }
+                    if (ImGui.Checkbox("Show D Ranks", ref useDummyD))
+                    {
+                        C.ShowDummyD = useDummyD;
+                        C.Save();
+                    }
+                }
+
+                if (ImGui.Button("Update Dummy XP"))
+                {
+                    foreach (var kind in XpKinds)
+                    {
+                        if (!C.DummyXP.ContainsKey(kind))
+                        {
+                            C.DummyXP[kind] = new()
+                            {
+                                CurrentXP = 0,
+                                NeededXP = 1,
+                            };
+                            C.Save();
+                        }
+                    }
+                }
+
                 foreach (var key in C.DummyXP.Keys.ToList())
                 {
                     var xp = C.DummyXP[key];
@@ -132,7 +185,7 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     BestMission = (int)RelicMissionFinder();
                     if (BestMission < 1)
-                        MissionName = "";
+                        MissionName = "None";
                     else
                     {
                         MissionName = CosmicHelper.SheetMissionDict[(uint)BestMission].Name;
@@ -229,12 +282,12 @@ namespace ICE.Ui.DebugWindowTabs
                                 break;
                         }
 
-                        bool properLevel = minLevel <= Player.Level;
+                        bool properLevel = Player.Level <= minLevel;
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
 
                         IceLogging.Info($"Mission Info: {id}\n" +
-                                        $"Proper Level: {properLevel}\n" +
+                                        $"Proper Level: {properLevel} | Mission level: {minLevel} | Player Level: {Player.Level} \n" +
                                         $"Ignore Manual: {IgnoreManual}\n" +
                                         $"Enabled: {missionConfig.Enabled} | Ignore cause not enabled: {IgnoreNotEnabled}");
 
@@ -283,6 +336,8 @@ namespace ICE.Ui.DebugWindowTabs
             }
             else
             {
+                IceLogging.Info("We're somehow not showing the window, so returning 0.");
+
                 return 0;
             }
         }

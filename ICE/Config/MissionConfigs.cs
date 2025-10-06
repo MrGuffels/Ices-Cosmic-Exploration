@@ -21,6 +21,7 @@ namespace ICE.Config
 
         #region Main Window
 
+        public bool ShowInfoButton { get; set; } = true;
         public float MiddleColumnWidth { get; set; } = 1000f;
         public uint SelectedJob { get; set; } = 8;
         public bool XPRelicGrind { get; set; } = false;
@@ -142,7 +143,9 @@ namespace ICE.Config
 
         #endregion
 
-        #region UnlockedClass 
+        #region Relic Settings
+        
+        public bool TurninRelic { get; set; } = false;
 
         #endregion
 
@@ -163,6 +166,11 @@ namespace ICE.Config
         public uint PictoColor_Circle { get; set; } = 2616716297;
         public uint PictoColor_Dot { get; set; } = 2616716297;
         public uint PictoColor_Cone { get; set; } = 0;
+        public bool UseDummyRanks { get; set; } = false;
+        public bool ShowDummyA { get; set; } = false;
+        public bool ShowDummyB { get; set; } = false;
+        public bool ShowDummyC { get; set; } = false;
+        public bool ShowDummyD { get; set; } = false;
 
         #endregion
 

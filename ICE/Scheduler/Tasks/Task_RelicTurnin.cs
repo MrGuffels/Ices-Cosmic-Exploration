@@ -11,16 +11,29 @@ namespace ICE.Scheduler.Tasks
     internal class Task_RelicTurnin
     {
 
+        private static Vector3 craftingSpot = Vector3.Zero;
+
         public static void Enqueue()
         {
             P.TaskManager.EnqueueMulti
             (
+                new(RegisterCraftingPosition, "Registering crafting position"),
                 new(Task_Repair.HubCheck, "Checking to see if we're in the hub area"),
                 new(PathToRelicNPC, "Heading to the relic NPC for turnin"),
                 new(TalkToResearchWay, "Talk to researchway"),
                 new(SelectReport, "Selecting Report"),
-                new(SelectRelicClass, "Selecting the class to turnin on")
+                new(SelectRelicClass, "Selecting the class to turnin on"),
+                new(PathBackToCraftingSpot, "Pathing to crafting spot (if viable)", Utils.TaskConfig),
+                new(() => SchedulerMain.State = IceState.GrabMission, "Swapping back to start")
             );
+        }
+
+        public static bool? RegisterCraftingPosition()
+        {
+            if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
+                craftingSpot = Player.Position;
+
+            return true;
         }
 
         private static bool? PathToRelicNPC()
@@ -120,7 +133,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
             {
-                if (EzThrottler.Throttle("Clicking the talk dialog"))
+                if (EzThrottler.Throttle("Clicking the talk dialog", 50))
                 {
                     talk.Click();
                 }
@@ -133,6 +146,62 @@ namespace ICE.Scheduler.Tasks
 
             return false;
 
+        }
+
+        public static bool? PathBackToCraftingSpot()
+        {
+            if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
+            {
+                if (craftingSpot != Vector3.Zero)
+                {
+                    if (Player.Mounted && Player.DistanceTo(craftingSpot) < C.MountRadius && Player.Mounted)
+                    {
+                        if (EzThrottler.Throttle("Dismount if need be"))
+                        {
+                            IceLogging.Debug("Dismounting cause... we be mounted back to our crafting spot");
+                            Utils.Dismount();
+                        }
+                        return false;
+                    }
+
+                    if (!P.Navmesh.IsRunning() && Player.DistanceTo(craftingSpot) < 1)
+                    {
+
+                        craftingSpot = Vector3.Zero;
+                        return true;
+                    }
+                    else
+                    {
+                        if (!P.Navmesh.IsRunning())
+                        {
+                            if (EzThrottler.Throttle("Telling navemesh to move to crafting spot"))
+                            {
+                                P.Navmesh.PathfindAndMoveTo(craftingSpot, false);
+                            }
+                        }
+                        else
+                        {
+                            if (C.UseMountOutsideMission && Player.DistanceTo(craftingSpot) >= C.MountRadius && !Player.IsBusy)
+                            {
+                                if (EzThrottler.Throttle("Mounting the mount to head back to craft"))
+                                {
+                                    Utils.MountAction();
+                                }
+                            }
+                        }
+
+                        return false;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }

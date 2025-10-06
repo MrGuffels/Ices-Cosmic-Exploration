@@ -3,6 +3,7 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Config;
+using ICE.Ui.DebugWindowTabs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_DualClass
     {
+        private static FishingDebug _fishingDebug = null;
+
         public static void Enqueue()
         {
             Task_CheckScore.Enqueue();
@@ -534,6 +537,11 @@ namespace ICE.Scheduler.Tasks
         {
             string handle = "[Dual Class: Fishing Check]";
 
+            if (_fishingDebug == null)
+            {
+                _fishingDebug = new FishingDebug();
+            }
+
             if (CosmicHelper.CurrentBait == 0)
             {
                 if (EzThrottler.Throttle("Equipping bait"))
@@ -553,36 +561,35 @@ namespace ICE.Scheduler.Tasks
                 }
                 return false;
             }
-            else if (EzThrottler.Throttle("Making sure we're facing to fishing hole", 1000))
-            {
-                var facePos = Vector3.Zero;
-                var currentPos = Player.Position;
-                var missionZone = CosmicHelper.CurrentMissionInfo.TerritoryId;
-                var currentFlag = CosmicHelper.CurrentMissionInfo.MapPosition;
-
-                IceLogging.Debug($"Mission Zone {missionZone} | Current Flag {currentFlag}");
-
-                foreach (var fishingSpot in GatheringUtil.MoonFishingLocations[missionZone][currentFlag])
-                {
-                    if (Player.DistanceTo(fishingSpot.FishingSpot) < 2)
-                    {
-                        facePos = fishingSpot.FacePosition;
-                        IceLogging.Debug($"Found! Telling it to face toward: {facePos}");
-                        break;
-                    }
-                }
-
-                if (facePos != Vector3.Zero)
-                {
-                    IceLogging.Debug($"Action! Telling it to face toward: {facePos}");
-                    ActionManager.Instance()->AutoFaceTargetPosition(&facePos);
-                }
-
-                return false;
-            }
             else if (!Svc.Condition[ConditionFlag.Gathering])
             {
-                if (EzThrottler.Throttle("Starting to fish", 1000))
+                if (!_fishingDebug.IsFishable())
+                {
+                    if (_fishingDebug.FindFishableLocation(out var fishablePos, searchSteps: 64))
+                    {
+                        IceLogging.Info("We're not in a fishable spot, so going to face one", handle);
+                        P.TaskManager.Tasks.Clear();
+                        P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishablePos.Value, 0.05f));
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Debug("Our current fishing position isn't viable. So going to move to the next fishing spot");
+                        var mission = CosmicHelper.CurrentMissionInfo;
+                        var flag = mission.MapPosition;
+                        var territoryId = mission.TerritoryId;
+
+                        var nextFishingSpot = Task_Fishing.GetNextFishingSpot(territoryId, flag, Player.Position);
+                        if (nextFishingSpot != null)
+                        {
+                            IceLogging.Info($"We found another fishing spot to move to! {nextFishingSpot.FishingSpot} | moving to it");
+                            P.TaskManager.Tasks.Clear();
+                            P.TaskManager.Enqueue(() => Task_Fishing.InitiateMoving(nextFishingSpot.FishingSpot), "Vnav moving to fishing");
+                            return true;
+                        }
+                    }
+                }
+                else if (EzThrottler.Throttle("Starting to fish", 1000))
                 {
                     IceLogging.Debug("Telling it to start fishing", handle);
                     ActionManager.Instance()->UseAction(ActionType.Action, 289);

@@ -29,8 +29,10 @@ namespace ICE.Scheduler.Tasks
             }
             else if (CosmicHelper.GatheringJobList.Overlaps(jobs))
             {
-                IceLogging.Info("Currently on a gathering job");
-                if (Player.JobId == 18)
+                var jobId = Player.JobId;
+
+                IceLogging.Info($"Currently on a gathering job {jobId}");
+                if (jobId == 18)
                 {
                     P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Fish);
                     P.TaskManager.Enqueue(() => Fish(), "Checking fishing missions for score");
@@ -52,6 +54,14 @@ namespace ICE.Scheduler.Tasks
                 if (missionInfo.Addon->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
                 {
                     var id = CosmicHelper.CurrentLunarMission;
+
+                    if (CosmicHandler.IsMissionTimedOut())
+                    {
+                        SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
+                    }
+
                     if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionEntry))
                     {
                         if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))

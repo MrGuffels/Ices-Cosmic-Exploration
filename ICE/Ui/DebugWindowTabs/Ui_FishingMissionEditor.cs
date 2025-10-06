@@ -1,4 +1,5 @@
-﻿using Dalamud.Interface.Utility.Raii;
+﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility.Raii;
 using System.Collections.Generic;
 using System.Text;
 
@@ -132,6 +133,14 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"Editing Mission: [{SelectedMission}] {mission.Name}");
                         string attribute = string.Join(", ", mission.Attributes);
                         ImGui.Text($"Mission Attributes: {attribute}");
+                        if (ImGuiEx.IconButtonWithText(FontAwesomeIcon.Flag, "Mission Location"))
+                        {
+                            Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
+                        }
+                        if (ImGui.Button("Move To Spot"))
+                        {
+
+                        }
                         ImGui.Separator();
 
                         // Amount Required Section
