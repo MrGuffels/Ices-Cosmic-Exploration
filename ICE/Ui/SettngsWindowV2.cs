@@ -34,7 +34,7 @@ internal class SettingsWindowV2 : Window
     }
 
     private string SelectedSetting = "Safety";
-    private string[] SettingOptions = ["Safety", "Gathering", "Misc", "Gamble Wheel"];
+    private string[] SettingOptions = ["Safety", "Gathering", "Misc", "Gamble Wheel", "Mission Settings"];
     private string[] DebugOptions = ["Debug", "Path Creation"];
 
     public override void Draw()
@@ -105,6 +105,8 @@ internal class SettingsWindowV2 : Window
                 MiscTab.Draw();
             else if (SelectedSetting == SettingOptions[3])
                 GambaWheel.Draw();
+            else if (SelectedSetting == SettingOptions[4])
+                MissionSettings.Draw();
 #if DEBUG
             else if (SelectedSetting == DebugOptions[0])
                 DebugTab.Draw();

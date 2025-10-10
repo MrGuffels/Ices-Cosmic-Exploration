@@ -4,7 +4,7 @@ using ECommons.Configuration;
 
 namespace ICE
 {
-    public class Configuration : IEzConfig
+    public class Configuration
     {
         // This is the old config, moreso just here for migragtion purposes. Please don't use this
 

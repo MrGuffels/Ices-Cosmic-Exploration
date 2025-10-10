@@ -152,12 +152,12 @@ public sealed partial class ICE
                     else if (keyId < 1039)
                         itemAmount = 2;
 
-                    var missionRecipeRow = RecipeSheet.Where(e => e.RowId == wksRecipeRow.Recipe[0].RowId).First();
-                    var itemId = missionRecipeRow.ItemResult.RowId;
+                    var missionRecipeRow = RecipeSheet?.Where(e => e.RowId == wksRecipeRow.Recipe[0].RowId).FirstOrDefault();
+                    var itemId = missionRecipeRow.Value.ItemResult. RowId;
                     var itemName = ItemSheet.GetRow(itemId).Name.ToString();
-                    var craftingType = missionRecipeRow.CraftType.Value.RowId;
-                    IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.RowId} | for item: {itemId} | {itemName}");
-                    var item1RecipeId = missionRecipeRow.RowId;
+                    var craftingType = missionRecipeRow.Value.CraftType.Value.RowId;
+                    IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.Value.RowId} | for item: {itemId} | {itemName}");
+                    var item1RecipeId = missionRecipeRow.Value.RowId;
                     crafts_Main[(ushort)item1RecipeId] = new CraftingInfo()
                     {
                         ItemId = itemId,

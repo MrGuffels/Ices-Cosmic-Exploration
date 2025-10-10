@@ -63,7 +63,7 @@ namespace ICE.Ui.SettingTabs
 
                     return PROFILE_PREFIX + base64;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // Log error appropriately for your plugin
                     return null;

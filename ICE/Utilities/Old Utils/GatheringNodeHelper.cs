@@ -189,7 +189,7 @@ public class GatheringPathfinder
         }
 
         // 1. Find the closest node to the player's starting position. This will be the first node in our path.
-        GathNodeInfo initialStartNode = null;
+        GathNodeInfo? initialStartNode = null;
         double minDistToPlayer = double.MaxValue;
         foreach (var node in allNodes)
         {
@@ -219,7 +219,7 @@ public class GatheringPathfinder
         // Continue adding the nearest unvisited node until all nodes are visited
         while (nnPath.Count < allNodes.Count)
         {
-            GathNodeInfo nextNode = null;
+            GathNodeInfo? nextNode = null;
             double minDistance = double.MaxValue;
 
             foreach (var node in allNodes)
@@ -285,7 +285,7 @@ public class GatheringPathfinder
             return [allNodes.First()];
         }
 
-        List<GathNodeInfo> bestSubsetPath = null;
+        List<GathNodeInfo>? bestSubsetPath = null;
         double minTotalDistance = double.MaxValue;
 
         // To make it deterministic and exhaustive, iterate through all possible starting nodes.
@@ -301,7 +301,7 @@ public class GatheringPathfinder
             // From the current node, always pick the closest unvisited node from the *entire* set of nodes.
             while (currentSubset.Count < n)
             {
-                GathNodeInfo nextNode = null;
+                GathNodeInfo? nextNode = null;
                 double minDistance = double.MaxValue;
 
                 foreach (var candidateNode in allNodes)

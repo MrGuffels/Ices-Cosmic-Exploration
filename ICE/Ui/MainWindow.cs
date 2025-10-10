@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
+using static MissionTimer;
 using static System.Windows.Forms.AxHost;
 
 namespace ICE.Ui
@@ -410,6 +411,19 @@ namespace ICE.Ui
             }
             WindowSpacer();
 
+            // - - - - - - - - - - - - - - - - - - - -
+            // 3.1 Section, Provisional Grind Button
+            // - - - - - - - - - - - - - - - - - - - - 
+
+            bool grindProvisionals = C.GrindProvisionals;
+            if (ImGui.Checkbox("Provisional Grind", ref grindProvisionals))
+            {
+                C.GrindProvisionals = grindProvisionals;
+                C.Save();
+            }
+
+            WindowSpacer();
+
             // - - - - - - - - - - - - - - - - -
             // 4th Section, Planet Selection
             // - - - - - - - - - - - - - - - - -
@@ -666,6 +680,21 @@ namespace ICE.Ui
                     }
 
                     C.Save();
+                }
+
+                WindowSpacer();
+
+                bool disable = SchedulerMain.State != IceState.Idle;
+
+                using (ImRaii.Disabled(!disable))
+                {
+                    if (ImGui.Button("Clear _anon Autohook Presets"))
+                    {
+                        if (P.AutoHook.Installed)
+                        {
+                            P.AutoHook.DeleteAllAnonymousPresets();
+                        }
+                    }
                 }
             }
 
@@ -2006,6 +2035,77 @@ namespace ICE.Ui
                         ImGui.Text($"[{lockedMission}] - {CosmicHelper.SheetMissionDict[lockedMission].Name}");
                     }
 
+                }
+
+                WindowSpacer();
+                ImGui.Text($"Mission Times!");
+
+                if (C.MissionConfig.TryGetValue(selectedMission, out var config))
+                {
+                    bool allowDelete = (ImGui.IsKeyDown(ImGuiKey.LeftShift) || ImGui.IsKeyDown(ImGuiKey.RightShift)) && (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl));
+
+                    using (ImRaii.Disabled(!allowDelete))
+                    {
+                        if (ImGui.Button("Reset Stats"))
+                        {
+                            P.MissionTimer.ResetTimers(selectedMission);
+                        }
+                    }
+                    if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text("Hold Shift + Control");
+                        ImGui.EndTooltip();
+                    }
+
+                    if (config.Times.Count > 0)
+                    {
+                        ImGui.Text($"Best Time: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff}");
+                        ImGui.Text($"Average Time: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}");
+                    }
+                    else
+                    {
+                        ImGui.Text("Best Time: --:--:--");
+                        ImGui.Text("Average Time: --:--:--");
+                    }
+
+                    ImGui.Text($"Amount of times completed: {config.TotalCompletions}");
+
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
+                    {
+                        var baseScore = missionInfo.ClassScore; // Adjust this based on your actual property name
+
+                        ImGui.Separator();
+                        ImGui.Text("Estimated Score Per Hour:");
+                        ImGui.SameLine();
+                        ImGui.TextDisabled("?");
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text("This is ASSUMING:");
+                            ImGui.Text("1: You have immaculate rng of getting the mission you want every time");
+                            ImGui.Text("2: You're hitting the threshold every time");
+                            ImGui.Text("This is based on your average time. \nSo get a good couple of runs to get a good feel for the timing");
+                            ImGui.EndTooltip();
+                        }
+
+                        var bronzePerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 1.0);
+                        var silverPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 4.0);
+                        var goldPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 5.0);
+
+                        ImGui.TextColored(new Vector4(0.8f, 0.5f, 0.3f, 1.0f), $"Bronze: {bronzePerHour:F0} pts/hr");
+                        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"Silver: {silverPerHour:F0} pts/hr");
+                        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Gold: {goldPerHour:F0} pts/hr");
+                    }
+
+
+                    if (config.Times.Count > 0 && ImGui.CollapsingHeader("View All Completed Times"))
+                    {
+                        for (int i = 0; i < config.Times.Count; i++)
+                        {
+                            ImGui.Text($"[{i+1}] \u2192 {TimeSpan.FromSeconds(config.Times[i]):mm\\:ss\\.ff}");
+                        }
+                    }
                 }
             }
             else

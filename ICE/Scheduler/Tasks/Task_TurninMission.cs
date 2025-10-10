@@ -20,14 +20,25 @@ namespace ICE.Scheduler.Tasks
         {
             P.TaskManager.Enqueue(() => TurninMission(), "Turning in the mission to the moon gods", Utils.TaskConfig);
             P.TaskManager.Enqueue(() => JobSwapCheck(), "Checking to see if you need to swap jobs");
+            P.TaskManager.Enqueue(() => GoldCheck(), "Checking if Gold Check Task needs to be completed");
         }
 
         public static unsafe bool? TurninMission()
         {
+            string tag = "[Turnin Mission]";
             var id = CosmicHelper.CurrentLunarMission;
 
             if (id == 0)
             {
+                // Complete the timer and get duration
+                var duration = P.MissionTimer.CompleteMission();
+
+                // Log the results
+                if (C.MissionConfig.TryGetValue(PreviousMissionId, out var config))
+                {
+                    IceLogging.Info($"Mission [{PreviousMissionId}] [{CosmicHelper.SheetMissionDict[PreviousMissionId].Name}] completed in {duration:mm\\:ss\\.ff} | Best: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff} | Avg: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}", $"{tag} [Mission Timer]");
+                }
+
                 if (P.AutoHook.Installed)
                 {
                     P.AutoHook.DeleteAllAnonymousPresets();
@@ -37,27 +48,12 @@ namespace ICE.Scheduler.Tasks
                 {
                     IceLogging.Debug($"Stop after current was enabled. Stopping now", "[Task Turnin]");
                     SchedulerMain.State = IceState.Idle;
-                    Mission_Settings.StopAfterCurrent = false;
-                    P.TaskManager.Tasks.Clear();
-
-                    if (C.RemoveAfterGold)
-                    {
-                        P.TaskManager.Enqueue(() => GoldCheck());
-                    }
-                    if (C.PlaySoundAlert)
-                    {
-                        _ = SoundPlayer.PlaySoundAsync();
-                    }
                     return true;
                 }
                 else
                 {
                     IceLogging.Debug($"Stop after current wasn't enabled. Grabbing another mission", "[Task Turnin]");
                     SchedulerMain.State = IceState.Start;
-                    if (C.RemoveAfterGold)
-                    {
-                        P.TaskManager.Enqueue(() => GoldCheck());
-                    }
                     return true;
                 }
             }
@@ -106,6 +102,12 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? JobSwapCheck()
         {
+            if (C.GrindProvisionals)
+            {
+                IceLogging.Info("We're currently grinding out provisionals, and that means swapping jobs constantly would be... hella bad LOL. So just continuing on like normal");
+                return true;
+            }
+
             if (Player.JobId != Mission_Settings.StartJob && Mission_Settings.StartJob != 0)
             {
                 if (EzThrottler.Throttle("Swapping to crafter job", 1000))
@@ -141,6 +143,22 @@ namespace ICE.Scheduler.Tasks
                         C.Save();
                     }
                 }
+            }
+
+            IceLogging.Info("Gold Check is complete, and checking to see what state we need to be in post cleanup");
+            if (Mission_Settings.StopAfterCurrent)
+            {
+                IceLogging.Info("We're stopping after this mission", "[Gold Check Task]");
+                Mission_Settings.StopAfterCurrent = false;
+                SchedulerMain.State = IceState.Idle;
+
+                if (C.PlaySoundAlert)
+                    _ = SoundPlayer.PlaySoundAsync();
+            }
+            else
+            {
+                IceLogging.Info("We're continuing after this mission", "[Gold Check Task]");
+                SchedulerMain.State = IceState.Start;
             }
 
             return true;

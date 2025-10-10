@@ -272,7 +272,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 var nodeId = gatherInfo[Mission_Settings.nodeCounter].NodeId;
-                var node = Svc.Objects.Where(x => x.DataId == nodeId).FirstOrDefault();
+                var node = Svc.Objects.Where(x => x.BaseId == nodeId).FirstOrDefault();
                 if (!node.IsTargetable)
                 {
                     Mission_Settings.nodeCounter += 1;
@@ -342,7 +342,7 @@ namespace ICE.Scheduler.Tasks
                     P.TaskManager.Insert(() => GatheringInteraction(), "Gathering mode", Utils.TaskConfig);
                     return true;
                 }
-                else if (Svc.Objects.Where(x => x.DataId == location.NodeId).Where(t => t.IsTargetable) != null)
+                else if (Svc.Objects.Where(x => x.BaseId == location.NodeId).Where(t => t.IsTargetable) != null)
                 {
                     // Target was a valid target, going to add a task to try and interact w/ the node now and get the gathering window up
                     IceLogging.Info("Targeting the target for gathering", "[Task_Gathering]");

@@ -67,6 +67,12 @@ namespace ICE.Config
             ProvisionalTypes.ProvisionalSequential,
             ProvisionalTypes.ProvisionalTimed
         };
+        public bool GrindProvisionals { get; set; } = false;
+        public List<uint> JobPrio { get; set; } = new()
+        {
+            8, 9, 10, 11, 12, 13, 14, 15,  // Crafters: CRP, BSM, ARM, GSM, LTW, WVR, ALC, CUL
+            16, 17, 18                     // Gatherers: MIN, BTN, FSH
+        };
         public bool ShowSinusMissions { get; set; } = true;
         public bool ShowPhaennaMissions { get; set; } = true;
         public bool RemoveAfterGold { get; set; } = false;
@@ -140,6 +146,7 @@ namespace ICE.Config
         public float LeftColumnWidth { get; set; } = 300f;
         public bool PlaySoundAlert { get; set; } = false;
         public float SoundVolume { get; set; } = 0.5f;
+        public int TimeHistoryLimit { get; set; } = 100;
 
         #endregion
 
@@ -193,6 +200,10 @@ namespace ICE.Config
         public bool TurninBronze { get; set; } = false;
         public bool Use_BuildinPreset { get; set; } = false;
         public string AutoHookPresetName { get; set; } = string.Empty;
+        public double BestTime { get; set; } = double.MaxValue;
+        public double AverageTime { get; set; } = 0;
+        public double TotalCompletions { get; set; } = 0;
+        public List<double> Times { get; set; } = new();
     }
 
     public class GatherProfile

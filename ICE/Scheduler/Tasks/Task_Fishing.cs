@@ -209,7 +209,7 @@ namespace ICE.Scheduler.Tasks
 
             return difference;
         }
-        public static FisherSpotInfo GetNextFishingSpot(uint zone, Vector2 flag, Vector3 playerPosition)
+        public static FisherSpotInfo? GetNextFishingSpot(uint zone, Vector2 flag, Vector3 playerPosition)
         {
             // Check if the zone and flag exist
             if (!MoonFishingLocations.TryGetValue(zone, out var zoneData) ||

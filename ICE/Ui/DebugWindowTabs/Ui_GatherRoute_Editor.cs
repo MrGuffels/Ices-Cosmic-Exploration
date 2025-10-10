@@ -250,9 +250,9 @@ namespace ICE.Ui.DebugWindowTabs
                                     .OrderBy(x => Player.DistanceTo(x.Position))
                             .ToList())
                             {
-                                if (ImGui.Selectable($"Id: {x.DataId} | Distance: {Player.DistanceTo(x.Position):N2}"))
+                                if (ImGui.Selectable($"Id: {x.BaseId} | Distance: {Player.DistanceTo(x.Position):N2}"))
                                 {
-                                    nodeId = x.DataId;
+                                    nodeId = x.BaseId;
                                 }
                             }
                             ImGui.EndChild();
@@ -267,7 +267,7 @@ namespace ICE.Ui.DebugWindowTabs
                             {
                                 if (ImGui.Button("Add Node", new Vector2(-1, 0)))
                                 {
-                                    var x = Svc.Objects.Where(x => x.DataId == nodeId).FirstOrDefault();
+                                    var x = Svc.Objects.Where(x => x.BaseId == nodeId).FirstOrDefault();
                                     if (x != null)
                                     {
                                         var gatheringZone = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag];
@@ -277,7 +277,7 @@ namespace ICE.Ui.DebugWindowTabs
                                         {
                                             LandZone = playerPos,
                                             Position = x.Position,
-                                            NodeId = x.DataId
+                                            NodeId = x.BaseId
                                         };
                                         gatheringZone.Add(addNode);
                                     }

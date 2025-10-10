@@ -84,8 +84,6 @@ namespace ICE.Ui.DebugWindowTabs
             }
         }
 
-        private static int Counter = 0;
-
         private static async Task<List<Vector3>> FindTask(Vector3 currentPos)
         {
             return await P.Navmesh.Pathfind(currentPos, pathToArea, false);

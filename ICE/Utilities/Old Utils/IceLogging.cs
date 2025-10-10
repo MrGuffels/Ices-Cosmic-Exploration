@@ -4,8 +4,6 @@ namespace ICE.Utilities;
 
 internal static class IceLogging
 {
-    private static string _lastVerboseMessage, _lastDebugMessage, _lastInfoMessage = string.Empty;
-
     private static string GetCallerPrefix()
     {
         var stackFrame = new StackFrame(3);

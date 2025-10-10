@@ -9,12 +9,7 @@ namespace ICE.Ui.DebugWindowTabs
     {
         private static uint SelectedMission = 0;
         private static string newPresetItem = "";
-        private static uint newBaitId = 0;
         private static string newFishCategory = "";
-        private static uint newFishId = 0;
-        private static string selectedFishCategory = "";
-        private static string newBaitName = "";
-        private static uint newBaitIdForName = 0;
         private static string selectedBaitFromDict = "";
         private static string selectedFishFromDict = "";
         private static string baitSearchText = "";
@@ -100,7 +95,6 @@ namespace ICE.Ui.DebugWindowTabs
                             if (ImGui.Selectable(label, isSelected))
                             {
                                 SelectedMission = id;
-                                selectedFishCategory = "";
                             }
 
                             // Right-click context menu for deletion

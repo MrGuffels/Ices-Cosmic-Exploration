@@ -21,6 +21,7 @@ MissionID,Class,MissionName,Score
 20,CRP,Test Material Gathering Tools,17
 21,CRP,High-quality Rest Beds,17
 22,CRP,High-durability Fiberboard,54
+23,CRP,Premium-grade Paper,51
 24,CRP,Starship Insulation,52
 25,CRP,High Burn Charcoal,41
 26,CRP,Lunar Flora Test Processing,84
@@ -270,6 +271,7 @@ MissionID,Class,MissionName,Score
 271,ALC,Foundation Bricks,2
 272,ALC,Spice Processing,2
 273,ALC,Building Adhesive,2
+274,ALC,Nutrient Supplements,2
 275,ALC,Aquatic Adhesive,2
 276,ALC,Medicated Feed Research,2
 277,ALC,Heat-resistant Bricks,5
@@ -280,6 +282,7 @@ MissionID,Class,MissionName,Score
 282,ALC,Emergency Foodstuffs Development,8
 283,ALC,Experimental Potables,6
 284,ALC,Lunar Spice Processing,16
+285,ALC,Water-resistant Bricks,13
 286,ALC,Research Medicine,9
 287,ALC,Holy Water,16
 288,ALC,Lunar Flooring,18
@@ -382,6 +385,7 @@ MissionID,Class,MissionName,Score
 387,MIN,EX: Precise Survey,54
 389,MIN,EX: Southwestern Survey,86
 390,MIN,EX: Precise Lunar Nadir Survey,113
+391,MIN,EX+: Rare Material Extraction,101
 392,MIN,EX+: Supplemental Processing Materials,164
 393,MIN,Hub Vicinity Gathering I,27
 394,MIN,EX: Hub Vicinity Gathering II,93
@@ -389,7 +393,10 @@ MissionID,Class,MissionName,Score
 396,MIN,EX: High-grade Energization Materials II,93
 397,MIN,EX+: High-grade Energization Materials III,189
 398,MIN,EX: Fine-grade Water Filter Materials I,54
+399,MIN,EX+: Fine-grade Water Filter Materials II,167
 400,MIN,Fine-grade Air Filter Materials I,100
+401,MIN,EX+: Fine-grade Air Filter Materials III,193
+402,MIN,EX: Fine-grade Air Filter Materials II,154
 403,MIN,EX+: Folkloric Materials I,119
 404,MIN,EX+: Folkloric Materials II,237
 405,MIN,EX+: Folkloric Materials III,270
@@ -514,6 +521,7 @@ MissionID,Class,MissionName,Score
 531,ALC,Gas Poisoning Antidote,399
 532,ALC,Flamethrower Fuel,417
 533,CUL,Cured Foodstuffs,377
+534,CUL,Nutrient Supplement Jelly,399
 535,CUL,Irregular Spongoi Analysis,410
 536,MIN,Insulating Material,395
 537,MIN,Fallen Drone Salvage,271
@@ -881,6 +889,7 @@ MissionID,Class,MissionName,Score
 899,MIN,Copper Vitrilith Selection,15
 900,MIN,Alloy Procurement,18
 901,MIN,EX: Transmitter Materials,40
+902,MIN,Soda-lime Float Survey,5
 903,MIN,Rare Minerals,6
 904,MIN,Pegmatite Ore Collection,4
 905,MIN,Lens Development Materials,4
@@ -897,7 +906,7 @@ MissionID,Class,MissionName,Score
 916,MIN,EX: Conductive Core Materials,58
 917,MIN,EX: Capsule Chasm Survey,183
 918,MIN,EX: Reflective Materials,128
-919,MIN,EX+: Geothermal Survey,0
+919,MIN,EX+: Geothermal Survey,19
 920,MIN,EX+: Fine-grade Heat-resistant Materials,0
 921,MIN,EX+: Optical Noise Reduction Research,0
 922,MIN,EX+: Resonance Damping Materials,0

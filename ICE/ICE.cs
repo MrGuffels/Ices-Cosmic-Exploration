@@ -17,6 +17,7 @@ public sealed partial class ICE : IDalamudPlugin
     private readonly Configuration Config;
     private static WaypointInfo? waypointInfo;
     private static MissionConfigs missionConfigs;
+    public MissionTimer MissionTimer { get; private set; }
 
     public static Configuration OldConfig => P.Config;
     public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
@@ -98,6 +99,9 @@ public sealed partial class ICE : IDalamudPlugin
         overlayWindow = new();
         debugWindow = new();
         infoWindow = new();
+
+        // timer stuff
+        MissionTimer = new MissionTimer();
 
         EzCmd.Add("/icecosmic", OnCommand, """
             Open plugin interface

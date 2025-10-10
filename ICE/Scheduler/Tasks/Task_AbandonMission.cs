@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -16,30 +17,39 @@ namespace ICE.Scheduler.Tasks
         {
             Continue = false;
             P.TaskManager.Enqueue(() => AbandonMission(), "Abandoning the current mission");
-            P.TaskManager.Enqueue(() => CosmicHelper.CurrentLunarMission == 0, "Waiting till the current mission is 0");
+            P.TaskManager.Enqueue(() => Task_TurninMission.JobSwapCheck(), "Checking to see if we need to swap jobs");
+            P.TaskManager.Enqueue(() => Task_TurninMission.GoldCheck(), "Checking post mission state + gold state condition");
         }
+
+        public static bool WasAbandoned = false;
 
         public static bool? AbandonMission()
         {
+            string tag = "Abandon Mission";
+
             if (CosmicHelper.CurrentLunarMission == 0)
             {
+                if (WasAbandoned)
+                    P.MissionTimer.AbandonMission();
+                else
+                {
+                    var duration = P.MissionTimer.CompleteMission();
+
+                    // Log the results
+                    if (C.MissionConfig.TryGetValue(Task_TurninMission.PreviousMissionId, out var config))
+                    {
+                        IceLogging.Info($"Mission [{Task_TurninMission.PreviousMissionId}] [{CosmicHelper.SheetMissionDict[Task_TurninMission.PreviousMissionId].Name}] completed in {duration:mm\\:ss\\.ff} | Best: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff} | Avg: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}", $"{tag} [Mission Timer]");
+                    }
+                }
+
+                WasAbandoned = false;
+
                 if (P.AutoHook.Installed)
                 {
                     P.AutoHook.DeleteAllAnonymousPresets();
                 }
 
-                IceLogging.Info("Current mission is 0, going back to initiating missions", "[Abandon Mission]");
-                Task_TurninMission.GoldCheck();
-
-                if (Mission_Settings.StopAfterCurrent)
-                {
-                    SchedulerMain.State = IceState.Idle;
-                    P.TaskManager.Tasks.Clear();
-                }
-                else
-                {
-                    SchedulerMain.State = IceState.Start;
-                }
+                IceLogging.Info("Current mission is 0, checking to see where we need to be now", "[Abandon Mission]");
                 return true;
             }
             else
@@ -63,7 +73,6 @@ namespace ICE.Scheduler.Tasks
                             {
                                 SchedulerMain.State = IceState.Start;
                             }
-                            return true;
                         }
                     }
                     else
@@ -117,6 +126,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Debug("Attempting to abandon.", "[Abandoning Mission]");
                         addon.Abandon();
+                        WasAbandoned = true;
                     }
                 }
                 else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var SpaceHud) && SpaceHud.IsAddonReady)

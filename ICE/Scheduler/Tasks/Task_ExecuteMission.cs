@@ -21,6 +21,7 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.CurrentLunarMission != 0)
             {
                 var missionId = CosmicHelper.CurrentLunarMission;
+                P.MissionTimer.StartMission(missionId);
 
                 var mission = CosmicHelper.SheetMissionDict[missionId];
                 bool fishingMission = mission.Jobs.Contains(18);

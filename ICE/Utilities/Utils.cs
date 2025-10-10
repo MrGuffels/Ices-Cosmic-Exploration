@@ -64,45 +64,45 @@ public static unsafe class Utils
     public static bool? TargetgameObjectTask(IGameObject? gameObject)
     {
         var x = gameObject;
-        if (Svc.Targets.Target != null && Svc.Targets.Target.DataId == x.DataId)
+        if (Svc.Targets.Target != null && Svc.Targets.Target.BaseId == x.BaseId)
             return true;
 
         if (!GenericHelpers.IsOccupied())
         {
             if (x != null)
             {
-                if (EzThrottler.Throttle($"Throttle Targeting {x.DataId}"))
+                if (EzThrottler.Throttle($"Throttle Targeting {x.BaseId}"))
                 {
                     Svc.Targets.SetTarget(x);
-                    IceLogging.Info($"Setting the target to {x.DataId}");
+                    IceLogging.Info($"Setting the target to {x.BaseId}");
                 }
             }
         }
         return false;
     }
-    internal static bool TryGetObjectByDataId(ulong dataId, out IGameObject? gameObject) => (gameObject = Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.DataId == dataId)) != null;
+    internal static bool TryGetObjectByDataId(ulong dataId, out IGameObject? gameObject) => (gameObject = Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.BaseId == dataId)) != null;
     public static IGameObject? TryGetObjectNearestEventObject()
     {
         return Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.EventObj);
     }
     public static IGameObject? TryGetObjectCollectionPoint()
     {
-        return Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.DataId == 2014616 || x.DataId == 2014618);
+        return Svc.Objects.OrderBy(PlayerHelper.GetDistanceToPlayer).FirstOrDefault(x => x.BaseId == 2014616 || x.BaseId == 2014618);
     }
     public static void TargetgameObject(IGameObject? gameObject)
     {
         var x = gameObject;
         var currentTarget = Svc.Targets.Target;
-        if (currentTarget != null && currentTarget.DataId == x.DataId)
+        if (currentTarget != null && currentTarget.BaseId == x.BaseId)
             return;
 
         if (!GenericHelpers.IsOccupied())
         {
             if (x != null)
             {
-                if (EzThrottler.Throttle($"Throttle targeting: {x.DataId}"))
+                if (EzThrottler.Throttle($"Throttle targeting: {x.BaseId}"))
                 {
-                    IceLogging.Info($"Attempting to set the target to: {x.DataId} | {x.Name}", "[Target Game Object]");
+                    IceLogging.Info($"Attempting to set the target to: {x.BaseId} | {x.Name}", "[Target Game Object]");
                     Svc.Targets.SetTarget(x);
                 }
             }
