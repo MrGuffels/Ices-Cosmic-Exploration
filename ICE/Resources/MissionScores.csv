@@ -889,11 +889,11 @@ MissionID,Class,MissionName,Score
 899,MIN,Copper Vitrilith Selection,15
 900,MIN,Alloy Procurement,18
 901,MIN,EX: Transmitter Materials,40
-902,MIN,Soda-lime Float Survey,5
+902,MIN,Soda-lime Float Survey,6
 903,MIN,Rare Minerals,6
 904,MIN,Pegmatite Ore Collection,4
 905,MIN,Lens Development Materials,4
-906,MIN,Soda-lime Float Survey,5
+906,MIN,Soda-lime Float Survey,20
 907,MIN,Mineral Distribution Survey,15
 908,MIN,Glass Refinement Materials,25
 909,MIN,EX: Alchemical Refinement Materials,60
@@ -906,7 +906,7 @@ MissionID,Class,MissionName,Score
 916,MIN,EX: Conductive Core Materials,58
 917,MIN,EX: Capsule Chasm Survey,183
 918,MIN,EX: Reflective Materials,128
-919,MIN,EX+: Geothermal Survey,19
+919,MIN,EX+: Geothermal Survey,0
 920,MIN,EX+: Fine-grade Heat-resistant Materials,0
 921,MIN,EX+: Optical Noise Reduction Research,0
 922,MIN,EX+: Resonance Damping Materials,0

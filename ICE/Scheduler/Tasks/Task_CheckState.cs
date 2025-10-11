@@ -18,6 +18,8 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool? CheckState()
         {
+            string tag = "Task: Check State";
+
             var currentMissionId = CosmicHelper.CurrentLunarMission;
 
             if (AddonHelper.IsAddonActive("WKSLottery"))
@@ -130,13 +132,25 @@ namespace ICE.Scheduler.Tasks
                     for (int i = 0; i < XPTable.Count; i++)
                     {
                         var bar = XPTable[i + 1];
+                        IceLogging.Debug($"Checking: [{i+1}] Current: {bar.CurrentXP} | Needed: {bar.NeededXP}", tag);
                         if (bar.CurrentXP < bar.NeededXP)
                         {
                             allComplete = false;
+                            IceLogging.Debug($"We're missing XP, so going to change this to false");
                         }
                     }
                     if (allComplete)
                     {
+                        IceLogging.Debug("It says all have been completed. This is the current report");
+                        for (int i = 0; i < XPTable.Count; i++)
+                        {
+                            var bar = XPTable[i + 1];
+                            IceLogging.Debug($"Kind: [{i+1}] | Current: {bar.CurrentXP} | Needed: {bar.NeededXP}");
+                        }
+                        IceLogging.Debug("Config Status:\n" +
+                                        $"Turnin Relic: {C.TurninRelic}\n" +
+                                        $"Stop When Relic Finished: {C.StopOnceRelicFinished}");
+
                         if (C.TurninRelic && stage != maxStage)
                         {
                             IceLogging.Info("We've hit a point where we can turnin the relic! Doing so now");
@@ -164,6 +178,10 @@ namespace ICE.Scheduler.Tasks
                             }
                             return true;
                         }
+                    }
+                    else
+                    {
+                        IceLogging.Debug($"Check Relic XP has been concluded, and we still need some. So going to continue on because we don't need to stop.");
                     }
                 }
                 if (currentMissionId != 0)

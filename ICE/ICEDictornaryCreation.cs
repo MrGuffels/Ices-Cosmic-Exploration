@@ -156,7 +156,7 @@ public sealed partial class ICE
                     var itemId = missionRecipeRow.Value.ItemResult. RowId;
                     var itemName = ItemSheet.GetRow(itemId).Name.ToString();
                     var craftingType = missionRecipeRow.Value.CraftType.Value.RowId;
-                    IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.Value.RowId} | for item: {itemId} | {itemName}");
+                    IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.Value.RowId} | for item: {itemId} | {itemName}", debugOnly: true);
                     var item1RecipeId = missionRecipeRow.Value.RowId;
                     crafts_Main[(ushort)item1RecipeId] = new CraftingInfo()
                     {
@@ -180,7 +180,7 @@ public sealed partial class ICE
                     if (recipeIds.Count == 1)
                     {
                         // Only a single item exist in this table. So into the maincrafts it goes
-                        IceLogging.Info($"Mission: {keyId} had 1 recipie");
+                        IceLogging.Verbose($"Mission: {keyId} had 1 recipie", debugOnly:true);
                         var recipeId = recipeIds[0];
                         var recipeRow = RecipeSheet.GetRow(recipeId);
                         var itemId = recipeRow.ItemResult.RowId;
@@ -223,7 +223,7 @@ public sealed partial class ICE
                     }
                     else if (recipeIds.Count == 2)
                     {
-                        IceLogging.Info($"Mission: {keyId} had 2 recipies");
+                        IceLogging.Verbose($"Mission: {keyId} had 2 recipies", debugOnly: true);
                         // First one is going to be the main item that you need.
 
                         var recipeId = recipeIds[0];
@@ -268,7 +268,7 @@ public sealed partial class ICE
                     }
                     else if (recipeIds.Count == 3)
                     {
-                        IceLogging.Info($"Mission: {keyId} had 3 recipies");
+                        IceLogging.Verbose($"Mission: {keyId} had 3 recipies", debugOnly: true);
                         // all of these should be valid. 
                         for (int i = 0; i < recipeIds.Count; i++)
                         {
@@ -469,9 +469,7 @@ public sealed partial class ICE
             if (itemId == 0) continue;
             string itemName = ItemSheet.GetRow(itemId).Name.ToString();
             var type = item.WKSItemSubCategory.RowId;
-#if DEBUG
-            IceLogging.Debug($"RowID: {item.RowId} | ID: {itemId} | Name: {itemName}");
-#endif
+            IceLogging.Debug($"RowID: {item.RowId} | ID: {itemId} | Name: {itemName}", debugOnly: true);
 
             if (CosmicHelper.GatheringItems.TryGetValue(itemName, out var itemEntry))
             {
@@ -479,9 +477,7 @@ public sealed partial class ICE
             }
             else
             {
-#if DEBUG
-                IceLogging.Debug($"Adding a new entry: {itemName}");
-#endif
+                IceLogging.Debug($"Adding a new entry: {itemName}", debugOnly: true);
 
                 CosmicHelper.GatheringItems[itemName] = new()
                 {

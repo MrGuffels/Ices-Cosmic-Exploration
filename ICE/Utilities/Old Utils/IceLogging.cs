@@ -74,13 +74,19 @@ internal static class IceLogging
     {
         if (prefix == null)
         {
-            Svc.Chat.Print(s);
-            PluginLog.Information(s);
+            if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
+            {
+                Svc.Chat.Print(s);
+                PluginLog.Information(s);
+            }
         }
         else
         {
-            Svc.Chat.Print($"{prefix} {s}");
-            PluginLog.Information($"{prefix} {s}");
+            if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
+            {
+                Svc.Chat.Print($"{prefix} {s}");
+                PluginLog.Information($"{prefix} {s}");
+            }
         }
     }
 
