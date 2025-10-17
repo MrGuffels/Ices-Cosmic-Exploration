@@ -1,4 +1,7 @@
-﻿using ECommons.GameHelpers;
+﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Sounds;
 using ICE.Ui;
@@ -15,6 +18,7 @@ namespace ICE.Scheduler.Tasks
     internal static class Task_TurninMission
     {
         public static uint PreviousMissionId = 0;
+        private static bool PathfoundToRed = false;
 
         public static void Enqueue()
         {
@@ -30,6 +34,8 @@ namespace ICE.Scheduler.Tasks
 
             if (id == 0)
             {
+                PathfoundToRed = false;
+
                 // Complete the timer and get duration
                 var duration = P.MissionTimer.CompleteMission();
 
@@ -43,6 +49,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     P.AutoHook.DeleteAllAnonymousPresets();
                 }
+
+                Mission_Settings.TurninState = TurninState.None;
 
                 if (Mission_Settings.StopAfterCurrent)
                 {
@@ -65,13 +73,100 @@ namespace ICE.Scheduler.Tasks
                 if (critical)
                 {
                     var collectionPoint = Utils.TryGetObjectCollectionPoint();
-                    if (collectionPoint != null && Player.DistanceTo(collectionPoint) < 5 && !Player.IsBusy)
+                    if (!PlayerHelper.CustomIsBusy)
                     {
-                        if (EzThrottler.Throttle("Turning into colleciton point"))
+                        if (collectionPoint != null && Player.DistanceTo(collectionPoint) <= 5)
                         {
-                            Utils.TargetgameObject(collectionPoint);
-                            Utils.InteractWithObject(collectionPoint);
+                            if (EzThrottler.Throttle("Log Throttle", 1000))
+                            {
+                                IceLogging.Debug("Attempting to turnin/chekcing if we need to navmesh stop");
+                            }
+
+                            if (P.Navmesh.IsRunning())
+                            {
+                                if (EzThrottler.Throttle("Telling navmesh to stop"))
+                                    P.Navmesh.Stop();
+
+                                return false;
+                            }
+
+                            if (!Player.IsBusy)
+                            {
+                                if (EzThrottler.Throttle("Turning into colleciton point", 7000))
+                                {
+                                    Utils.TargetgameObject(collectionPoint);
+                                    Utils.InteractWithObject(collectionPoint);
+                                }
+                            }
                         }
+                        else
+                        {
+                            if (EzThrottler.Throttle("Log Throttle"))
+                            {
+                                IceLogging.Debug("Need to move closer to this turnin");
+                            }
+
+                            // We need to path to the collection point, and get as *-close-* as we can. 
+                            if (GatheringUtil.CriticalLocations.TryGetValue(id, out var location) && location != Vector3.Zero)
+                            {
+                                if (collectionPoint == null)
+                                {
+                                    // We still need to get within range of it. So just going to tell it to pathfind and moveto if it wasn't already.
+                                    if (!P.Navmesh.IsRunning())
+                                    {
+                                        if (EzThrottler.Throttle("Telling navmesh to move to the spot"))
+                                        {
+                                            IceLogging.Debug("We're not close enough to the turnin point to find out where one's at. So going to the location where it might be at");
+                                            P.Navmesh.PathfindAndMoveTo(location, false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (C.UseMountInMission && !Player.IsBusy && Player.DistanceTo(location) > C.MountRadius && !Svc.Condition[ConditionFlag.Mounted])
+                                        {
+                                            if (EzThrottler.Throttle("Mounting the mount"))
+                                                Utils.MountAction();
+                                        }
+                                    }
+                                }
+                                else if (!C.DisablePathfindingToRedAlert)
+                                {
+                                    // collection point should be within finding range at this point
+
+                                    if (Player.DistanceTo(location) > 75 && P.Navmesh.IsRunning())
+                                    {
+                                        if (EzThrottler.Throttle("Waiting to be in a better range", 1000))
+                                        {
+                                            IceLogging.Debug("Waiting to be within 75 yalms of the turnin point");
+                                        }
+                                    }
+                                    else if (Player.DistanceTo(location) <= 75)
+                                    {
+                                        if (!PathfoundToRed)
+                                        {
+                                            P.Navmesh.Stop();
+                                            P.Navmesh.PathfindAndMoveTo(collectionPoint.Position, false);
+                                            PathfoundToRed = true;
+                                        }
+                                        else if (Player.DistanceTo(collectionPoint.Position) < C.DismountRadius && Svc.Condition[ConditionFlag.Mounted])
+                                        {
+                                            if (EzThrottler.Throttle("dismounting"))
+                                                Utils.Dismount();
+                                        }
+                                        else if (C.UseMountInMission && !Player.IsBusy && Player.DistanceTo(location) > C.MountRadius && !Svc.Condition[ConditionFlag.Mounted])
+                                        {
+                                            if (EzThrottler.Throttle("Mounting the mount"))
+                                                Utils.MountAction();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("Waiting for us to not be busy. . . ", 1000))
+                            IceLogging.Debug("Waiting for player to not be in a busy state");
                     }
                 }
                 else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)

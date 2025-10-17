@@ -253,6 +253,29 @@ namespace ICE.Config
                 C.ConfigVersion = 3;
                 C.Save();
             }
+            if (C.ConfigVersion == 3)
+            {
+                foreach (var mission in C.MissionConfig)
+                {
+                    if (mission.Value.Times.Count > 0)
+                    {
+                        foreach (var time in mission.Value.Times)
+                        {
+                            mission.Value.TurninRecords.Add(new TurninData
+                            {
+                                Time = time,
+                                State = TurninState.None,
+                            });
+                        }
+
+                        // This is here so we save some file spacing. No reason to keep old data at this point
+                        mission.Value.Times.Clear();
+                    }
+                }
+
+                C.ConfigVersion = 4;
+                C.Save();
+            }
         }
 
         public static void UpdateConfigMissionList()

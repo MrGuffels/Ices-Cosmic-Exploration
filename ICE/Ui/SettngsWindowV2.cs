@@ -33,7 +33,7 @@ internal class SettingsWindowV2 : Window
         P.windowSystem.RemoveWindow(this);
     }
 
-    private string SelectedSetting = "Safety";
+    public string SelectedSetting = "Safety";
     private string[] SettingOptions = ["Safety", "Gathering", "Misc", "Gamble Wheel", "Mission Settings"];
     private string[] DebugOptions = ["Debug", "Path Creation"];
 

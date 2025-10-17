@@ -349,6 +349,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"{fontIcon.Key} -> {fontIcon.Value}");
                 }
             }
+            ImGui.Text($"Mission Timer: {AddonHelper.GetNodeText("WKSMissionInfomation", 24)}");
         }
 
         private static void DrawIconSelector()

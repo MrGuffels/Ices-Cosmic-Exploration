@@ -1,9 +1,10 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.ExcelServices;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 
 namespace ICE.Utilities;
@@ -32,16 +33,10 @@ public class PlayerHelper
     public static bool IsInSinusArdorum() => IsInZone(1237);
     public static bool IsInPhaenna() => IsInZone(1291);
     public static bool IsInZone(uint zoneID) => Svc.ClientState.TerritoryType == zoneID;
-
-    public static bool IsPlayerNotBusy()
-    {
-        return Player.Available
-               && Player.Object.CastActionId == 0
-               && !GenericHelpers.IsOccupied()
-               && !Player.IsJumping
-               && Player.Object.IsTargetable
-               && !Player.IsAnimationLocked;
-    }
+    private static IPlayerCharacter Object => Svc.ClientState.LocalPlayer;
+    private static unsafe float AnimationLock => *(float*)((nint)ActionManager.Instance() + 8);
+    public static bool IsAnimationLocked => AnimationLock > 0;
+    public static bool CustomIsBusy => GenericHelpers.IsOccupied() || Object.IsCasting || IsAnimationLocked;
 
     public static unsafe bool HasStatusId(params uint[] statusIDs)
     {

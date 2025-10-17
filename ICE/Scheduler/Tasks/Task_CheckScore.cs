@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
+using ICE.Config;
 using System.Reflection;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -91,6 +92,8 @@ namespace ICE.Scheduler.Tasks
                                         IceLogging.Info("We have enough unique fish to turnin for this mission. Proceeding to the mission turnin", handle);
                                         SchedulerMain.State = IceState.TurninMission;
                                         P.TaskManager.Tasks.Clear();
+
+                                        Mission_Settings.TurninState = DetermineTurninState();
                                         return true;
                                     }
                                     else
@@ -121,6 +124,8 @@ namespace ICE.Scheduler.Tasks
                                         IceLogging.Info("We have enough fish to turnin for this mission. Proceeding to the mission turnin", handle);
                                         SchedulerMain.State = IceState.TurninMission;
                                         P.TaskManager.Tasks.Clear();
+
+                                        Mission_Settings.TurninState = DetermineTurninState();
                                         return true;
                                     }
                                     else
@@ -272,6 +277,16 @@ namespace ICE.Scheduler.Tasks
                                     IceLogging.Info("The threshold for scoring was met. Time to turnin", handle);
                                     SchedulerMain.State = IceState.TurninMission;
                                     P.TaskManager.Tasks.Clear();
+
+                                    var currentScore = missionInfo.CurrentScore;
+                                    var silverScore = mission.SilverScore;
+                                    var goldScore = mission.GoldScore;
+
+                                    if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                                        Mission_Settings.TurninState = TurninState.Critical;
+                                    else
+                                        MedalChecker(currentScore, silverScore, goldScore);
+
                                     return true;
                                 }
                                 else
@@ -420,6 +435,16 @@ namespace ICE.Scheduler.Tasks
 
                         SchedulerMain.State = IceState.TurninMission;
                         P.TaskManager.Tasks.Clear();
+
+                        var currentScore = missionInfo.CurrentScore;
+                        var silverScore = mission.SilverScore;
+                        var goldScore = mission.GoldScore;
+
+                        if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                            Mission_Settings.TurninState = TurninState.Critical;
+                        else
+                            MedalChecker(currentScore, silverScore, goldScore);
+
                         return true;
                     }
                     else
@@ -470,6 +495,9 @@ namespace ICE.Scheduler.Tasks
                         {
                             SchedulerMain.State = IceState.TurninMission;
                             P.TaskManager.Tasks.Clear();
+
+                            Mission_Settings.TurninState = TurninState.Critical;
+
                             return true;
                         }
                         else
@@ -494,6 +522,9 @@ namespace ICE.Scheduler.Tasks
                         // if we've gotten here, that means that we actually have all the items. Proceeding to turnin item
                         SchedulerMain.State = IceState.TurninMission;
                         P.TaskManager.Tasks.Clear();
+
+                        Mission_Settings.TurninState = DetermineTurninState();
+
                         return true;
                     }
                     else
@@ -592,6 +623,9 @@ namespace ICE.Scheduler.Tasks
 
                                 SchedulerMain.State = IceState.TurninMission;
                                 P.TaskManager.Tasks.Clear();
+
+                                MedalChecker(currentScore, silverScore, goldScore);
+
                                 return true;
                             }
                             else
@@ -706,6 +740,16 @@ namespace ICE.Scheduler.Tasks
 
                         SchedulerMain.State = IceState.TurninMission;
                         P.TaskManager.Tasks.Clear();
+
+                        var currentScore = missionInfo.CurrentScore;
+                        var silverScore = mission.SilverScore;
+                        var goldScore = mission.GoldScore;
+
+                        if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                            Mission_Settings.TurninState = TurninState.Gold;
+                        else
+                            MedalChecker(currentScore, silverScore, goldScore);
+
                         return true;
                     }
                     else
@@ -742,6 +786,110 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+        }
+
+        public static TurninState DetermineTurninState()
+        {
+            string timerString = ActiveTimerAddon();
+            TimeSpan silverRequirement = ParseRequirementTime(SilverTimerAddon());
+            TimeSpan goldRequirement = ParseRequirementTime(GoldTimerAddon());
+
+            // Parse the timer string to get remaining time (left side of /)
+            var remainingTime = ParseCurrentTime(timerString);
+
+            IceLogging.Info($"Timer Info:\n" +
+                $"Current Timer: {remainingTime}\n" +
+                $"Silver Requirement: {silverRequirement}\n" +
+                $"Gold Requirement: {goldRequirement}");
+
+            if (remainingTime >= goldRequirement)
+                return TurninState.Gold;
+            else if (remainingTime >= silverRequirement)
+                return TurninState.Silver;
+            else
+                return TurninState.Bronze;
+        }
+
+        private static TimeSpan ParseCurrentTime(string timerString)
+        {
+            IceLogging.Verbose($"Raw timer string: '{timerString}'");
+
+            // Trim to remove the clock icon and any whitespace
+            var currentTimeStr = timerString.Trim();
+
+            // Remove any non-numeric characters except ':' (like the clock icon)
+            currentTimeStr = new string(currentTimeStr.Where(c => char.IsDigit(c) || c == ':').ToArray());
+
+            IceLogging.Verbose($"Cleaned time string: '{currentTimeStr}'");
+
+            // Parse the time (format: M:SS or MM:SS)
+            var timeParts = currentTimeStr.Split(':');
+            IceLogging.Verbose($"Time parts count: {timeParts.Length}");
+
+            if (timeParts.Length != 2)
+            {
+                IceLogging.Verbose($"Time split failed - got {timeParts.Length} parts");
+                return new TimeSpan(0, 0, 0);
+            }
+
+            if (!int.TryParse(timeParts[0], out var minutes) ||
+                !int.TryParse(timeParts[1], out var seconds))
+            {
+                IceLogging.Verbose($"Failed to parse time values");
+                return new TimeSpan(0, 0, 0);
+            }
+
+            IceLogging.Verbose($"Successfully parsed - Minutes: {minutes}, Seconds: {seconds}");
+            return new TimeSpan(0, minutes, seconds);
+        }
+
+        private static TimeSpan ParseRequirementTime(string requirementString)
+        {
+            if (string.IsNullOrWhiteSpace(requirementString))
+                return TimeSpan.Zero;
+
+            // Split on whitespace and take the first part (the time)
+            var parts = requirementString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+                return TimeSpan.Zero;
+
+            var timeStr = parts[0];
+
+            // Parse the time (format: M:SS or MM:SS)
+            var timeParts = timeStr.Split(':');
+            if (timeParts.Length != 2)
+                return TimeSpan.Zero;
+
+            if (!int.TryParse(timeParts[0], out var minutes) ||
+                !int.TryParse(timeParts[1], out var seconds))
+                return TimeSpan.Zero;
+
+            return new TimeSpan(0, minutes, seconds);
+        }
+
+        private static unsafe string ActiveTimerAddon()
+        {
+            return AddonHelper.GetNodeText("WKSMissionInfomation", 24);
+        }
+
+        private static string SilverTimerAddon()
+        {
+            return AddonHelper.GetNodeText("WKSMissionInfomation", 15);
+        }
+
+        private static string GoldTimerAddon()
+        {
+            return AddonHelper.GetNodeText("WKSMissionInfomation", 11);
+        }
+
+        private static void MedalChecker(uint current, uint silver, uint gold)
+        {
+            if (current >= gold)
+                Mission_Settings.TurninState = TurninState.Gold;
+            else if (current >= silver)
+                Mission_Settings.TurninState = TurninState.Silver;
+            else
+                Mission_Settings.TurninState = TurninState.Bronze;
         }
     }
 }

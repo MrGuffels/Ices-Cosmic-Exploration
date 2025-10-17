@@ -73,6 +73,13 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
 
+            bool DisableRedAlertPathing = C.DisablePathfindingToRedAlert;
+            if (ImGui.Checkbox("Disable Pathfinding to Red Alerts", ref DisableRedAlertPathing))
+            {
+                C.DisablePathfindingToRedAlert = DisableRedAlertPathing;
+                C.Save();
+            }
+
             ImGui.Dummy(new(0, 2));
 
             ImGui.Separator();

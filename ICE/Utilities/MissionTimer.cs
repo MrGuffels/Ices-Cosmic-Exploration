@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using ICE.Config;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 public class MissionTimer
 {
@@ -46,21 +48,34 @@ public class MissionTimer
         var stats = C.MissionConfig[missionId];
 
         // Add the new time
-        stats.Times.Add(duration.TotalSeconds);
+        stats.TurninRecords.Add(new TurninData
+        {
+            Time = duration.TotalSeconds,
+            State = Mission_Settings.TurninState,
+        });
+
+        if (Mission_Settings.TurninState == TurninState.Bronze)
+            stats.BronzeCompletion++;
+        else if (Mission_Settings.TurninState == TurninState.Silver)
+            stats.SilverCompletions++;
+        else if (Mission_Settings.TurninState == TurninState.Gold)
+            stats.GoldCompletions++;
+        else if (Mission_Settings.TurninState == TurninState.Critical)
+            stats.CriticalCompletions++;
 
         // Increment total completions (always tracks full history)
         stats.TotalCompletions++;
 
         // Apply time history limit if set
-        if (TimeHistoryLimit > 0 && stats.Times.Count > TimeHistoryLimit)
+        if (TimeHistoryLimit > 0 && stats.TurninRecords.Count > TimeHistoryLimit)
         {
             // Remove oldest times to maintain the limit
-            stats.Times.RemoveRange(0, stats.Times.Count - TimeHistoryLimit);
+            stats.TurninRecords.RemoveRange(0, stats.TurninRecords.Count - TimeHistoryLimit);
         }
 
         // Calculate stats based on the (possibly limited) time history
-        stats.BestTime = stats.Times.Min();
-        stats.AverageTime = stats.Times.Average();
+        stats.BestTime = stats.TurninRecords.Min(t => t.Time);
+        stats.AverageTime = stats.TurninRecords.Average(t => t.Time);
 
         C.Save();
     }
@@ -73,10 +88,11 @@ public class MissionTimer
         }
 
         var stats = C.MissionConfig[missionId];
-        stats.Times.Clear();
+        stats.TurninRecords.Clear();
         stats.BestTime = double.MaxValue;
         stats.AverageTime = 0;
         stats.TotalCompletions = 0;
+        stats.FailedCounters = 0;
 
         C.Save();
     }
@@ -93,6 +109,50 @@ public class MissionTimer
 
             return completionsPerHour * scorePerCompletion;
         }
+
+        public static double CalculateActualScorePerMinute(List<TurninData> turninRecords, uint baseScore)
+        {
+            if (turninRecords.Count == 0) return 0;
+
+            // Count each turnin type
+            int bronzeCount = turninRecords.Count(t => t.State == TurninState.Bronze);
+            int silverCount = turninRecords.Count(t => t.State == TurninState.Silver);
+            int goldCount = turninRecords.Count(t => t.State == TurninState.Gold);
+
+            // Calculate total score earned
+            double totalScore = (bronzeCount * baseScore * 1.0) +
+                               (silverCount * baseScore * 4.0) +
+                               (goldCount * baseScore * 5.0);
+
+            // Calculate total time spent (in minutes)
+            double totalTimeMinutes = turninRecords.Sum(t => t.Time) / 60.0;
+
+            if (totalTimeMinutes <= 0) return 0;
+
+            return totalScore / totalTimeMinutes;
+        }
+
+        public static double CalculateActualScorePerHour(List<TurninData> turninRecords, uint baseScore)
+        {
+            if (turninRecords.Count == 0) return 0;
+
+            // Count each turnin type
+            int bronzeCount = turninRecords.Count(t => t.State == TurninState.Bronze);
+            int silverCount = turninRecords.Count(t => t.State == TurninState.Silver);
+            int goldCount = turninRecords.Count(t => t.State == TurninState.Gold);
+
+            // Calculate total score earned
+            double totalScore = (bronzeCount * baseScore * 1.0) +
+                               (silverCount * baseScore * 4.0) +
+                               (goldCount * baseScore * 5.0);
+
+            // Calculate total time spent (in hours)
+            double totalTimeHours = turninRecords.Sum(t => t.Time) / 3600.0;
+
+            if (totalTimeHours <= 0) return 0;
+
+            return totalScore / totalTimeHours;
+        }
     }
 
     public void AbandonMission()
@@ -100,6 +160,15 @@ public class MissionTimer
         stopwatch.Stop();
         stopwatch.Reset();
         isRunning = false;
+
+        if (!C.MissionConfig.ContainsKey(currentMission))
+        {
+            C.MissionConfig[currentMission] = new();
+        }
+
+        var stats = C.MissionConfig[currentMission];
+        stats.FailedCounters++;
+        C.Save();
         currentMission = 0;
     }
 }

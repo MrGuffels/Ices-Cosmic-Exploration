@@ -5,6 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using ECommons.Automation;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Config;
 using ICE.Sounds;
 using ICE.Utilities.Cosmic;
 using SharpDX.D3DCompiler;
@@ -29,7 +30,7 @@ namespace ICE.Ui
         base($"Ice's Cosmic Exploration {P.GetType().Assembly.GetName().Version} ###ICEMainWindow2")
 #endif
         {
-            Flags = ImGuiWindowFlags.None;
+            Flags = ImGuiWindowFlags.NoScrollbar;
             SizeConstraints = new()
             {
                 MinimumSize = new Vector2(100, 100),
@@ -421,6 +422,16 @@ namespace ICE.Ui
                 C.GrindProvisionals = grindProvisionals;
                 C.Save();
             }
+            ImGui.SameLine();
+            if (ImGuiEx.IconButton(FontAwesomeIcon.Cog, "##Open Settings to Provisional Grind"))
+            {
+                P.settingsWindowV2.IsOpen = true;
+                P.settingsWindowV2.SelectedSetting = "Mission Settings";
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Open settings for privisional grind");
+            }
 
             WindowSpacer();
 
@@ -686,14 +697,12 @@ namespace ICE.Ui
 
                 bool disable = SchedulerMain.State != IceState.Idle;
 
-                using (ImRaii.Disabled(!disable))
+                using (ImRaii.Disabled(disable))
                 {
                     if (ImGui.Button("Clear _anon Autohook Presets"))
                     {
-                        if (P.AutoHook.Installed)
-                        {
-                            P.AutoHook.DeleteAllAnonymousPresets();
-                        }
+                        P.AutoHook.DeleteAllAnonymousPresets();
+                        IceLogging.Info("This *-should-* clear all the _anon presets. If it hasn't, then there's something going on and I need to get to the bottom of this. Please copy the name of the preset when you get a chance and ping me in discord");
                     }
                 }
             }
@@ -822,6 +831,14 @@ namespace ICE.Ui
                         foreach (var mission in missions)
                         {
                             C.MissionConfig[mission.id].Enabled = true;
+                            if (GetOnlyPreviousMissionsRecursive(mission.id).Count > 0)
+                            {
+                                foreach (var prevMission in GetOnlyPreviousMissionsRecursive(mission.id))
+                                {
+                                    var prevMissionConfig = C.MissionConfig[prevMission];
+                                    prevMissionConfig.Enabled = true;
+                                }
+                            }
                         }
                         C.Save();
                     }
@@ -966,7 +983,7 @@ namespace ICE.Ui
                     bool critical = missionInfo.Attributes.HasFlag(MissionAttributes.Critical);
 
                     bool dualclass = craftMission && (gatherMission || fishMission);
-                    bool unsupported = UnsupportedMissions.Ids.Contains(Id) || (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList) && critical);
+                    bool unsupported = UnsupportedMissions.Ids.Contains(Id);
                     bool hideUnsupported = C.HideUnsupportedMissions;
 
                     if (unsupported && hideUnsupported)
@@ -1705,6 +1722,14 @@ namespace ICE.Ui
                         foreach (var mission in missionIds)
                         {
                             C.MissionConfig[mission].Enabled = true;
+                            if (GetOnlyPreviousMissionsRecursive(mission).Count > 0)
+                            {
+                                foreach (var prevMission in GetOnlyPreviousMissionsRecursive(mission))
+                                {
+                                    var prevMissionConfig = C.MissionConfig[prevMission];
+                                    prevMissionConfig.Enabled = true;
+                                }
+                            }
                         }
                         C.Save();
                     }
@@ -1822,6 +1847,17 @@ namespace ICE.Ui
                         if (ImGui.Checkbox($"##Enabled", ref enabled))
                         {
                             config.Enabled = enabled;
+                            if (enabled)
+                            {
+                                if (GetOnlyPreviousMissionsRecursive(mission.Key).Count > 0)
+                                {
+                                    foreach (var prevMission in GetOnlyPreviousMissionsRecursive(mission.Key))
+                                    {
+                                        var prevMissionConfig = C.MissionConfig[prevMission];
+                                        prevMissionConfig.Enabled = true;
+                                    }
+                                }
+                            }
                             C.Save();
                         }
                         UpdateSelectedMission(mission.Key);
@@ -2058,7 +2094,7 @@ namespace ICE.Ui
                         ImGui.EndTooltip();
                     }
 
-                    if (config.Times.Count > 0)
+                    if (config.TurninRecords.Count > 0)
                     {
                         ImGui.Text($"Best Time: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff}");
                         ImGui.Text($"Average Time: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}");
@@ -2070,6 +2106,7 @@ namespace ICE.Ui
                     }
 
                     ImGui.Text($"Amount of times completed: {config.TotalCompletions}");
+                    ImGui.Text($"Amount of timed abandoned: {config.FailedCounters}");
 
                     if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
                     {
@@ -2089,21 +2126,48 @@ namespace ICE.Ui
                             ImGui.EndTooltip();
                         }
 
-                        var bronzePerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 1.0);
-                        var silverPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 4.0);
-                        var goldPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 5.0);
+                        if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                        {
+                            var criticalScore = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 1.0);
+                            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Critical: {criticalScore:F0} pts/hr");
+                        }
+                        else
+                        {
+                            var actualScorePerMinute = MissionStatsCalculator.CalculateActualScorePerHour(config.TurninRecords, baseScore);
 
-                        ImGui.TextColored(new Vector4(0.8f, 0.5f, 0.3f, 1.0f), $"Bronze: {bronzePerHour:F0} pts/hr");
-                        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"Silver: {silverPerHour:F0} pts/hr");
-                        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Gold: {goldPerHour:F0} pts/hr");
+                            ImGui.Text($"Actual Score/Hour: {actualScorePerMinute:F2}");
+                            ImGui.SameLine();
+                            ImGui.TextDisabled("?");
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text("This is judged based off your current completion rate of bronze/silver/gold");
+                                ImGui.Text("It calculates the average score you get across all, and assuming you get that you were to consistently get that average across the hour, then it will tell you what it would be for that one mission");
+                                ImGui.Text("This is just really nerdy way of getting a more accurate average based off your completion rate");
+                                ImGui.EndTooltip();
+                            }
+
+                            var bronzePerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 1.0);
+                            var silverPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 4.0);
+                            var goldPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 5.0);
+
+                            ImGui.TextColored(new Vector4(0.8f, 0.5f, 0.3f, 1.0f), $"Bronze: {bronzePerHour:F0} pts/hr [{config.BronzeCompletion}/{config.TotalCompletions}]");
+                            ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"Silver: {silverPerHour:F0} pts/hr [{config.SilverCompletions}/{config.TotalCompletions}]");
+                            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Gold: {goldPerHour:F0} pts/hr [{config.GoldCompletions}/{config.TotalCompletions}]");
+                        }
                     }
 
 
-                    if (config.Times.Count > 0 && ImGui.CollapsingHeader("View All Completed Times"))
+                    if (config.TurninRecords.Count > 0 && ImGui.CollapsingHeader("View All Completed Times"))
                     {
-                        for (int i = 0; i < config.Times.Count; i++)
+                        for (int i = 0; i < config.TurninRecords.Count; i++)
                         {
-                            ImGui.Text($"[{i+1}] \u2192 {TimeSpan.FromSeconds(config.Times[i]):mm\\:ss\\.ff}");
+                            var record = config.TurninRecords[i];
+
+                            ImGui.Text($"[{i+1}] \u2192 {TimeSpan.FromSeconds(record.Time):mm\\:ss\\.ff}");
+                            ImGui.SameLine();
+                            DrawColoredStar(record.State);
+
                         }
                     }
                 }
@@ -2178,7 +2242,6 @@ namespace ICE.Ui
             chain.AddRange(GetOnlyNextMissionsRecursive(nextMissionId.Value));
             return chain;
         }
-
         private static unsafe void CompletionStatus_Formatted(uint id)
         {
             var managerPtr = WKSManager.Instance();
@@ -2292,6 +2355,26 @@ namespace ICE.Ui
             if (ImGui.IsItemClicked())
             {
                 selectedMission = missionId;
+            }
+        }
+
+        private void DrawColoredStar(TurninState state)
+        {
+            Vector4 color = state switch
+            {
+                TurninState.Bronze => new Vector4(0.8f, 0.5f, 0.3f, 1.0f),  // Bronze
+                TurninState.Silver => new Vector4(0.75f, 0.75f, 0.75f, 1.0f), // Silver
+                TurninState.Gold => new Vector4(1.0f, 0.84f, 0.0f, 1.0f),    // Gold
+                _ => new Vector4(0, 0, 0, 0) // Transparent/none
+            };
+
+            if (state != TurninState.None)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, color);
+                ImGui.PushFont(UiBuilder.IconFont); // Make sure you're using the icon font
+                ImGui.Text(FontAwesomeIcon.Star.ToIconString());
+                ImGui.PopFont();
+                ImGui.PopStyleColor();
             }
         }
 

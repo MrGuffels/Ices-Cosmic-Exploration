@@ -41,6 +41,8 @@ namespace ICE.Utilities
 
         internal static Vector3? NearestCollectionPoint = null;
 
+        internal static TurninState TurninState = TurninState.None;
+
         internal static void ResetNodeCounter()
         {
             nodeCounter = 0;

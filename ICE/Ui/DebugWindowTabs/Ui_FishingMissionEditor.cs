@@ -87,10 +87,21 @@ namespace ICE.Ui.DebugWindowTabs
 
                         if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var mission))
                         {
+                            string rank = mission.Rank switch
+                            {
+                                1 => "D",
+                                2 => "C",
+                                3 => "B",
+                                4 => "A",
+                                5 => "Ex",
+                                6 => "Ex+",
+                                _ => "Unknown"  // Default case for invalid ranks
+                            };
+
                             ImGui.PushID($"{id}_{mission.Name}");
 
                             bool isSelected = SelectedMission == id;
-                            string label = isSelected ? $"→ [{id}] - {mission.Name}" : $"[{id}] - {mission.Name}";
+                            string label = isSelected ? $"→ [{id} - {rank}] - {mission.Name}" : $"[{id} - {rank}] - {mission.Name}";
 
                             if (ImGui.Selectable(label, isSelected))
                             {

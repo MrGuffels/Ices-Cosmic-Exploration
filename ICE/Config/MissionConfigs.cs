@@ -179,6 +179,8 @@ namespace ICE.Config
         public bool ShowDummyC { get; set; } = false;
         public bool ShowDummyD { get; set; } = false;
 
+        public bool DisablePathfindingToRedAlert { get; set; } = false;
+
         #endregion
 
         #region Yaml Save Stuff
@@ -202,8 +204,20 @@ namespace ICE.Config
         public string AutoHookPresetName { get; set; } = string.Empty;
         public double BestTime { get; set; } = double.MaxValue;
         public double AverageTime { get; set; } = 0;
-        public double TotalCompletions { get; set; } = 0;
+        public int TotalCompletions { get; set; } = 0;
+        public int BronzeCompletion { get; set; } = 0;
+        public int SilverCompletions { get; set; } = 0;
+        public int GoldCompletions { get; set; } = 0;
+        public int CriticalCompletions { get; set; } = 0;
+        public int FailedCounters { get; set; } = 0;
         public List<double> Times { get; set; } = new();
+        public List<TurninData> TurninRecords { get; set; } = new();
+    }
+
+    public class TurninData
+    {
+        public double Time { get; set; }
+        public TurninState State { get; set; }
     }
 
     public class GatherProfile
@@ -220,6 +234,7 @@ namespace ICE.Config
         public bool Enabled { get; set; } = false;
         public int MinGp { get; set; }
         public int MaxUse { get; set; } = -1;
+        public int RequiredLevel { get; set; }
     }
 
     public class GatherBuffs

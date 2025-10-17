@@ -400,6 +400,7 @@ namespace ICE.Scheduler.Tasks
             bool hasStatus = PlayerHelper.HasStatusId(actionInfo.StatusId);
             bool hasGp = PlayerHelper.GetGp() >= actionInfo.RequiredGp;
             var used = Mission_Settings.SkillUseAmount[actionName];
+            bool properLvl = Player.Level >= actionInfo.RequiredLv;
 
             if (actionName == "BonusIntegrityChance")
             {
@@ -416,43 +417,50 @@ namespace ICE.Scheduler.Tasks
                                 && !missingDur 
                                 && hasGp 
                                 && PlayerHelper.GetGp() >= gatherBuff.MinGp
-                                && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used),
+                                && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                                && properLvl,
                 "BoonIncrease2" => gatherBuff.Enabled 
                                 && boonChance < 100 
                                 && !hasStatus 
                                 && !missingDur 
                                 && hasGp 
                                 && PlayerHelper.GetGp() >= gatherBuff.MinGp
-                                && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used),
+                                && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                                && properLvl,
                 "Tidings" => gatherBuff.Enabled 
                           && !hasStatus 
                           && !missingDur 
                           && hasGp 
                           && PlayerHelper.GetGp() >= gatherBuff.MinGp
-                          && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used),
+                          && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                          && properLvl,
                 "YieldI" => gatherBuff.Enabled 
                           && !hasStatus 
                           && !missingDur 
                           && hasGp 
                           && PlayerHelper.GetGp() >= gatherBuff.MinGp
-                          && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used),
+                          && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                          && properLvl,
                 "YieldII" => gatherBuff.Enabled 
                          && !hasStatus 
                          && !missingDur 
                          && hasGp 
                          && PlayerHelper.GetGp() >= gatherBuff.MinGp
-                         && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used),
+                         && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                         && properLvl,
                 "BonusIntegrity" => gatherBuff.Enabled 
                                     && missingDur 
                                     && hasGp 
                                     && PlayerHelper.GetGp() >= gatherBuff.MinGp 
-                                    && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used),
+                                    && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                                    && properLvl,
                 "BountifulYieldII" => gatherBuff.Enabled 
                                    && !hasStatus 
                                    && hasGp 
                                    && PlayerHelper.GetGp() >= gatherBuff.MinGp
                                    && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used) 
-                                   && gather1More == true,
+                                   && gather1More == true
+                                   && properLvl,
                 _ => false,
             };
         }

@@ -133,60 +133,67 @@ namespace ICE.Scheduler.Tasks
                     continue;
 
                 var missionId = mission.Key;
-                var MissionDictionary = CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo);
                 HashSet<uint> missionJobs = new HashSet<uint>();
-                missionJobs = missionInfo.Jobs;
-                if (!missionJobs.Contains(currentJobId))
-                    continue;
+                if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo))
+                {
+                    missionJobs = missionInfo.Jobs;
+                    if (!missionJobs.Contains(currentJobId))
+                        continue;
 
-                // Territory Check, cause people seem to also be forgetting this
-                if (missionInfo.TerritoryId != Player.Territory)
-                    continue;
+                    // Territory Check, cause people seem to also be forgetting this
+                    if (missionInfo.TerritoryId != Player.Territory)
+                        continue;
 
-                // Alright, mission was double checked to make sure it was enabled
-                // And also checked to make sure that the current job is on the mission, time to actually add it to the mission info
+                    // Alright, mission was double checked to make sure it was enabled
+                    // And also checked to make sure that the current job is on the mission, time to actually add it to the mission info
 
-                if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
-                    CriticalMissions.Add(missionId);
-                else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                {
-                    SequenceMissions.Add(missionId);
-                    SpecialMissionCount += 1;
+                    if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                        CriticalMissions.Add(missionId);
+                    else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                    {
+                        SequenceMissions.Add(missionId);
+                        SpecialMissionCount += 1;
+                    }
+                    else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
+                    {
+                        TimedMissions.Add(missionId);
+                        SpecialMissionCount += 1;
+                    }
+                    else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
+                    {
+                        WeatherMissions.Add(missionId);
+                        SpecialMissionCount += 1;
+                    }
+                    else if (missionInfo.Rank == 5)
+                    {
+                        ExARankMissions.Add(missionId);
+                        BasicMissionCount += 1;
+                    }
+                    else if (missionInfo.Rank == 4)
+                    {
+                        ARankMissions.Add(missionId);
+                        BasicMissionCount += 1;
+                    }
+                    else if (missionInfo.Rank == 3)
+                    {
+                        BRankMissions.Add(missionId);
+                        BasicMissionCount += 1;
+                    }
+                    else if (missionInfo.Rank == 2)
+                    {
+                        CRankMissions.Add(missionId);
+                        BasicMissionCount += 1;
+                    }
+                    else if (missionInfo.Rank == 1)
+                    {
+                        DRankMissions.Add(missionId);
+                        BasicMissionCount += 1;
+                    }
                 }
-                else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
+                else
                 {
-                    TimedMissions.Add(missionId);
-                    SpecialMissionCount += 1;
-                }
-                else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                {
-                    WeatherMissions.Add(missionId);
-                    SpecialMissionCount += 1;
-                }
-                else if (missionInfo.Rank == 5)
-                {
-                    ExARankMissions.Add(missionId);
-                    BasicMissionCount += 1;
-                }
-                else if (missionInfo.Rank == 4)
-                {
-                    ARankMissions.Add(missionId);
-                    BasicMissionCount += 1;
-                }
-                else if (missionInfo.Rank == 3)
-                {
-                    BRankMissions.Add(missionId);
-                    BasicMissionCount += 1;
-                }
-                else if (missionInfo.Rank == 2)
-                {
-                    CRankMissions.Add(missionId);
-                    BasicMissionCount += 1;
-                }
-                else if (missionInfo.Rank == 1)
-                {
-                    DRankMissions.Add(missionId);
-                    BasicMissionCount += 1;
+                    IceLogging.Error($"We're somehow missing a mission from the sheets??? MissionID: {missionId}\n" +
+                                     $"Please let me know if this happens");
                 }
             }
 
