@@ -75,7 +75,7 @@ namespace ICE.Scheduler.Tasks
                     var collectionPoint = Utils.TryGetObjectCollectionPoint();
                     if (!PlayerHelper.CustomIsBusy)
                     {
-                        if (collectionPoint != null && Player.DistanceTo(collectionPoint) <= 5)
+                        if (collectionPoint != null && Player.DistanceTo(collectionPoint) <= 4)
                         {
                             if (EzThrottler.Throttle("Log Throttle", 1000))
                             {
@@ -92,7 +92,7 @@ namespace ICE.Scheduler.Tasks
 
                             if (!Player.IsBusy)
                             {
-                                if (EzThrottler.Throttle("Turning into colleciton point", 7000))
+                                if (EzThrottler.Throttle("Turning into colleciton point", 6000))
                                 {
                                     Utils.TargetgameObject(collectionPoint);
                                     Utils.InteractWithObject(collectionPoint);

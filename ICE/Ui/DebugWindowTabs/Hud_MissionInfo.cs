@@ -62,6 +62,13 @@ namespace ICE.Ui.DebugWindowTabs
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Critical Value:");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{x.CriticalScore}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
                     if (ImGui.Button("Cosmo Pouch"))
                     {
                         x.CosmoPouch();

@@ -278,14 +278,16 @@ namespace ICE.Scheduler.Tasks
                                     SchedulerMain.State = IceState.TurninMission;
                                     P.TaskManager.Tasks.Clear();
 
-                                    var currentScore = missionInfo.CurrentScore;
-                                    var silverScore = mission.SilverScore;
-                                    var goldScore = mission.GoldScore;
-
                                     if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                                         Mission_Settings.TurninState = TurninState.Critical;
                                     else
+                                    {
+                                        var currentScore = missionInfo.CurrentScore;
+                                        var silverScore = mission.SilverScore;
+                                        var goldScore = mission.GoldScore;
+
                                         MedalChecker(currentScore, silverScore, goldScore);
+                                    }
 
                                     return true;
                                 }
@@ -436,14 +438,16 @@ namespace ICE.Scheduler.Tasks
                         SchedulerMain.State = IceState.TurninMission;
                         P.TaskManager.Tasks.Clear();
 
-                        var currentScore = missionInfo.CurrentScore;
-                        var silverScore = mission.SilverScore;
-                        var goldScore = mission.GoldScore;
-
                         if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                             Mission_Settings.TurninState = TurninState.Critical;
                         else
+                        {
+                            var currentScore = missionInfo.CurrentScore;
+                            var silverScore = mission.SilverScore;
+                            var goldScore = mission.GoldScore;
+
                             MedalChecker(currentScore, silverScore, goldScore);
+                        }
 
                         return true;
                     }
