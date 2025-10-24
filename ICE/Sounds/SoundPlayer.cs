@@ -1,5 +1,6 @@
 ﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,12 +18,12 @@ namespace ICE.Sounds
 
                 if (stream == null)
                 {
-                    Console.WriteLine($"Could not find embedded resource: {sound}");
+                    PluginLog.Warning($"Could not find embedded resource: {sound}");
                     return;
                 }
 
                 using var memoryStream = new MemoryStream();
-                await stream.CopyToAsync(memoryStream);
+                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
                 memoryStream.Position = 0;
 
                 using var reader = new Mp3FileReader(memoryStream);
@@ -33,22 +34,25 @@ namespace ICE.Sounds
                     Volume = C.SoundVolume // Apply volume at sample level (0.0 to 1.0)
                 };
 
-                using var waveOut = new WaveOutEvent();
-                // Keep waveOut.Volume at 1.0 (full) so it doesn't affect system volume
+                var waveOut = new WaveOutEvent();
                 waveOut.Volume = 1.0f;
 
                 var tcs = new TaskCompletionSource<bool>();
-                waveOut.PlaybackStopped += (sender, args) => tcs.SetResult(true);
 
-                // Convert back to WaveProvider for WaveOut
+                waveOut.PlaybackStopped += (sender, args) =>
+                {
+                    tcs.TrySetResult(true);
+                    waveOut.Dispose(); // Dispose after playback stops
+                };
+
                 waveOut.Init(volumeProvider.ToWaveProvider16());
                 waveOut.Play();
 
-                await tcs.Task;
+                await tcs.Task.ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                ex.Log();
+                PluginLog.Error($"Failed to play sound: {ex}");
             }
         }
     }

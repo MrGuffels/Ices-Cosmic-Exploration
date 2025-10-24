@@ -33,7 +33,7 @@ public sealed partial class ICE : IDalamudPlugin
         {
             PluginLog.Warning($"[{typeof(T).Name}] Config was null. Creating new default.");
             config = new T();
-            YamlConfig.Save(config, path);
+            YamlConfig.SaveSync(config, path); // Use synchronous save for initialization
         }
 
         PluginLog.Information($"[{typeof(T).Name}] Loaded from {path}");

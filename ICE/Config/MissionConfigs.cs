@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using YamlDotNet.Serialization;
 
 namespace ICE.Config
 {
@@ -156,6 +159,13 @@ namespace ICE.Config
 
         #endregion
 
+        #region
+
+        public Dictionary<uint, CosmoShoppingList> CosmoShopping { get; set; } = new();
+        public List<uint> CosmoShoppingOrder { get; set; } = new();
+
+        #endregion
+
         public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
 
         #region Debug
@@ -186,7 +196,58 @@ namespace ICE.Config
         #region Yaml Save Stuff
 
         public static string ConfigPath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "Mission Config.yaml");
-        public void Save() => YamlConfig.Save(this, ConfigPath);
+        private static CancellationTokenSource? _saveCts;
+        private static readonly object _saveLock = new();
+
+        // Standard async save (fire-and-forget)
+        public void Save()
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await SaveAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    PluginLog.Error($"Failed to save MissionConfigs: {ex}");
+                }
+            });
+        }
+
+        // Debounced save for rapid operations
+        public void SaveDebounced(int delayMs = 500)
+        {
+            lock (_saveLock)
+            {
+                _saveCts?.Cancel();
+                _saveCts = new CancellationTokenSource();
+                var cts = _saveCts;
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await Task.Delay(delayMs, cts.Token);
+                        await SaveAsync().ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Newer save cancelled this one
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginLog.Error($"Failed to save MissionConfigs: {ex}");
+                    }
+                });
+            }
+        }
+
+        // Core async implementation
+        public async Task SaveAsync() => await YamlConfig.SaveAsync(this, ConfigPath);
+
+        // Synchronous for migrations/critical paths
+        public void SaveSync() => YamlConfig.SaveSync(this, ConfigPath);
 
         #endregion
     }
@@ -204,14 +265,20 @@ namespace ICE.Config
         public string AutoHookPresetName { get; set; } = string.Empty;
         public double BestTime { get; set; } = double.MaxValue;
         public double AverageTime { get; set; } = 0;
+        public double AverageBronzeTime { get; set; } = 0;
+        public double AverageSilverTime { get; set; } = 0;
+        public double AverageGoldTime { get; set; } = 0;
+        public double AverageCriticalTime { get; set; } = 0;
         public int TotalCompletions { get; set; } = 0;
         public int BronzeCompletion { get; set; } = 0;
         public int SilverCompletions { get; set; } = 0;
         public int GoldCompletions { get; set; } = 0;
         public int CriticalCompletions { get; set; } = 0;
         public int FailedCounters { get; set; } = 0;
-        public List<double> Times { get; set; } = new();
         public List<TurninData> TurninRecords { get; set; } = new();
+        // Old References to time below for migration
+        [YamlIgnore]
+        public List<double> Times { get; set; } = new();
     }
 
     public class TurninData
@@ -259,5 +326,12 @@ namespace ICE.Config
         public uint ItemId { get; set; }
         public int Weight { get; set; } = 0;
         public GambaType Type { get; set; }
+    }
+
+    public class CosmoShoppingList
+    {
+        public int KeepAmount { get; set; } = 0;
+        public int BuyAmount { get; set; } = 0;
+        public bool KeepBuying { get; set; } = false;
     }
 }

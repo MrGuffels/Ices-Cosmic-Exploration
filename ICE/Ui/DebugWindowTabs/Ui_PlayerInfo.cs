@@ -1,4 +1,5 @@
 ﻿using ECommons.GameHelpers;
+using System.Reflection;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs

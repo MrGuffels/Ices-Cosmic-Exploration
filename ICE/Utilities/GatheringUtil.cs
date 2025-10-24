@@ -350,8 +350,8 @@ public static unsafe class GatheringUtil
 
     private static Vector3 GlassRain1 = new Vector3(407.15f, -229.45f, 224.76f);
     private static Vector3 GlassRain2 = new Vector3(544.42f, -251.07f, 634.55f);
-    private static Vector3 GlassRain3 = Vector3.Zero;
-    private static Vector3 GlassRain4 = Vector3.Zero;
+    private static Vector3 GlassRain3 = new Vector3(148.96f, -9.99f, 487.46f);
+    private static Vector3 GlassRain4 = new Vector3(-488.32f, 25.05f, 35.65f);
 
     // 247.32f, 133.83f, -694.64f
 
@@ -2903,6 +2903,42 @@ public static unsafe class GatheringUtil
             },
             [new Vector2(184f, 624f)] = new()
             {
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(186.20f, 3.49f, 600.06f),
+                    LandZone = new Vector3(186.07f, 2.62f, 601.39f),
+                    NodeId = 35364,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(176.86f, 8.27f, 606.32f),
+                    LandZone = new Vector3(178.26f, 7.37f, 606.98f),
+                    NodeId = 35363,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(163.53f, 12.98f, 637.94f),
+                    LandZone = new Vector3(162.20f, 11.96f, 637.50f),
+                    NodeId = 35366,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(161.56f, 15.16f, 645.26f),
+                    LandZone = new Vector3(160.33f, 14.48f, 644.86f),
+                    NodeId = 35365,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(204.96f, 3.25f, 632.89f),
+                    LandZone = new Vector3(204.59f, 2.48f, 631.51f),
+                    NodeId = 35367,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(209.04f, 2.75f, 634.07f),
+                    LandZone = new Vector3(209.87f, 1.50f, 632.81f),
+                    NodeId = 35368,
+                },
             },
             [new Vector2(324f, -41f)] = new()
             {
@@ -3452,6 +3488,42 @@ public static unsafe class GatheringUtil
             },
             [new Vector2(152f, 287f)] = new()
             {
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(139.17f, -10.26f, 269.02f),
+                    LandZone = new Vector3(139.99f, -10.50f, 270.67f),
+                    NodeId = 35453,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(150.17f, -10.20f, 265.07f),
+                    LandZone = new Vector3(149.07f, -10.50f, 266.65f),
+                    NodeId = 35454,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(160.66f, -9.99f, 278.44f),
+                    LandZone = new Vector3(158.97f, -10.50f, 278.40f),
+                    NodeId = 35458,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(165.48f, -10.02f, 287.12f),
+                    LandZone = new Vector3(163.71f, -10.50f, 286.78f),
+                    NodeId = 35457,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(146.49f, -10.04f, 294.01f),
+                    LandZone = new Vector3(148.41f, -10.50f, 294.30f),
+                    NodeId = 35455,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(155.13f, -10.15f, 312.70f),
+                    LandZone = new Vector3(154.21f, -10.50f, 311.00f),
+                    NodeId = 35456,
+                },
             },
             [new Vector2(290f, -19f)] = new()
             {
@@ -4507,7 +4579,26 @@ public static unsafe class GatheringUtil
 
         #region Critical
 
-        [542] = new FishingTools { },
+        // Export for Mission [542] -  Edible Fish
+        [542] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1WS2/bOBD+KwbPEqD36+a4bjaAkw2qLPYQ9DCiRjYRWnQpqm028H8vqEcs23IqFOml2BtNDb/vm4dn5oXMayUWUKlqUaxJ8kKWJWQc55yTRMkaDfJBlGoBJUV+KwTdkKQAXqFB9KMVK/HwKO+f3OQkcaL48tt7yYRk6pkktkFuquV3yusc88O1xtm3HN3LF9IcHH1q8IPIINe7h43EaiN4ThLbso6Q34ZuMOJwkkbrpyIXm3rbK/NsyxuTNoGoRxOcI1UDQHvKc+fnMoXMGfAeOLC9ScBe9/wjqzbLZ6wGwvwTT31/kqdBn1x4wnTDCnUFrPFXX1T9RaqAPlUk8bt0BdE53xS2uGO7B8WwpDjQH5ziBdMy5fSQkv2HC1BtifYqT1Gdifl3O9SHDXAGT9VH+CqkBj666MPiGsf3n5CKryhJYusk9Fq8Scx9Qq7Y+hq2TYTm5ZqjrHo2XV05SdzQ8s7cm0QR7fcGWX5XErpWo1P8INJvsLspVc0UE+U1sLIPpGkbZFVLvMWqgjWShBCD3DXiyJ0okRgtwvMOSaIjN4K3EpX6Zbx7iRWOKyQmufC9ZWy+H/SkO6RKAl/UUmKp3snLE9R383VU7ZnHo+yNVVs4qRI73TBYuU4V7ppWf9DeFddcvo/kIVyj4Z+SfalR4xInzj2gRWBCUQSmFwXUzLzMNuPIdQs7zGxqAdkbZMUq9XehOSqSPLblqR147RZ+HASXNS7VBpl8rmZXwLnGuxNyC/wvIZ40Qt97/kVofut7Lb9xx7ND3aN6m1RJUa5HrCx3YLXCNZY5yOdLhh9EnfFxQieIXw0usA1NLlO1Vg+S7S4xhb7jvppc4joyeoOts9O1NS8UygXU641asa2eHnb74bTomkWllu3Y0odB/2w7mh+fD+w3ZqneHvq/e5/eT/ilZhLzVIGq9cjS68n/Of+Tcj5oKRiFNMgCNP0YQ9PLPceMrNwyoXAj6loY+XFM9p/7ntKNxMfXi7atPL6Qk/7ihpf7y60Q5eyK16iA8aNmaJ9Hp9/Ex4PWBAFLxShwHSmtoDWYb0VdDmI7stjrNngSOVfvG4eARVpPLQugmHLYDfzzx/aiwYrg7w3yu/f9yXv9YVj98ohKv8FO3yx0VJuADodWN6r0sb0+mJ3XtOV4RyVoO7lruzGYDi1s07Ms38wgDkwAihm1ItvL3aYEW+hO5aPvOTNztpCsSf7n2TJnGcdZU4fHJQ40yCInNy0v9E0vs0MTHIxMN6RB7BdZSKlD9j8AhrHG/EAOAAA=",
+            },
+            AmountRequired = 3,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Moon Bluetail"] = new List<uint>()
+                {
+                    45937,
+                },
+            },
+        },
         [543] = new FishingTools { },
         [544] = new FishingTools { },
 
@@ -5197,12 +5288,12 @@ public static unsafe class GatheringUtil
         // Weather-Restricted Rank
         // - - - - - - - - - - 
 
-        // Export for Mission [993] - EX: Capsule Pools Distribution Survey
+        // Export for Mission [993] - EX: Capsule Pools Distribution Survey [10/21]
         [993] = new FishingTools()
         {
             FishingPreset = new List<string>()
             {
-                "AH4_H4sIAAAAAAAACu1X227bOBD9FYPPIiCKuvrNdZNsADcN6iyyQNAHShxZRGTRpai03sL/XlAXW/IVCPywwOZNHg7PXHR0ZvwbTSotp6zU5TRdoPFvdFOwOIdJnqOxVhVYyBzORAG7Q94d3XM0dsLIQo9KSCX0Go2Jhe7Lm19JXnHgO7Px3zRYX6RMMgNWPzjmqcbxQwvdrZ4yBWUmc47GxLYHyOeha4woGNywLyYzzapll4FLbPdCCt0tmeeQ6BMdcYlN+recy1lIxQXLT+ARx/cHPXbba7eizG7WUPYK8PYK8LxBAX73DtgrzDOR6k9M1GUYQ9kZ5polryUae21X/fAQt48ataiPTAsoEujl4+/f84cNdbqrSvwLU6YbZhyjmR8egDl7b4e2YE8ZywV7LW/Zm1QGb2DoqqPW0P4NEvkGCo2J6VkX0x1E6Pr3SSzu2LIudFIsclBlh2peNkdjGtjuQboDqHCzsdDNL61Y++GZzj/J+U+2ui90JbSQxR0TRddMTCw0qxR8gbJkC0BjhCz0UCeBHmQByGoQ1itAY9OJI3gzWep34z0qKOF4hgijE+dNxPp8l898BYlWLJ9WSkGhr1TlHurVaj2a7UHFR6PXXg1B5lquzPcqisVcw6oWyl3uLYkm6jop9+HqHP4uxI8KDC4KCQvS1LVxEMeAXRsoZsQmOGYJjRPuBiwN0MZCM1Hqr6mJUaLxS0NPU8D24w78yDud462h/U+mQY0mSmdK5pUCg/sg1ZLlf0n5apA6yXgGVv829hL0VgBSlpdgtYLQHpoKO2loTU0bXBIYKeow51rJojfTLl93grB3fwYLKDhT6ysk1iB/llWc79fauDh+tHXYJX7S5Vhufa8nJVanIgWeQ7cup2INnM5Ea/0MvSepBjVl1SLTM7E0c4U0B/u8rzeKSjWDyzz0JPlrka+fMygepJ4kWrzBPYdCi8RMx6azR4YDDbzocHSfGbtmX+gkqqPiN/hRCQV8rpmuzPQzC8kJfl7g256XTS+wauD4QZKLJHnvO+/JYEQd3+UQYkoThl3iERzyAHDsRS6NCHe4HaLN904H26X1ZWtopPDlN9rTREJPa+KUrcoqh9FkGYMaCDg5153tF2BaYkI1DpOlrIqe27FN1Iv2lxA6XAiNKs0rlbIE5rlRr7YQz2j72WXL21joP7PK7ybpu+enuWwsU9PVuqH9idrOUfPYmHdux8jbI5oXUp+4FLBPGMVuRHwcxp5n2GaHthO6qWvm4iGR7DMFrBMtkkxn6/LqNHo3b47z74NG16FRzDzH9wIf8zS2sQtJgsPA9TDj4EV2woIwiY7SyLmsR4YQMk0/FOn/QaXUJ2lAaYohTHzsprGDY0Y5jrlLiU1DbnOnHn0NbpviSxTR76NnYDoDNbr5Z4RHHX8epczL0WdRaiXiyuxUo3ml3mA9/Ofh+p4TQGBjAoRhN2Q+jiixseMEPOaMcOoD2vwBLZcIYZISAAA=",
+                "AH4_H4sIAAAAAAAACu1X32+jOBD+VyI/YwmDAZO3bLbtVcp2q01PPam6BwNDsEpw1pju5qr87yfzI4H8lKo8nHR9I+Px52/Gn2cm72hSaTnlpS6n6QKN39FNwaMcJnmOxlpVYCGzOBMF7BaTbuk+QWOHhRZ6VEIqoddoTCx0X978jvMqgWRnNv6bBuublHFmwOoPx3zVOD6z0N3qKVNQZjJP0JjY9gD5PHSNEQaDHfZFMtOsWnYMKLHpBQrdLpnnEOsTGaHEJv1dzmUWUiWC5yfwiOP7gxzTdtutKLObNZS9ALy9ADxvEIDf3QF/hXkmUv2FizoMYyg7w1zz+LVEY6/Nqs8OcfuoYYv6yLWAIoYeH39/nz9MqNNtVeIfmHLdKOOYzHx2AObs3Y7bgj1lPBf8tbzlb1IZvIGhi861hvYfEMs3UGhMTM5OUKCDA7t0fhGLO76s454UixxU2R1i7j5BYzew6QH7ARTbbCx081sr3r5DcxFPcv6Lr+4LXQktZHHHRdHlFhMLzSoF36As+QLQGCELPdQk0IMsAFkNwnoFaGwScwRvJkv9YbxHBSUcZ4gwOrHenFiv7/jMVxBrxfNppRQU+kpR7qFeLdajbA8iPnp67dUIZK7lyjxfUSzmGlZ13dxxb0U0Udeh3IerOfxZiJ8VGFxEOUkDFno4jliAKY8dzDh3MQFOIxL6lHAfbSw0E6X+npozSjR+aeRpAti+9cAPvdMcb43sf3ENajRROlMyrxQY3Aepljz/Q8pXg9RVkGfg9W9jL0FvH2PK8xK6x9kumgi7Z9qamjRQEpjK1GHOtZJFr8Vd3u4ErLd/BgsoEq7WVyDWIH+VVZTvx9q4OH64ddgRP+lyjFvf60mJ1amTAs9xty6nzho4nTmt9TPynqQa1JRXi0zPxNK0GdIs7Ou+HjAq1fQx89Gr0N+LfP2cQfEg9STW4g3uEyi0iE2zbDJ7pFC7gRcedvIzXdiMD12J6qT4A35WQkEy11xXphma+eSEPi/obc/Ldi+oauD4KZKLIvnonffKoO07LktDF6eO42KauAEOY8/GSeB7rs9C7sQx2vzd1cF2hn3ZGppS+PKO9moicU/XxClflVUOo8kyAjUo4ORcdrYvwKTEHNU4TJayKnpuxwZTL9wfQtzhfGiq0rxSKY9hnpvq1Qbimdp+dvbyNhb6z0z2u0764f5pNhvL1GS1Tmi/o7Z91Hw25p3bMfH2hMaSgAZh7GObBhRTjwLmLnGxS/w48GnqJsxDG+tQSPaZANaxFnGms3V5dRl9WDfH9fcpo+vIKApZEjA7xLEbcUzdiOGIeSFmCbWZT4IU7PSojJzL9cgIQqbpZ0X6f0iJxzQmESc4ClIbU89nOLJdHzMScT90aEpSWre+Brel+AxcZ6BGN3+N8KhTzqOUeTn6KkqtRFSZaWo0r9QbrIf/OQLiRaHLAsyCyNRA5uGQEYKD2HGcxPGoE6Vo8y9+YvlkmxIAAA==",
             },
             AmountRequired = 0,
             UniqueFish = false,
@@ -5251,12 +5342,12 @@ public static unsafe class GatheringUtil
             {
             },
         },
-        // Export for Mission [1001] - Lower Soda-lime Float Distribution Survey
+        // Export for Mission [1001] - Lower Soda-lime Float Distribution Survey [10/21]
         [1001] = new FishingTools()
         {
             FishingPreset = new List<string>()
             {
-                "AH4_H4sIAAAAAAAACu1Xy27bOhD9FYNrKRBp6rlz3CQN4KRBlYssgi4oaWQTkUWXoty4gf+9oB62ZMtOEWRxF93Jw+GZc4bD4fgNTUolpqxQxTSdo+ANXeUsymCSZShQsgQD6cUZz2G/mLRLtwkKiOcb6EFyIbnaoAAb6La4eo2zMoFkb9b+2xrrToh4ocGqD6K/KhzHM9DN6nEhoViILEEBtqwe8nnoCsN3ezusd8lMF+XyhDCKLXrAyLb7jFoQkWUQq1YJxRbuupH3WQiZcJadIIKJ4/gHTJx+bvpEJ5FYAwpSlhVthGteLK42UHQ42ufFOe1xsRcIFzxVl4xXErWhaA2hYvFLgQK7OQDHO8btovoN6gNTHPIYOnycw31OP9mk3Sr5b5gyVRfRUEU63hEYOailcQP2uGAZZy/FNVsLqfF6hlbd2Ojbv0Ms1iBRgHXOTlCgvYBtOi/5/IYtK92TfJ6BLNogxEBPXC1uE8gVj1k2bQEH8MeuRY8k9uJ5262Brl6VZM291qf1KMJfbHWbq5IrLvIbxvP2AExsoFkp4Q6Kgs0BBQgZ6L5iiu5FDsioETYrQIHO3gDeTBTqw3gPEgoYZohMdGK9jlit7/mEK4iVZNm0lBJy9UkqD1A/Tesg2yPFg9Err7qKQiVW+o7zfB4qWFV9eM+9qbSJ/BzKXbiKw385/1mCxkV+mjJCiWVGlheZNHGx6Uepa9pgYycapzhOfbQ10IwX6luqYxQoeK7LUwvYNQTX8clpjpdZCaNQMZmUhdJ490IuWfZViBeN0LaXJ2DV7/oK6dUClJbQXiZteuRLkAeX7I7nuyUUYHphGeiOvXZspLLp92Nov7b3MbwL2ph7MJhq+7c82zwtIL8XahIrvoYw63PUua/OgmJX99BWYKikyOfvSuxst8ad7TOYQ54wuTmL0BdC8LlkHCSOXDinVQ8x+yLKKNudW8+DOP7OYa/7pEtP24DXo+SrU5Fcm4x3Lqdi9ZzORGv89BWdpArklJXzhZrxpX5Pcb1weHeroauU9YOtPzpP0VGx7J6Msy+G7R+OM2fnIz1StW22vVbf4WfJJSShYqrUr76e2Q7v2t+V619X5b8i+VCRfPTMO60c/DSNXN8yEyuKTUoj14xcm5mUuq4XuR5xCUPbH20vb+b6552hbufPb6jf122Pnu7rN5IvR7fLFRSxErL3CuFz6dlPTax+l2uHyVKUecdtaMy3/cNJatyfhD0duJQpi5u23CixffudKdPeGuh/83dnPw58eAjQm7VlqrNaJbQ7FjTDgP6szXu3oertVBqjnh27KTatCI9NGrnUjBKgZhI7LnNSxyKJh7bGcSWdE8DWm9FUQMZilqvFp5fSh2tnuAb/ldLDp5QSuC4jkBDTJgk086ftUpN6KfMiz7djwFXTqnEbis/YsvCPkZ5OkpE5molfIEehSJiZ8SWMrjPB1OgLL5TkUalfxFFYyjVs+rOv52B37KWemToMmxSs1GS275mO57iEuKlnRyna/gGYDDnpcxEAAA==",
+                "AH4_H4sIAAAAAAAACu1XyW7jOBD9FYNnMdC+3Rx3kgngpINWBjkEc6DIkk1EFt0UlY4n8L8PqMWWbNlpBDnMoW9ysfjqVbE2v6NppcSMlKqcZQsUv6OrgqQ5TPMcxUpWYCB9OOcF7A9Zd3TLUGyHkYEeJBeSqw2KLQPdlldvNK8YsL1Y628brDsh6FKD1R+2/qpx/NBAN+vHpYRyKXKGYss0B8jnoWuMKBjcMD8kM1tWqxOOuZbpHjDyvCGjDkTkOVB1Gsfq37I/JiUk4yQ/gWfZvh8dEPOHoRrynqbiFVCckbzsLFzzcnm1gbILvmuZ3nlf/e71yAskS56pS8Jrj7Wg7ASJIvSlRLHXvocfHuP2UaMW9YEoDgWFHh//8J4/jL3dXZX8X5gR1eTUWIL64RGYfZBaTgv2uCQ5Jy/lNXkVUuMNBJ13jjGU/wAqXkGi2NIxO0HBHRjswnnJFzdkVfs9LRY5yLIzYhvoiavlLYNCcUryWQc4gu8Epnvk4sBeuN0a6OpNSdKWuX6tR5H8IuvbQlVccVHcEF50D4AtA80rCXdQlmQBKEbIQPc1U3QvCkBGg7BZA4p19Ebw5qJUn8Z7kFDCOEOE0YnzxmJ9vueTrIEqSfJZJSUU6ou8PED9Ml9H2R55PGq91mqyKFFirWucF4tEwbpuy3vubaZN5ddQ7sPVHP4u+M8KNC4KnMgJAi/DhFoWdoPIwsQJPByEGTAIfUJThrYGmvNSfc+0jRLFz016agd2DSHwI/s0x8u8gkmiiGRVqTTevZArkv8lxItG6NrLE5D6d1NC+rQEpV3oikmLHvkK5EGR3fFid4Riy70wDXRH3noyu5bpcTJ2X8uHGOGF24oHMJar5d+LfPO0hOJeqClV/BWSfMhRx75+C9cKdA/tHEyUFMXiQxd7102nd30OCygYkZuzCENHbOtcMA4CZ1/4p70eY/ZNVGm+e7eBhu1HO4W93ydVBr6NaD1Kvj5lKfBsZ6dyytZA6Yy1Vk+X6DRTIGekWizVnK/0PLWag8ParXewSjYDW3/0RtFRsuxGxtmJ4UWH283ZdUlvWF2b7crqB/ysuASWKKIqPfX1CndYa7+Xrr+dlX+S5FNJ8tk377XyMKXMzcDBaWAH2KUOwWkEAQbq+5bJIHJtD23/6Xp5u+Y/7wRNO39+R8O+7oXu6b5+I/lqcrtaQ0mVkIMpZJ0Lz35rIs1cbhSmK1EVPbWxbd2LDjcpZ7gJh9pwJTNC27bceuJF3gdbprc10P/m389+Hfj0EqAva8lMR7UOaH8taJcB/dmI92pj2dvLNEYjNyVhhH0CDLtu6GBCmY190zdtCBkzwUdb4ziTzjlAXjeTmYCcUFKo5Zen0qdzZzwH/6TSw5ekkk1Ml5pOisOUZti1PRNHWUpwxlIfWEYjM4zqptXgthT1WsImeDIXv0BOEsEIzvkKJte5IGryjZdK8rTSo3CSVPIVNsOlNwwoc7wwwpSRELtW5uMotSmGlFrMzNLUCT20/Q+O+sPWexEAAA==",
             },
             AmountRequired = 0,
             UniqueFish = false,
@@ -5340,12 +5431,12 @@ public static unsafe class GatheringUtil
                 },
             },
         },
-        // Export for Mission [1002] - EX: Bubble Bursters Distribution Survey
+        // Export for Mission [1002] - EX: Bubble Bursters Distribution Survey [10/21]
         [1002] = new FishingTools()
         {
             FishingPreset = new List<string>()
             {
-                "AH4_H4sIAAAAAAAACu1XS2/jOAz+K4HO9sIPWbF9SzOZboC0U9RZzALFHmSZToQ6VkaWO80U+e8D+ZHYidMsih72sDeFpD5+pCmSeUOTUokpLVQxTVcofEOznMYZTLIMhUqWYCCtXPAcjsqkVc0TFDp+YKAHyYXkaodC20DzYvbKsjKB5CjW9vsa604IttZg1cHRpwqH+Aa63S7XEoq1yBIU2pbVQ34fusIIxr0b1lUy03W5aRlg28JXKLS3RJYBU52LdtfMue5WyITT7EJKbYeQXlJxc+0rL9azHRQdx94JY8/rMSZt0ukzRGueqhvKK95aULSCSFH2XKDQa9JI/HPcLmrQoD5QxSFn0OFDTu+Rfgad9qrkv2BKVV0KQ3VF/DMw5+RzuA3Yck0zTp+Lr/RFSI3XE7TRuUZf/ghMvIBEoa1zdoEC7jls03nDV7d0U8U9yVcZyKJ14gwiuWMLnwXTQ/b3ewPNXpWkzTvU32Upop90O89VyRUX+S3leZtq0zbQopRwB0VBV4BChAx0X3FC9yIHZNQIuy2gUOdpAG8hCvVhvAcJBQwzRCa6oK89Vvojn2gLTEmaTUspIVefFOUJ6qfFOsj2LOJB75VVXS+RElv9mnm+ihRsq7555N7U1ER+DuUuXMXhr5z/KEHjItsiY0wYNRnBgYkp9k1KKTOZ58eMEWIFgYf2BlrwQn1LtY8ChU91eeoADk9/TAJ8mWOkIMuoHEU024h89ChAg94LuaHZn0I8a5i2m3wHWv3W8gLU4TmlNCugfV6NUofXPrRGVOcA22PdpVrMSEmRd+bbhetLvgF58n7v6OtBpVvAH9aZK8vtuFrACvKEyt1Vb6cIX0QZZ6fh1xYOCQ4Gx1gumvQ4DFgtJd9e8jT2HPdgcslXz+gdb42dLvdJqkBOablaqwXf6Clk14rTd1AtHKWsx5w+dBr4lOYMsolSsNmqNpfaZknlCmrMb3m2+76G/F6oCVP8BeYJ5IozPW/rC4Md2gvOp/87g1yvHG1bayv4EX6UXEISKapKPU/1TnOhrK+U6b+usP8L6UOF9NFv3mmdTgxOOsZjEywfmzgIHJO6JDAZAws7zAVIE7T/p+2dzd77dBDU7fPpDZ30USe43EdvyjjOYEV/gey1fPu93BzqXydEO6oNJhtR5j0zFGIvON1T3P5G6WtPpUwpgyjT/Wxwe8Ne4F1Z3ry9gf4z/wWOs/fDEzf6SbdaMtVZrRLancHN5NXHWnw0GyrdbpkR5qWBxcyAObGJXUpN32Wp6WPL8n2HgY1JVWY1bkNRj6tkNPt7NJ+PzFFdNqObUhYKZDH6wgsleVzq5jWKSvkCu/5a4GAa+CTFZoJpYOIEiOkzEps0Tr3Yc21CyBjtfwMXShI9Pg4AAA==",
+                "AH4_H4sIAAAAAAAACu1XS2/jOAz+K4HO9sIPybF9SzOdboC0U9RZzALFHBSbToQqVirJnWaK/PeB/EjsPJpB0cMe9qaQ1MePNEUyb2hUajGmSqtxvkDxG7ou6JzDiHMUa1mChYxyygrYK7NWNclQ7IWRhe4lE5LpDYpdC03U9WvKywyyvdjYb2usWyHSpQGrDp45VThBaKGb9WwpQS0Fz1DsOk4P+X3oCiMa9m44F8mMl+WqZYBdB1+g0N4SnEOqOxfdrpl32a2QGaP8TEpdLwh6ScXNta9MLa83oDqOyQFjQnqMgzbp9AmSJcv1FWUVbyNQrSDRNH1SKCZNGoPwGLeLGjWo91QzKFLo8AkO7wX9DHrtVcl+wZjquhRO1VUQHoF5B5/Db8BmS8oZfVJf6YuQBq8naKPzrb78AVLxAhLFrsnZGQq457BN5xVb3NBVFfeoWHCQqnXinUTyhw4+CqaHHG63Frp+1ZI279B8l5lIftL1pNAl00wUN5QVbapt10LTUsItKEUXgGKELHRXcUJ3ogBk1QibNaDY5OkE3lQo/WG8ewkKTjNENjqjrz1W+j2fZA2plpSPSymh0J8U5QHqp8V6ku1RxCe9V1Z1vSRarM1rZsUi0bCu+uaee1NTI/k5lLtwFYd/CvZcgsFFQ/Bx6njEHpJ8buPQx3aYU8+OsiDDhLh+6FK0tdCUKf0tNz4Uih/r8jQB7J7+MIjweY6JBs6pHCSUr0QxeBBgQO+EXFH+txBPBqbtJt+BVr+NXIHePaeccgXt82qUJrz2oTWiOgfYHZou1WImWoqiM9/OXJ+xFciD93tLX3cq0wL+co5cOX7H1RQWUGRUbi56O0T4Iso5Pwy/tvCCaGewj+WsSY/DCauZZOtznobE83cm53z1jN7x1tiZch/lGuSYloulnrKVmUJurTh8B9XCUcp6zJlDp4GPaZECH2kNq7Vuc2lsZlQuoMb8VvDN9yUUd0KPUs1eYJJBoVlq5m194WSHJtHx9H9nkJuVo21rbQU/wHPJJGSJpro089TsNGfK+kKZ/nGF/V9IHyqkj37zTuuMiOs4QZDZ0TB3bezguU2JH9gReJRmjheGOUHbH23vbPbex52gbp+Pb+igj3rR+T56Vc7nHBb0F8hey3ffy82u/k1CjKPaYLQSZdEzQzEm0eGe4vc3ytB4KmVOU0i46WcntzdMInJheSNbC/1n/gvsZ++HJ27yk66NZGyyWiW0O4ObyWuOtXhvdqp0O2UWOCmN0jy1SYgdG2dkaIcBDWziRO7cd7AXwbwqsxq3HbjwXJpeMbj+dzCZDOxBXTmDq1IqDVINvjClJZuXpn8NklK+wKa/GYDn+MTFvp3RPLBxFHl2OA8zO02JkwY4IiTy0PY3A0AOekEOAAA=",
             },
             AmountRequired = 0,
             UniqueFish = false,
@@ -5356,6 +5447,71 @@ public static unsafe class GatheringUtil
             {
             },
         },
+
+        // - - - - - - - - - - 
+        // Critical Rank
+        // - - - - - - - - - - 
+        // Export for Mission [1037] -  Soup Broth Ingredients [10/23]
+        [1037] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1WS2/iSBD+K6jPtmSbdvtxIyyTRWKyUcxoD9Ee2u4ytGLcTHc7M2zEf1+1H8EmECYRI+3NVFd99VVRrxc0qbSYUqXVNF+h+AXNSpoWMCkKFGtZgYXM44KXcHhk3dOcodgLIwvdSy4k1zsUuxaaq9nPrKgYsIPY6O8brK9CZGsDVn945qvGIaGFbrfLtQS1FgVDses4A+T3oWuMKBhYOBfJTNfV5kxg2HXwBUYdiCgKyHQXCXYdt6/mXWYhJOO06ACIiwcAuFX7wtV6tgPVc+QfMfT9AUPS5Zw+QbLmub6hvOZpBKoTJJpmTwrFfptFEr7F7aNGLeo91RzKDHp8vGM7MsyY15lK/i9MqW4qofNKjqy9o3yPW+vlmhacPqkv9FlIAzAQdOGMraH8ATLxDBLFrknSqVImofnLew67/N3w1S3d1IFOylUBUnVOzJ/LUDwOHPyG/QAq3O8tNPupJW0bzWR+KZIfdDsvdcU1F+Ut5WWXD9u10KKS8BWUoitAMUIWuqtJoDtRArIahN0WUGwScwJvIZT+NN69BAWnGSIbnXlvPNbvBz7JFjItaTGtpIRSXynKI9SrxXqS7ZuIT3qvtZoCSbTYmn7l5SrRsK0H44F7W0QTeR3Kfbiaw7eSf6/A4CISEuZ5eWqnxGE2dt3UphmJ7DClzjgLPUoYQXsLLbjSf+XGh0LxY1OeJoDX5g4C093nOM70GrjcqdENLQqDdyfkhhZ/CvFkELpR8TfQ+reRK9CvTZjTQkHXlO2jiaxrz1bUhI/dwIygDjPRUpS93XXZ3Bn3zBewgpJRubsCrxr4D1GlxaVIB4YeiV7tDtGcVfkVxieMvylYSr5t4ugCaCQfIhv4ngmzsTxHd6D0ccKtuemiSa5BTmm1WusF35j15TYPx+1VHyqVbPaj+egtghPTfhz40dsF/86uNkdGN+e6un6A7xWXwBJNdWVWqLlizhT7heL9aI1errmrFVdf62TBXLUyflMJfPY/781S7FGC09S3AyCejXGU2mkUeDbBjETg5wyAof0/3TBtL93HV0EzTx9f0HCwksA/P1jnJdecav4Mo6UUlR4sAve9BM0ZlJpntDBZMd4ahclGVOVADcXYj46vl/HwkgyNp0rmNIOkMPOvJe9H/oWjzd9b6H9z8x9W8KcXb/KDbo1katJYZ7C/itsFbD4b8UHtVMH2iotlhLEUh3aaYWxjjwR2yEhgZwH1cwzjCAdZXVwNbkvxAdhoUoDUI3uUiGo7upFCr0fzciWBcSi1Gp4DGaZj7AaOHfhhZGOXYJsGHrGpC06eBszx8gzt/wNxz0ugFw4AAA==",
+            },
+            AmountRequired = 4,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Initiative Trout"] = new List<uint>()
+                {
+                    47675,
+                },
+            },
+        },
+        // Export for Mission [1038] -  Oil-extractable Aquatic Life [10/21]
+        [1038] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1XS2/jNhD+KwbPEiDqLd0cN5sG8GaDyIsegh7G4sgmwogORe1uGvi/L6hHLDl23E1dtDdlOPPNN+N55YVMay1nUOlqVqxI+kIuS1gKnApBUq1qtIh5nPMSd4+sf7pmJHXjxCK3ikvF9TNJqUWuq8sfuagZsp3Y6G9brM9S5msD1ny45qvBCWOLXG0Wa4XVWgpGUuo4I+T3oRuMJBpZOCfJzNb145HAfOr4Jxj1IFIIzHUfiU8dOlRzT7OQinEQPUBI/RGA36l94tX68hmrgaNgj2EQjBiGfc7hAbM1L/QF8IanEVS9INOQP1QkDboshvFb3CFq0qHeguZY5jjg4+7bheOMub2p4n/hDHRbCb3XcM/a3cu311kv1iA4PFSf4JtUBmAk6MPxrLH8DnP5DRVJqUnSoVIOY/OTDxz2+bvgqyt4bAKdliuBquqdmB+XkdSLHP8N+xFUvN1a5PKHVtA1msn8QmbfYXNd6pprLssr4GWfD5taZF4r/IxVBSskKSEWuWlIkBtZIrFahOcNktQk5gDeXFb6w3i3Cis8zJDY5Mh767F53/HJNphrBWJWK4WlPlOUe6hni/Ug2zcRH/TeaLUFkmm5Mf3Ky1WmcdMMxh33roim6jyUh3ANh68lf6rR4BJ0IgbgF3aS54nt04TZSbiMbKfwGCR5gMEyIVuLzHmlvxTGR0XS+7Y8TQCvzR1FpruPcbzUa+TquZpcgBAG70aqRxC/S/lgEPpR8QdC87eRV6hfm7AAUWHflN2jiaxvz07Uhu/TyIygHjPTSpaD3XXa3PEG5nNcYclAPZ+BVwP8m6yX4lSkI0M3TF7tdtEcVfk7jA8Yf61wofimjaMPoJX8EtkocE2YreUxuiOlXyfcmZsumhYa1Qzq1VrP+aNZX7R92G+v5lCpVbsfzcdgERyY9l4UJG8X/Du72hwZ/Zzr6/oOn2qukGUadG1WqLli9ov9P6/qf16+Z6vTodbB2jtrkf1L1fTR8hmMZRY7UPhFbCcsRtv3qG8vWYg2UEBwgVIvKMj2z34ud0fz/augHc33L2Q8o8MoOj6jFwq44OVqkpXARWEMh1uFvpeia4al5jkIkxfjr1WYPsq6HKmR1A+S/VPIG5+lsfFUqwJyzISpxo5+kAQnLsBga5H/zT8Qu33+4S2efYeNkcxMGpsMDvd6t83NZyveqR0q2UF5geNBQYvYduIksf0kBhuc3LWpDzliHjP03aa8WtyO4h2yyVSg0hN78oULG825mmszPCbTpxo0zydzXpgwhhcGeCGlFG0XaG774Lt2wiC3XXCZ47DAd0NKtj8BmGFHYGoOAAA=",
+            },
+            AmountRequired = 4,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Trailing Snailfish"] = new List<uint>()
+                {
+                    47677,
+                },
+            },
+        },
+        // Export for Mission [1039] -  Elemental-esque Specimen Acquisition [10/22]
+        [1039] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1W227jOAz9lUDPNuCbfHtLs2m3QKZb1B3sQ7EPskQnQhU7leTpdIv8+0K+NHaaNNMiA+ybQ5GHh8wRqVc0rXU1I0qrWbFE6SualyQXMBUCpVrWYCFzuOAl7A5Zf3TNUOrFiYVuJa8k1y8odS10reY/qagZsJ3Z+G9brG9VRVcGrPnwzFeDE8YWutrcrySoVSUYSl3HGSF/DN1gJNEowjlJZraq10cKC1wnOMGoB6mEAKr7SgLXcYdu3mkWlWSciB4gdIMRQNC5XXK1mr+AGiTCewwxHjEM+56TR8hWvNAXhDc8jUH1hkwT+qhQirsuhvF73CFq0qHeEs2hpDDg4+3HheOOeX2o5P/CjOhWCX3WcC/a2+u330Xfr4jg5FFdkh+VNAAjQ1+Ob43td0CrHyBR6pomHZJyGJu/fJCw798FX16RdVPotFwKkKpPYv5chlI/coJ37EdQ8XZroflPLUl30Uzn76vsmWyuS11zzavyivCy74ftWmhRS/gGSpEloBQhC900JNBNVQKyWoSXDaDUNOYA3qJS+st4txIUHGaIbHTkvM3YnO/4ZBugWhIxq6WEUp+pyj3Us9V6kO27ig9mb7xagWS62pj7ystlpmHTDMYd905EU3keykO4hsP3kj/VYHAReIGDWcHsPGfYDkK3sOMQY9vBDIdhTikjAdpaaMGV/qswORRKH1p5mgLeLncUOf5xjpdG9s9Eg5xMpV7JStQSDO5NJddE/FlVjwapHxl/A2l+G7sC/XYZCyIU9JezOzQV9te0M7VtCNzIjKIeM9OyKgc77HS44w/CF7CEkhH5cgZeDfAfVZ2LU5WOAr0weYvbVXPU5VcYHwj+ruBe8k1bR19Aa/kU2Qh7psw28hjdkdPnCXfh5jZNCw1yRurlSi/42qwxtz3Yv2bNg6WW7Z40H4OFcGDq+xFO3i/6D3a2eWz0867X9R081VwCyzTRtVml5jVzROwnxPtZjZ7W3NnENfQ6KJizKuM3SeCr//lgpuYkD/wIYhs7cWAHIWV27sfUdgo/yos8AJcwtP2nH6rdi/fhzdDO1YdXNB6wYewcH7AXooZJponMa6n0aB24H7XnmkGpOSXC9MTkah2m66ouR24oDXCy/4bxx+/J2GSqZUEoZMJMv446TvCJpxveWuh/8/LfLeIvr9/smWyMZWba2HRwuJC7NWw+W/PO7ZBcB9LyEhbTIExsQiGyA88BO3YL16a5W5DAL3BIikZaLW5H8Q7YZCpA6ok9mQtYQ6mJsEE9Gc1sgPI1lJMpfaq5asbW+Ing4iBkLPHsiIZgBzGObZK4xI6pTx1chDnkPtr+Byfpt3wrDgAA",
+            },
+            AmountRequired = 4,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Blue Starburst"] = new List<uint>()
+                {
+                    47680,
+                },
+            },
+        },
+
     };
 
     public static Dictionary<string, List<uint>> MoonBaits = new();

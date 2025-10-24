@@ -34,6 +34,7 @@ public class MissionTimer
         isRunning = false;
 
         UpdateMissionStats(currentMission, duration);
+        currentMission = 0;
 
         return duration;
     }
@@ -47,7 +48,7 @@ public class MissionTimer
 
         var stats = C.MissionConfig[missionId];
 
-        // Add the new time
+        // Adding the new time entry here
         stats.TurninRecords.Add(new TurninData
         {
             Time = duration.TotalSeconds,
@@ -66,16 +67,41 @@ public class MissionTimer
         // Increment total completions (always tracks full history)
         stats.TotalCompletions++;
 
-        // Apply time history limit if set
-        if (TimeHistoryLimit > 0 && stats.TurninRecords.Count > TimeHistoryLimit)
+        // Apply time history limit per state if set
+        if (TimeHistoryLimit > 0)
         {
-            // Remove oldest times to maintain the limit
-            stats.TurninRecords.RemoveRange(0, stats.TurninRecords.Count - TimeHistoryLimit);
+            // Group records by state
+            var groupedByState = stats.TurninRecords
+                .GroupBy(t => t.State)
+                .ToList();
+
+            // Keep only the most recent TimeHistoryLimit records for each state
+            var trimmedRecords = new List<TurninData>();
+            foreach (var group in groupedByState)
+            {
+                trimmedRecords.AddRange(group.TakeLast(TimeHistoryLimit));
+            }
+
+            stats.TurninRecords = trimmedRecords;
         }
 
         // Calculate stats based on the (possibly limited) time history
-        stats.BestTime = stats.TurninRecords.Min(t => t.Time);
-        stats.AverageTime = stats.TurninRecords.Average(t => t.Time);
+        if (stats.TurninRecords.Any())
+        {
+            stats.BestTime = stats.TurninRecords.Min(t => t.Time);
+            stats.AverageTime = stats.TurninRecords.Average(t => t.Time);
+
+            // Calculate per-state averages
+            var bronzeRecords = stats.TurninRecords.Where(t => t.State == TurninState.Bronze).ToList();
+            var silverRecords = stats.TurninRecords.Where(t => t.State == TurninState.Silver).ToList();
+            var goldRecords = stats.TurninRecords.Where(t => t.State == TurninState.Gold).ToList();
+            var criticalRecords = stats.TurninRecords.Where(t => t.State == TurninState.Critical).ToList();
+
+            stats.AverageBronzeTime = bronzeRecords.Any() ? bronzeRecords.Average(t => t.Time) : 0;
+            stats.AverageSilverTime = silverRecords.Any() ? silverRecords.Average(t => t.Time) : 0;
+            stats.AverageGoldTime = goldRecords.Any() ? goldRecords.Average(t => t.Time) : 0;
+            stats.AverageCriticalTime = criticalRecords.Any() ? criticalRecords.Average(t => t.Time) : 0;
+        }
 
         C.Save();
     }
@@ -90,8 +116,18 @@ public class MissionTimer
         var stats = C.MissionConfig[missionId];
         stats.TurninRecords.Clear();
         stats.BestTime = double.MaxValue;
+
         stats.AverageTime = 0;
+        stats.AverageBronzeTime = 0;
+        stats.AverageSilverTime = 0;
+        stats.AverageGoldTime = 0;
+        stats.AverageCriticalTime = 0;
+
         stats.TotalCompletions = 0;
+        stats.BronzeCompletion = 0;
+        stats.SilverCompletions = 0;
+        stats.GoldCompletions = 0;
+        stats.CriticalCompletions = 0;
         stats.FailedCounters = 0;
 
         C.Save();

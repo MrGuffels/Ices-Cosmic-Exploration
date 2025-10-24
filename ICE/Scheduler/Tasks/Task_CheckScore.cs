@@ -224,48 +224,56 @@ namespace ICE.Scheduler.Tasks
 
                                 if (bronzeTurnin)
                                 {
-                                    IceLogging.Debug("We've met the minimum bronze threshold, so checking the rest now", handle);
-                                    var currentScore = missionInfo.CurrentScore;
-                                    var bronzeScore = mission.BronzeScore;
-                                    var silverScore = mission.SilverScore;
-                                    var goldScore = mission.GoldScore;
-
-                                    var config = C.MissionConfig[id];
-                                    bool AnyTurnin = config.AutoTurnin;
-                                    bool GoldGoal = goldScore <= currentScore;
-                                    bool SilverGoal = silverScore <= currentScore;
-                                    bool TurninBronze = config.TurninBronze;
-
-                                    if (config.AutoTurnin)
+                                    if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                                     {
-                                        // AutoTurnin enabled, going to check for gold only since we have materials/time still
-                                        if (GoldGoal)
-                                        {
-                                            IceLogging.Info("Auto turnin was enabled, and hit the max score.", handle);
-                                            shouldTurnin = true;
-                                        }
+                                        IceLogging.Debug("We're in a critical mission, and we have met the minimul requirements for it. So going to continue on", handle);
+                                        shouldTurnin = true;
                                     }
                                     else
                                     {
-                                        if (GoldGoal && config.TurninGold)
+                                        IceLogging.Debug("We've met the minimum bronze threshold, so checking the rest now", handle);
+                                        var currentScore = missionInfo.CurrentScore;
+                                        var bronzeScore = mission.BronzeScore;
+                                        var silverScore = mission.SilverScore;
+                                        var goldScore = mission.GoldScore;
+
+                                        var config = C.MissionConfig[id];
+                                        bool AnyTurnin = config.AutoTurnin;
+                                        bool GoldGoal = goldScore <= currentScore;
+                                        bool SilverGoal = silverScore <= currentScore;
+                                        bool TurninBronze = config.TurninBronze;
+
+                                        if (config.AutoTurnin)
                                         {
-                                            IceLogging.Info("Gold Turnin was enabled, and hit the max score.", handle);
-                                            shouldTurnin = true;
-                                        }
-                                        else if (SilverGoal && config.TurninSilver)
-                                        {
-                                            if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
+                                            // AutoTurnin enabled, going to check for gold only since we have materials/time still
+                                            if (GoldGoal)
                                             {
-                                                IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", handle);
+                                                IceLogging.Info("Auto turnin was enabled, and hit the max score.", handle);
                                                 shouldTurnin = true;
                                             }
                                         }
-                                        else if (config.TurninBronze)
+                                        else
                                         {
-                                            if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
+                                            if (GoldGoal && config.TurninGold)
                                             {
-                                                IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", handle);
+                                                IceLogging.Info("Gold Turnin was enabled, and hit the max score.", handle);
                                                 shouldTurnin = true;
+                                            }
+                                            else if (SilverGoal && config.TurninSilver)
+                                            {
+                                                if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
+                                                {
+                                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", handle);
+                                                    shouldTurnin = true;
+                                                }
+                                            }
+                                            else if (config.TurninBronze)
+                                            {
+                                                if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
+                                                {
+                                                    IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", handle);
+                                                    shouldTurnin = true;
+                                                }
                                             }
                                         }
                                     }
@@ -279,9 +287,14 @@ namespace ICE.Scheduler.Tasks
                                     P.TaskManager.Tasks.Clear();
 
                                     if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                                    {
+                                        IceLogging.Debug("WE'RE IN A CRITICAL MISSION");
                                         Mission_Settings.TurninState = TurninState.Critical;
+                                    }        
                                     else
                                     {
+                                        IceLogging.Debug("WE'RE NOT IN A CRITICAL MISSION");
+
                                         var currentScore = missionInfo.CurrentScore;
                                         var silverScore = mission.SilverScore;
                                         var goldScore = mission.GoldScore;
@@ -745,14 +758,15 @@ namespace ICE.Scheduler.Tasks
                         SchedulerMain.State = IceState.TurninMission;
                         P.TaskManager.Tasks.Clear();
 
-                        var currentScore = missionInfo.CurrentScore;
-                        var silverScore = mission.SilverScore;
-                        var goldScore = mission.GoldScore;
-
                         if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                             Mission_Settings.TurninState = TurninState.Gold;
                         else
+                        {
+                            var currentScore = missionInfo.CurrentScore;
+                            var silverScore = mission.SilverScore;
+                            var goldScore = mission.GoldScore;
                             MedalChecker(currentScore, silverScore, goldScore);
+                        }
 
                         return true;
                     }

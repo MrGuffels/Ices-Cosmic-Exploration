@@ -128,6 +128,7 @@ public sealed partial class ICE
                     >= 123 and <= 134 => Craft | Gather, // Dual class
                     >= 135 and <= 138 => Craft | Fish,  // Dual class
                     139 => jobs.Contains(18) ? Fish : Gather, // Critical
+                    141 => Fish,
                     _ => None
                 };
             }

@@ -115,7 +115,7 @@ namespace ICE.Ui.SettingTabs
                 if (C.RepairPercent != repairAmount)
                 {
                     C.RepairPercent = (int)repairAmount;
-                    C.Save();
+                    C.SaveDebounced();
                 }
             }
 

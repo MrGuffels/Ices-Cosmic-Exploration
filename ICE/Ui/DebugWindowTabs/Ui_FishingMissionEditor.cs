@@ -159,6 +159,14 @@ namespace ICE.Ui.DebugWindowTabs
 
                         // Fishing Preset Section
                         ImGui.Text("Fishing Preset Items:");
+                        if (ImGui.Button("Import all presets"))
+                        {
+                            P.AutoHook.DeleteAllAnonymousPresets();
+                            foreach (var preset in missionData.FishingPreset)
+                            {
+                                P.AutoHook.CreateAndSelectAnonymousPreset(preset);
+                            }
+                        }
                         ImGui.Indent();
 
                         // Add new preset item

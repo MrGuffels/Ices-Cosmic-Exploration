@@ -90,6 +90,26 @@ internal static class IceLogging
         }
     }
 
+    public static void ChatError(string s, string prefix = null)
+    {
+        if (prefix == null)
+        {
+            if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
+            {
+                ECommons.ChatMethods.ChatPrinter.Red($"{s}");
+                PluginLog.Error(s);
+            }
+        }
+        else
+        {
+            if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
+            {
+                ECommons.ChatMethods.ChatPrinter.Red($"{prefix} {s}");
+                PluginLog.Error($"{prefix} {s}");
+            }
+        }
+    }
+
     public static void Warning(string message, string prefix = null)
     {
         var formattedMessage = FormatMessage(message, prefix);

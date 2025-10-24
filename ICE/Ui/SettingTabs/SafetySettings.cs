@@ -46,7 +46,7 @@ namespace ICE.Ui.SettingTabs
                     if (C.DelayIncrease != delayAmount)
                     {
                         C.DelayIncrease = delayAmount;
-                        C.Save();
+                        C.SaveDebounced();
                     }
                 }
             }
@@ -68,7 +68,7 @@ namespace ICE.Ui.SettingTabs
                     if (C.DelayCraftIncrease != delayCraftAmount)
                     {
                         C.DelayCraftIncrease = delayCraftAmount;
-                        C.Save();
+                        C.SaveDebounced();
                     }
                 }
             }

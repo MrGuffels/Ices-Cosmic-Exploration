@@ -27,14 +27,14 @@ namespace ICE.Ui.SettingTabs
                 if (ImGui.SliderInt("Gamba Delay", ref gambaDelay, 50, 2000))
                 {
                     C.GambaDelay = gambaDelay;
-                    C.Save();
+                    C.SaveDebounced();
                 }
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderInt("Mininum credits to keep", ref gambaCreditsMinimum, 0, 10000))
                 {
                     C.GambaCreditsMinimum = gambaCreditsMinimum;
-                    C.Save();
+                    C.SaveDebounced();
                 }
             }
             if (ImGui.Checkbox("Prefer smaller wheel", ref gambaPreferSmallerWheel))

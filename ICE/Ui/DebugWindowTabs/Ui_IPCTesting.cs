@@ -73,22 +73,6 @@ namespace ICE.Ui.DebugWindowTabs
             }
             ImGui.SetNextItemWidth(200);
             ImGui.InputUInt("Select mission to import", ref missionId);
-            if (ImGui.Button("Apply Mission Presets"))
-            {
-                P.AutoHook.DeleteAllAnonymousPresets();
-                var mission = CosmicHelper.SheetMissionDict[missionId];
-                if (mission != null)
-                {
-                    if (mission.Attributes.HasFlag(MissionAttributes.Fish))
-                    {
-                        var fishingPresets = GatheringUtil.FishingPreset[missionId];
-                        foreach (var preset in fishingPresets.FishingPreset)
-                        {
-                            P.AutoHook.CreateAndSelectAnonymousPreset(preset);
-                        }
-                    }
-                }
-            }
             ImGui.InputUInt("Bait ID", ref baitId);
             if (ImGui.Button("Swap to bait"))
             {

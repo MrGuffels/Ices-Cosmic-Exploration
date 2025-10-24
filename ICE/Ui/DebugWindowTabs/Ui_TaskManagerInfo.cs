@@ -82,6 +82,10 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 Task_Gather.Enqueue();
             }
+            if (ImGui.Button("Buy Items from shop"))
+            {
+                Task_BuyCosmoItems.Enqueue();
+            }
         }
 
         private static async Task<List<Vector3>> FindTask(Vector3 currentPos)

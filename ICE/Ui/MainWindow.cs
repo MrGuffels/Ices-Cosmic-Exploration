@@ -265,7 +265,7 @@ namespace ICE.Ui
                             cosmicCap = 0;
 
                         C.CosmoCreditsCap = cosmicCap;
-                        C.Save();
+                        C.SaveDebounced();
                     }
                     ImGui.Unindent(15);
                 }
@@ -284,7 +284,7 @@ namespace ICE.Ui
                     if (ImGui.SliderInt("##LunarStop", ref lunarCap, 0, 10000))
                     {
                         C.LunarCreditsCap = lunarCap;
-                        C.Save();
+                        C.SaveDebounced();
                     }
                     ImGui.Unindent(15);
                 }
@@ -322,7 +322,7 @@ namespace ICE.Ui
                     if (ImGui.SliderInt("##Level", ref targetLevel, 10, 100))
                     {
                         C.TargetLevel = targetLevel;
-                        C.Save();
+                        C.SaveDebounced();
                     }
                     ImGui.Unindent(15);
                 }
@@ -346,7 +346,7 @@ namespace ICE.Ui
                     if (ImGui.SliderFloat("##Sound Volume", ref soundVolume, 0f, 1f, "%.2f"))
                     {
                         C.SoundVolume = soundVolume;
-                        C.Save();
+                        C.SaveDebounced();
                     }
                     if (ImGui.Button("Test Sound Alert"))
                     {
@@ -2147,9 +2147,9 @@ namespace ICE.Ui
                                 ImGui.EndTooltip();
                             }
 
-                            var bronzePerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 1.0);
-                            var silverPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 4.0);
-                            var goldPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageTime, baseScore, 5.0);
+                            var bronzePerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageBronzeTime, baseScore, 1.0);
+                            var silverPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageSilverTime, baseScore, 4.0);
+                            var goldPerHour = MissionStatsCalculator.CalculateScorePerHour(config.AverageGoldTime, baseScore, 5.0);
 
                             ImGui.TextColored(new Vector4(0.8f, 0.5f, 0.3f, 1.0f), $"Bronze: {bronzePerHour:F0} pts/hr [{config.BronzeCompletion}/{config.TotalCompletions}]");
                             ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"Silver: {silverPerHour:F0} pts/hr [{config.SilverCompletions}/{config.TotalCompletions}]");

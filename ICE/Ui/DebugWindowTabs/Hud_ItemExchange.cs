@@ -1,0 +1,149 @@
+﻿using Lumina.Excel.Sheets;
+using System.Text;
+using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+
+namespace ICE.Ui.DebugWindowTabs
+{
+    internal class Hud_ItemExchange
+    {
+        public static unsafe void Draw()
+        {
+            ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
+                             ImGuiTableFlags.Borders |
+                             ImGuiTableFlags.SizingFixedFit |
+                             ImGuiTableFlags.Resizable |           // Allow column resizing
+                             ImGuiTableFlags.Reorderable |         // Allow column reordering
+                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
+
+            if (GenericHelpers.TryGetAddonMaster<ECommons.UIHelpers.AddonMasterImplementations.AddonMaster.InclusionShop>("InclusionShop", out var itemExchange) && itemExchange.IsAddonReady)
+            {
+
+                ImGui.Text($"Currency Amount: {itemExchange.CurrencyAmount}");
+
+                if (ImGui.BeginTable("Item Exchange Window", 3, tableFlags))
+                {
+                    ImGui.TableSetupColumn("##ItemId");
+                    ImGui.TableSetupColumn("##ItemName");
+                    ImGui.TableSetupColumn("##Cost1", ImGuiTableColumnFlags.WidthStretch);
+
+                    for (int i = 0; i < itemExchange.NumEntries; i++)
+                    {
+                        var entry = itemExchange.ShopItems[i];
+                        var itemId = entry.ItemId;
+                        var currencyId = entry.CurrencyId;
+                        var cost = entry.Cost;
+
+                        var sheet = Svc.Data.GetExcelSheet<Item>();
+                        var itemName = sheet.GetRow(itemId).Name.ToString();
+
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"{itemId}");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text(itemName);
+
+                        ImGui.TableNextColumn();
+                        var currencyIcon = sheet.GetRow(currencyId).Icon;
+                        if (currencyIcon is { } icon)
+                        {
+                            if (Svc.Texture.TryGetFromGameIcon((int)icon, out var texture))
+                            {
+                                ImGui.Image(texture.GetWrapOrEmpty().Handle, new Vector2(20, 20));
+                                ImGui.SameLine();
+                            }
+                        }
+                        ImGui.Text($"{cost}");
+                        ImGui.SameLine();
+                        if (ImGui.Button("Buy Item"))
+                        {
+                            entry.Select();
+                        }
+                    }
+                    ImGui.EndTable();
+                }
+            }
+            else if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
+            {
+                var sheet = Svc.Data.GetExcelSheet<Item>();
+
+                var currencyIcon = sheet.GetRow(shopExchange.CurrencyId).Icon;
+                Svc.Texture.TryGetFromGameIcon((int)currencyIcon, out var texture);
+                ImGui.Text($"{shopExchange.CurrencyAmount}");
+                if (ImGui.Button("Copy Item List"))
+                {
+                    var sb = new StringBuilder();
+                    for (int i = 0; i < shopExchange.NumEntries; i++)
+                    {
+                        var entry = shopExchange.BasicShopItems[i];
+                        var itemId = entry.ItemId;
+                        var itemName = sheet.GetRow(itemId).Name.ToString();
+
+                        sb.AppendLine($"[{itemId}] = new ItemInfo");
+                        sb.AppendLine($"\t{{");
+                        sb.AppendLine($"\t\tName = \"{itemName}\",");
+                        sb.AppendLine($"\t\tCost = {entry.CostAmount},");
+                        sb.AppendLine($"\t}},");
+                    }
+                    ImGui.SetClipboardText(sb.ToString());
+                }
+
+                if (ImGui.BeginTable("Item Exchange Window", 5, tableFlags))
+                {
+                    ImGui.TableSetupColumn("##ItemId");
+                    ImGui.TableSetupColumn("##ItemName");
+                    ImGui.TableSetupColumn("##Cost1");
+                    ImGui.TableSetupColumn("##Cost2");
+                    ImGui.TableSetupColumn("##Cost3");
+
+                    for (int i = 0; i < shopExchange.NumEntries; i++)
+                    {
+                        var entry = shopExchange.BasicShopItems[i];
+                        var itemId = entry.ItemId;
+                        var cost = entry.CostAmount;
+
+                        var itemName = sheet.GetRow(itemId).Name.ToString();
+
+                        ImGui.PushID(itemId);
+
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"{itemId}");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text(itemName);
+
+                        ImGui.TableNextColumn();
+                        ImGui.Image(texture.GetWrapOrEmpty().Handle, new Vector2(20, 20));
+                        ImGui.SameLine();
+                        ImGui.Text($"{entry.CostAmount}");
+
+                        ImGui.TableNextColumn();
+                        if (ImGui.Button("Buy 1 Item"))
+                        {
+                            entry.Select();
+                        }
+
+                        ImGui.TableNextColumn();
+                        if (ImGui.Button("Buy Max"))
+                        {
+                            if (EzThrottler.Throttle("Buying from shop throttle"))
+                            {
+                                var amount = shopExchange.CurrencyAmount;
+                                var buyAmount = amount / cost;
+                                entry.Select((int)buyAmount);
+                            }
+                        }
+
+                        ImGui.PopID();
+                    }
+                    ImGui.EndTable();
+                }
+            }
+            else
+            {
+                ImGui.Text("Waiting for a shop exchange window to be open");
+            }
+        }
+    }
+}

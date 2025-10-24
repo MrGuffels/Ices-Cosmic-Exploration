@@ -18,11 +18,12 @@ namespace ICE.Utilities.Cosmic
             489, 490, 491, 492, 493, 494, 495,
             // 508,509, // Dual Craft (A Rank)
             511, 510, // Dual Craft (Ex+ Rank)
-            542, 543, 544,
+            543, 544,
+
+            961, 962, 963, 964, // BTN Missions locked to the SW corner
+            919, 920, 921, 922, // MIN Missions locked to the SW corner
 
             1000, 1003, 1004, 1005, 1006, 
-            1033, // MIN Mission, need to get turnin cords
-            1037, 1038, 1039 // Need to put fishing presets in
             // blacklisted mission ID
         };
     }

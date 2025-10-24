@@ -11,11 +11,8 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_AbandonMission
     {
-        private static bool Continue = false;
-
         public static void Enqueue()
         {
-            Continue = false;
             P.TaskManager.Enqueue(() => AbandonMission(), "Abandoning the current mission");
             P.TaskManager.Enqueue(() => Task_TurninMission.JobSwapCheck(), "Checking to see if we need to swap jobs");
             P.TaskManager.Enqueue(() => Task_TurninMission.GoldCheck(), "Checking post mission state + gold state condition");
@@ -30,7 +27,10 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.CurrentLunarMission == 0)
             {
                 if (WasAbandoned)
+                {
+                    IceLogging.Debug("Mission was abandoned");
                     P.MissionTimer.AbandonMission();
+                }
                 else
                 {
                     var duration = P.MissionTimer.CompleteMission();
@@ -110,6 +110,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 else if(GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var addon) && addon.IsAddonReady)
                 {
+                    if (EzThrottler.Throttle("Trying To Turnin/Abandon", 1000))
+
                     if (Player.JobId == 18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
                     {
                         if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
@@ -118,11 +120,11 @@ namespace ICE.Scheduler.Tasks
                         return false;
                     }
 
-                    if (EzThrottler.Throttle("Attempt to turnin"))
+                    if (EzThrottler.Throttle("Attempt to turnin", 500))
                     {
                         addon.Report();
                     }
-                    else if (EzThrottler.Throttle("Telling it to abandon the mission"))
+                    else if (EzThrottler.Throttle("Telling it to abandon the mission", 500))
                     {
                         IceLogging.Debug("Attempting to abandon.", "[Abandoning Mission]");
                         addon.Abandon();

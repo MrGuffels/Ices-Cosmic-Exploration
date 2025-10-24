@@ -276,6 +276,45 @@ namespace ICE.Config
                 C.ConfigVersion = 4;
                 C.Save();
             }
+            if (C.ConfigVersion == 4)
+            {
+                // Updating the times to properly average each kind of turnin type
+                foreach (var mission in C.MissionConfig)
+                {
+                    var stats = mission.Value;
+
+                    if (stats.TurninRecords.Any())
+                    {
+                        stats.BestTime = stats.TurninRecords.Min(t => t.Time);
+                        stats.AverageTime = stats.TurninRecords.Average(t => t.Time);
+
+                        // Calculate per-state averages
+                        var bronzeRecords = stats.TurninRecords.Where(t => t.State == TurninState.Bronze).ToList();
+                        var silverRecords = stats.TurninRecords.Where(t => t.State == TurninState.Silver).ToList();
+                        var goldRecords = stats.TurninRecords.Where(t => t.State == TurninState.Gold).ToList();
+                        var criticalRecords = stats.TurninRecords.Where(t => t.State == TurninState.Critical).ToList();
+
+                        stats.AverageBronzeTime = bronzeRecords.Any() ? bronzeRecords.Average(t => t.Time) : 0;
+                        stats.AverageSilverTime = silverRecords.Any() ? silverRecords.Average(t => t.Time) : 0;
+                        stats.AverageGoldTime = goldRecords.Any() ? goldRecords.Average(t => t.Time) : 0;
+                        stats.AverageCriticalTime = criticalRecords.Any() ? criticalRecords.Average(t => t.Time) : 0;
+                    }
+                }
+                C.ConfigVersion = 5;
+                C.Save();
+            }
+            if (C.ConfigVersion == 5)
+            {
+                List<uint> CriticalMission = new() { 542, 1037, 1038, 1039 };
+                foreach (var mission in CriticalMission)
+                {
+                    if (C.MissionConfig.TryGetValue(mission, out var config))
+                    {
+                        config.Use_BuildinPreset = true;
+                    }
+                }
+                C.Save();
+            }
         }
 
         public static void UpdateConfigMissionList()

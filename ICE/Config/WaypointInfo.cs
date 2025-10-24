@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace ICE.Config;
 
@@ -18,5 +19,7 @@ public class WaypointInfo : IYamlConfig
     public uint Nodeset {  get; set; } = 0;
 
     public static string ConfigPath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "Node Waypoints.yaml");
-    public void Save() => YamlConfig.Save(this, ConfigPath);
+    public async Task SaveAsync() => await YamlConfig.SaveAsync(this, ConfigPath);
+
+    public void Save() => _ = SaveAsync();
 }
