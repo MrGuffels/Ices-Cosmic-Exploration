@@ -570,10 +570,10 @@ MissionID,Class,MissionName,Score
 580,CRP,EX: Craftwork for the Forum III,107
 581,CRP,Habitation Improvement Plan I,28
 582,CRP,EX: Habitation Improvement Plan II,160
-583,CRP,EX+: Habitation Improvement Plan III,0
-584,CRP,EX+: Resin Crystal Refinement I,0
-585,CRP,EX+: Resin Crystal Refinement II,0
-586,CRP,EX+: Resin Crystal Refinement III,0
+583,CRP,EX+: Habitation Improvement Plan III,463
+584,CRP,EX+: Resin Crystal Refinement I,311
+585,CRP,EX+: Resin Crystal Refinement II,335
+586,CRP,EX+: Resin Crystal Refinement III,875
 587,BSM,Multi-purpose Glass,2
 588,BSM,Repair Component Processing,2
 589,BSM,Glass Resource Refinement,2
@@ -612,10 +612,10 @@ MissionID,Class,MissionName,Score
 622,BSM,EX: Operation Chilling-a-Way Drone Parts III,107
 623,BSM,Stellascope Parts I,28
 624,BSM,EX: Stellascope Parts II,160
-625,BSM,EX+: Stellascope Parts III,0
-626,BSM,EX+: Synthetic Crystal Glass I,0
-627,BSM,EX+: Synthetic Crystal Glass II,0
-628,BSM,EX+: Phaenna Craftwork,0
+625,BSM,EX+: Stellascope Parts III,463
+626,BSM,EX+: Synthetic Crystal Glass I,311
+627,BSM,EX+: Synthetic Crystal Glass II,335
+628,BSM,EX+: Phaenna Craftwork,875
 629,ARM,Multi-purpose Glass,2
 630,ARM,Repair Component Processing,2
 631,ARM,Glass Resource Refinement,2
@@ -654,10 +654,10 @@ MissionID,Class,MissionName,Score
 664,ARM,EX: Operation Chilling-a-Way Drone Parts III,107
 665,ARM,Stellascope Parts I,28
 666,ARM,EX: Stellascope Parts II,160
-667,ARM,EX+: Stellascope Parts III,0
-668,ARM,EX+: Synthetic Crystal Glass I,0
-669,ARM,EX+: Synthetic Crystal Glass II,0
-670,ARM,EX+: Phaenna Craftwork,0
+667,ARM,EX+: Stellascope Parts III,463
+668,ARM,EX+: Synthetic Crystal Glass I,311
+669,ARM,EX+: Synthetic Crystal Glass II,335
+670,ARM,EX+: Phaenna Craftwork,875
 671,GSM,Multi-purpose Glass,2
 672,GSM,Repair Component Processing,2
 673,GSM,Glass Resource Refinement,2
@@ -696,10 +696,10 @@ MissionID,Class,MissionName,Score
 706,GSM,EX: Operation Chilling-a-Way Drone Parts III,107
 707,GSM,Stellascope Parts I,28
 708,GSM,EX: Stellascope Parts II,160
-709,GSM,EX+: Stellascope Parts III,0
-710,GSM,EX+: Synthetic Crystal Glass I,0
-711,GSM,EX+: Synthetic Crystal Glass II,0
-712,GSM,EX+: Phaenna Craftwork,0
+709,GSM,EX+: Stellascope Parts III,463
+710,GSM,EX+: Synthetic Crystal Glass I,311
+711,GSM,EX+: Synthetic Crystal Glass II,335
+712,GSM,EX+: Phaenna Craftwork,875
 713,LTW,Multi-purpose Glass,2
 714,LTW,Improved Tents,2
 715,LTW,Resource Experimentation I,2
@@ -738,10 +738,10 @@ MissionID,Class,MissionName,Score
 748,LTW,EX: Craftwork for the Forum III,107
 749,LTW,Habitation Improvement Plan I,28
 750,LTW,EX: Habitation Improvement Plan II,160
-751,LTW,EX+: Habitation Improvement Plan III,0
-752,LTW,EX+: Pilot Suits I,0
-753,LTW,EX+: Pilot Suits II,0
-754,LTW,EX+: Pilot Suits III,0
+751,LTW,EX+: Habitation Improvement Plan III,463
+752,LTW,EX+: Pilot Suits I,311
+753,LTW,EX+: Pilot Suits II,335
+754,LTW,EX+: Pilot Suits III,875
 755,WVR,Multi-purpose Glass,2
 756,WVR,Improved Tents,2
 757,WVR,Resource Experimentation I,2
@@ -780,10 +780,10 @@ MissionID,Class,MissionName,Score
 790,WVR,EX: Craftwork for the Forum III,107
 791,WVR,Habitation Improvement Plan I,28
 792,WVR,EX: Habitation Improvement Plan II,160
-793,WVR,EX+: Habitation Improvement Plan III,0
-794,WVR,EX+: Captain's Suit I,0
-795,WVR,EX+: Captain's Suit II,0
-796,WVR,EX+: Captain's Suit III,0
+793,WVR,EX+: Habitation Improvement Plan III,463
+794,WVR,EX+: Captain's Suit I,311
+795,WVR,EX+: Captain's Suit II,335
+796,WVR,EX+: Captain's Suit III,875
 797,ALC,Multi-purpose Materials,2
 798,ALC,Seasoned Archon Loaf I,2
 799,ALC,Emergency Rations,2
@@ -822,10 +822,10 @@ MissionID,Class,MissionName,Score
 832,ALC,EX: Launch Party Preparations III,107
 833,ALC,Omni-nutritious Meals I,28
 834,ALC,EX: Omni-nutritious Meals II,160
-835,ALC,EX+: Omni-nutritious Meals III,0
-836,ALC,EX+: Cosmotized Survey Materials I,0
-837,ALC,EX+: Cosmotized Survey Materials II,0
-838,ALC,EX+: Cosmotized Survey Materials III,0
+835,ALC,EX+: Omni-nutritious Meals III,463
+836,ALC,EX+: Cosmotized Survey Materials I,311
+837,ALC,EX+: Cosmotized Survey Materials II,335
+838,ALC,EX+: Cosmotized Survey Materials III,875
 839,CUL,Lubricant Procural,2
 840,CUL,Seasoned Archon Loaf I,2
 841,CUL,Stable Rations,2
@@ -864,10 +864,10 @@ MissionID,Class,MissionName,Score
 874,CUL,EX: Launch Party Desserts III,107
 875,CUL,Emergency Rations Development,28
 876,CUL,EX: All-nighter Rations Development,160
-877,CUL,EX+: Superior Supplement Trays,0
-878,CUL,EX+: Ultimate Nutrition I,0
-879,CUL,EX+: Ultimate Nutrition II,0
-880,CUL,EX+: Ultimate Nutrition III,0
+877,CUL,EX+: Superior Supplement Trays,463
+878,CUL,EX+: Ultimate Nutrition I,311
+879,CUL,EX+: Ultimate Nutrition II,335
+880,CUL,EX+: Ultimate Nutrition III,875
 881,MIN,Base Vicinity Survey,3
 882,MIN,Mech Route Survey,2
 883,MIN,Phaenna Resource Survey,3
@@ -906,10 +906,10 @@ MissionID,Class,MissionName,Score
 916,MIN,EX: Conductive Core Materials,58
 917,MIN,EX: Capsule Chasm Survey,183
 918,MIN,EX: Reflective Materials,128
-919,MIN,EX+: Geothermal Survey,0
-920,MIN,EX+: Fine-grade Heat-resistant Materials,0
-921,MIN,EX+: Optical Noise Reduction Research,0
-922,MIN,EX+: Resonance Damping Materials,0
+919,MIN,EX+: Geothermal Survey,229
+920,MIN,EX+: Fine-grade Heat-resistant Materials,167
+921,MIN,EX+: Optical Noise Reduction Research,166
+922,MIN,EX+: Resonance Damping Materials,391
 923,BTN,Base Vicinity Survey,3
 924,BTN,Mech Route Survey,2
 925,BTN,Phaenna Resource Survey,3
@@ -947,10 +947,10 @@ MissionID,Class,MissionName,Score
 957,BTN,EX: Phaenna Glass,51
 958,BTN,EX: Mutated Fungi Survey,58
 959,BTN,EX: Capsule Chasm Survey,183
-961,BTN,EX+: Geothermal Survey,0
-962,BTN,EX+: Fine-grade Heat-resistant Materials,0
-963,BTN,EX+: Optical Noise Reduction Research,0
-964,BTN,EX+: Resonance Damping Materials,0
+961,BTN,EX+: Geothermal Survey,229
+962,BTN,EX+: Fine-grade Heat-resistant Materials,168
+963,BTN,EX+: Optical Noise Reduction Research,167
+964,BTN,EX+: Resonance Damping Materials,391
 965,FSH,Aquatic Foodstuffs,2
 966,FSH,Efficient Large Specimen Procurement,2
 967,FSH,Opalescent Crossing Specimen Survey,6
@@ -987,35 +987,35 @@ MissionID,Class,MissionName,Score
 999,FSH,EX: Rare Aquatic Resources,105
 1000,FSH,EX: Elemental-esque River Specimens,67
 1001,FSH,Lower Soda-lime Float Distribution Survey,159
-1003,FSH,EX+: Fusingway Flow Distribution Survey,0
-1004,FSH,EX+: Elemental-esque Saltpeter Shore Specimens,0
-1005,FSH,EX+: Elemental-esque Chasm Specimens,0
-1006,FSH,EX+: Elemental-esque Vent Specimens,0
+1003,FSH,EX+: Fusingway Flow Distribution Survey,380
+1004,FSH,EX+: Elemental-esque Saltpeter Shore Specimens,358
+1005,FSH,EX+: Elemental-esque Chasm Specimens,364
+1006,FSH,EX+: Elemental-esque Vent Specimens,808
 1007,CRP,Wiring Repair Tools,215
 1008,CRP,Mutated Flora Samples,215
-1009,CRP,Glass Dust Cleaning Tools,0
+1009,CRP,Glass Dust Cleaning Tools,215
 1011,BSM,Vitreobotany Tools,215
-1012,BSM,Nozzle Parts,0
+1012,BSM,Nozzle Parts,215
 1013,ARM,Upgrade Parts,215
-1014,ARM,Dust Tanks,0
-1015,ARM,Rover Plating,0
+1014,ARM,Dust Tanks,215
+1015,ARM,Rover Plating,215
 1016,GSM,Precision Components,215
-1018,GSM,Spare Transport Parts,0
+1018,GSM,Spare Transport Parts,215
 1019,LTW,Wiring Repair Gloves,215
 1020,LTW,Reinforced Lumbering Boots,215
-1021,LTW,Dust-filtering Masks,0
+1021,LTW,Dust-filtering Masks,215
 1022,WVR,Repair Cloth,215
-1024,WVR,Dust Filters,0
+1024,WVR,Dust Filters,215
 1025,ALC,Wiring Repair Rubber,215
-1027,ALC,Surface Protectant,0
+1027,ALC,Surface Protectant,215
 1028,CUL,Hot Soup,215
-1030,CUL,Water Quality Inspection Samples,0
+1030,CUL,Water Quality Inspection Samples,215
 1032,MIN,Rare Glass Resources,139
-1033,MIN,Metallic Materials,0
+1033,MIN,Metallic Materials,139
 1034,BTN,Supply Route Clearing,139
 1035,BTN,Glass Flora Samples,139
 1036,BTN,Mutated Flora,139
 1037,FSH,Soup Broth Ingredients,158
-1039,FSH,Elemental-esque Specimen Acquisition,0
+1039,FSH,Elemental-esque Specimen Acquisition,150
 ,CRP,Premium High-grade Paper,51
 ,LTW,Premium High-grade Paper,51
