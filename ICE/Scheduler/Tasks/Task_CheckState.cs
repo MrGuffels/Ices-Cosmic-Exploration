@@ -4,6 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Sounds;
 using ICE.Utilities.Cosmic;
 using System.Collections.Generic;
+using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static ICE.Utilities.CosmicHelper;
 
@@ -19,8 +20,8 @@ namespace ICE.Scheduler.Tasks
         private static unsafe bool? CheckState()
         {
             string tag = "Task: Check State";
-
             var currentMissionId = CosmicHelper.CurrentLunarMission;
+            int maxStage = 14;
 
             if (AddonHelper.IsAddonActive("WKSLottery"))
             {
@@ -30,6 +31,9 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
+                RelicInfo(out var allComplete, out var currentStage, out var XPTable);
+                bool canTurnin = allComplete && currentStage != maxStage && C.TurninRelic;
+
                 if (C.StopWhenLevel && Player.Level >= C.TargetLevel)
                 {
                     SchedulerMain.State = IceState.Idle;
@@ -39,7 +43,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         _ = SoundPlayer.PlaySoundAsync();
                     }
-                    
+
                     return true;
                 }
                 if (C.StopOnceHitCosmicScore)
@@ -78,7 +82,7 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
                 }
-                if (C.StopOnceHitCosmoCredits)
+                if (C.StopOnceHitCosmoCredits && !C.BuyItems)
                 {
                     if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var hud) && hud.IsAddonReady && (hud.CosmoCredit >= C.CosmoCreditsCap))
                     {
@@ -91,55 +95,9 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
                 }
-                if (C.StopOnceRelicFinished || C.TurninRelic)
+                if (C.StopOnceRelicFinished)
                 {
-                    int maxStage = 14;
-
-                    var wksManager = WKSManager.Instance();
-                    if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
-                        return null;
-
-                    var job = Player.JobId;
-                    var toolClassId = (byte)(job - 7);
-                    var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
-                    var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
-
-                    Dictionary<int, CosmicHelper.XPType> XPTable = new Dictionary<int, CosmicHelper.XPType>();
-
-                    for (byte type = 1; type < 6; type++)
-                    {
-                        if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
-                        {
-
-                        }
-
-                        var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
-
-                        var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
-                        var requiredXp = neededXP - currentXp;
-                        if (!XPTable.ContainsKey(type))
-                        {
-                            XPTable[type] = new XPType()
-                            {
-                                CurrentXP = currentXp,
-                                NeededXP = neededXP,
-                            };
-                        }
-                    }
-
-                    bool allComplete = true;
-
-                    for (int i = 0; i < XPTable.Count; i++)
-                    {
-                        var bar = XPTable[i + 1];
-                        IceLogging.Debug($"Checking: [{i+1}] Current: {bar.CurrentXP} | Needed: {bar.NeededXP}", tag);
-                        if (bar.CurrentXP < bar.NeededXP)
-                        {
-                            allComplete = false;
-                            IceLogging.Debug($"We're missing XP, so going to change this to false");
-                        }
-                    }
-                    if (allComplete)
+                    if (allComplete && !canTurnin)
                     {
                         IceLogging.Debug("It says all have been completed. This is the current report");
                         for (int i = 0; i < XPTable.Count; i++)
@@ -151,14 +109,32 @@ namespace ICE.Scheduler.Tasks
                                         $"Turnin Relic: {C.TurninRelic}\n" +
                                         $"Stop When Relic Finished: {C.StopOnceRelicFinished}");
 
-                        if (C.TurninRelic && stage != maxStage)
+                        IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
+                        SchedulerMain.State = IceState.Idle;
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Debug($"Check Relic XP has been concluded, and we still need some. So going to continue on because we don't need to stop.");
+                    }
+
+
+
+                    if (allComplete)
+                    {
+
+                        if (C.TurninRelic && currentStage != maxStage)
                         {
                             IceLogging.Info("We've hit a point where we can turnin the relic! Doing so now");
                             SchedulerMain.State = IceState.RelicTurnin;
                             P.TaskManager.Tasks.Clear();
                             return true;
                         }
-                        else if (C.TurninRelic && stage == maxStage && C.StopOnceRelicFinished)
+                        else if (C.TurninRelic && currentStage == maxStage && C.StopOnceRelicFinished)
                         {
                             IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
                             SchedulerMain.State = IceState.Idle;
@@ -168,20 +144,6 @@ namespace ICE.Scheduler.Tasks
                             }
                             return true;
                         }
-                        else if (C.StopOnceRelicFinished)
-                        {
-                            IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
-                            SchedulerMain.State = IceState.Idle;
-                            if (C.PlaySoundAlert)
-                            {
-                                _ = SoundPlayer.PlaySoundAsync();
-                            }
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        IceLogging.Debug($"Check Relic XP has been concluded, and we still need some. So going to continue on because we don't need to stop.");
                     }
                 }
                 if (currentMissionId != 0)
@@ -267,16 +229,48 @@ namespace ICE.Scheduler.Tasks
                     bool selfRepairCraft = C.SelfRepairCrafter && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.CrafterJobList.Contains(currentJob);
                     bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.GatheringJobList.Contains(currentJob);
                     bool extractSpiritbond = C.SelfSpiritbondGather && Task_Spiritbond.IsSpiritbondReadyAny();
+                    PlayerHelper.GetItemCount(45690, out var cosmoCreditAmount);
+                    bool canBuyItems = C.BuyItems && Task_BuyCosmoItems.CanPurchaseAnyItem() && cosmoCreditAmount >= C.CosmoBuyAtAmount;
+                    bool canGamba = false;
+
+                    uint[] currencies = [45691, 48146, 48147, 48148];
+                    var manager = WKSManager.Instance();
+                    var zoneId = *((byte*)manager + 0x5D);
+                    var itemId = currencies[zoneId];
+
+                    if (C.GambaBetweenRuns)
+                    {
+                        if (PlayerHelper.GetItemCount(itemId, out var lunarCredits))
+                        {
+                            if (C.GambaAtAmount <= lunarCredits)
+                                canGamba = true;
+                            IceLogging.Debug($"Current Credit Setting: {C.GambaAtAmount} >= {lunarCredits} && AutoGamba: {C.GambaBetweenRuns}");
+
+                        }
+                    }
 
                     if (extractSpiritbond && CosmicHelper.GatheringJobList.Contains(currentJob))
                     {
                         IceLogging.Info("Extracting spiritbond is enabled. And you have some to extract. Going to go do so now", "[Task: Check State]");
                         SchedulerMain.State = IceState.Spiritbond;
                     }
-                    else if (repairVendor ||  selfRepairCraft || selfRepairGather)
+                    else if (selfRepairCraft || selfRepairGather)
                     {
                         IceLogging.Info("We need to repair! So going to go repair", "[Task: Check State]");
                         SchedulerMain.State = IceState.Repair;
+                    }
+                    else if (repairVendor || canTurnin || canBuyItems || canGamba)
+                    {
+                        SchedulerMain.State = IceState.HubReturn;
+                        Task_HubActivities.RepairNpc = repairVendor;
+                        Task_HubActivities.RelicTurnin = canTurnin;
+                        Task_HubActivities.CosmoBuy = canBuyItems;
+                        Task_HubActivities.CanGamba = canGamba;
+                        IceLogging.Info("We have some reason to return back to the base so... we're doing so.\n" +
+                                        $"Repairing at NPC: {repairVendor}\n" +
+                                        $"Relic Turnin: {canTurnin}\n" +
+                                        $"Buying Cosmocredit Items: {canBuyItems}\n" +
+                                        $"Can Gamba: {canGamba}");
                     }
                     else
                     {
@@ -300,6 +294,62 @@ namespace ICE.Scheduler.Tasks
 
             // Updating the Mission state to be the same as the current mission that's fired.
             SchedulerMain.MissionState = missionDictInfo.Attributes;
+        }
+
+        private static unsafe bool RelicInfo(out bool isComplete, out int currentStage, out Dictionary<int, XPType> XPTable)
+        {
+            string tag = "Relic Info Check";
+            currentStage = 0; // Must initialize out parameters
+            isComplete = false; // Must initialize out parameters
+            XPTable = new();
+
+            var wksManager = WKSManager.Instance();
+            if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
+            {
+                return false;
+            }
+
+            var job = Player.JobId;
+            var toolClassId = (byte)(job - 7);
+            var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
+            var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
+
+            currentStage = stage;
+
+            for (byte type = 1; type < 6; type++)
+            {
+                if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                {
+                    continue;
+                }
+
+                var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
+                var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
+
+                if (!XPTable.ContainsKey(type))
+                {
+                    XPTable[type] = new XPType()
+                    {
+                        CurrentXP = currentXp,
+                        NeededXP = neededXP,
+                    };
+                }
+            }
+
+            for (int i = 0; i < XPTable.Count; i++)
+            {
+                var bar = XPTable[i + 1];
+                IceLogging.Debug($"Checking: [{i+1}] Current: {bar.CurrentXP} | Needed: {bar.NeededXP}", tag);
+                if (bar.CurrentXP < bar.NeededXP)
+                {
+                    IceLogging.Debug($"We're missing XP, so going to change this to false");
+                    isComplete = false;
+                    return false;
+                }
+            }
+
+            isComplete = true;
+            return true;
         }
     }
 }

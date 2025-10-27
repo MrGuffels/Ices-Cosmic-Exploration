@@ -1,6 +1,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System.Collections.Generic;
+using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -91,104 +92,212 @@ namespace ICE.Scheduler.Tasks
                 C.Save();
         }
 
-        public static unsafe void TryHandleGamba()
+        public static void Enqueue()
         {
-            string tag = "[Gamba]";
-
-            if (EzThrottler.Throttle("Gamba", C.GambaDelay))
+            EnsureGambaWeightsInitialized();
+            if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var gamba) && gamba.IsAddonReady)
             {
-                var currentZoneId = Player.Territory;
-                var npcInfo = NpcData.MoonNpcs[currentZoneId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault();
-                uint npcId = 0;
-                var npcLocation = new Vector3();
+                P.TaskManager.EnqueueMulti
+                    (
+                        new(GamblingTime, "Time to go gambling!", Utils.TaskConfig),
+                        new(CloseTalk, "Closing the talk window"),
+                        new(() => SchedulerMain.State = IceState.Idle)
+                    );
+            }
+            else
+            {
+                // If this is the case, then we're here to initalize the gamba
+                P.TaskManager.EnqueueMulti
+                    (
+                        new(PathToGambaNpc, "Pathing to the gamba NPC"),
+                        new(TalkToGambaNpc, "Talk to the Gamba NPC"),
+                        new(SelectGamba, "Selecting the options to go to gamba"),
+                        new(GamblingTime, "Time to go gambling!", Utils.TaskConfig),
+                        new(CloseTalk, "Closing the talk window")
+                    );
+            }
+        }
 
-                if (npcInfo != null)
+        private static bool? PathToGambaNpc()
+        {
+            var zoneId = Player.Territory;
+            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault();
+
+            if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
+            {
+                if (P.Navmesh.IsRunning())
                 {
-                    npcId = npcInfo.NpcId;
-                    npcLocation = npcInfo.NpcLocation;
-                }
-
-                EnsureGambaWeightsInitialized();
-                if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var gamba) && gamba.IsAddonReady)
-                {
-                    uint[] currencies = [45691, 48146, 48147, 48148];
-                    var manager = WKSManager.Instance();
-                    var zoneId = *((byte*)manager + 0x5D);
-                    var itemId = currencies[zoneId];
-
-                    if (PlayerHelper.GetItemCount(itemId, out var credits))
+                    if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
                     {
-                        bool confirmEnabled, leftWheelEnabled, rightWheelEnabled;
-                        unsafe
-                        {
-                            confirmEnabled = gamba.SpinWheelButton->IsEnabled;
-                            leftWheelEnabled = gamba.WheelLeftButton->IsEnabled;
-                            rightWheelEnabled = gamba.WheelRightButton->IsEnabled;
-                        }
-
-                        if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
-                        {
-                            if (credits >= 1000 + C.GambaCreditsMinimum)
-                                select.Yes();
-                            else
-                                select.No();
-                        }
-                        else if (confirmEnabled)
-                            gamba.ConfirmButton();
-                        else if (leftWheelEnabled || rightWheelEnabled)
-                        {
-                            float leftWeight = gamba.LeftWheelItems.Sum(item => C.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
-                            float rightWeight = gamba.RightWheelItems.Sum(item => C.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
-
-                            if (C.GambaPreferSmallerWheel)
-                            {
-                                leftWeight /= gamba.LeftWheelItems.Length;
-                                rightWeight /= gamba.RightWheelItems.Length;
-                            }
-
-                            if (gamba.LeftWheelItems.Length == 0)
-                            {
-                                IceLogging.Info($"Found a pure stellar mission gamba. Choosing left wheel", tag);
-                                SelectWheelLeft(gamba);
-                            }
-                            else if (gamba.RightWheelItems.Length == 0)
-                            {
-                                IceLogging.Info($"Found a pure stellar mission gamba. Choosing right wheel", tag);
-                                SelectWheelRight(gamba);
-                            }
-                            else if (leftWeight > rightWeight)
-                            {
-                                IceLogging.Info($"[Gamba] First wheel is better with total weight: {leftWeight}");
-                                SelectWheelLeft(gamba);
-                            }
-                            else if (rightWeight > leftWeight)
-                            {
-                                IceLogging.Info($"[Gamba] Second wheel is better with total weight: {rightWeight}");
-                                SelectWheelRight(gamba);
-                            }
-                            else
-                            {
-                                IceLogging.Info("[Gamba] Both wheels are equal in weight. Randomly selecting one.");
-                                if (new Random().Next(2) == 0)
-                                    SelectWheelLeft(gamba);
-                                else
-                                    SelectWheelRight(gamba);
-                            }
-                        }
+                        IceLogging.Debug("Pathing to NPC has reached the distance thresh, stopping");
+                        P.Navmesh.Stop();
+                        return true;
                     }
                 }
-                /*
-                else if (Svc.Targets.Target.DataId == npcId && npcId != 0)
-                {
-                    if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var addon) && addon.IsAddonReady)
-                    {
-                        if (EzThrottler.Throttle("Clicking the talk addon"))
-                            addon.Click();
-                    }
-                }
-                */
                 else
-                    SchedulerMain.DisablePlugin();
+                {
+                    IceLogging.Debug($"Distance to the npc is correct, commending repair");
+                    return true;
+                }
+            }
+            else
+            {
+                if (!P.Navmesh.IsRunning())
+                {
+                    if (EzThrottler.Throttle("Pathing to repair NPC"))
+                    {
+                        IceLogging.Debug($"Pathing to: {npcEntry.Name}");
+
+                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.BoxCorner1.X, npcEntry.BoxCorner2.X, npcEntry.BoxCorner1.Y, npcEntry.BoxCorner2.Y, npcEntry.NpcLocation.Y);
+                        P.Navmesh.PathfindAndMoveTo(randomPoint, false);
+                    }
+                }
+            }
+
+            return false;
+        }
+        private static bool? TalkToGambaNpc()
+        {
+            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
+            {
+                IceLogging.Info("Talking has been commenced! Time to continue onto actually gambling our life away");
+                return true;
+            }
+            else
+            {
+                var researchId = NpcData.MoonNpcs[Player.Territory].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault().NpcId;
+
+                Utils.TryGetObjectByDataId(researchId, out var researchNpc);
+                if (EzThrottler.Throttle("Interacting with gambaNpc!"))
+                {
+                    Utils.TargetgameObject(researchNpc);
+                    Utils.InteractWithObject(researchNpc);
+                }
+            }
+
+            return false;
+        }
+        private static bool? SelectGamba()
+        {
+            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Closing Talk Window", 250))
+                    talk.Click();
+            }
+            else if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var iconString) && iconString.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Selecting Materia Selection"))
+                {
+                    var select = iconString.Entries[0];
+                    IceLogging.Debug($"Selecting: {select.Text}");
+                    select.Select();
+                }
+            }
+            else if (GenericHelpers.TryGetAddonMaster<SelectString>("SelectString", out var selectString) && selectString.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Selecting yes to gamba"))
+                {
+                    selectString.Entries[0].Select();
+                }
+            }
+            else if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var gamba) && gamba.IsAddonReady)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        private static unsafe bool? GamblingTime()
+        {
+            string tag = "Gambling Time Task";
+
+            if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var gamba) && gamba.IsAddonReady)
+            {
+                uint[] currencies = [45691, 48146, 48147, 48148];
+                var manager = WKSManager.Instance();
+                var zoneId = *((byte*)manager + 0x5D);
+                var itemId = currencies[zoneId];
+
+                if (PlayerHelper.GetItemCount(itemId, out var credits))
+                {
+                    bool confirmEnabled, leftWheelEnabled, rightWheelEnabled;
+                    unsafe
+                    {
+                        confirmEnabled = gamba.SpinWheelButton->IsEnabled;
+                        leftWheelEnabled = gamba.WheelLeftButton->IsEnabled;
+                        rightWheelEnabled = gamba.WheelRightButton->IsEnabled;
+                    }
+
+                    if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
+                    {
+                        if (credits >= 1000 + C.GambaCreditsMinimum)
+                            select.Yes();
+                        else
+                            select.No();
+                    }
+                    else if (confirmEnabled)
+                        gamba.ConfirmButton();
+                    else if (leftWheelEnabled || rightWheelEnabled)
+                    {
+                        float leftWeight = gamba.LeftWheelItems.Sum(item => C.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
+                        float rightWeight = gamba.RightWheelItems.Sum(item => C.GambaItemWeights.FirstOrDefault(x => x.ItemId == item.itemId)?.Weight ?? 0);
+
+                        if (C.GambaPreferSmallerWheel)
+                        {
+                            leftWeight /= gamba.LeftWheelItems.Length;
+                            rightWeight /= gamba.RightWheelItems.Length;
+                        }
+
+                        if (gamba.LeftWheelItems.Length == 0)
+                        {
+                            IceLogging.Info($"Found a pure stellar mission gamba. Choosing left wheel", tag);
+                            SelectWheelLeft(gamba);
+                        }
+                        else if (gamba.RightWheelItems.Length == 0)
+                        {
+                            IceLogging.Info($"Found a pure stellar mission gamba. Choosing right wheel", tag);
+                            SelectWheelRight(gamba);
+                        }
+                        else if (leftWeight > rightWeight)
+                        {
+                            IceLogging.Info($"[Gamba] First wheel is better with total weight: {leftWeight}");
+                            SelectWheelLeft(gamba);
+                        }
+                        else if (rightWeight > leftWeight)
+                        {
+                            IceLogging.Info($"[Gamba] Second wheel is better with total weight: {rightWeight}");
+                            SelectWheelRight(gamba);
+                        }
+                        else
+                        {
+                            IceLogging.Info("[Gamba] Both wheels are equal in weight. Randomly selecting one.");
+                            if (new Random().Next(2) == 0)
+                                SelectWheelLeft(gamba);
+                            else
+                                SelectWheelRight(gamba);
+                        }
+                    }
+
+                }
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
+        }
+        private static bool? CloseTalk()
+        {
+            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Closing Talk Window", 250))
+                    talk.Click();
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 

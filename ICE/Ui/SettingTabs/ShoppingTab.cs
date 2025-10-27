@@ -14,6 +14,14 @@ namespace ICE.Ui.SettingTabs
         public static unsafe void Draw()
         {
             CheckConfigState();
+            if (Task_BuyCosmoItems.CanPurchaseAnyItem())
+            {
+                ImGui.Text("You can buy cosmocredit items from the list!");
+            }
+            else
+            {
+                ImGui.Text("You can't buy any items with your current credit value/items (tis fine, this just a test)");
+            }
 
             if (ImGui.Button("Add Items to List"))
             {
@@ -158,6 +166,11 @@ namespace ICE.Ui.SettingTabs
                     var keepBuying = setting.KeepBuying;
                     if (ImGui.Checkbox($"##keepbuying_{itemId}", ref keepBuying))
                     {
+                        foreach (var enabled in C.CosmoShopping)
+                        {
+                            enabled.Value.KeepBuying = false;
+                        }
+
                         setting.KeepBuying = keepBuying;
                         C.Save();
                     }

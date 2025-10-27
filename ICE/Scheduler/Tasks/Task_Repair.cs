@@ -15,19 +15,7 @@ namespace ICE.Scheduler.Tasks
             {
                 var currentJob = Player.JobId;
 
-                if (C.RepairAtVendor)
-                {
-                    P.TaskManager.EnqueueMulti
-                        (
-                            new(Task_RelicTurnin.RegisterCraftingPosition, "Registering crafting position for later"),
-                            new(HubCheck, "Checking to see if we're in hub area"),
-                            new(PathToRepair, "Pathing to the repair NPC"),
-                            new(RepairAtNpc, "Repairing at the NPC Vendor"),
-                            new(CloseRepair, "Closing the repair window"),
-                            new(Task_RelicTurnin.PathBackToCraftingSpot, "Pathing back to our crafting spot")
-                        );
-                }
-                else if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(currentJob)) || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(currentJob)))
+                if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(currentJob)) || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(currentJob)))
                 {
                     P.TaskManager.EnqueueMulti
                     (

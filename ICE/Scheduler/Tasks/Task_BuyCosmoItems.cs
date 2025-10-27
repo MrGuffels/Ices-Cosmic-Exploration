@@ -1,5 +1,6 @@
 ﻿using ECommons.GameHelpers;
 using ICE.Config;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,8 @@ namespace ICE.Scheduler.Tasks
                     new(PathToCreditVendor, "Pathing to the credit vendor"),
                     new(TalkToCreditNPC, "Talking to the credit NPC to start the buying process"),
                     new(SelectShop, "Selecting the shop entry we want to go to"),
-                    new(BuyItems, "Buying items from the vendor")
+                    new(BuyItems, "Buying items from the vendor", Utils.TaskConfig),
+                    new(CloseShop, "Closing the shop menu")
                 );
         }
 
@@ -103,6 +105,17 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        private static bool? CloseShop()
+        {
+            if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Close Shop"))
+                    GenericHandlers.FireCallback("ShopExchangeCurrency", true, -1);
+                return false;
+            }
+            else
+                return true;
+        }
 
         private static int BuyAmount = 0;
         private static uint ItemId = 0;
@@ -112,7 +125,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
             {
-                if (EzThrottler.Throttle("Buy Item", 1000))
+                if (EzThrottler.Throttle("Buy Item", 500))
                 {
                     YesNo.Yes();
                     if (BuyAmount != 0)
@@ -194,6 +207,60 @@ namespace ICE.Scheduler.Tasks
                     setAmount(buyAmount);
                     ItemId = itemId;
                 }
+                return true;
+            }
+            return false;
+        }
+
+        public static bool CanPurchaseAnyItem()
+        {
+            // Get current currency amount (you'll need to determine how to get this without the shop window)
+
+            PlayerHelper.GetItemCount(45690, out var currencyAmount);
+
+            // Try BuyAmount first
+            if (CanPurchaseItem(currencyAmount,
+                (item, itemId) => item.BuyAmount))
+                return true;
+
+            // Then try KeepAmount (accounting for what player already has)
+            if (CanPurchaseItem(currencyAmount,
+                (item, itemId) =>
+                {
+                    PlayerHelper.GetItemCount(itemId, out int currentCount);
+                    return Math.Max(0, item.KeepAmount - currentCount);
+                }))
+                return true;
+
+            // Finally try KeepBuying (buy max affordable)
+            if (CanPurchaseItem(currencyAmount,
+                (item, itemId) => item.KeepBuying ? int.MaxValue : 0))
+                return true;
+
+            // Nothing can be purchased
+            return false;
+        }
+
+        private static bool CanPurchaseItem(int currencyAmount, Func<CosmoShoppingList, uint, int> getTargetAmount)
+        {
+            foreach (var itemId in C.CosmoShoppingOrder)
+            {
+                if (!C.CosmoShopping.TryGetValue(itemId, out var item))
+                    continue;
+
+                int targetAmount = getTargetAmount(item, itemId);
+                if (targetAmount <= 0)
+                    continue;
+
+                // Check if item exists in the cosmocredit shop dictionary
+                if (!Shop_Cosmocredits.CosmocreditShop.TryGetValue(itemId, out var shopItem))
+                    continue;
+
+                int maxAffordable = (int)(currencyAmount / shopItem.Cost);
+                if (maxAffordable <= 0)
+                    continue;
+
+                // We can afford to buy at least one of this item
                 return true;
             }
             return false;

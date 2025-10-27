@@ -13,10 +13,12 @@ namespace ICE.Enums
         ManualMode = 7,
         Waiting = 8,
 
+        HubReturn = 10,
         Repair = 11,
         Gambling = 12,
         RelicTurnin = 13,
         Spiritbond = 14,
+        Shopping = 15,
 
         Craft = 20,
         Gather = 21,

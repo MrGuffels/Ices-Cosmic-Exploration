@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -134,6 +135,8 @@ namespace ICE.Config
         public bool GambaPreferSmallerWheel { get; set; } = false;
         public int GambaCreditsMinimum { get; set; } = 0;
         public int GambaDelay { get; set; } = 250;
+        public bool GambaBetweenRuns = false;
+        public int GambaAtAmount { get; set; } = 1000;
 
         #endregion
 
@@ -163,6 +166,8 @@ namespace ICE.Config
 
         public Dictionary<uint, CosmoShoppingList> CosmoShopping { get; set; } = new();
         public List<uint> CosmoShoppingOrder { get; set; } = new();
+        public bool BuyItems { get; set; } = false;
+        public int CosmoBuyAtAmount { get; set; } = 10000;
 
         #endregion
 

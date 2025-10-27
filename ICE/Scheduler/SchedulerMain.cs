@@ -37,55 +37,23 @@ namespace ICE.Scheduler
             {
                 switch (State)
                 {
-                    case Gambling:
-                        Task_Gamba.TryHandleGamba();
-                        break;
-                    case Start:
-                        Task_CheckState.Enqueue();
-                        break;
-                    case Repair:
-                        Task_Repair.Enqueue();
-                        break;
-                    case Spiritbond:
-                        Task_Spiritbond.Enqueue();
-                        break;
-                    case RelicTurnin:
-                        Task_RelicTurnin.Enqueue();
-                        break;
-                    case GrabMission:
-                        Task_FindMission.Enqueue();
-                        break;
-                    case AbandonMission:
-                        Task_AbandonMission.Enqueue();
-                        break;
-                    case ExecutingMission:
-                        Task_ExecuteMission.Enqueue();
-                        break;
-                    case ScoreCheck:
-                        Task_CheckScore.Enqueue();
-                        break;
-                    case TurninMission:
-                        Task_TurninMission.Enqueue();
-                        break;
-                    case Craft:
-                        Task_Craft.Enqueue();
-                        break;
-                    case Gather:
-                        Task_Gather.Enqueue();
-                        break;
-                    case Fish:
-                        Task_Fishing.Enqueue();
-                        break;
-                    case DualClass:
-                        Task_DualClass.Enqueue();
-                        break;
-                    // case Fish:
-                    case ManualMode:
-                        Task_Manual.Enqueue();
-                        break;
-                    default:
-                        DisablePlugin();
-                        break;
+                    case Gambling: Task_Gamba.Enqueue(); break;
+                    case Start: Task_CheckState.Enqueue(); break;
+                    case Spiritbond: Task_Spiritbond.Enqueue(); break;
+                    case Repair: Task_Repair.Enqueue(); break;
+                    case HubReturn: Task_HubActivities.Enqueue(); break;
+                    case RelicTurnin: Task_RelicTurnin.Enqueue(); break;
+                    case GrabMission: Task_FindMission.Enqueue(); break;
+                    case AbandonMission: Task_AbandonMission.Enqueue(); break;
+                    case ExecutingMission: Task_ExecuteMission.Enqueue(); break;
+                    case ScoreCheck: Task_CheckScore.Enqueue(); break;
+                    case TurninMission: Task_TurninMission.Enqueue(); break;
+                    case Craft: Task_Craft.Enqueue(); break;
+                    case Gather: Task_Gather.Enqueue(); break;
+                    case Fish: Task_Fishing.Enqueue(); break;
+                    case DualClass: Task_DualClass.Enqueue(); break;
+                    case ManualMode: Task_Manual.Enqueue(); break;
+                    default: DisablePlugin(); break;
                 }
             }
         }

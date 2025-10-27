@@ -17,14 +17,12 @@ namespace ICE.Scheduler.Tasks
         {
             P.TaskManager.EnqueueMulti
             (
-                new(RegisterCraftingPosition, "Registering crafting position"),
-                new(Task_Repair.HubCheck, "Checking to see if we're in the hub area"),
+                new(() => SchedulerMain.State = IceState.RelicTurnin, "Changing state to relic turnin"),
                 new(PathToRelicNPC, "Heading to the relic NPC for turnin"),
                 new(TalkToResearchWay, "Talk to researchway"),
                 new(SelectReport, "Selecting Report"),
                 new(SelectRelicClass, "Selecting the class to turnin on"),
-                new(PathBackToCraftingSpot, "Pathing to crafting spot (if viable)", Utils.TaskConfig),
-                new(() => SchedulerMain.State = IceState.GrabMission, "Swapping back to start")
+                new(PathBackToCraftingSpot, "Pathing to crafting spot (if viable)", Utils.TaskConfig)
             );
         }
 
@@ -36,7 +34,7 @@ namespace ICE.Scheduler.Tasks
             return true;
         }
 
-        private static bool? PathToRelicNPC()
+        public static bool? PathToRelicNPC()
         {
             var zoneId = Player.Territory;
             var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Relic).FirstOrDefault();
@@ -75,7 +73,7 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        private static bool? TalkToResearchWay()
+        public static bool? TalkToResearchWay()
         {
             if (GenericHelpers.TryGetAddonMaster<SelectString>("SelectString", out var selectString) && selectString.IsAddonReady)
             {
@@ -102,7 +100,7 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        private static bool? SelectReport()
+        public static bool? SelectReport()
         {
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var selectIconString) && selectIconString.IsAddonReady)
             {
@@ -118,7 +116,7 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        private static bool? SelectRelicClass()
+        public static bool? SelectRelicClass()
         {
             uint selectedClass = Player.JobId - 8;
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var selectIconString) && selectIconString.IsAddonReady)

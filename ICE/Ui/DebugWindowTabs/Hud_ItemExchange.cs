@@ -140,6 +140,87 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.EndTable();
                 }
             }
+            else if (GenericHelpers.TryGetAddonMaster<Shop>("Shop", out var Shop) && Shop.IsAddonReady)
+            {
+                var sheet = Svc.Data.GetExcelSheet<Item>();
+
+                var currencyIcon = 65002;
+                Svc.Texture.TryGetFromGameIcon(currencyIcon, out var texture);
+                PlayerHelper.GetItemCount(1, out var amount);
+                ImGui.Image(texture.GetWrapOrEmpty().Handle, new Vector2(26, 26));
+                ImGui.SameLine();
+                ImGui.AlignTextToFramePadding();
+                ImGui.Text($"{amount}");
+
+                if (ImGui.Button("Copy Item List"))
+                {
+                    var sb = new StringBuilder();
+                    for (int i = 0; i < Shop.NumEntries; i++)
+                    {
+                        var entry = Shop.ShopItems[i];
+                        var itemId = entry.ItemId;
+                        var itemName = sheet.GetRow(itemId).Name.ToString();
+
+                        sb.AppendLine($"[{itemId}] = new ItemInfo");
+                        sb.AppendLine($"\t{{");
+                        sb.AppendLine($"\t\tName = \"{itemName}\",");
+                        sb.AppendLine($"\t\tCost = {entry.CostAmount},");
+                        sb.AppendLine($"\t}},");
+                    }
+                    ImGui.SetClipboardText(sb.ToString());
+                }
+
+                if (ImGui.BeginTable("Item Exchange Window", 5, tableFlags))
+                {
+                    ImGui.TableSetupColumn("##ItemId");
+                    ImGui.TableSetupColumn("##ItemName");
+                    ImGui.TableSetupColumn("##Cost1");
+                    ImGui.TableSetupColumn("##Cost2");
+                    ImGui.TableSetupColumn("##Cost3");
+
+                    for (int i = 0; i < Shop.NumEntries; i++)
+                    {
+                        var entry = Shop.ShopItems[i];
+                        var itemId = entry.ItemId;
+                        var cost = entry.CostAmount;
+
+                        var itemName = sheet.GetRow(itemId).Name.ToString();
+
+                        ImGui.PushID(itemId);
+
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"{itemId}");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text(itemName);
+
+                        ImGui.TableNextColumn();
+                        ImGui.Image(texture.GetWrapOrEmpty().Handle, new Vector2(20, 20));
+                        ImGui.SameLine();
+                        ImGui.Text($"{entry.CostAmount}");
+
+                        ImGui.TableNextColumn();
+                        if (ImGui.Button("Buy 1 Item"))
+                        {
+                            entry.Select();
+                        }
+
+                        ImGui.TableNextColumn();
+                        if (ImGui.Button("Buy Max"))
+                        {
+                            if (EzThrottler.Throttle("Buying from shop throttle"))
+                            {
+                                var buyAmount = amount / cost;
+                                entry.Select((int)buyAmount);
+                            }
+                        }
+
+                        ImGui.PopID();
+                    }
+                    ImGui.EndTable();
+                }
+            }
             else
             {
                 ImGui.Text("Waiting for a shop exchange window to be open");

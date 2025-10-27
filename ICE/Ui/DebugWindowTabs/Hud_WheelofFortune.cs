@@ -6,6 +6,11 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static void Draw()
         {
+            if (ImGui.Button($"Auto Gamba"))
+            {
+                Task_Gamba.Enqueue();
+            }
+
             if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var lotto) && lotto.IsAddonReady)
             {
                 ImGui.Text($"Lottery addon is visible!");
@@ -27,9 +32,9 @@ namespace ICE.Ui.DebugWindowTabs
                     lotto.ConfirmButton();
                 }
 
-                if (ImGui.Button($"Auto Gamba (Once)"))
+                if (ImGui.Button($"Auto Gamba"))
                 {
-                    Task_Gamba.TryHandleGamba();
+                    Task_Gamba.Enqueue();
                 }
 
                 ImGui.Text($"Items in left wheel");

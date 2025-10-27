@@ -220,6 +220,14 @@ namespace ICE.Scheduler.Tasks
             var gatherConfig = C.GatherSettings[configId];
             var gathActions = GatheringUtil.GathActionDict;
 
+            if (EzThrottler.Throttle("Saying what profile you're using", 2000))
+            {
+                IceLogging.Info($"Gathering Profile Info\n" +
+                                $"Mission: {CosmicHelper.CurrentLunarMission}\n" +
+                                $"Selected profile ID: {configId}\n" +
+                                $"Gather profile Name: {gatherConfig.Name}");
+            }
+
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;
             var collectorAction = GatheringUtil.GathCollectableActions;
             var jobId = Player.JobId;
