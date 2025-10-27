@@ -975,8 +975,39 @@ public static unsafe class GatheringUtil
                     FishingSpot = new Vector3(-695.14f, -4.13f, -633.54f),
                 },
             },
+            // Export for Fishing Zone 1291, Flag (-522, 462)
             [new Vector2(-522f, 462f)] = new()
             {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-441.19f, 10.00f, 487.85f),
+                    FishingSpot = new Vector3(-439.22f, 10.00f, 487.49f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-445.83f, 10.00f, 468.06f),
+                    FishingSpot = new Vector3(-443.86f, 10.00f, 467.75f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-452.36f, 10.00f, 455.65f),
+                    FishingSpot = new Vector3(-450.51f, 10.00f, 454.90f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-459.28f, 10.00f, 438.29f),
+                    FishingSpot = new Vector3(-457.47f, 10.00f, 439.13f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-461.28f, 10.00f, 428.23f),
+                    FishingSpot = new Vector3(-460.19f, 10.00f, 426.55f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-471.23f, 10.00f, 417.92f),
+                    FishingSpot = new Vector3(-469.41f, 10.00f, 417.09f),
+                },
             },
             [new Vector2(-450f, -673f)] = new()
             {
@@ -2640,8 +2671,45 @@ public static unsafe class GatheringUtil
                     NodeId = 35302,
                 },
             },
+            // Export for Zone 1291, Flag (-552, 651)
             [new Vector2(-552f, 651f)] = new()
             {
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-487.37f, 12.46f, 627.43f),
+                    LandZone = new Vector3(-488.41f, 11.44f, 628.36f),
+                    NodeId = 35345,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-512.41f, 12.32f, 607.32f),
+                    LandZone = new Vector3(-512.62f, 11.00f, 608.52f),
+                    NodeId = 35346,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-608.06f, 16.82f, 624.72f),
+                    LandZone = new Vector3(-606.68f, 15.76f, 623.76f),
+                    NodeId = 35348,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-606.76f, 17.28f, 629.23f),
+                    LandZone = new Vector3(-605.44f, 16.33f, 629.94f),
+                    NodeId = 35347,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-562.71f, 24.07f, 691.84f),
+                    LandZone = new Vector3(-563.47f, 22.85f, 690.47f),
+                    NodeId = 35349,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-558.18f, 23.97f, 693.68f),
+                    LandZone = new Vector3(-557.52f, 22.55f, 692.53f),
+                    NodeId = 35350,
+                },
             },
             [new Vector2(-481f, -533f)] = new()
             {
@@ -3186,8 +3254,45 @@ public static unsafe class GatheringUtil
                     NodeId = 35452,
                 },
             },
+            // Export for Zone 1291, Flag (-333, 560)
             [new Vector2(-333f, 560f)] = new()
             {
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-387.20f, 18.35f, 544.15f),
+                    LandZone = new Vector3(-386.10f, 17.95f, 544.02f),
+                    NodeId = 35439,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-386.99f, 18.19f, 547.61f),
+                    LandZone = new Vector3(-386.01f, 17.85f, 547.84f),
+                    NodeId = 35440,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-339.49f, 15.63f, 613.48f),
+                    LandZone = new Vector3(-340.01f, 15.43f, 612.05f),
+                    NodeId = 35436,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-333.03f, 16.92f, 613.55f),
+                    LandZone = new Vector3(-333.46f, 16.56f, 612.08f),
+                    NodeId = 35435,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-282.82f, 33.39f, 507.63f),
+                    LandZone = new Vector3(-284.08f, 32.77f, 508.92f),
+                    NodeId = 35437,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-284.03f, 32.38f, 503.46f),
+                    LandZone = new Vector3(-285.55f, 31.46f, 503.28f),
+                    NodeId = 35438,
+                },
             },
             [new Vector2(-326f, -616f)] = new()
             {

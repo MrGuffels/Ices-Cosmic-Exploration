@@ -80,15 +80,16 @@ namespace ICE.Ui.SettingTabs
 
             ImGui.Text($"Order Count {C.CosmoShoppingOrder.Count}");
 
-            if (ImGui.BeginTable("Current Shopping List", 9, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg))
+            if (ImGui.BeginTable("Current Shopping List", 10, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
                 ImGui.TableSetupColumn("Up");
                 ImGui.TableSetupColumn("Down");
                 ImGui.TableSetupColumn("Name");
+                ImGui.TableSetupColumn("Have");
                 ImGui.TableSetupColumn("Cost");
                 ImGui.TableSetupColumn("Kind");
-                ImGui.TableSetupColumn("Keep Amount");
-                ImGui.TableSetupColumn("Buy Amount");
+                ImGui.TableSetupColumn("Keep");
+                ImGui.TableSetupColumn("Buy");
                 ImGui.TableSetupColumn("Keep Buying");
                 ImGui.TableSetupColumn("Remove");
 
@@ -102,7 +103,8 @@ namespace ICE.Ui.SettingTabs
 
                     ImGui.TableNextRow();
 
-                    // Move to Top Button
+                    ImGui.PushID(itemId);
+
                     ImGui.TableSetColumnIndex(0);
                     using (ImRaii.Disabled(i == 0))
                     {
@@ -113,7 +115,6 @@ namespace ICE.Ui.SettingTabs
                         }
                     }
 
-                    // Drag Handle Column
                     ImGui.TableNextColumn();
                     if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowDown, $"##drag_{itemId}"))
                     {
@@ -129,6 +130,10 @@ namespace ICE.Ui.SettingTabs
                         ImGui.SameLine();
                     }
                     ImGui.Text($"{itemInfo.Name}");
+
+                    ImGui.TableNextColumn();
+                    PlayerHelper.GetItemCount(itemId, out var count);
+                    ImGui.Text($"{count}");
 
                     // Cost
                     ImGui.TableNextColumn();
@@ -182,6 +187,8 @@ namespace ICE.Ui.SettingTabs
                         RemoveItem(itemId);
                         C.Save();
                     }
+
+                    ImGui.PopID();
                 }
 
                 ImGui.EndTable();

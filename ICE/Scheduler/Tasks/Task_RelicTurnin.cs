@@ -21,8 +21,7 @@ namespace ICE.Scheduler.Tasks
                 new(PathToRelicNPC, "Heading to the relic NPC for turnin"),
                 new(TalkToResearchWay, "Talk to researchway"),
                 new(SelectReport, "Selecting Report"),
-                new(SelectRelicClass, "Selecting the class to turnin on"),
-                new(PathBackToCraftingSpot, "Pathing to crafting spot (if viable)", Utils.TaskConfig)
+                new(SelectRelicClass, "Selecting the class to turnin on")
             );
         }
 

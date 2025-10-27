@@ -1,4 +1,5 @@
 ﻿using ECommons;
+using ICE.Ui.SettingTabs;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -313,6 +314,16 @@ namespace ICE.Config
                         config.Use_BuildinPreset = true;
                     }
                 }
+                C.ConfigVersion = 6;
+                C.Save();
+            }
+            if (C.ConfigVersion == 6)
+            {
+                IceLogging.Info("Just in case peeps messed with this before it was ready... resetting shopping list");
+                ShoppingTab.CheckConfigState();
+                C.CosmoShopping.Clear();
+                C.CosmoShoppingOrder.Clear();
+                C.ConfigVersion = 7;
                 C.Save();
             }
         }
