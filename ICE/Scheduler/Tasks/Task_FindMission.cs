@@ -916,33 +916,10 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        IceLogging.Debug($"Actual text: '{select.Text}'");
-                        IceLogging.Debug($"Actual text length: {select.Text.Length}");
-                        IceLogging.Debug($"Trimmed text: '{select.Text.Trim()}'");
-                        IceLogging.Debug($"Trimmed length: {select.Text.Trim().Length}");
+                        IceLogging.Debug($"Unexpected text: '{select.Text}'", "[ICE_GrabMission]");
 
                         if (EzThrottler.Throttle("Unexpected Abandon Window..."))
                         {
-                            var actualText = select.Text.Trim();
-                            var expectedFrench = "Êtes-vous sûre de vouloir abandonner la mission en cours ?";
-
-                            // Debug the ACTUAL text character by character
-                            IceLogging.Error("=== ACTUAL TEXT BREAKDOWN ===");
-                            for (int i = 0; i < actualText.Length; i++)
-                            {
-                                IceLogging.Error($"Actual char {i}: '{actualText[i]}' (Unicode: {(int)actualText[i]})");
-                            }
-
-                            // Debug the EXPECTED text character by character
-                            IceLogging.Error("=== EXPECTED TEXT BREAKDOWN ===");
-                            IceLogging.Error($"Expected: '{expectedFrench}'");
-                            IceLogging.Error($"Expected length: {expectedFrench.Length}");
-                            for (int i = 0; i < expectedFrench.Length; i++)
-                            {
-                                IceLogging.Error($"Expected char {i}: '{expectedFrench[i]}' (Unicode: {(int)expectedFrench[i]})");
-                            }
-
-                            IceLogging.Error($"Unexpected abandon window??? {select.Text}", "[Abandon Mission]");
                             select.No();
                             return false;
                         }

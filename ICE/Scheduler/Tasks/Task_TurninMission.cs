@@ -132,17 +132,19 @@ namespace ICE.Scheduler.Tasks
                                 }
                                 else if (!C.DisablePathfindingToRedAlert)
                                 {
-                                    // collection point should be within finding range at this point
+                                    if (EzThrottler.Throttle("We're pathfinding wooo"))
+                                        IceLogging.Debug("We're pathfinding to the turnin point!");
 
                                     if (Player.DistanceTo(location) > 75 && P.Navmesh.IsRunning())
                                     {
                                         if (EzThrottler.Throttle("Waiting to be in a better range", 1000))
                                         {
-                                            IceLogging.Debug("Waiting to be within 75 yalms of the turnin point");
+                                            IceLogging.Debug("Waiting to be within 50 yalms of the turnin point");
                                         }
                                     }
-                                    else if (Player.DistanceTo(location) <= 75)
+                                    else if (Player.DistanceTo(location) <= 75 || !P.Navmesh.IsRunning())
                                     {
+
                                         if (!PathfoundToRed)
                                         {
                                             P.Navmesh.Stop();
@@ -161,6 +163,11 @@ namespace ICE.Scheduler.Tasks
                                         }
                                     }
                                 }
+                            }
+                            else
+                            {
+                                if (EzThrottler.Throttle("Error message unfort"))
+                                    IceLogging.Debug($"Failed to check for: {id}...");
                             }
                         }
                     }

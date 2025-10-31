@@ -20,9 +20,6 @@ namespace ICE.Utilities.Cosmic
             511, 510, // Dual Craft (Ex+ Rank)
             543, 544,
 
-            961, 962, 963, 964, // BTN Missions locked to the SW corner
-            919, 920, 921, 922, // MIN Missions locked to the SW corner
-
             1000, 1003, 1004, 1005, 1006, 
             // blacklisted mission ID
         };

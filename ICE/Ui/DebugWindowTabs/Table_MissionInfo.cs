@@ -282,26 +282,6 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text($"{gatherEntry.Value}");
                         }
                     }
-                    else if (CosmicHelper.MoonRecipies.TryGetValue(entry.Key, out var recipeInfo))
-                    {
-                        foreach (var recipe in recipeInfo.MainCraftsDict)
-                        {
-                            ImGui.TableNextColumn();
-                            ImGui.Text($"{recipe.Value.ItemId}");
-
-                            ImGui.TableNextColumn();
-                            ImGui.Text($"{recipe.Value.RequiredAmount}");
-                        }
-
-                        ImGui.TableSetColumnIndex(23);
-                        foreach (var precraft in recipeInfo.PreCraftDict)
-                        {
-                            ImGui.Text($"{precraft.Value.ItemId}");
-
-                            ImGui.TableNextColumn();
-                            ImGui.Text($"{precraft.Value.RequiredAmount}");
-                        }
-                    }
 
 
                     ImGui.TableSetColumnIndex(26);

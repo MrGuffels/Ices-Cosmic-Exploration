@@ -3,6 +3,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using FFXIVClientStructs.FFXIV.Client.Game;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -350,6 +351,10 @@ namespace ICE.Ui.DebugWindowTabs
                 }
             }
             ImGui.Text($"Mission Timer: {AddonHelper.GetNodeText("WKSMissionInfomation", 24)}");
+            if (ImGui.Button("Move Item"))
+            {
+                MoveItem();
+            }
         }
 
         private static void DrawIconSelector()
@@ -494,6 +499,11 @@ namespace ICE.Ui.DebugWindowTabs
                 result = "_" + result;
 
             return string.IsNullOrEmpty(result) ? "UnnamedIcon" : result;
+        }
+
+        private static unsafe void MoveItem()
+        {
+            InventoryManager.Instance()->MoveItemSlot(InventoryType.Inventory4, 0, InventoryType.Inventory4, 1, false);
         }
     }
 }

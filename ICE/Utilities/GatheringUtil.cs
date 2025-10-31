@@ -344,7 +344,7 @@ public static unsafe class GatheringUtil
     private static Vector3 Thunderstorms4 = new Vector3(-615.30f, 8.26f, -515.45f);
 
     private static Vector3 AnnealingWinds1 = new Vector3(239.77f, 133.83f, -704.44f);
-    private static Vector3 AnnealingWinds2 = new Vector3(-514.56f, -8.00f, -759.22f);
+    private static Vector3 AnnealingWinds2 = new Vector3(-506.27f, -8.42f, -751.29f);
     private static Vector3 AnnealingWinds3 = new Vector3(410.29f, 18.90f, 25.14f);
     private static Vector3 AnnealingWinds4 = new Vector3(10.10f, 7.98f, 339.70f);
 

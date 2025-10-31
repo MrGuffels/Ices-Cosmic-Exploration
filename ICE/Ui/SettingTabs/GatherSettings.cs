@@ -233,31 +233,6 @@ namespace ICE.Ui.SettingTabs
             }
 
             int maxGp = 1200;
-
-            if (ImGui.Checkbox("Self Repair on Gather", ref SelfRepairGather))
-            {
-                if (C.SelfRepairGather != SelfRepairGather)
-                {
-                    C.SelfRepairGather = SelfRepairGather;
-                    C.Save();
-                }
-            }
-            if (SelfRepairGather)
-            {
-                ImGui.Indent(15);
-                ImGui.Text("Repair at");
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(150);
-                if (ImGui.SliderFloat("###Repair %", ref SelfRepairPercent, 0f, 99f, "%.0f%%"))
-                {
-                    if (C.RepairPercent != SelfRepairPercent)
-                    {
-                        C.RepairPercent = (int)SelfRepairPercent;
-                        C.SaveDebounced();
-                    }
-                }
-                ImGui.Unindent(15);
-            }
             if (ImGui.Checkbox("Extract Spiritbond on Gather", ref SelfSpiritbondGather))
             {
                 if (C.SelfSpiritbondGather != SelfSpiritbondGather)

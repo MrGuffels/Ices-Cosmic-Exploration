@@ -16,6 +16,8 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.Enqueue(() => AbandonMission(), "Abandoning the current mission");
             P.TaskManager.Enqueue(() => Task_TurninMission.JobSwapCheck(), "Checking to see if we need to swap jobs");
             P.TaskManager.Enqueue(() => Task_TurninMission.GoldCheck(), "Checking post mission state + gold state condition");
+            if (C.DelayGrabMission)
+                P.TaskManager.EnqueueDelay(C.DelayIncrease);
         }
 
         public static bool WasAbandoned = false;

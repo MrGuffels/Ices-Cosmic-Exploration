@@ -42,7 +42,6 @@ namespace ICE.Scheduler
                     case Spiritbond: Task_Spiritbond.Enqueue(); break;
                     case Repair: Task_Repair.Enqueue(); break;
                     case HubReturn: Task_HubActivities.Enqueue(); break;
-                    case RelicTurnin: Task_RelicTurnin.Enqueue(); break;
                     case GrabMission: Task_FindMission.Enqueue(); break;
                     case AbandonMission: Task_AbandonMission.Enqueue(); break;
                     case ExecutingMission: Task_ExecuteMission.Enqueue(); break;

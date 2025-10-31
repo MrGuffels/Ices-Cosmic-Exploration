@@ -63,7 +63,7 @@ namespace ICE.Ui.SettingTabs
             {
                 ImGui.SetNextItemWidth(150);
                 ImGui.SameLine();
-                if (ImGui.SliderInt("ms###Crafting", ref delayCraftAmount, 0, 10000))
+                if (ImGui.SliderInt("ms###Crafting", ref delayCraftAmount, 6000, 20000))
                 {
                     if (C.DelayCraftIncrease != delayCraftAmount)
                     {

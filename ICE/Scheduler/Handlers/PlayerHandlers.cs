@@ -55,16 +55,28 @@ internal static unsafe class PlayerHandlers
         return AgentMap.Instance()->IsPlayerMoving;
     }
 
-    internal static void Tick()
+    internal static unsafe void Tick()
     {
         P.overlayWindow.IsOpen = C.ShowOverlay && PlayerHelper.IsInCosmicZone() && PlayerHelper.UsingSupportedJob();
 
-        if (C.MoonSprint && PlayerHelper.IsInCosmicZone() && !PlayerHelper.HasStatusId(stellarSprintID) && Svc.Condition[ConditionFlag.NormalConditions] && IsMoving()) UseSprint();
+        if (C.MoonSprint 
+         && PlayerHelper.IsInCosmicZone() 
+         && !PlayerHelper.HasStatusId(stellarSprintID) 
+         && Svc.Condition[ConditionFlag.NormalConditions] 
+         && IsMoving()) 
+            UseSprint();
 
         if ((!PlayerHelper.IsInCosmicZone() || !PlayerHelper.UsingSupportedJob()) && SchedulerMain.State != IceState.Idle)
         {
             DisablePlugin();
         }
+
+        if (PlayerHelper.HasStatusId(4409) && C.RemoveStellarStatus)
+        {
+            if (EzThrottler.Throttle("Turning off Stellar Buff"))
+                StatusManager.ExecuteStatusOff(4409);
+        }
+
     }
 
     internal static void DisablePlugin()

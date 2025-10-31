@@ -12,8 +12,6 @@ public sealed partial class ICE
 {
     public static unsafe void DictionaryCreation()
     {
-        MoonRecipies = [];
-
         var wk = WKSManager.Instance();
 
         foreach (var entry in MoonMissionSheet)
@@ -159,6 +157,7 @@ public sealed partial class ICE
                     var craftingType = missionRecipeRow.Value.CraftType.Value.RowId;
                     IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.Value.RowId} | for item: {itemId} | {itemName}", debugOnly: true);
                     var item1RecipeId = missionRecipeRow.Value.RowId;
+
                     crafts_Main[(ushort)item1RecipeId] = new CraftingInfo()
                     {
                         ItemId = itemId,

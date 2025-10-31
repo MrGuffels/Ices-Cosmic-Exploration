@@ -2,6 +2,7 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Enums;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -42,7 +43,10 @@ public static unsafe partial class CosmicHelper
     public class CraftingInfo
     {
         public uint ItemId { get; set; } 
-        public int RequiredAmount { get; set; }
+        public uint Durability { get; set; }
+        public uint Quality { get; set; }
+        public uint Progress { get; set; }
+        public int RequiredAmount { get; set; } 
         public Dictionary<uint, int> RequiredItems { get; set; } = new();
     }
 
@@ -107,13 +111,6 @@ public static unsafe partial class CosmicHelper
     }
 
     public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();
-    public class MoonRecipieInfo
-    {
-        public Dictionary<ushort, CosmicHelper.CraftingInfo> MainCraftsDict = [];
-        public Dictionary<ushort, CosmicHelper.CraftingInfo> PreCraftDict = [];
-    }
-
-    public static Dictionary<uint, MoonRecipieInfo> MoonRecipies = [];
 
     public class GatheringInfo
     {

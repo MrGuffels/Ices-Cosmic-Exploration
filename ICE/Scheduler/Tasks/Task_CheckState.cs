@@ -129,10 +129,7 @@ namespace ICE.Scheduler.Tasks
 
                         if (C.TurninRelic && currentStage != maxStage)
                         {
-                            IceLogging.Info("We've hit a point where we can turnin the relic! Doing so now");
-                            SchedulerMain.State = IceState.RelicTurnin;
-                            P.TaskManager.Tasks.Clear();
-                            return true;
+                            IceLogging.Info("We've hit a point where we can turnin the relic! Going to add a thing to check for that later");
                         }
                         else if (C.TurninRelic && currentStage == maxStage && C.StopOnceRelicFinished)
                         {
@@ -254,7 +251,7 @@ namespace ICE.Scheduler.Tasks
                         IceLogging.Info("Extracting spiritbond is enabled. And you have some to extract. Going to go do so now", "[Task: Check State]");
                         SchedulerMain.State = IceState.Spiritbond;
                     }
-                    else if (selfRepairCraft || selfRepairGather)
+                    else if (!C.RepairAtVendor && (selfRepairCraft || selfRepairGather))
                     {
                         IceLogging.Info("We need to repair! So going to go repair", "[Task: Check State]");
                         SchedulerMain.State = IceState.Repair;

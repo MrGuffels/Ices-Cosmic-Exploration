@@ -10,27 +10,15 @@ namespace ICE.Scheduler.Tasks
 {
     internal class Task_RelicTurnin
     {
-
-        private static Vector3 craftingSpot = Vector3.Zero;
-
         public static void Enqueue()
         {
             P.TaskManager.EnqueueMulti
             (
-                new(() => SchedulerMain.State = IceState.RelicTurnin, "Changing state to relic turnin"),
                 new(PathToRelicNPC, "Heading to the relic NPC for turnin"),
                 new(TalkToResearchWay, "Talk to researchway"),
                 new(SelectReport, "Selecting Report"),
                 new(SelectRelicClass, "Selecting the class to turnin on")
             );
-        }
-
-        public static bool? RegisterCraftingPosition()
-        {
-            if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
-                craftingSpot = Player.Position;
-
-            return true;
         }
 
         public static bool? PathToRelicNPC()
@@ -42,6 +30,11 @@ namespace ICE.Scheduler.Tasks
             {
                 if (P.Navmesh.IsRunning())
                 {
+                    if (Player.DistanceTo(npcEntry.NpcLocation) > C.MountRadius)
+                    {
+
+                    }
+
                     if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
                     {
                         IceLogging.Debug("Pathing to NPC has reached the distance thresh, stopping");
@@ -118,6 +111,20 @@ namespace ICE.Scheduler.Tasks
         public static bool? SelectRelicClass()
         {
             uint selectedClass = Player.JobId - 8;
+            uint selectedEntry = 0;
+            foreach (var job in C.ClassesUnlocked)
+            {
+                if (job.Value)
+                    selectedEntry += 1;
+                if (job.Key == Player.JobId)
+                {
+                    selectedClass = selectedEntry - 1;
+                    break;
+                }
+
+            }
+
+
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var selectIconString) && selectIconString.IsAddonReady)
             {
                 if (EzThrottler.Throttle($"Selecting jobId: {Player.JobId}"))
@@ -143,62 +150,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
 
-        }
-
-        public static bool? PathBackToCraftingSpot()
-        {
-            if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
-            {
-                if (craftingSpot != Vector3.Zero)
-                {
-                    if (Player.Mounted && Player.DistanceTo(craftingSpot) < C.MountRadius && Player.Mounted)
-                    {
-                        if (EzThrottler.Throttle("Dismount if need be"))
-                        {
-                            IceLogging.Debug("Dismounting cause... we be mounted back to our crafting spot");
-                            Utils.Dismount();
-                        }
-                        return false;
-                    }
-
-                    if (!P.Navmesh.IsRunning() && Player.DistanceTo(craftingSpot) < 1)
-                    {
-
-                        craftingSpot = Vector3.Zero;
-                        return true;
-                    }
-                    else
-                    {
-                        if (!P.Navmesh.IsRunning())
-                        {
-                            if (EzThrottler.Throttle("Telling navemesh to move to crafting spot"))
-                            {
-                                P.Navmesh.PathfindAndMoveTo(craftingSpot, false);
-                            }
-                        }
-                        else
-                        {
-                            if (C.UseMountOutsideMission && Player.DistanceTo(craftingSpot) >= C.MountRadius && !Player.IsBusy)
-                            {
-                                if (EzThrottler.Throttle("Mounting the mount to head back to craft"))
-                                {
-                                    Utils.MountAction();
-                                }
-                            }
-                        }
-
-                        return false;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                return true;
-            }
         }
     }
 }

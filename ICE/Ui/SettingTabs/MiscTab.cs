@@ -73,6 +73,13 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
 
+            bool DisableLunarAura = C.RemoveStellarStatus;
+            if (ImGui.Checkbox("Auto-Remove Stellar Status", ref DisableLunarAura))
+            {
+                C.RemoveStellarStatus = DisableLunarAura;
+                C.Save();
+            }
+
             bool DisableRedAlertPathing = C.DisablePathfindingToRedAlert;
             if (ImGui.Checkbox("Disable Pathfinding to Red Alerts", ref DisableRedAlertPathing))
             {

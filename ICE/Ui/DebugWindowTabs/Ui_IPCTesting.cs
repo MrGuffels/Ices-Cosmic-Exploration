@@ -135,6 +135,10 @@ namespace ICE.Ui.DebugWindowTabs
                 P.IceIpc.ChangeSetting(SettingChange, SettingState);
             }
 
+            if (ImGui.Button("Assign Artisan Food Test"))
+            {
+                P.Artisan.AssignArtisanRecipe(48797, 46253);
+            }
         }
 
         private static void SwapBait(uint baitId)
