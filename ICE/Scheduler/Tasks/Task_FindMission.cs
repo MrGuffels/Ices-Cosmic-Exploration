@@ -2,6 +2,8 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using static ICE.Utilities.GatheringUtil;
+using static ICE.Utilities.GatheringHelper.GatheringUtil;
 
 namespace ICE.Utilities;
 

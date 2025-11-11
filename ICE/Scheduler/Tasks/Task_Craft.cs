@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
+using ICE.Utilities.Cosmic_Helper;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;

@@ -1,5 +1,7 @@
 ﻿using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ICE.Enums.MissionAttributes;
@@ -359,6 +361,8 @@ public sealed partial class ICE
 
             uint Cosmo = ExpSheet.GetRow(keyId).Unknown0;
             uint Lunar = ExpSheet.GetRow(keyId).Unknown1;
+            uint rewardItemId = 0;
+            uint rewardItemAmount = 0;
 
             if (ExpSheet.GetRow(keyId).Unknown2 != 0)
             {
@@ -377,6 +381,11 @@ public sealed partial class ICE
                 var xp3Kind = ExpSheet.GetRow(keyId).Unknown14;
                 var xp3Amount = ExpSheet.GetRow(keyId).Unknown4;
                 relicXp[xp3Kind] = xp3Amount;
+            }
+            if (ExpSheet.GetRow(keyId).Unknown15 != 0)
+            {
+                rewardItemId = ExpSheet.GetRow(keyId).Unknown15; // Column 15 | Item
+                rewardItemAmount = ExpSheet.GetRow(keyId).Unknown8;
             }
 
             if (!SheetMissionDict.ContainsKey(keyId))
@@ -398,6 +407,9 @@ public sealed partial class ICE
                     BronzeScore = bronze,
                     SilverScore = silver,
                     GoldScore = gold,
+
+                    RewardItem = rewardItemId,
+                    RewardItemAmount = rewardItemAmount,
 
                     MapPosition = new Vector2(_x, _y),
                     Radius = radius,

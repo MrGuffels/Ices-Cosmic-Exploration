@@ -16,11 +16,19 @@ public class RandomUtil
         random = new Random(seed);
     }
 
-    public static Vector3 GetRandomPointInBounds(float minX, float maxX, float minZ, float maxZ, float fixedY)
+    public static Vector3 GetRandomPointInBounds(Vector3 corner1, Vector3 corner2, Vector3 corner3, Vector3 corner4, float fixedY)
     {
-        float randomX = (float)(random.NextDouble() * (maxX - minX) + minX);
-        float randomZ = (float)(random.NextDouble() * (maxZ - minZ) + minZ);
+        // Generate two random values between 0 and 1
+        float u = (float)random.NextDouble();
+        float v = (float)random.NextDouble();
 
-        return new Vector3(randomX, fixedY, randomZ);
+        Vector3 topEdge = Vector3.Lerp(corner1, corner2, u);
+        Vector3 bottomEdge = Vector3.Lerp(corner4, corner3, u);
+        Vector3 result = Vector3.Lerp(topEdge, bottomEdge, v);
+
+        // Override Y with fixed value
+        result.Y = fixedY;
+
+        return result;
     }
 }

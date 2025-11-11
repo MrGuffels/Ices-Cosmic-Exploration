@@ -64,20 +64,6 @@ public static unsafe partial class CosmicHelper
     /// </summary>
     public class CosmicInfo
     {
-        // - - - Fishing Specific - - - //
-
-        /// <summary>
-        /// Applies to: ScoreTimeRemaining | Score Variety <br></br>
-        /// The required fish that can complete the conditions for either of these attributes
-        /// </summary>
-        public Dictionary<string, HashSet<uint>> RequiredFish { get; set; } = new();
-        /// <summary>
-        /// If a mission is a timed based mission (aka. Gather x amount of fish within a certain amount of time) <br></br>
-        /// Applies to: ScoreTimeRemaining | ScoreVariety
-        /// </summary>
-        public uint FishCountRequired { get; set; } = 0;
-        public bool UniqueFish { get; set; } = false;
-
         // - - - Crafter Specific - - - //
         public Dictionary<ushort, CraftingInfo> Crafts_Main { get; set; } = new();
         public Dictionary<ushort, CraftingInfo> Crafts_Pre { get; set; } = new();
@@ -103,6 +89,8 @@ public static unsafe partial class CosmicHelper
         public uint ClassScore { get; set; } = 0;
         public uint CosmoCredit { get; set; } = 0;
         public uint LunarCredit { get; set; } = 0;
+        public uint RewardItem { get; set; } = 0;
+        public uint RewardItemAmount { get; set; } = 0;
         public HashSet<uint> PreviousMissions { get; set; } = new();
         public Dictionary<int, int> RelicXpInfo { get; set; } = new();
         public uint BronzeScore { get; set; } = 0;

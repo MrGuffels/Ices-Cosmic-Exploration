@@ -20,7 +20,9 @@ namespace ICE.Utilities.Cosmic
             511, 510, // Dual Craft (Ex+ Rank)
             543, 544,
 
-            1000, 1003, 1004, 1005, 1006, 
+            1000, 1003, 
+            // 1004, 1005, 
+            1006, 
             // blacklisted mission ID
         };
     }

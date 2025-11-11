@@ -2,6 +2,8 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;

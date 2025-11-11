@@ -1,6 +1,9 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using ICE.Config;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
+using Lumina.Excel.Sheets;
 using System.Reflection;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -50,6 +53,111 @@ namespace ICE.Scheduler.Tasks
         {
             string handle = "[Score Check: Fish]";
 
+            static bool MinRequirementsMet(uint id, WKSMissionInfomation missionInfo)
+            {
+                string tag = "[Fishing Score | Minimum Fish Caught]";
+                if (GatheringUtil.FishingPreset.TryGetValue(id, out var fishingInfo) && CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionEntry))
+                {
+                    if (fishingInfo.AmountRequired == 0 && !missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        IceLogging.Debug("We're in a mission where score is the only importants. Checking to see if we meet the minimum score thresh", tag);
+                        var currentScore = missionInfo.CurrentScore;
+                        if (currentScore >= missionEntry.BronzeScore)
+                        {
+                            IceLogging.Info($"We've met the bronze scoring threshold. Current Score: {currentScore} | Bronze Score Requirement: {missionEntry.BronzeScore}", tag);
+                            return true;
+                        }
+                        else
+                        {
+                            IceLogging.Info($"We're missing score currently to be able to turn in. Current Score: {currentScore} | Bronze Score Requirement: {missionEntry.BronzeScore}", tag);
+                            return false;
+                        }
+                    }
+                    else if (fishingInfo.UniqueFish)
+                    {
+                        IceLogging.Debug("We're in a mission where we need to gather a certain amount of *-unique-* fish", tag);
+                        var requiredAmount = fishingInfo.AmountRequired;
+                        var currentAmount = 0;
+                        IceLogging.Debug($"Require'd amount of unique fish: {requiredAmount}");
+                        foreach (var fishEntry in fishingInfo.RequiredFish)
+                        {
+                            foreach (var fishId in fishEntry.Value)
+                            {
+                                if (PlayerHelper.GetItemCount(fishId, out var fishAmount) && fishAmount > 0)
+                                {
+                                    currentAmount += 1;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (currentAmount >= requiredAmount)
+                        {
+                            IceLogging.Info("We've met the minimum threshold to complete the mission!", tag);
+                            return true;
+                        }
+                        else
+                        {
+                            IceLogging.Info($"We're still missing fish. Current count: {currentAmount} | Need: {requiredAmount}");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Debug("We're in a mission where we need a certain amount of fish... so we're going to be checking that");
+                        var requiredAmount = fishingInfo.AmountRequired;
+                        var currentAmount = 0;
+                        IceLogging.Debug($"Require'd amount of fish: {requiredAmount}");
+                        foreach (var fishEntry in fishingInfo.RequiredFish)
+                        {
+                            foreach (var fishId in fishEntry.Value)
+                            {
+                                if (PlayerHelper.GetItemCount(fishId, out var fishAmount) && fishAmount > 0)
+                                {
+                                    currentAmount += fishAmount;
+                                    IceLogging.Debug($"New Current Amount: {currentAmount} | Added via {fishId}");
+                                }
+                            }
+                        }
+
+                        if (currentAmount >= requiredAmount)
+                        {
+                            IceLogging.Info($"We've met the minimum fish to get for completion. Current Amount: {currentAmount} | Required Amount: {requiredAmount}", tag);
+                            return true;
+                        }
+                        else
+                        {
+                            IceLogging.Info($"We're still missing fish. Current Amount: {currentAmount} | Required Amount: {requiredAmount}", tag);
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    IceLogging.Info("This... isn't a valid fishing mission? Please give the ID of it/what planet you're currently getting this error on.");
+                    return false;
+                }
+            }
+            static void CheckMedalStatus(uint id, WKSMissionInfomation missionInfo)
+            {
+                CosmicHelper.SheetMissionDict.TryGetValue(id, out var mission);
+                if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                {
+                    IceLogging.Debug("WE'RE IN A CRITICAL MISSION");
+                    Mission_Settings.TurninState = TurninState.Critical;
+                }
+                else
+                {
+                    IceLogging.Debug("WE'RE NOT IN A CRITICAL MISSION");
+
+                    var currentScore = missionInfo.CurrentScore;
+                    var silverScore = mission.SilverScore;
+                    var goldScore = mission.GoldScore;
+
+                    MedalChecker(currentScore, silverScore, goldScore);
+                }
+            } 
+
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {
                 if (missionInfo.Addon->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
@@ -58,82 +166,39 @@ namespace ICE.Scheduler.Tasks
 
                     if (CosmicHandler.IsMissionTimedOut())
                     {
-                        SchedulerMain.State = IceState.AbandonMission;
-                        P.TaskManager.Tasks.Clear();
-                        return true;
+                        IceLogging.Info("We've met a timeout state, so we're just going to see if we can turnin... and if not then just abandon");
+                        if (MinRequirementsMet(id, missionInfo))
+                        {
+                            CheckMedalStatus(id, missionInfo);
+                            SchedulerMain.State = IceState.TurninMission;
+                            P.TaskManager.Tasks.Clear();
+                            return true;
+                        }
+                        else
+                        {
+                            SchedulerMain.State = IceState.AbandonMission;
+                            P.TaskManager.Tasks.Clear();
+                            return true;
+                        }
                     }
 
                     if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionEntry))
                     {
                         if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                         {
-                            if (GatheringUtil.FishingPreset.TryGetValue(id, out var fishingInfo))
+                            if (MinRequirementsMet(id, missionInfo))
                             {
-                                if (fishingInfo.UniqueFish)
-                                {
-                                    IceLogging.Debug("In a mission that requires unique fish, so checking the mission to see if we meet the requirements", handle);
-                                    var requiredAmount = fishingInfo.AmountRequired;
-                                    var currentAmount = 0;
+                                IceLogging.Info("We have enough unique fish to turnin for this mission. Proceeding to the mission turnin", handle);
+                                SchedulerMain.State = IceState.TurninMission;
+                                P.TaskManager.Tasks.Clear();
 
-                                    foreach (var fishEntry in fishingInfo.RequiredFish)
-                                    {
-                                        foreach (var fishId in fishEntry.Value)
-                                        {
-                                            if (PlayerHelper.GetItemCount(fishId, out var fishAmount) && fishAmount > 0)
-                                            {
-                                                currentAmount += 1;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    if (currentAmount >= requiredAmount)
-                                    {
-                                        IceLogging.Info("We have enough unique fish to turnin for this mission. Proceeding to the mission turnin", handle);
-                                        SchedulerMain.State = IceState.TurninMission;
-                                        P.TaskManager.Tasks.Clear();
-
-                                        Mission_Settings.TurninState = DetermineTurninState();
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        IceLogging.Info("We don't have enough fish for turning in, continuing on with fishing");
-                                        return true;
-                                    }
-                                }
-                                else
-                                {
-                                    IceLogging.Debug("In a mission that requires just a quantity of fish, so checking the mission to see if we meet the requirements", handle);
-                                    var requiredAmount = fishingInfo.AmountRequired;
-                                    var currentAmount = 0;
-
-                                    foreach (var fishEntry in fishingInfo.RequiredFish)
-                                    {
-                                        foreach (var fishId in fishEntry.Value)
-                                        {
-                                            if (PlayerHelper.GetItemCount(fishId, out var fishAmount) && fishAmount > 0)
-                                            {
-                                                currentAmount += fishAmount;
-                                            }
-                                        }
-                                    }
-
-                                    if (currentAmount >= requiredAmount)
-                                    {
-                                        IceLogging.Info("We have enough fish to turnin for this mission. Proceeding to the mission turnin", handle);
-                                        SchedulerMain.State = IceState.TurninMission;
-                                        P.TaskManager.Tasks.Clear();
-
-                                        Mission_Settings.TurninState = DetermineTurninState();
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        IceLogging.Info("We don't have enough fish for turning in, continuing on with fishing");
-                                        return true;
-                                    }
-                                }
+                                Mission_Settings.TurninState = DetermineTurninState();
+                                return true;
+                            }
+                            else
+                            {
+                                IceLogging.Info("We don't have enough fish for turning in, continuing on with fishing");
+                                return true;
                             }
                         }
                         else
@@ -141,86 +206,8 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Debug("We're not in a mission where it's scored based off of time, so going to check to see if we meet the bronze threshold instead");
                             if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var mission))
                             {
-                                var bronzeTurnin = false;
+                                var bronzeTurnin = MinRequirementsMet(id, missionInfo);
                                 var shouldTurnin = false;
-
-                                if (GatheringUtil.FishingPreset.TryGetValue(id, out var fishingInfo) && fishingInfo.AmountRequired > 0)
-                                {
-                                    IceLogging.Debug($"In a mission where the bronze requirement is a pre-requesit amount of fish. So checking for amounts now");
-
-                                    if (fishingInfo.UniqueFish)
-                                    {
-                                        IceLogging.Debug("In a mission that requires unique fish, so checking the mission to see if we meet the requirements", handle);
-                                        var requiredAmount = fishingInfo.AmountRequired;
-                                        var currentAmount = 0;
-
-                                        foreach (var fishEntry in fishingInfo.RequiredFish)
-                                        {
-                                            foreach (var fishId in fishEntry.Value)
-                                            {
-                                                if (PlayerHelper.GetItemCount(fishId, out var fishAmount) && fishAmount > 0)
-                                                {
-                                                    currentAmount += 1;
-                                                    break;
-                                                }
-                                            }
-                                        }
-
-                                        if (currentAmount >= requiredAmount)
-                                        {
-                                            IceLogging.Info("We have enough for the bronze turnin, checking to see minimum turnin point", handle);
-                                            bronzeTurnin = true;
-                                        }
-                                        else
-                                        {
-                                            IceLogging.Info("We don't have enough fish for turning in, continuing on with fishing");
-                                            return true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        IceLogging.Debug("In a mission that requires just a quantity of fish, so checking the mission to see if we meet the requirements", handle);
-                                        var requiredAmount = fishingInfo.AmountRequired;
-                                        var currentAmount = 0;
-
-                                        foreach (var fishEntry in fishingInfo.RequiredFish)
-                                        {
-                                            foreach (var fishId in fishEntry.Value)
-                                            {
-                                                if (PlayerHelper.GetItemCount(fishId, out var fishAmount) && fishAmount > 0)
-                                                {
-                                                    currentAmount += fishAmount;
-                                                }
-                                            }
-                                        }
-
-                                        if (currentAmount >= requiredAmount)
-                                        {
-                                            IceLogging.Info("We have enough for the bronze turnin, checking to see minimum turnin point", handle);
-                                            bronzeTurnin = true;
-                                        }
-                                        else
-                                        {
-                                            IceLogging.Info("We don't have enough fish for turning in, continuing on with fishing");
-                                            return true;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    if (mission.BronzeScore != 0 && (missionInfo.CurrentScore <= mission.BronzeScore))
-                                    {
-                                        IceLogging.Info("Bronze score is recorded at not 0. Which means that it needs a minimum score. \n" +
-                                                        $"Current Score: {missionInfo.CurrentScore}\n" +
-                                                        $"Minimum Score: {mission.BronzeScore}\n" +
-                                                        $"Continuing on with fishing", handle);
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        bronzeTurnin = true;
-                                    }
-                                }
 
                                 if (bronzeTurnin)
                                 {
@@ -277,30 +264,18 @@ namespace ICE.Scheduler.Tasks
                                             }
                                         }
                                     }
-
-
+                                }
+                                else
+                                {
+                                    IceLogging.Info("We have not met the minimum requirements for turning in in general... so we shall continue");
+                                    return true;
                                 }
                                 if (shouldTurnin)
                                 {
+                                    CheckMedalStatus(id, missionInfo);
                                     IceLogging.Info("The threshold for scoring was met. Time to turnin", handle);
                                     SchedulerMain.State = IceState.TurninMission;
                                     P.TaskManager.Tasks.Clear();
-
-                                    if (mission.Attributes.HasFlag(MissionAttributes.Critical))
-                                    {
-                                        IceLogging.Debug("WE'RE IN A CRITICAL MISSION");
-                                        Mission_Settings.TurninState = TurninState.Critical;
-                                    }        
-                                    else
-                                    {
-                                        IceLogging.Debug("WE'RE NOT IN A CRITICAL MISSION");
-
-                                        var currentScore = missionInfo.CurrentScore;
-                                        var silverScore = mission.SilverScore;
-                                        var goldScore = mission.GoldScore;
-
-                                        MedalChecker(currentScore, silverScore, goldScore);
-                                    }
 
                                     return true;
                                 }

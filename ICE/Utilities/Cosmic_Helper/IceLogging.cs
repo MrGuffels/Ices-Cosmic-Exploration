@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace ICE.Utilities;
+namespace ICE.Utilities.Cosmic_Helper;
 
 internal static class IceLogging
 {
@@ -36,10 +37,12 @@ internal static class IceLogging
     {
         var formattedMessage = FormatMessage(message, prefix);
         PluginLog.Verbose(formattedMessage);
+        LogSystem.Log(LogLevel.Verbose, message, prefix);
     }
 
     public static void Debug(string message, string prefix = null, bool debugOnly = false)
     {
+        LogSystem.Log(LogLevel.Debug, message, prefix);
         if (debugOnly)
         {
 #if DEBUG
@@ -56,6 +59,7 @@ internal static class IceLogging
 
     public static void Info(string message, string prefix = null, bool debugOnly = false)
     {
+        LogSystem.Log(LogLevel.Info, message, prefix);
         if (debugOnly)
         {
 #if DEBUG
@@ -72,6 +76,7 @@ internal static class IceLogging
 
     public static void ChatInfo(string s, string prefix = null)
     {
+        LogSystem.Log(LogLevel.Info, s, prefix);
         if (prefix == null)
         {
             if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
@@ -92,6 +97,7 @@ internal static class IceLogging
 
     public static void ChatError(string s, string prefix = null)
     {
+        LogSystem.Log(LogLevel.Error, s, prefix);
         if (prefix == null)
         {
             if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
@@ -112,19 +118,92 @@ internal static class IceLogging
 
     public static void Warning(string message, string prefix = null)
     {
+        LogSystem.Log(LogLevel.Warning, message, prefix);
         var formattedMessage = FormatMessage(message, prefix);
         PluginLog.Warning(formattedMessage);
     }
 
     public static void Error(string message, string prefix = null)
     {
+        LogSystem.Log(LogLevel.Error, message, prefix);
         var formattedMessage = FormatMessage(message, prefix);
         PluginLog.Error(formattedMessage);
     }
 
     public static void Fatal(string message, string prefix = null)
     {
+        LogSystem.Log(LogLevel.Verbose, message, prefix);
         var formattedMessage = FormatMessage(message, prefix);
         PluginLog.Fatal(formattedMessage);
+    }
+
+    public enum LogLevel
+    {
+        Verbose,
+        Debug,
+        Info,
+        Warning,
+        Error
+    }
+
+    public class LogEntry
+    {
+        public DateTime Timestamp { get; set; }
+        public LogLevel Level { get; set; }
+        public string Message { get; set; }
+        public string? Category { get; set; } // Optional: for filtering by system/feature
+
+        public LogEntry(LogLevel level, string message, string? category = null)
+        {
+            Timestamp = DateTime.Now;
+            Level = level;
+            Message = message;
+            Category = category;
+        }
+    }
+
+    public static class LogSystem
+    {
+        private static List<LogEntry> logs = new();
+        private static int maxLogCount = 1000; // Prevent memory bloat
+
+        public static IReadOnlyList<LogEntry> Logs => logs.AsReadOnly();
+
+        public static void Log(LogLevel level, string message, string? category = null)
+        {
+            logs.Add(new LogEntry(level, message, category));
+
+            // Keep only recent logs
+            if (logs.Count > maxLogCount)
+            {
+                logs.RemoveAt(0);
+            }
+        }
+
+        public static void Verbose(string message, string? category = null) => Log(LogLevel.Verbose, message, category);
+
+        public static void Debug(string message, string? category = null)
+            => Log(LogLevel.Debug, message, category);
+
+        public static void Info(string message, string? category = null)
+            => Log(LogLevel.Info, message, category);
+
+        public static void Warning(string message, string? category = null)
+            => Log(LogLevel.Warning, message, category);
+
+        public static void Error(string message, string? category = null)
+            => Log(LogLevel.Error, message, category);
+
+        public static void Clear() => logs.Clear();
+
+        public static void CopyToClipboard()
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var log in logs)
+            {
+                sb.AppendLine($"[{log.Timestamp:yyyy-MM-dd HH:mm:ss}] [{log.Level}] {(log.Category != null ? $"[{log.Category}] " : "")}{log.Message}");
+            }
+            ImGui.SetClipboardText(sb.ToString());
+        }
     }
 }

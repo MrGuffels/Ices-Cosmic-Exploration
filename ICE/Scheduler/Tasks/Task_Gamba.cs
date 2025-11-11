@@ -1,5 +1,6 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -148,7 +149,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Debug($"Pathing to: {npcEntry.Name}");
 
-                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.BoxCorner1.X, npcEntry.BoxCorner2.X, npcEntry.BoxCorner1.Y, npcEntry.BoxCorner2.Y, npcEntry.NpcLocation.Y);
+                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
                         P.Navmesh.PathfindAndMoveTo(randomPoint, false);
                     }
                 }
@@ -158,10 +159,15 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? TalkToGambaNpc()
         {
-            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
+            if (GenericHelpers.TryGetAddonMaster<SelectString>("SelectString", out var selectString) && selectString.IsAddonReady)
             {
-                IceLogging.Info("Talking has been commenced! Time to continue onto actually gambling our life away");
+                IceLogging.Info("We've gotten to selecting the npc dialog (woo!). Selecting gamba");
                 return true;
+            }
+            else if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Closing Talk Window", 250))
+                    talk.Click();
             }
             else
             {
@@ -179,12 +185,7 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? SelectGamba()
         {
-            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
-            {
-                if (EzThrottler.Throttle("Closing Talk Window", 250))
-                    talk.Click();
-            }
-            else if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var iconString) && iconString.IsAddonReady)
+            if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var iconString) && iconString.IsAddonReady)
             {
                 if (EzThrottler.Throttle("Selecting Materia Selection"))
                 {
@@ -291,7 +292,6 @@ namespace ICE.Scheduler.Tasks
             }
 
         }
-
         private static unsafe bool HasEnoughCredits()
         {
             uint[] currencies = [45691, 48146, 48147, 48148];
@@ -302,7 +302,6 @@ namespace ICE.Scheduler.Tasks
             PlayerHelper.GetItemCount(itemId, out var credits);
             return credits >= 1000;
         }
-
         private static bool? CloseTalk()
         {
             if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
@@ -316,19 +315,24 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
         }
-
         public static unsafe void SelectWheelLeft(WKSLottery gamba)
         {
             gamba.WheelLeftButton->Flags = 327936U; // Checked, Enabled, Selected
             gamba.WheelRightButton->Flags = 65792U; // Not Checked, Enabled, Not Selected
             IceLogging.Debug($"[Gamba] Selecting Left Wheel");
         }
-
         public static unsafe void SelectWheelRight(WKSLottery gamba)
         {
             gamba.WheelLeftButton->Flags = 65792U; // Not Checked, Enabled, Not Selected
             gamba.WheelRightButton->Flags = 327936U; // Checked, Enabled, Selected
             IceLogging.Debug($"[Gamba] Selecting Right Wheel");
+        }
+        public static bool BigBangGamba()
+        {
+            // Big Bang Tickets are earned from doing the fates... and this kind fucks with things? 
+            // Name of the item is "Bing Bang Fortune (Planet Name)
+
+            return false;
         }
     }
 }

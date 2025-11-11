@@ -1,4 +1,5 @@
 ﻿using ECommons.GameHelpers;
+using ICE.Utilities.Cosmic_Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Debug($"Pathing to: {npcEntry.Name}");
 
-                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.BoxCorner1.X, npcEntry.BoxCorner2.X, npcEntry.BoxCorner1.Y, npcEntry.BoxCorner2.Y, npcEntry.NpcLocation.Y);
+                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
                         P.Navmesh.PathfindAndMoveTo(randomPoint, false);
                     }
                 }

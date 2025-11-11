@@ -9,6 +9,7 @@ using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 
 namespace ICE.Ui
 {
@@ -31,69 +32,118 @@ namespace ICE.Ui
         {
             ImGui.Text($"Current state: " + SchedulerMain.State.ToString());
 #if DEBUG
-            ImGui.Text($"Current Collectable State: {Mission_Settings.CollectableStep}");
-            ImGui.Text($"Current Node Count: {Mission_Settings.nodeTotal}");
+            if (C.ShowDebugGatherInfo)
+            {
+                ImGui.Text($"Current Collectable State: {Mission_Settings.CollectableStep}");
+                ImGui.Text($"Current Node Count: {Mission_Settings.nodeTotal}");
+            }
 #endif
 
             ImGuiHelpers.ScaledDummy(2);
             ImGui.Separator();
             ImGuiHelpers.ScaledDummy(2);
 
-            (string currentWeather, string nextWeather, string nextWeatherTime) = WeatherForecastHandler.GetNextWeather();
+            (string currentWeather, uint currentWeatherId, string nextWeather, uint nextWeatherId, string nextWeatherTime) = WeatherForecastHandler.GetNextWeather();
 
             if (currentWeather != null)
             {
-                ImGui.Text($"Weather: {currentWeather} -> {nextWeather} in [{nextWeatherTime}]");
-            }
-
-            (var currentTimedBonus, var nextTimedBonus) = PlayerHandlers.GetTimedJob();
-            if (currentTimedBonus.Length == 0)
-            {
-                ImGui.Text($"Timed Mission(s): None -> {string.Join(", ", nextTimedBonus.Value)} [{nextTimedBonus.Key.start:D2}:00]");
-            }
-            else
-            {
-                ImGui.Text($"Timed Mission(s): {string.Join(", ", currentTimedBonus)} -> {string.Join(", ", nextTimedBonus.Value)} [{nextTimedBonus.Key.start:D2}:00]");
-            }
-
-            /* Temporarily Disabling this until I can figure out wtf is causing it to crash on non-english clients *-sighs-*
-            (string type, var locations) = AnnouncementHandlers.CheckForRedAlert();
-            if (type != null && locations != null)
-            {
-                ImGui.Text($"[Red Alert] {CultureInfo.CurrentCulture.TextInfo.ToTitleCase(type)}");
-                ImGui.Spacing();
-                for (int i = 0; i < locations.Length; i++)
+                ImGui.AlignTextToFramePadding();
+                ImGui.Text("Weather Forcast:");
+                Svc.Texture.TryGetFromGameIcon(currentWeatherId, out var currentWeatherIcon);
+                ImGui.SameLine(0, 2);
+                ImGui.Image(currentWeatherIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
+                if (ImGui.IsItemHovered())
                 {
-                    if (locations.Length > 0)
-                    {
-                        ImGui.Text($"Variant [{i + 1}]");
-                        ImGui.SameLine();
-                    }
+                    ImGui.BeginTooltip();
+                    ImGui.Text($"{currentWeather}");
+                    ImGui.EndTooltip();
+                }
+                ImGui.SameLine(0, 2);
+                ImGui.AlignTextToFramePadding();
+                ImGuiEx.Icon(FontAwesomeIcon.LongArrowAltRight);
+                Svc.Texture.TryGetFromGameIcon(nextWeatherId, out var nextWeatherIcon);
+                ImGui.SameLine(0, 2);
+                ImGui.Image(nextWeatherIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text($"{nextWeather}");
+                    ImGui.EndTooltip();
+                }
+                ImGui.SameLine(0, 2);
+                ImGui.AlignTextToFramePadding();
+                ImGui.Text($"Next in: {nextWeatherTime}");
+            }
 
-                    (string job, uint territoryId, float x, float y) = locations[i].first;
-                    if (ImGui.Button($"{job}"))
-                    {
-                        Utils.SetFlagForNPC(territoryId, x, y);
-                    }
-
-                    ImGui.SameLine();
-
-                    (job, territoryId, x, y) = locations[i].second;
-                    if (ImGui.Button($"{job}"))
-                    {
-                        Utils.SetFlagForNPC(territoryId, x, y);
-                    }
-                    ImGui.Spacing();
+            ImGui.AlignTextToFramePadding();
+            ImGui.Text($"Timed Mission(s): ");
+            var currentList = PlayerHandlers.GetMissionsForHour().currentMissions;
+            var nextList = PlayerHandlers.GetMissionsForHour().nextMissions;
+            foreach (var mission in currentList)
+            {
+                ImGui.SameLine(0, 2);
+                var jobIcon = CosmicHelper.JobIconDict[mission.ClassId];
+                var imageSize = new Vector2(23, 23);
+                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text($"[{mission.MissionId}]");
+                    ImGui.SameLine(0, 2);
+                    ImGui.Text($"{CosmicHelper.SheetMissionDict[mission.MissionId].Name}");
+                    ImGui.EndTooltip();
                 }
             }
-
-            ImGuiHelpers.ScaledDummy(2);
-            ImGui.Separator();
-
-            */
-            ImGuiHelpers.ScaledDummy(2);
-
-            DrawScore();
+            ImGui.SameLine(0, 2);
+            ImGui.AlignTextToFramePadding();
+            ImGuiEx.Icon(FontAwesomeIcon.LongArrowAltRight);
+            ImGui.SameLine();
+            foreach (var mission in nextList)
+            {
+                ImGui.SameLine(0, 2);
+                var jobIcon = CosmicHelper.JobIconDict[mission.ClassId];
+                var imageSize = new Vector2(23, 23);
+                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text($"[{mission.MissionId}]");
+                    ImGui.SameLine(0, 2);
+                    ImGui.Text($"{CosmicHelper.SheetMissionDict[mission.MissionId].Name}");
+                    ImGui.EndTooltip();
+                }
+            }
+            var jobId = Player.JobId;
+            if (CosmicHelper.CrafterJobList.Contains(jobId) || CosmicHelper.GatheringJobList.Contains(jobId))
+            {
+                var jobIcon = CosmicHelper.JobIconDict[jobId];
+                var imageSize = new Vector2(23, 23);
+                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                ImGui.SameLine();
+                ImGui.AlignTextToFramePadding();
+                Relic_XP.DrawScoreBar(new Vector2(340, 10), false);
+            }
+            if (C.ShowTotalScore)
+            {
+                (uint TotalScore, uint TotalComplete, uint MaxScore, Dictionary<uint, uint> ClassInfo) = Relic_XP.GetTotalScores();
+                var ScoreBarSize = new Vector2(340, 10);
+                Relic_XP.DrawXPBar($"Total Score | Completed: [{TotalComplete} / 11]", TotalScore, MaxScore, ScoreBarSize);
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    foreach (var job in ClassInfo)
+                    {
+                        var jobIdInfo = job.Key;
+                        var jobScore = job.Value;
+                        var jobImage = CosmicHelper.JobIconDict[jobIdInfo];
+                        ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(23, 23));
+                        ImGui.SameLine();
+                        ImGui.AlignTextToFramePadding();
+                        ImGui.Text($"Score: {jobScore:N0}");
+                    }
+                    ImGui.EndTooltip();
+                }
+            }
 
             ImGuiHelpers.ScaledDummy(2);
             ImGui.Separator();
@@ -139,7 +189,10 @@ namespace ICE.Ui
 
                 if (CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId))
                 {
-                    Relic_XP.DrawRelicXP((uint)currentJobId);
+                    if (ImGui.CollapsingHeader("Relic Tool XP"))
+                    {
+                        Relic_XP.DrawRelicXP((uint)currentJobId);
+                    }
                 }
             }
         }

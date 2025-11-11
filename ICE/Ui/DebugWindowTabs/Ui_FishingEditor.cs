@@ -2,10 +2,11 @@
 using ECommons.Automation;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
 using System.Text;
-using static ICE.Utilities.GatheringUtil;
+using static ICE.Utilities.GatheringHelper.GatheringUtil;
 
 namespace ICE.Ui.DebugWindowTabs
 {

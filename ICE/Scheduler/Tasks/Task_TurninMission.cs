@@ -5,6 +5,8 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Sounds;
 using ICE.Ui;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;

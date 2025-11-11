@@ -61,6 +61,13 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
 
+            bool showTotalScore = C.ShowTotalScore;
+            if (ImGui.Checkbox("Show Total Score", ref showTotalScore))
+            {
+                C.ShowTotalScore = showTotalScore;
+                C.Save();
+            }
+
             ImGui.Dummy(new(0, 2));
 
             ImGui.Separator();

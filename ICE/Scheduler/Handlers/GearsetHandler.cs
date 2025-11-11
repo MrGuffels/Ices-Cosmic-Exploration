@@ -1,5 +1,6 @@
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Handlers

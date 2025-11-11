@@ -1,14 +1,5 @@
-﻿using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using ICE.Ui.DebugWindowTabs;
-using ICE.Ui.Waypoint_Manager;
-using Lumina.Excel.Sheets;
-using System.Collections.Generic;
-using System.IO;
-using YamlDotNet.Serialization;
-using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Utilities.CosmicHelper;
+﻿using ICE.Ui.DebugWindowTabs;
+using ICE.Ui.MainUi.HelpFolder;
 
 namespace ICE.Ui;
 
@@ -54,6 +45,7 @@ internal class DebugWindow : Window
         "Ui: Fishing Hole Editor",
         "Ui: Fishing Preset Editor",
         "Ui: Gather Editor",
+        "Ui: Log Viewer",
     
         // Non-labeled Elements
         "Player Info",
@@ -62,7 +54,11 @@ internal class DebugWindow : Window
         "Map Test",
         "Navmesh Testing",
         "Relic Info",
-        "TaskManager Testing"
+        "TaskManager Testing",
+        "NPC Box Viewer",
+
+        // Sheet Viewer Info
+        "Sheet: Mission Rewards"
     ];
 
     int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
@@ -116,15 +112,19 @@ internal class DebugWindow : Window
                 case 13: Ui_FishingEditor.Draw(); break;
                 case 14: Ui_FishingMissionEditor.Draw(); break;
                 case 15: Ui_GatherRoute_Editor.Draw(); break;
+                case 16: helpSelect_Logs.Draw_Debug(); break;
 
                 // Non-labeled Elements (14-21)
-                case 16: Ui_PlayerInfo.Draw(); break;
-                case 17: Ui_TestButtons.Draw(); break;
-                case 18: Ui_IPCTesting.Draw(); break;
-                case 19: Ui_MapTesting.Draw(); break;
-                case 20: Ui_NavmeshTesting.Draw(); break;
-                case 21: Ui_RelicInfo.Draw(); break;
-                case 22: Ui_TaskManagerInfo.Draw(); break;
+                case 17: Ui_PlayerInfo.Draw(); break;
+                case 18: Ui_TestButtons.Draw(); break;
+                case 19: Ui_IPCTesting.Draw(); break;
+                case 20: Ui_MapTesting.Draw(); break;
+                case 21: Ui_NavmeshTesting.Draw(); break;
+                case 22: Ui_RelicInfo.Draw(); break;
+                case 23: Ui_TaskManagerInfo.Draw(); break;
+                case 24: Ui_NpcViewer.Draw(); break;
+
+                case 25: Sheet_MissionRewards.Draw(); break;
 
                 default: ImGui.Text("Unknown Debug View"); break;
             }

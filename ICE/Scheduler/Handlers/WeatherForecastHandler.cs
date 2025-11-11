@@ -61,7 +61,7 @@ namespace ICE.Scheduler.Handlers
             return currWeather.RowId;
         }
 
-        internal static unsafe (string, string, string) GetNextWeather()
+        internal static unsafe (string, uint, string, uint, string) GetNextWeather()
         {
             if (!PlayerHelper.IsInCosmicZone()) return default;
             if (weathers.Count == 0) return default;
@@ -69,7 +69,7 @@ namespace ICE.Scheduler.Handlers
             var currentWeather = weathers[0];
             var nextWeather = weathers[1];
 
-            return (currentWeather.Name, nextWeather.Name, FormatForecastTime(nextWeather.Time));
+            return (currentWeather.Name, currentWeather.IconId, nextWeather.Name, nextWeather.IconId, FormatForecastTime(nextWeather.Time));
         }
 
         internal static unsafe void GetForecast()

@@ -145,6 +145,16 @@ public class MissionTimer
 
             return completionsPerHour * scorePerCompletion;
         }
+        public static double CalculateScorePerMinute(double averageTimeSeconds, uint baseScore, double multiplier)
+        {
+            if (averageTimeSeconds <= 0) return 0;
+
+            double hoursPerCompletion = averageTimeSeconds / 60.0;
+            double completionsPerHour = 1.0 / hoursPerCompletion;
+            double scorePerCompletion = baseScore * multiplier;
+
+            return completionsPerHour * scorePerCompletion;
+        }
 
         public static double CalculateActualScorePerMinute(List<TurninData> turninRecords, uint baseScore)
         {

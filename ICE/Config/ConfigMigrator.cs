@@ -1,5 +1,7 @@
 ﻿using ECommons;
 using ICE.Ui.SettingTabs;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -324,6 +326,19 @@ namespace ICE.Config
                 C.CosmoShopping.Clear();
                 C.CosmoShoppingOrder.Clear();
                 C.ConfigVersion = 7;
+                C.Save();
+            }
+            if (C.ConfigVersion == 7)
+            {
+                List<uint> NewFishPreset = new() { 1004, 1005 };
+                foreach (var mission in NewFishPreset)
+                {
+                    if (C.MissionConfig.TryGetValue(mission, out var config))
+                    {
+                        config.Use_BuildinPreset = true;
+                    }
+                }
+                C.ConfigVersion = 8;
                 C.Save();
             }
         }

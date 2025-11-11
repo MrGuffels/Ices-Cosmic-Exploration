@@ -3,8 +3,10 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ICE.Ui.DebugWindowTabs;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Utilities.GatheringUtil;
+using static ICE.Utilities.GatheringHelper.GatheringUtil;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -136,8 +138,10 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !PlayerHelper.HasStatusId(805))
                     {
+
+
                         if (EzThrottler.Throttle("Attempting to turn on collectability"))
-                            ActionManager.Instance()->UseAction(ActionType.Ability, 4101);
+                            Svc.Commands.ProcessCommand("/ahstart");
                         return false;
                     }
 

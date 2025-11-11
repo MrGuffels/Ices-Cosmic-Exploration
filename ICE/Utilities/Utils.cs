@@ -9,6 +9,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using ICE.Utilities.Cosmic_Helper;
 using SharpDX.Direct3D11;
 using System;
 

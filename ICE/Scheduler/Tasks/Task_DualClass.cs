@@ -4,6 +4,8 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Config;
 using ICE.Ui.DebugWindowTabs;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;

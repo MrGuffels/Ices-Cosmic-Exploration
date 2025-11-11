@@ -1,5 +1,7 @@
 ﻿using ICE.Config;
 using ICE.Utilities.Cosmic;
+using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,8 +92,6 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Debug("Hmm... somehow we got in this state. And we shouldn't be? Returning back to the grab mission state");
                 SchedulerMain.State = IceState.GrabMission;
             }
-
-
 
             return true;
         }

@@ -26,35 +26,6 @@ namespace ICE.Ui.SettingTabs
                 .Select((m, i) => new { Index = i, Name = m.name, Priority = m.get() })
                 .OrderBy(m => m.Priority)
                 .ToList();
-            /*
-            ImGuiHelpers.ScaledDummy(5, 0);
-            ImGui.SameLine();
-            if (ImGui.CollapsingHeader("Provision Mission Priority"))
-            {
-                for (int i = 0; i < sorted.Count; i++)
-                {
-                    var item = sorted[i];
-                    ImGuiHelpers.ScaledDummy(5, 0);
-                    ImGui.SameLine();
-                    ImGui.Selectable(item.Name);
-                    if (ImGui.IsItemActive() && !ImGui.IsItemHovered())
-                    {
-                        int nextIndex = i + (ImGui.GetMouseDragDelta(0).Y < 0f ? -1 : 1);
-                        if (nextIndex >= 0 && nextIndex < sorted.Count)
-                        {
-                            // Swap the priority values
-                            var otherItem = sorted[nextIndex];
-
-                            // Swap their priority values via the original setters
-                            byte temp = missionMap[item.Index].get();
-                            missionMap[item.Index].set(missionMap[otherItem.Index].get());
-                            missionMap[otherItem.Index].set(temp);
-                            ImGui.ResetMouseDragDelta();
-                        }
-                    }
-                }
-            }
-            */
 
             if (ImGui.Button("Get Sinus Forecast"))
             {
@@ -82,6 +53,12 @@ namespace ICE.Ui.SettingTabs
                 {
                     WeatherForecastHandler.GetForecast();
                 }
+            }
+            bool gatherDebug = C.ShowDebugGatherInfo;
+            if (ImGui.Checkbox("Show Gather Debug Info", ref gatherDebug))
+            {
+                C.ShowDebugGatherInfo = gatherDebug;
+                C.Save();
             }
         }
     }

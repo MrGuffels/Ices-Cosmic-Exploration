@@ -1,15 +1,9 @@
-﻿using Dalamud.Interface.Internal.Windows.Settings;
-using Dalamud.Interface.Utility;
+﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
-using ICE.Scheduler.Tasks.OldTask;
 using ICE.Ui.SettingTabs;
 using ICE.Ui.Waypoint_Manager;
-using Lumina.Excel.Sheets;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Action = System.Action;
 
 namespace ICE.Ui;
 
@@ -124,10 +118,5 @@ internal class SettingsWindowV2 : Window
         }
 
     }
-
-#if DEBUG
-
-
-#endif
 
 }

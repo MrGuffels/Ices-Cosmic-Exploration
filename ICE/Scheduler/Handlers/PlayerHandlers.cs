@@ -1,4 +1,5 @@
 using Dalamud.Game.ClientState.Conditions;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -9,39 +10,156 @@ namespace ICE.Scheduler.Handlers;
 
 internal static unsafe class PlayerHandlers
 {
-    public static readonly Dictionary<Time, string[]> stage9TimeMap = new()
+    public class TimedInfo
     {
-        { (0, 1), new[] { "CRP", "ALC", "GSM" } },
-        { (2, 3), new[] { "MIN" } },
-        { (4, 5), new[] { "BSM", "CUL", "LTW" } },
-        { (6, 7), new[] { "FSH" } },
-        { (8, 9), new[] { "ARM", "WVR",  } },
-        { (10, 11), new[] { "BTN" } },
-        { (12, 13), new[] { "GSM", "CRP", "ALC" } },
-        { (14, 15), new[] { "MIN" } },
-        { (16, 17), new[] { "LTW", "BSM", "CUL" } },
-        { (18, 19), new[] { "FSH" } },
-        { (20, 21), new[] { "WVR", "ARM" } },
-        { (22, 23), new[] { "BTN" } }
+        public uint ClassId { get; set; }
+        public uint MissionId { get; set; }
+    }
+
+    public static readonly Dictionary<int, List<TimedInfo>> SinusMapV2 = new()
+    {
+        [0] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 40 },
+            new TimedInfo { ClassId = 11, MissionId = 178 },
+            new TimedInfo { ClassId = 14, MissionId = 310 }
+        },
+        [2] = new()
+        {
+            new TimedInfo { ClassId = 16, MissionId = 400 }
+        },
+        [4] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 85 },
+            new TimedInfo { ClassId = 12, MissionId = 223 },
+            new TimedInfo { ClassId = 15, MissionId = 355 }
+        },
+        [6] = new()
+        {
+            new TimedInfo { ClassId = 18, MissionId = 490 }
+        },
+        [8] = new()
+        {
+            new TimedInfo { ClassId = 10, MissionId = 130 },
+            new TimedInfo { ClassId = 13, MissionId = 268 }
+        },
+        [10] = new()
+        {
+            new TimedInfo { ClassId = 17, MissionId = 445 }
+        },
+        [12] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 43 },
+            new TimedInfo { ClassId = 11, MissionId = 175 },
+            new TimedInfo { ClassId = 14, MissionId = 313 }
+        },
+        [14] = new()
+        {
+            new TimedInfo { ClassId = 16, MissionId = 403 }
+        },
+        [16] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 88 },
+            new TimedInfo { ClassId = 12, MissionId = 220 },
+            new TimedInfo { ClassId = 15, MissionId = 358 }
+        },
+        [18] = new()
+        {
+            new TimedInfo { ClassId = 18, MissionId = 493 }
+        },
+        [20] = new()
+        {
+            new TimedInfo { ClassId = 10, MissionId = 133 },
+            new TimedInfo { ClassId = 13, MissionId = 265 }
+        },
+        [22] = new()
+        {
+            new TimedInfo { ClassId = 17, MissionId = 448 }
+        }
     };
 
-    public static readonly Dictionary<Time, string[]> PhaennaMap = new()
+    public static readonly Dictionary<int, List<TimedInfo>> PhaennaMapV2 = new()
     {
-        { (0, 2), new [] { "CRP", "LTW", "ALC", "BTN"} },
-        { (2, 4), new [] { "MIN"} },
-        { (0, 4), new [] { "ARM" } },
-        { (4, 6), new [] { "BSM", "LTW", "WVR", "CUL" } },
-        { (4, 8), new [] { "GSM", "ALC", "FSH" } },
-        { (6, 8), new [] { "FSH"} },
-        { (8, 10), new [] { "CRP", "ARM", "WVR", "ALC", "FSH" } },
-        { (8, 12), new [] { "LTW", "CUL", "BTN"} },
-        { (10, 12), new [] { "BTN"} },
-        { (12, 14), new [] { "BSM", "GSM", "CUL" } },
-        { (12, 16), new [] { "WVR" } },
-        { (16, 18), new [] { "ARM", "MIN"} },
-        { (16, 20), new [] { "CRP" } },
-        { (20, 22), new [] { "GSM" } },
-        { (20, 24), new [] { "BSM" } },
+        [0] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 581 },
+            new TimedInfo { ClassId = 10, MissionId = 658 },
+            new TimedInfo { ClassId = 12, MissionId = 752 },
+            new TimedInfo { ClassId = 14, MissionId = 833 },
+            new TimedInfo { ClassId = 17, MissionId = 962 }
+        },
+        [2] = new()
+        {
+            new TimedInfo { ClassId = 10, MissionId = 658 },  // Continues from 00:00
+            new TimedInfo { ClassId = 16, MissionId = 910 }
+        },
+        [4] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 623 },
+            new TimedInfo { ClassId = 11, MissionId = 700 },
+            new TimedInfo { ClassId = 13, MissionId = 794 },
+            new TimedInfo { ClassId = 15, MissionId = 875 },
+            new TimedInfo { ClassId = 18, MissionId = 994 }
+        },
+        [6] = new()
+        {
+            new TimedInfo { ClassId = 11, MissionId = 700 },  // Continues from 04:00
+            new TimedInfo { ClassId = 18, MissionId = 994 }   // Continues from 04:00
+        },
+        [8] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 584 },
+            new TimedInfo { ClassId = 10, MissionId = 665 },
+            new TimedInfo { ClassId = 12, MissionId = 742 },
+            new TimedInfo { ClassId = 14, MissionId = 836 },
+            new TimedInfo { ClassId = 18, MissionId = 1001 }
+        },
+        [10] = new()
+        {
+            new TimedInfo { ClassId = 12, MissionId = 742 },  // Continues from 08:00
+            new TimedInfo { ClassId = 17, MissionId = 952 }
+        },
+        [12] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 626 },
+            new TimedInfo { ClassId = 11, MissionId = 707 },
+            new TimedInfo { ClassId = 13, MissionId = 784 },
+            new TimedInfo { ClassId = 15, MissionId = 878 },
+            new TimedInfo { ClassId = 16, MissionId = 891 }
+        },
+        [14] = new()
+        {
+            new TimedInfo { ClassId = 13, MissionId = 784 },  // Continues from 12:00
+            new TimedInfo { ClassId = 16, MissionId = 891 }   // Continues from 12:00
+        },
+        [16] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 574 },
+            new TimedInfo { ClassId = 10, MissionId = 668 },
+            new TimedInfo { ClassId = 12, MissionId = 749 },
+            new TimedInfo { ClassId = 14, MissionId = 826 },
+            new TimedInfo { ClassId = 16, MissionId = 920 }
+        },
+        [18] = new()
+        {
+            new TimedInfo { ClassId = 8, MissionId = 574 },   // Continues from 16:00
+            new TimedInfo { ClassId = 14, MissionId = 826 },  // Continues from 16:00
+            new TimedInfo { ClassId = 18, MissionId = 1004 }
+        },
+        [20] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 616 },
+            new TimedInfo { ClassId = 11, MissionId = 710 },
+            new TimedInfo { ClassId = 13, MissionId = 791 },
+            new TimedInfo { ClassId = 15, MissionId = 868 },
+            new TimedInfo { ClassId = 17, MissionId = 933 }
+        },
+        [22] = new()
+        {
+            new TimedInfo { ClassId = 9, MissionId = 616 },   // Continues from 20:00
+            new TimedInfo { ClassId = 15, MissionId = 868 },  // Continues from 20:00
+            new TimedInfo { ClassId = 17, MissionId = 933 }   // Continues from 20:00
+        }
     };
 
     private static readonly uint stellarSprintID = 4398;
@@ -96,6 +214,10 @@ internal static unsafe class PlayerHandlers
         if (isSprintReady) am->UseAction(ActionType.GeneralAction, 4);
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <returns>Hours[long], Minutes[long]</returns>
     private static (long, long) GetEorzeaTime()
     {
         var eorzeaTime = Framework.Instance()->ClientTime.EorzeaTime;
@@ -104,38 +226,37 @@ internal static unsafe class PlayerHandlers
         return (hours, minutes);
     }
 
-    internal static (string[], KeyValuePair<(int start, int end), string[]>) GetTimedJob()
+    public static (List<TimedInfo> currentMissions, List<TimedInfo> nextMissions) GetMissionsForHour()
     {
-        var currentTimeBonuses = new List<string>();
-        KeyValuePair<(int start, int end), string[]> nextTimeBonus = default;
-        Dictionary<Time, string[]> currentTimeMap = new();
+        var EzTime = GetEorzeaTime();
+        var currentHour = (int)EzTime.Item1; // Current hour
+        var territoryId = Player.Territory;
 
-        if (PlayerHelper.IsInSinusArdorum()) currentTimeMap = stage9TimeMap;
-        if (PlayerHelper.IsInPhaenna()) currentTimeMap = PhaennaMap;
-
-        (long hours, _) = GetEorzeaTime();
-
-        // Find ALL current active bonuses and flatten them
-        var currentTimes = currentTimeMap.Where(time => hours >= time.Key.start && hours <= time.Key.end);
-        foreach (var timeBonus in currentTimes)
+        // Select the appropriate map based on territoryId
+        Dictionary<int, List<TimedInfo>> selectedMap = territoryId switch
         {
-            currentTimeBonuses.AddRange(timeBonus.Value);
-        }
+            // Add your actual territory IDs here
+            1291 => PhaennaMapV2,
+            1237 => SinusMapV2,
+            _ => SinusMapV2       // Default to Phaenna
+        };
 
-        // Remove duplicates if needed
-        var uniqueCurrentBonuses = currentTimeBonuses.Distinct().ToArray();
+        // Find which bracket the current hour falls into
+        int currentBracket = (currentHour / 2) * 2;
 
-        // Find next time bonus
-        var nextTime = currentTimeMap
-            .Where(time => hours < time.Key.start)
-            .OrderBy(time => time.Key.start)
-            .FirstOrDefault();
+        // Calculate next bracket (wraps around at 24)
+        int nextBracket = (currentBracket + 2) % 24;
 
-        if (!nextTime.Equals(default(KeyValuePair<(int, int), string[]>)))
-            nextTimeBonus = nextTime;
-        else
-            nextTimeBonus = currentTimeMap.OrderBy(time => time.Key.start).First();
+        // Get the missions for current bracket
+        var currentMissions = selectedMap.ContainsKey(currentBracket)
+            ? selectedMap[currentBracket]
+            : new List<TimedInfo>();
 
-        return (uniqueCurrentBonuses, nextTimeBonus);
+        // Get the missions for next bracket
+        var nextMissions = selectedMap.ContainsKey(nextBracket)
+            ? selectedMap[nextBracket]
+            : new List<TimedInfo>();
+
+        return (currentMissions, nextMissions);
     }
 }

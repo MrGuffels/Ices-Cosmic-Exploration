@@ -13,7 +13,7 @@ namespace ICE.Ui
             public uint NeededXP { get; set; }
             public uint MaxXP { get; set; }
         }
-        public static unsafe void DrawRelicXP(uint selectedJob, bool useSelectedJob = false)
+        public static unsafe void DrawRelicXP(uint selectedJob)
         {
             var wksManager = WKSManager.Instance();
             if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
@@ -54,47 +54,47 @@ namespace ICE.Ui
             }
 
             ImGui.Text($"Stage: {stage}");
-
-            if (stage != 14)
+            foreach (var type in XPTable)
             {
-                foreach (var type in XPTable)
-                {
-                    uint current = type.Value.CurrentXP;
-                    uint needed = type.Value.NeededXP;
-                    uint max = type.Value.MaxXP;
-                    float windowSize = ImGui.GetWindowSize().X - 20;
-                    Vector2 size = new Vector2(windowSize, 10);
-
-                    string overlay = $"ID: {current} / {max}";
-                    string xpType = "";
-                    if (type.Key == 1)
-                        xpType = "I";
-                    else if (type.Key == 2)
-                        xpType = "II";
-                    else if (type.Key == 3)
-                        xpType = "III";
-                    else if (type.Key == 4)
-                        xpType = "IV";
-                    else if (type.Key == 5)
-                        xpType = "V";
-                    else
-                        xpType = "???";
-
-                    DrawXPBar($"Type: {xpType}", current, needed, size, max);
-                }
-            }
-            else
-            {
+                uint current = type.Value.CurrentXP;
+                uint needed = type.Value.NeededXP;
+                uint max = type.Value.MaxXP;
                 float windowSize = ImGui.GetWindowSize().X - 20;
                 Vector2 size = new Vector2(windowSize, 10);
 
-                var (classScore, cappedClassScore, totalScores, classId) = CosmicHelper.GetCosmicClassScores(useSelectedJob);
+                string overlay = $"ID: {current} / {max}";
+                string xpType = "";
+                if (type.Key == 1)
+                    xpType = "I";
+                else if (type.Key == 2)
+                    xpType = "II";
+                else if (type.Key == 3)
+                    xpType = "III";
+                else if (type.Key == 4)
+                    xpType = "IV";
+                else if (type.Key == 5)
+                    xpType = "V";
+                else
+                    xpType = "???";
 
-                DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
+                if (stage != 14)
+                {
+                    DrawXPBar($"Type: {xpType}", current, needed, size, max);
+                }
+                else
+                {
+                    DrawXPBar($"Type: {xpType}", current, max, size, max);
+                }
             }
         }
 
-        private static void DrawXPBar(string label, uint currentXP, uint neededXP, Vector2 size, uint maxXP = 0)
+        public static void DrawScoreBar(Vector2 size, bool useSelectedJob = false)
+        {
+            var (classScore, cappedClassScore, totalScores, classId) = CosmicHelper.GetCosmicClassScores(useSelectedJob);
+            DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
+        }
+
+        public static void DrawXPBar(string label, uint currentXP, uint neededXP, Vector2 size, uint maxXP = 0)
         {
             // Display text - keep showing current/needed unless neededXP is 0
             string displayText = (neededXP == 0)
@@ -203,6 +203,44 @@ namespace ICE.Ui
             }
 
             ImGui.Dummy(new Vector2(size.X, size.Y + 5));
+        }
+
+        public unsafe static (uint TotalScore, uint TotalComplete, uint MaxScore, Dictionary<uint, uint> ScoreInfo) GetTotalScores()
+        {
+            uint totalScore = 0;
+            uint totalComplete = 0;
+            uint maxScore = 5_500_000;
+            Dictionary<uint, uint> ClassInfo = new();
+            var wksManager = WKSManager.Instance();
+
+
+            foreach (var crafterJob in CosmicHelper.CrafterJobList)
+            {
+                uint classScore = 0;
+                var score = wksManager->Scores;
+                int jobId = (int)crafterJob;
+                classScore = (uint)score[jobId-8];
+                classScore = Math.Min(500_000, classScore);
+                if (classScore == 500_000)
+                    totalComplete += 1;
+                totalScore += classScore;
+                ClassInfo[crafterJob] = classScore;
+            }
+
+            foreach (var gatherJob in CosmicHelper.GatheringJobList)
+            {
+                uint classScore = 0;
+                var score = wksManager->Scores;
+                int jobId = (int)gatherJob;
+                classScore = (uint)score[jobId-8];
+                classScore = Math.Min(500_000, classScore);
+                if (classScore == 500_000)
+                    totalComplete += 1;
+                totalScore += classScore;
+                ClassInfo[gatherJob] = classScore;
+            }
+
+            return (totalScore, totalComplete, maxScore, ClassInfo);
         }
     }
 }

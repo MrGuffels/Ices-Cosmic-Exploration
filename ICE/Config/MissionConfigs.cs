@@ -46,6 +46,7 @@ namespace ICE.Config
 
         public bool ShowOverlay { get; set; } = false;
         public bool ShowSeconds { get; set; } = false;
+        public bool ShowTotalScore { get; set; } = true;
         public bool ShowExpBars { get; set; } = true;
 
         #endregion
@@ -77,6 +78,7 @@ namespace ICE.Config
             8, 9, 10, 11, 12, 13, 14, 15,  // Crafters: CRP, BSM, ARM, GSM, LTW, WVR, ALC, CUL
             16, 17, 18                     // Gatherers: MIN, BTN, FSH
         };
+        public bool AutoSelectMoon { get; set; } = true;
         public bool ShowSinusMissions { get; set; } = true;
         public bool ShowPhaennaMissions { get; set; } = true;
         public bool RemoveAfterGold { get; set; } = false;
@@ -154,6 +156,7 @@ namespace ICE.Config
         public float SoundVolume { get; set; } = 0.5f;
         public int TimeHistoryLimit { get; set; } = 100;
         public bool RemoveStellarStatus { get; set; } = false;
+        public bool ShowSPM { get; set; } = false;
 
         #endregion
 
@@ -177,7 +180,7 @@ namespace ICE.Config
 
         #endregion
 
-        #region
+        #region Shopping List
 
         public Dictionary<uint, CosmoShoppingList> CosmoShopping { get; set; } = new();
         public List<uint> CosmoShoppingOrder { get; set; } = new();
@@ -210,6 +213,7 @@ namespace ICE.Config
         public bool ShowDummyD { get; set; } = false;
 
         public bool DisablePathfindingToRedAlert { get; set; } = false;
+        public bool ShowDebugGatherInfo { get; set; } = false;
 
         #endregion
 
