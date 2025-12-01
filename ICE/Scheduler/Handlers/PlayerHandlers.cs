@@ -175,7 +175,8 @@ internal static unsafe class PlayerHandlers
 
     internal static unsafe void Tick()
     {
-        P.overlayWindow.IsOpen = C.ShowOverlay && PlayerHelper.IsInCosmicZone() && PlayerHelper.UsingSupportedJob();
+        if (!P.overlayWindow.IsOpen && PlayerHelper.IsInCosmicZone() && PlayerHelper.UsingSupportedJob() && C.ShowOverlay)
+            P.overlayWindow.IsOpen = true;
 
         if (C.MoonSprint 
          && PlayerHelper.IsInCosmicZone() 

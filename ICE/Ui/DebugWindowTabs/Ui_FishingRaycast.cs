@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
+using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -75,20 +76,83 @@ namespace ICE.Ui.DebugWindowTabs
 
             var position = player.Position;
             var angleStep = (2 * MathF.PI) / searchSteps;
+            var fishableAngles = new List<int>();
 
-            // Check all angles around the player
+            // Check all angles around the player and collect all valid angle indices
             for (int i = 0; i < searchSteps; i++)
             {
                 var angle = i * angleStep;
 
-                if (CheckFishableAtRotation(position, angle, out var hitPoint))
+                if (CheckFishableAtRotation(position, angle, out _))
                 {
-                    fishablePosition = hitPoint;
-                    return true;
+                    fishableAngles.Add(i);
                 }
             }
 
-            return false;
+            if (fishableAngles.Count == 0)
+                return false;
+
+            var groups = FindContiguousGroups(fishableAngles, searchSteps);
+            var largestGroup = groups.OrderByDescending(g => g.Count).First();
+
+            // Find the middle angle of the largest group
+            int middleAngleIndex;
+            if (largestGroup.Count % 2 == 1)
+            {
+                // Odd number: take the middle element
+                middleAngleIndex = largestGroup[largestGroup.Count / 2];
+            }
+            else
+            {
+                // Even number: take the average of the two middle elements
+                var mid1 = largestGroup[largestGroup.Count / 2 - 1];
+                var mid2 = largestGroup[largestGroup.Count / 2];
+                middleAngleIndex = (mid1 + mid2) / 2;
+            }
+
+            var targetAngle = middleAngleIndex * angleStep;
+            CheckFishableAtRotation(position, targetAngle, out fishablePosition);
+
+            return fishablePosition.HasValue;
+        }
+
+        // Find the largest contiguous group of fishable angles
+        // This is really in the case of if to the left/right of us there's a small pond where it wouldn't be viable. Best way I can describe this is if there was a crack to the left that seperated the pond a bit. It won't try to find the best fishing spot within that slim ass spot now.
+        private List<List<int>> FindContiguousGroups(List<int> angles, int maxSteps)
+        {
+            if (angles.Count == 0)
+                return new List<List<int>>();
+
+            var sorted = angles.OrderBy(a => a).ToList();
+            var groups = new List<List<int>>();
+            var currentGroup = new List<int> { sorted[0] };
+
+            for (int i = 1; i < sorted.Count; i++)
+            {
+                // Check if this angle is contiguous with the previous one
+                if (sorted[i] - sorted[i - 1] == 1)
+                {
+                    currentGroup.Add(sorted[i]);
+                }
+                else
+                {
+                    groups.Add(currentGroup);
+                    currentGroup = new List<int> { sorted[i] };
+                }
+            }
+            groups.Add(currentGroup);
+
+            // Handle wrap-around case: check if first and last groups are actually connected
+            if (groups.Count > 1 && sorted[0] == 0 && sorted[^1] == maxSteps - 1)
+            {
+                // Merge first and last groups
+                var merged = groups[^1].Concat(groups[0]).ToList();
+                groups.RemoveAt(groups.Count - 1);
+                groups.RemoveAt(0);
+                groups.Add(merged);
+            }
+
+            return groups;
         }
 
         /// <summary>

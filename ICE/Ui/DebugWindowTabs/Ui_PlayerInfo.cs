@@ -1,4 +1,6 @@
 ﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using System.Collections.Generic;
 using System.Reflection;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
@@ -48,6 +50,33 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 if (PlayerHelper.GetItemCount(item.Id, out var count) && count > 0)
                     ImGui.Text($"{item.Name} | {item.Id}");
+            }
+
+            ClassInfo();
+        }
+
+        private static unsafe void ClassInfo()
+        {
+            ImGui.Text("Manipulation Check");
+            Dictionary<uint, uint> ManipClassInfo = new()
+            {
+                [8] = 4574,
+                [9] = 4575,
+                [10] = 4576,
+                [11] = 4577,
+                [12] = 4578,
+                [13] = 4579,
+                [14] = 4580,
+                [15] = 4581,
+            };
+
+            foreach (var job in ManipClassInfo)
+            {
+                var isUnlocked = ActionManager.Instance()->GetActionStatus(ActionType.Action, job.Value, checkRecastActive: false, checkCastingActive: false) is 574 or 586;
+                ImGui.Text($"JobId: {job.Key} | Unlocked: {isUnlocked}");
+                // 573 | Not unlocked??? 
+                // 574 | Is unlocked
+                // 586 | Is unlocked for current class/ready to use
             }
         }
     }

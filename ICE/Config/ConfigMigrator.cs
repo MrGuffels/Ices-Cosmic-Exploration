@@ -1,5 +1,5 @@
 ﻿using ECommons;
-using ICE.Ui.SettingTabs;
+using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
@@ -223,7 +223,6 @@ namespace ICE.Config
                 C.ConfigVersion = 1;
                 C.Save();
             }
-
             if (C.ConfigVersion == 1)
             {
                 foreach (var mission in C.MissionConfig)
@@ -239,7 +238,6 @@ namespace ICE.Config
                 C.ConfigVersion = 2;
                 C.Save();
             }
-
             if (C.ConfigVersion == 2)
             {
                 foreach (var mission in C.MissionConfig.Where(x => x.Key > 544 && CosmicHelper.SheetMissionDict[x.Key].Jobs.Contains(18)))
@@ -339,6 +337,87 @@ namespace ICE.Config
                     }
                 }
                 C.ConfigVersion = 8;
+                C.Save();
+            }
+            if (C.ConfigVersion == 8)
+            {
+                Dictionary<int, int> profileTransfer = new();
+
+                // Don't clear - we want to keep the default profile at [0]
+                // But we need to handle if the old system also has a profile at ID 0
+
+                foreach (var oldBuff in C.GatherSettings)
+                {
+                    var oldId = oldBuff.Id;
+                    var newId = oldId;
+
+                    // Special handling for ID 0 - skip it if it already exists and is the default
+                    if (oldId == 0 && C.GatherProfiles.ContainsKey(0))
+                    {
+                        // Update the existing default profile instead of creating a duplicate
+                        C.GatherProfiles[0].Name = oldBuff.Name;
+                        C.GatherProfiles[0].DualClassCraftAmount = oldBuff.DualClassCraftAmount;
+                        C.GatherProfiles[0].MinimumGp = oldBuff.MinimumGp;
+                        C.GatherProfiles[0].GatherBuffs = oldBuff.GatherBuffs;
+                        profileTransfer[oldId] = 0;
+                        continue;
+                    }
+
+                    // If this ID is already taken, find the next available ID
+                    while (C.GatherProfiles.ContainsKey(newId))
+                    {
+                        newId = C.GatherProfiles.Keys.Max() + 1;
+                    }
+
+                    C.GatherProfiles[newId] = new GatherProfile()
+                    {
+                        Name = oldBuff.Name,
+                        DualClassCraftAmount = oldBuff.DualClassCraftAmount,
+                        MinimumGp = oldBuff.MinimumGp,
+                        GatherBuffs = oldBuff.GatherBuffs
+                    };
+
+                    profileTransfer[oldId] = newId;
+                }
+
+                // Update mission references
+                foreach (var mission in C.MissionConfig)
+                {
+                    var oldId = mission.Value.GatherProfileId;
+                    if (profileTransfer.TryGetValue(oldId, out var newId))
+                    {
+                        mission.Value.GProfileId = newId;
+                    }
+                }
+
+                // Clear the old list so it doesn't persist in the config
+                C.GatherSettings.Clear();
+
+                C.ConfigVersion = 9;
+                C.Save();
+            }
+            if (C.ConfigVersion == 9)
+            {
+                // This is here because I added some new gather buffs to the config, and it needs to be updated on the off chance that (in my case, me) I didn't migrate properly
+                // ./added them correctly
+                var defaultBuffs = new GatherBuffs().Buffs;
+
+                foreach (var profile in C.GatherProfiles.Values)
+                {
+                    foreach (var (key, defaultBuff) in defaultBuffs)
+                    {
+                        if (!profile.GatherBuffs.Buffs.ContainsKey(key))
+                        {
+                            profile.GatherBuffs.Buffs[key] = new GatherBuff
+                            {
+                                Enabled = defaultBuff.Enabled,
+                                MinGp = defaultBuff.MinGp,
+                                MaxUse = defaultBuff.MaxUse
+                            };
+                        }
+                    }
+                }
+                C.ConfigVersion = 10;
                 C.Save();
             }
         }

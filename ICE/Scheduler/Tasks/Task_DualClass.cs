@@ -47,7 +47,7 @@ namespace ICE.Scheduler.Tasks
             var recipeId = mission.Crafts_Main.Keys.FirstOrDefault();
             var itemId = mainCraft.ItemId;
 
-            var gatherProfileId = C.MissionConfig[id].GatherProfileId;
+            var gatherProfileId = C.MissionConfig[id].GProfileId;
             var dualCraftAmount = 3;
 
             if (missionConfig.TurninGold || missionConfig.AutoTurnin)
@@ -438,8 +438,15 @@ namespace ICE.Scheduler.Tasks
             var missionInfo = CosmicHelper.CurrentMissionInfo;
             bool collectableItem = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
             bool reduceItems = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
-            var configId = C.MissionConfig[CosmicHelper.CurrentLunarMission].GatherProfileId;
-            var gatherConfig = C.GatherSettings[configId];
+            var configId = C.MissionConfig[CosmicHelper.CurrentLunarMission].GProfileId;
+            if (C.GatherProfiles.TryGetValue(configId, out var gatherConfig))
+            {
+
+            }
+            else
+            {
+                gatherConfig = C.GatherProfiles[0];
+            }
             var gathActions = GatheringUtil.GathActionDict;
 
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;

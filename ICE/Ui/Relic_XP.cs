@@ -88,9 +88,9 @@ namespace ICE.Ui
             }
         }
 
-        public static void DrawScoreBar(Vector2 size, bool useSelectedJob = false)
+        public static void DrawScoreBar(Vector2 size, bool useSelectedJob = false, uint jobId = 0)
         {
-            var (classScore, cappedClassScore, totalScores, classId) = CosmicHelper.GetCosmicClassScores(useSelectedJob);
+            var (classScore, cappedClassScore, totalScores, classId) = CosmicHelper.GetCosmicClassScores(useSelectedJob, jobId);
             DrawXPBar("Score", (uint)classScore, 0, size, 500_000);
         }
 

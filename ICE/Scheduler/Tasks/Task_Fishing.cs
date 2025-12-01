@@ -197,6 +197,7 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
+        private static int collectableCounter = 0;
         private static unsafe bool? FinishFishing()
         {
             if (!Svc.Condition[ConditionFlag.Fishing])
@@ -204,6 +205,27 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Info("We're done fishing, time to go back to the score check", "[Fishing: Finished]");
                 return true;
             }
+            else
+            {
+                if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var yesNo) && yesNo.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Adding +1 to counter", 250))
+                    {
+                        collectableCounter += 1;
+                    }
+                    if (collectableCounter >= 2)
+                    {
+                        if (EzThrottler.Throttle("Selecting yes to collectables"))
+                        {
+                            yesNo.Yes();
+                        }
+                        return false;
+                    }
+                    return false;
+                }
+            }
+            if (collectableCounter != 0)
+                collectableCounter = 0;
 
             return false;
         }

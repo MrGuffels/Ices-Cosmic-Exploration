@@ -23,6 +23,7 @@ public sealed partial class ICE
             Dictionary<uint, int> gathering_Min = new();
             HashSet<uint> jobs = new();
             Dictionary<int, int> relicXp = new();
+            bool isExpert = false;
 
             uint keyId = entry.RowId;
             string missionName = entry.Name.ToString();
@@ -222,6 +223,10 @@ public sealed partial class ICE
                                 }
                             };
                         }
+
+                        isExpert |= recipeRow.IsExpert;
+                        if (isExpert)
+                            IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                     }
                     else if (recipeIds.Count == 2)
                     {
@@ -248,6 +253,10 @@ public sealed partial class ICE
                                 [requiredItem] = requiredAmount
                             }
                         };
+
+                        isExpert |= recipeRow.IsExpert;
+                        if (isExpert)
+                            IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
 
                         // Second one is going to be the pre-crafting mat that you need
                         var preRecipeId = recipeIds[1];
@@ -295,6 +304,9 @@ public sealed partial class ICE
                                     [requiredItem] = requiredAmount
                                 }
                             };
+                            isExpert |= recipeRow.IsExpert;
+                            if (isExpert)
+                                IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                         }
                     }
 
@@ -313,6 +325,10 @@ public sealed partial class ICE
                     }
                 }
             }
+
+            // - - - Attribute check for experts here cause needs to be done post crafting - - - - // 
+            if (isExpert)
+                attributes |= ExpertCraft;
 
             if (GatheringJobList.Overlaps(jobs))
             {
@@ -420,6 +436,7 @@ public sealed partial class ICE
 
                     Crafts_Main = crafts_Main,
                     Crafts_Pre = crafts_Pre,
+                    IsExpert = isExpert
                 };
             }
         }
@@ -548,6 +565,15 @@ public sealed partial class ICE
                 }
             }
         }
+
+        foreach (var mission in C.MissionConfig)
+        {
+            if (!C.GatherProfiles.ContainsKey(mission.Value.GProfileId))
+            {
+                mission.Value.GProfileId = 0;
+            }
+        }
+        C.Save();
     }
     private static string GetClassAcronym(uint jobId)
     {

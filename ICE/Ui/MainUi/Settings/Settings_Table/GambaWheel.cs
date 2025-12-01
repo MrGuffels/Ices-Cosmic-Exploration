@@ -15,28 +15,33 @@ namespace ICE.Ui.SettingTabs
 
         public static void Draw()
         {
-            if (ImGui.Checkbox("Enable Gamba", ref gambaEnabled))
+            if (ImGui.Checkbox("Enable Auto Gamba", ref gambaEnabled))
             {
                 C.GambaEnabled = gambaEnabled;
                 C.Save();
             }
-            ImGuiEx.HelpMarker("To run this, make sure you have the gamble wheels shown at Orbitingway, and press start. It will full auto from there.");
-            if (gambaEnabled)
+            ImGuiEx.HelpMarker("If you want to let it auto select the wheels and gamba, enable this. If you want to not auto run when you're running the gamble wheel, disable this.");
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderInt("Mininum credits to keep", ref gambaCreditsMinimum, 0, 10000))
             {
-                ImGui.SetNextItemWidth(150);
-                if (ImGui.SliderInt("Gamba Delay", ref gambaDelay, 50, 2000))
-                {
-                    C.GambaDelay = gambaDelay;
-                    C.SaveDebounced();
-                }
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(150);
-                if (ImGui.SliderInt("Mininum credits to keep", ref gambaCreditsMinimum, 0, 10000))
-                {
-                    C.GambaCreditsMinimum = gambaCreditsMinimum;
-                    C.SaveDebounced();
-                }
+                C.GambaCreditsMinimum = gambaCreditsMinimum;
+                C.SaveDebounced();
             }
+            bool gambaBetween = C.GambaBetweenRuns;
+            if (ImGui.Checkbox("Gamble Between Runs", ref gambaBetween))
+            {
+                C.GambaBetweenRuns = gambaBetween;
+                C.Save();
+            }
+            ImGui.SameLine();
+            GambaSlider();
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderInt("Gamba Delay", ref gambaDelay, 50, 2000))
+            {
+                C.GambaDelay = gambaDelay;
+                C.SaveDebounced();
+            }
+
             if (ImGui.Checkbox("Prefer smaller wheel", ref gambaPreferSmallerWheel))
             {
                 C.GambaPreferSmallerWheel = gambaPreferSmallerWheel;
@@ -71,6 +76,26 @@ namespace ICE.Ui.SettingTabs
             if (ImGui.Button("Reset Weights"))
             {
                 Task_Gamba.EnsureGambaWeightsInitialized(true);
+            }
+        }
+
+        private static int[] allowedValues = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000 };
+        private static void GambaSlider()
+        {
+            int currentIndex = Array.IndexOf(allowedValues, C.GambaAtAmount);
+            if (currentIndex == -1)
+            {
+                currentIndex = 0;
+                C.GambaAtAmount = allowedValues[0];
+                C.SaveDebounced();
+            }
+
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderInt("Start Gambling @", ref currentIndex, 0, allowedValues.Length - 1,
+                allowedValues[currentIndex].ToString()))
+            {
+                C.GambaAtAmount = allowedValues[currentIndex];
+                C.SaveDebounced();
             }
         }
     }

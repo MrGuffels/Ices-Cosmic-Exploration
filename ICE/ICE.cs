@@ -1,8 +1,10 @@
 using ECommons.Automation.NeoTaskManager;
 using ECommons.Configuration;
+using ECommons.GameHelpers;
+using ICE.Config;
 using ICE.IPC;
 using ICE.Ui;
-using ICE.Config;
+using ICE.Ui.MainUi;
 using Pictomancy;
 using System.Collections.Generic;
 using static ICE.Utilities.CosmicHelper;
@@ -57,7 +59,6 @@ public sealed partial class ICE : IDalamudPlugin
     // Window's that I use, base window to the settings... need these to actually show shit 
     internal WindowSystem windowSystem;
     internal MainWindow mainWindow;
-    internal SettingsWindowV2 settingsWindowV2;
     internal OverlayWindow overlayWindow;
     internal DebugWindow debugWindow;
     internal InfoWindow infoWindow;
@@ -96,7 +97,6 @@ public sealed partial class ICE : IDalamudPlugin
         // all the windows
         windowSystem = new();
         mainWindow = new();
-        settingsWindowV2 = new();
         overlayWindow = new();
         debugWindow = new();
         infoWindow = new();
@@ -127,7 +127,8 @@ public sealed partial class ICE : IDalamudPlugin
         };
         Svc.PluginInterface.UiBuilder.OpenConfigUi += () =>
         {
-            settingsWindowV2.IsOpen = true;
+            mainWindow.IsOpen = true;
+            SelectableSidebar.currentSelection = "helpSelect_AllSettings";
         };
         DictionaryCreation();
         Task_Gamba.EnsureGambaWeightsInitialized();
@@ -144,7 +145,7 @@ public sealed partial class ICE : IDalamudPlugin
 
     private void Tick(object _)
     {
-        if (Svc.ClientState.LocalPlayer != null)
+        if (Player.Available)
         {
             PlayerHandlers.Tick();
             if (SchedulerMain.State != IceState.Idle)
@@ -153,7 +154,8 @@ public sealed partial class ICE : IDalamudPlugin
         }
         else
         {
-            PlayerHandlers.DisablePlugin();
+            if (SchedulerMain.State != IceState.Idle)
+                PlayerHandlers.DisablePlugin();
         }
         GenericManager.Tick();
         TextAdvancedManager.Tick();
@@ -198,7 +200,8 @@ public sealed partial class ICE : IDalamudPlugin
         }
         else if (firstArg.ToLower() == "s" || firstArg.ToLower() == "settings")
         {
-            settingsWindowV2.IsOpen = !settingsWindowV2.IsOpen;
+            mainWindow.IsOpen = true;
+            SelectableSidebar.currentSelection = "helpSelect_AllSettings";
             return;
         }
         else if (firstArg.ToLower() == "clear")

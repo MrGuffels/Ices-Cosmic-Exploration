@@ -589,17 +589,22 @@ namespace ICE.Scheduler.Tasks
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
                         bool unSupported = UnsupportedMissions.Ids.Contains(id);
+                        bool manipUnlocked = PlayerHelper.HasManipUnlocked(mission.Jobs.Last());
+                        bool isManipReq = mission.Attributes.HasFlag(MissionAttributes.ExpertCraft);
 
                         IceLogging.Debug($"[Mission: {id}]" +
                                          $"Is proper Level: {properLevel} | Mission Level: {minLevel} | Player Level: {Player.Level} \n" +
                                          $"Ignoring cause of manual? {IgnoreManual}\n" +
                                          $"Ignoring cuase of not enabled: {IgnoreNotEnabled}\n" +
-                                         $"Ignoring because of not supported: {unSupported}", tip);
+                                         $"Ignoring because of not supported: {unSupported}" +
+                                         $"Is Manipulation required: {isManipReq}" +
+                                         $"Is Manipluation even unlocked: {manipUnlocked}", tip);
 
                         if (!properLevel) continue;
                         if (IgnoreManual) continue;
                         if (IgnoreNotEnabled) continue;
                         if (unSupported) continue;
+                        if (isManipReq && !manipUnlocked) continue;
 
                         Dictionary<int, float> rewardDict = new();
                         foreach (var reward in mission.RelicXpInfo.OrderBy(x => x.Key))

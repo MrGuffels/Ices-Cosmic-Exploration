@@ -16,6 +16,7 @@ namespace ICE.Enums
         // --- Item/Focus Type ---
         Collectables = 16,         // Collectables
         ReducedItems = 32,         // Reduction
+        ExpertCraft = 64,          // Expert Craft
 
         // --- Scoring Method ---
         ScoreTimeRemaining = 128,  // Time Attack (Speeeeeeed)

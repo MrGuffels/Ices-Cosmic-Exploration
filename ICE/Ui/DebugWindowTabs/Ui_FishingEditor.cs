@@ -149,9 +149,9 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.Text($"First Available Fishing Spot: {fishablePosition.Value.X:N2}, {fishablePosition.Value.Y:N2}, {fishablePosition.Value.Z:N2}");
                             if (ImGui.Button("Face toward spot"))
                             {
-                                if (_fishingDebug.FindFishableLocation(out var fisablePosition, searchSteps: 64))
+                                if (_fishingDebug.FindFishableLocation(out var fishPosition, searchSteps: 128))
                                 {
-                                    P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishablePosition.Value));
+                                    P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishPosition.Value));
                                 }
                             }
                         }
@@ -272,7 +272,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 P.TaskManager.Enqueue(() => StartNavmesh(spot.FishingSpot));
                                 P.TaskManager.Enqueue(() => TestPathV2());
                                 P.TaskManager.EnqueueDelay(200);
-                                if (_fishingDebug.FindFishableLocation(out var fisablePosition, searchSteps: 64))
+                                if (_fishingDebug.FindFishableLocation(out var fisablePosition, searchSteps: 128))
                                 {
                                     P.TaskManager.Enqueue(() => Task_Fishing.FacePosition(fishablePosition.Value));
                                 }

@@ -4,50 +4,45 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using Pictomancy;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ICE.Ui.SettingTabs
+namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
-    internal class MiscTab
+    internal class Misc_Settings
     {
-        // Overlay Settings
-        private static bool showOverlay = C.ShowOverlay;
-        private static bool ShowSeconds = C.ShowSeconds;
-        private static Dictionary<uint, string> availableMounts = new();
-
-        private static string mountSearchText = "";
-        private static int mountDisplayOffset = 0;
-        private static int mountItemsPerPage = 10;
-
-        private static bool AutoMoonSprint = C.MoonSprint;
-
-        // Mission Priority Settings
-
         public static void Draw()
         {
-            bool showInfoButton = C.ShowInfoButton;
-            if (ImGui.Checkbox("Show Info Button", ref showInfoButton))
-            {
-                C.ShowInfoButton = showInfoButton;
-                C.Save();
-            }
+            OverlaySettings();
+            Separator();
 
-            ImGui.Dummy(new Vector2(0, 5));
-            ImGui.Separator();
-            ImGui.Dummy(new Vector2(0, 5));
+            AutoUse();
+            Separator();
 
-            ImGui.Text("Overlay Settings");
+            RepairSettings();
+            Separator();
 
+            TimeRecords();
+            Separator();
+
+            MountSelection();
+            Separator();
+
+            ShowSystemButtons();
+        }
+
+        private static void OverlaySettings()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.WindowMaximize, "Overlay Window");
+            ImGui.Dummy(new (0, 5));
+
+            bool showOverlay = C.ShowOverlay;
             if (ImGui.Checkbox("Show Overlay", ref showOverlay))
             {
                 C.ShowOverlay = showOverlay;
                 C.Save();
             }
 
+            bool ShowSeconds = C.ShowSeconds;
             if (ImGui.Checkbox("Show Seconds", ref ShowSeconds))
             {
                 C.ShowSeconds = ShowSeconds;
@@ -68,12 +63,14 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
 
-            ImGui.Dummy(new(0, 2));
+        }
 
-            ImGui.Separator();
+        private static void AutoUse()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.PersonRays, "Auto-Use");
+            ImGui.Dummy(new Vector2(0, 5));
 
-            ImGui.Dummy(new (0, 2));
-
+            bool AutoMoonSprint = C.MoonSprint;
             if (ImGui.Checkbox("Auto-Use Moon Sprint", ref AutoMoonSprint))
             {
                 C.MoonSprint = AutoMoonSprint;
@@ -93,10 +90,12 @@ namespace ICE.Ui.SettingTabs
                 C.DisablePathfindingToRedAlert = DisableRedAlertPathing;
                 C.Save();
             }
+        }
 
-            ImGui.Dummy(new(0, 2));
-
-            ImGui.Separator();
+        private static void RepairSettings()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Hammer, "Repair Settings");
+            ImGui.Dummy(new Vector2(0, 5));
 
             bool repairAtVendor = C.RepairAtVendor;
             if (ImGui.Checkbox("Repair at Vendor", ref repairAtVendor))
@@ -132,8 +131,13 @@ namespace ICE.Ui.SettingTabs
                     C.SaveDebounced();
                 }
             }
+        }
 
-            ImGui.Separator();
+        private static void TimeRecords()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Clock, "Record Settings");
+            ImGui.Dummy(new Vector2(0, 5));
+
             int TimeHistory = C.TimeHistoryLimit;
             ImGui.SetNextItemWidth(100);
             if (ImGui.InputInt("Average Time History to keep", ref TimeHistory))
@@ -148,14 +152,15 @@ namespace ICE.Ui.SettingTabs
                 ImGui.SetTooltip("Anything below 0 to keep all logs\n" +
                                  "Above 0 to keep a set limit");
             }
-
-            ImGui.Separator();
-
-            MountSelection();
         }
 
         private static bool visualizeRadius = false;
         private static bool visualizeDismountRadius = false;
+        private static Dictionary<uint, string> availableMounts = new();
+
+        private static string mountSearchText = "";
+        private static int mountDisplayOffset = 0;
+        private static int mountItemsPerPage = 10;
 
         private static unsafe void MountSelection()
         {
@@ -163,6 +168,9 @@ namespace ICE.Ui.SettingTabs
             bool mountInMission = C.UseMountInMission;
             float minMountRange = C.MountRadius;
             float dismountRange = C.DismountRadius;
+
+            ImGuiEx.IconWithText(FontAwesomeIcon.Feather, "Mount Settings");
+            ImGui.Dummy(new Vector2(0, 5));
 
             if (ImGui.Button("Select Mounting Option"))
             {
@@ -179,7 +187,7 @@ namespace ICE.Ui.SettingTabs
                     string mountName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mountItem.Singular.ToString().ToLower());
                     uint id = mountItem.RowId;
 
-                   availableMounts[id] = mountName;
+                    availableMounts[id] = mountName;
                 }
 
                 mountSearchText = "";
@@ -284,6 +292,54 @@ namespace ICE.Ui.SettingTabs
                 if (visualizeDismountRadius)
                     PictoService.VfxRenderer.AddCircle("Dismount_Radius Circle", playerPos, C.DismountRadius, Utils.FromUintABGR(2601121571));
             }
+        }
+
+        private static void ShowSystemButtons()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.WindowRestore, "Show / Hide Tabs");
+            ImGui.Dummy(new(0, 5));
+
+            bool showStopWhen = C.Show_StopWhen;
+            if (ImGui.Checkbox("Show Stop When... Tab", ref showStopWhen))
+            {
+                C.Show_StopWhen = showStopWhen;
+                C.Save();
+            }
+
+            bool showGProfile = C.Show_GatheringProfile;
+            if (ImGui.Checkbox("Show Gathering Profile Tab", ref showGProfile))
+            {
+                C.Show_GatheringProfile = showGProfile;
+                C.Save();
+            }
+
+            bool showMissionPrio = C.Show_MissionPriority;
+            if (ImGui.Checkbox("Show Mission Priority Tab", ref showMissionPrio))
+            {
+                C.Show_MissionPriority = showMissionPrio;
+                C.Save();
+            }
+
+            bool showMisc = C.Show_MiscSettings;
+            if (ImGui.Checkbox("Show Misc Settings Tab", ref showMisc))
+            {
+                C.Show_MiscSettings = showMisc;
+                C.Save();
+            }
+
+            bool showHubActivities = C.Show_HubActivities;
+            if (ImGui.Checkbox("Show Hub Activities Section", ref showHubActivities))
+            {
+                C.Show_HubActivities = showHubActivities;
+                C.Save();
+            }
+        }
+
+        private static void Separator()
+        {
+            ImGui.Dummy(new Vector2(0, 5));
+            ImGui.Separator();
+            ImGui.Dummy(new Vector2(0, 5));
         }
     }
 }

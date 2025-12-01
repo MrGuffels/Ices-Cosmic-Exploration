@@ -11,6 +11,8 @@ namespace ICE.Ui.MainUi.HelpFolder
 {
     internal class helpSelect_Logs
     {
+        private static string searchFilter = string.Empty;
+
         public static void Draw_Helper()
         {
             using (var headerChild = ImRaii.Child("##helpSelect_Logs", new Vector2(0, 0), true, ImGuiWindowFlags.NoScrollbar))
@@ -31,6 +33,18 @@ namespace ICE.Ui.MainUi.HelpFolder
 
         private static void LogHelperViewer()
         {
+            // Search input
+            ImGui.SetNextItemWidth(300);
+            ImGui.InputTextWithHint("##LogSearch", "Search logs...", ref searchFilter, 256);
+
+            ImGui.SameLine();
+            if (ImGui.Button("Clear"))
+            {
+                searchFilter = string.Empty;
+            }
+
+            ImGui.Spacing();
+
             ImGuiTableFlags flags = ImGuiTableFlags.RowBg |
             ImGuiTableFlags.Borders |
             ImGuiTableFlags.ScrollY |
@@ -44,7 +58,19 @@ namespace ICE.Ui.MainUi.HelpFolder
                 ImGui.TableSetupColumn("Message");
                 ImGui.TableHeadersRow();
 
-                foreach (var log in LogSystem.Logs.OrderByDescending(l => l.Timestamp))
+                // Filter logs based on search input
+                var filteredLogs = LogSystem.Logs.AsEnumerable();
+
+                if (!string.IsNullOrWhiteSpace(searchFilter))
+                {
+                    filteredLogs = filteredLogs.Where(log =>
+                        log.Message.Contains(searchFilter, StringComparison.OrdinalIgnoreCase) ||
+                        (log.Category?.Contains(searchFilter, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        log.Level.ToString().Contains(searchFilter, StringComparison.OrdinalIgnoreCase)
+                    );
+                }
+
+                foreach (var log in filteredLogs.OrderByDescending(l => l.Timestamp))
                 {
                     ImGui.TableNextRow();
 

@@ -1,4 +1,6 @@
-﻿using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+﻿using ECommons.GameHelpers;
+using ICE.Utilities.Cosmic_Helper;
+using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -6,7 +8,7 @@ namespace ICE.Ui.DebugWindowTabs
     {
         public static unsafe void Draw()
         {
-            if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var gather) && gather.IsAddonReady)
+            if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var gatherCollect) && gatherCollect.IsAddonReady)
             {
                 ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                              ImGuiTableFlags.Borders |
@@ -26,7 +28,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Item Name: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.ItemName}");
+                    ImGui.Text($"{gatherCollect.ItemName}");
 
                     // Row 2
                     ImGui.TableNextRow();
@@ -34,7 +36,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Item ID: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.ItemID}");
+                    ImGui.Text($"{gatherCollect.ItemID}");
 
                     // Row 3
                     ImGui.TableNextRow();
@@ -42,7 +44,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Current Collectability: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.CurrentCollectability}");
+                    ImGui.Text($"{gatherCollect.CurrentCollectability}");
 
                     // Row 4
                     ImGui.TableNextRow();
@@ -50,7 +52,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Item Integrity: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.CurrentIntegrity} / {gather.TotalIntegrity}");
+                    ImGui.Text($"{gatherCollect.CurrentIntegrity} / {gatherCollect.TotalIntegrity}");
 
                     // Row 5
                     ImGui.TableNextRow();
@@ -58,7 +60,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Min Collectibility: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.MinCollectability}");
+                    ImGui.Text($"{gatherCollect.MinCollectability}");
 
                     // Row 6
                     ImGui.TableNextRow();
@@ -66,7 +68,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Mid Collectibility: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.MidCollectability}");
+                    ImGui.Text($"{gatherCollect.MidCollectability}");
 
                     // Row 7
                     ImGui.TableNextRow();
@@ -74,7 +76,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("High Collectibility: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.HighCollectability}");
+                    ImGui.Text($"{gatherCollect.HighCollectability}");
 
                     // Row 8
                     ImGui.TableNextRow();
@@ -82,9 +84,25 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Max Collectibility: ");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{gather.MaxCollectability}");
+                    ImGui.Text($"{gatherCollect.MaxCollectability}");
 
                     ImGui.EndTable();
+                }
+            }
+            else if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady)
+            {
+                if (ImGui.Button("Increase collectability"))
+                {
+                    foreach (var item in gather.GatheredItems)
+                    {
+                        if (item.ItemID != 0)
+                        {
+                            bool missingDur = gather.CurrentIntegrity < gather.TotalIntegrity;
+                            bool useAction = Task_Gather.UseGatherAction(0, item.GatherChance, item.BoonChance, missingDur, PlayerHelper.GetGp());
+                            IceLogging.Debug($"Used action: {useAction}");
+                            break;
+                        }
+                    }
                 }
             }
             else

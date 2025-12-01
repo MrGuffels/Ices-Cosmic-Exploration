@@ -84,7 +84,7 @@ public static partial class CosmicHelper
             SchedulerMain.State |= IceState.Craft;
     }
 
-    public unsafe static (int classScore, int cappedClassScore, int totalScores, uint classId) GetCosmicClassScores(bool useSelectedJob = false)
+    public unsafe static (int classScore, int cappedClassScore, int totalScores, uint classId) GetCosmicClassScores(bool useSelectedJob = false, uint jobId = 0)
     {
         int classScore = 0;
         int cappedClassScore = 0;
@@ -103,7 +103,14 @@ public static partial class CosmicHelper
         {
             // For overlay that should show current/mission job
             if (currentMissionId > 0 && CosmicHelper.SheetMissionDict.TryGetValue(currentMissionId, out var missionInfo))
-                classId = missionInfo.Jobs.First();
+            {
+                if (jobId != 0)
+                    classId = jobId;
+                else if (missionInfo.Jobs.Contains(Player.JobId))
+                    classId = Player.JobId;
+                else
+                    classId = missionInfo.Jobs.First();
+            }
             else if (CosmicHelper.CrafterJobList.Contains(Player.JobId) || CosmicHelper.GatheringJobList.Contains(Player.JobId))
                 classId = Player.JobId;
             else

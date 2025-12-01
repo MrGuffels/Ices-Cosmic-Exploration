@@ -1,6 +1,9 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility.Raii;
+using ECommons.GameHelpers;
+using ICE.Ui.MainUi.ModeSelect;
+using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -8,15 +11,13 @@ namespace ICE.Ui.MainUi
 {
     internal class SelectableSidebar
     {
-        private static Dictionary<string, bool> categoryStates = new Dictionary<string, bool>();
+        public static Dictionary<string, bool> categoryStates = new Dictionary<string, bool>();
 
         private static string PluginIcon = "ICE.Resources.Icon.png";
         public static string currentSelection = "modeSelect_Standard";
 
         public static void Draw()
         {
-            using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, 10).Push(ImGuiStyleVar.ChildBorderSize, 1);
-
             if (ImGui.BeginChild("MainUi_Sidebar", new Vector2(200, -1), true))
             {
                 // Image/Icon of the plugin
@@ -41,113 +42,155 @@ namespace ICE.Ui.MainUi
                     ImGui.Dummy(new Vector2(0, 10));
                 }
 
-                if (DrawCategoryHeader(FontAwesomeIcon.ListAlt, "Mode Select", 4))
+                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Cosmic Helper", icon: FontAwesomeIcon.ListAlt))
                 {
                     DrawSelectableWithIcon(FontAwesomeIcon.List, "Standard", "modeSelect_Standard");
-                    DrawSelectableWithIcon(FontAwesomeIcon.Cloud, "Provisional", "modeSelect_Provisional");
-                    DrawSelectableWithIcon(FontAwesomeIcon.FlagCheckered, "Relic", "modeSelect_Relic");
                     DrawSelectableWithIcon(FontAwesomeIcon.Trophy, "Completion", "modeSelect_Completion");
                 }
-                if (DrawCategoryHeader(FontAwesomeIcon.Cog, "Settings", 4))
+                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Settings", icon: FontAwesomeIcon.Cog))
                 {
-                    DrawSelectableWithIcon(FontAwesomeIcon.Stop, "Stop When...", "setting_StopWhen");
-                    DrawSelectableWithIcon(FontAwesomeIcon.Leaf, "Gathering Profile", "setting_GatheringProfile");
-                    DrawSelectableWithIcon(FontAwesomeIcon.SortAmountUp, "Mission Priority", "setting_MissionPriority");
+                    if (C.Show_StopWhen)
+                        DrawSelectableWithIcon(FontAwesomeIcon.Stop, "Stop When...", "setting_StopWhen");
+                    if (C.Show_GatheringProfile)
+                        DrawSelectableWithIcon(FontAwesomeIcon.Leaf, "Gathering Profile", "setting_GatheringProfile");
+                    if (C.Show_MissionPriority)
+                        DrawSelectableWithIcon(FontAwesomeIcon.SortAmountUp, "Mission Priority", "setting_MissionPriority");
+                    if (C.Show_MiscSettings)
+                        DrawSelectableWithIcon(FontAwesomeIcon.UserCog, "Misc Settings", "setting_Misc");
+
+                    DrawSelectableWithIcon(FontAwesomeIcon.Cog, "All Settings", "helpSelect_AllSettings");
+                }
+                if (C.Show_HubActivities)
+                {
+                    if (ImGui_Tools.DrawCategoryHeader_AutoSize("Hub Activities", icon: FontAwesomeIcon.Home))
+                    {
+                        DrawSelectableWithImage(65112, "Credit Shopping", "hubActivities_CreditShopping");
+                        DrawSelectableWithImage(65127, "Gambling Settings", "hubActivites_GambaSetting");
+                    }
+                }
+                var currentJob = C.SelectedJob;
+                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Moon Selection", FontAwesomeIcon.Moon))
+                {
+                    string SinusAsset = "ICE.Resources.Sinus_Ardorum.png";
+                    string PhaennaAsset = "ICE.Resources.Phaenna.png";
+
+                    float iconSize = 32;
+                    float iconSpacing = 8;
+                    float availWidth = ImGui.GetContentRegionAvail().X;
+                    float startX = (availWidth - (iconSize + iconSpacing) * 4 + iconSpacing) * 0.5f;
+                    ImGui.SetCursorPosX(startX);
+                    bool autoSelectMoon = C.AutoSelectMoon;
+                    if (ImGui.Checkbox("Auto Select Moon", ref autoSelectMoon))
+                    {
+                        C.AutoSelectMoon = autoSelectMoon;
+                        C.Save();
+                    }
+                    if (autoSelectMoon)
+                    {
+                        if (PlayerHelper.IsInSinusArdorum() && (!C.ShowSinusMissions || C.ShowPhaennaMissions))
+                        {
+                            C.ShowSinusMissions = true;
+                            C.ShowPhaennaMissions = false;
+                            C.Save();
+                        }
+                        else if (PlayerHelper.IsInPhaenna() && (C.ShowSinusMissions || !C.ShowPhaennaMissions))
+                        {
+                            C.ShowSinusMissions = false;
+                            C.ShowPhaennaMissions = true;
+                            C.Save();
+                        }
+                    }
+                    ImGui.Dummy(new (0, 3));
+
+                    ImGui.SetCursorPosX(startX);
+                    bool sinusEnabled = C.ShowSinusMissions;
+                    var SinusTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), SinusAsset).GetWrapOrEmpty();
+                    if (StyledImageButton.DrawStyledImageButton(SinusTexture, new Vector2(23, 23), sinusEnabled))
+                    {
+                        C.ShowSinusMissions = !sinusEnabled;
+                        C.AutoSelectMoon = false;
+                        C.Save();
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("Sinus Ardorum");
+                    }
+
+                    ImGui.SameLine();
+                    bool phaennaEnabled = C.ShowPhaennaMissions;
+                    var PhaennaTextures = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), PhaennaAsset).GetWrapOrEmpty();
+
+                    if (StyledImageButton.DrawStyledImageButton(PhaennaTextures, new Vector2(23, 23), phaennaEnabled))
+                    {
+                        C.ShowPhaennaMissions = !phaennaEnabled;
+                        C.AutoSelectMoon = false;
+                        C.Save();
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("Phaenna");
+                    }
+                }
+                if (C.AutoPickCurrentJob && (CosmicHelper.CrafterJobList.Contains(Player.JobId) || CosmicHelper.GatheringJobList.Contains(Player.JobId)) && C.SelectedJob != Player.JobId)
+                {
+                    C.SelectedJob = Player.JobId;
+                    C.Save();
+                }
+                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Class Selection", imageTexture: GreyscaleJob()))
+                {
+                    float iconSize = 32;
+                    float iconSpacing = 8;
+                    float availWidth = ImGui.GetContentRegionAvail().X;
+                    float startX = (availWidth - (iconSize + iconSpacing) * 4 + iconSpacing) * 0.5f;
+                    
+                    ImGui.SetCursorPosX(startX);
+                    bool autoSelectJob = C.AutoPickCurrentJob;
+                    if (ImGui.Checkbox("Auto Select##AutoSelectJob", ref autoSelectJob))
+                    {
+                        C.AutoPickCurrentJob = autoSelectJob;
+                        C.Save();
+                    }
+
+                    ImGui.SetCursorPosX(startX);
+                    ImGui_Tools.DrawJobButtons(8, "CRP");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(9, "BSM");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(10, "ARM");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(11, "GSM");
+
+                    ImGui.SetCursorPosX(startX);
+                    ImGui_Tools.DrawJobButtons(12, "LTW");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(13, "WVR");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(14, "ALC");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(15, "CUL");
+
+                    ImGui.SetCursorPosX(startX);
+                    ImGui_Tools.DrawJobButtons(16, "MIN");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(17, "BTN");
+                    ImGui.SameLine(0, iconSpacing);
+                    ImGui_Tools.DrawJobButtons(18, "FSH");
+                }
+                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Tool Relic XP", icon: FontAwesomeIcon.ArrowUpRightDots))
+                {
+                    var jobId = C.SelectedJob;
+                    ImGui.Image(CosmicHelper.JobIconDict[jobId].GetWrapOrEmpty().Handle, new(24, 24));
+                    ImGui.SameLine(0, 2);
+                    ImGui.AlignTextToFramePadding();
+                    Relic_XP.DrawRelicXP(jobId);
+                }
+                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Help", icon: FontAwesomeIcon.QuestionCircle))
+                {
+                    DrawSelectableWithIcon(FontAwesomeIcon.Question, "Requirements", "helpSelect_Requirements");
                     DrawSelectableWithIcon(FontAwesomeIcon.Book, "Ice Logs", "helpSelect_Logs");
-                }
-                if (DrawCategoryHeader(FontAwesomeIcon.Home, "Hub Activities", 2))
-                {
-                    DrawSelectableWithImage(65112, "Credit Shopping", "hubActivities_CreditShopping");
-                    DrawSelectableWithImage(65127, "Gambling Settings", "hubActivites_GambaSetting");
-                }
-                if (DrawCategoryHeader(FontAwesomeIcon.ArrowUpRightDots, "Tool Relic XP"))
-                {
-                    Relic_XP.DrawXPBar("Test", 200, 500, new Vector2(180, 10));
-                    Relic_XP.DrawXPBar("Test", 1000, 500, new Vector2(180, 10), 2000);
                 }
             }
             ImGui.EndChild();
-        }
-
-        private static bool DrawCategoryHeader(FontAwesomeIcon icon, string label, int? badgeCount = null)
-        {
-            var drawList = ImGui.GetWindowDrawList();
-            var cursorPos = ImGui.GetCursorScreenPos();
-
-            // Get colors from current theme
-            var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
-            var textColor = ImGui.GetColorU32(ImGuiCol.Text);
-            var textDisabledColor = ImGui.GetColorU32(ImGuiCol.TextDisabled);
-
-            float width = ImGui.GetContentRegionAvail().X;
-            float height = 30;
-
-            // Check if this category is expanded (default to true)
-            string categoryId = label;
-            if (!categoryStates.ContainsKey(categoryId))
-                categoryStates[categoryId] = true;
-
-            bool isExpanded = categoryStates[categoryId];
-
-            // Check for click
-            bool isHovered = ImGui.IsMouseHoveringRect(cursorPos,
-                new Vector2(cursorPos.X + width, cursorPos.Y + height));
-            bool isClicked = isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
-
-            if (isClicked)
-            {
-                categoryStates[categoryId] = !categoryStates[categoryId];
-                isExpanded = categoryStates[categoryId];
-            }
-
-            // Change header color slightly on hover
-            if (isHovered)
-                headerColor = ImGui.GetColorU32(ImGuiCol.HeaderHovered);
-
-            // Draw background rectangle WITH ROUNDED CORNERS
-            drawList.AddRectFilled(cursorPos,
-                new Vector2(cursorPos.X + width, cursorPos.Y + height),
-                headerColor,
-                5.0f);
-
-            // Add left padding and draw icon
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 7);
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 8);
-
-            ImGui.PushStyleColor(ImGuiCol.Text, textDisabledColor);
-            ImGuiEx.Icon(icon);
-            ImGui.PopStyleColor();
-
-            ImGui.SameLine();
-            ImGui.PushStyleColor(ImGuiCol.Text, textDisabledColor);
-            ImGui.Text(label);
-            ImGui.PopStyleColor();
-
-            // Draw badge if count provided
-            if (badgeCount.HasValue && badgeCount.Value > 0)
-            {
-                float badgeSize = 24;
-                float rightPadding = 10;
-
-                float badgeXPos = cursorPos.X + width - badgeSize - rightPadding;
-                float badgeYPos = cursorPos.Y + (height / 2);
-
-                var badgeColor = ImGui.GetColorU32(ImGuiCol.ButtonActive);
-                var badgeCenter = new Vector2(badgeXPos + (badgeSize / 2), badgeYPos);
-
-                drawList.AddCircleFilled(badgeCenter, 12, badgeColor);
-
-                var numberStr = badgeCount.Value.ToString();
-                var textSize = ImGui.CalcTextSize(numberStr);
-                drawList.AddText(
-                    new Vector2(badgeCenter.X - textSize.X / 2, badgeCenter.Y - textSize.Y / 2),
-                    textColor,
-                    numberStr);
-            }
-
-            ImGui.Dummy(new Vector2(0, 5));
-
-            return isExpanded;
         }
 
         private static void DrawSelectableWithIcon(FontAwesomeIcon icon, string label, string id)
@@ -251,6 +294,135 @@ namespace ICE.Ui.MainUi
 
             // Add small spacing between items
             ImGui.Dummy(new Vector2(0, 2));
+        }
+
+        private static IDalamudTextureWrap? GreyscaleJob()
+        {
+            var jobId = C.SelectedJob;
+            string greyJobIcon = jobId switch
+            {
+                8 => "ICE.Resources.GreyscaleJobs.CRP.png",
+                9 => "ICE.Resources.GreyscaleJobs.BSM.png",
+                10 => "ICE.Resources.GreyscaleJobs.ARM.png",
+                11 => "ICE.Resources.GreyscaleJobs.GSM.png",
+                12 => "ICE.Resources.GreyscaleJobs.LTW.png",
+                13 => "ICE.Resources.GreyscaleJobs.WVR.png",
+                14 => "ICE.Resources.GreyscaleJobs.ALC.png",
+                15 => "ICE.Resources.GreyscaleJobs.CUL.png",
+                16 => "ICE.Resources.GreyscaleJobs.MIN.png",
+                17 => "ICE.Resources.GreyscaleJobs.BTN.png",
+                18 => "ICE.Resources.GreyscaleJobs.FSH.png",
+                _ => "ICE.Resources.GreyscaleJobs.Default.png",
+            };
+
+            return Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), greyJobIcon).GetWrapOrEmpty();
+        }
+
+        public static bool DrawCategoryHeader(string label, FontAwesomeIcon? icon = null, IDalamudTextureWrap? imageTexture = null, int? badgeCount = null)
+        {
+            var drawList = ImGui.GetWindowDrawList();
+            var cursorPos = ImGui.GetCursorScreenPos();
+
+            // Get colors from current theme
+            var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
+            var textColor = ImGui.GetColorU32(ImGuiCol.Text);
+            var textDisabledColor = ImGui.GetColorU32(ImGuiCol.TextDisabled);
+
+            float width = ImGui.GetContentRegionAvail().X;
+            float height = 30;
+
+            // Check if this category is expanded (default to true)
+            string categoryId = label;
+            if (!categoryStates.ContainsKey(categoryId))
+                categoryStates[categoryId] = true;
+
+            bool isExpanded = categoryStates[categoryId];
+
+            // Check for click
+            bool isHovered = ImGui.IsMouseHoveringRect(cursorPos,
+                new Vector2(cursorPos.X + width, cursorPos.Y + height));
+            bool isClicked = isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+
+            if (isClicked)
+            {
+                categoryStates[categoryId] = !categoryStates[categoryId];
+                isExpanded = categoryStates[categoryId];
+            }
+
+            // Change header color slightly on hover
+            if (isHovered)
+                headerColor = ImGui.GetColorU32(ImGuiCol.HeaderHovered);
+
+            // Draw background rectangle WITH ROUNDED CORNERS
+            drawList.AddRectFilled(cursorPos,
+                new Vector2(cursorPos.X + width, cursorPos.Y + height),
+                headerColor,
+                5.0f);
+
+            // Calculate vertical centering
+            float imageSize = 23;
+            float textHeight = ImGui.CalcTextSize(label).Y;
+            float verticalPadding = (height - textHeight) / 2;
+
+            // Add left padding
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + verticalPadding);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 8);
+
+            // Draw icon or image
+            if (imageTexture != null)
+            {
+                // Calculate offset to center image with text
+                float imageYOffset = (textHeight - imageSize) / 2;
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + imageYOffset);
+
+                ImGui.Image(imageTexture.Handle, new Vector2(imageSize, imageSize));
+
+                // Reset Y position for text
+                ImGui.SameLine();
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() - imageYOffset);
+            }
+            else if (icon.HasValue)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, textDisabledColor);
+                ImGuiEx.Icon(icon.Value);
+                ImGui.PopStyleColor();
+                ImGui.SameLine();
+            }
+            else
+            {
+                // No icon, just add sameline spacing
+                ImGui.SameLine();
+            }
+
+            ImGui.PushStyleColor(ImGuiCol.Text, textDisabledColor);
+            ImGui.Text(label);
+            ImGui.PopStyleColor();
+
+            // Draw badge if count provided
+            if (badgeCount.HasValue && badgeCount.Value > 0)
+            {
+                float badgeSize = 24;
+                float rightPadding = 10;
+
+                float badgeXPos = cursorPos.X + width - badgeSize - rightPadding;
+                float badgeYPos = cursorPos.Y + (height / 2);
+
+                var badgeColor = ImGui.GetColorU32(ImGuiCol.ButtonActive);
+                var badgeCenter = new Vector2(badgeXPos + (badgeSize / 2), badgeYPos);
+
+                drawList.AddCircleFilled(badgeCenter, 12, badgeColor);
+
+                var numberStr = badgeCount.Value.ToString();
+                var textSize = ImGui.CalcTextSize(numberStr);
+                drawList.AddText(
+                    new Vector2(badgeCenter.X - textSize.X / 2, badgeCenter.Y - textSize.Y / 2),
+                    textColor,
+                    numberStr);
+            }
+
+            ImGui.Dummy(new Vector2(0, 5));
+
+            return isExpanded;
         }
     }
 }

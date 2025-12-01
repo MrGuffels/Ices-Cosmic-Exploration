@@ -67,6 +67,7 @@ public static unsafe partial class CosmicHelper
         // - - - Crafter Specific - - - //
         public Dictionary<ushort, CraftingInfo> Crafts_Main { get; set; } = new();
         public Dictionary<ushort, CraftingInfo> Crafts_Pre { get; set; } = new();
+        public bool IsExpert { get; set; } = false;
 
         // - - - BTN | MIN Specific - - - //
         public Dictionary<uint, int> Gathering_Min { get; set; } = new();

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ICE.Ui.SettingTabs
+namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
     internal class SafetySettings
     {

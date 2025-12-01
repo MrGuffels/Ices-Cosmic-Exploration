@@ -1,9 +1,11 @@
 ﻿using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
+using ECommons.ExcelServices;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Utilities.Cosmic_Helper;
+using System.Collections.Generic;
 
 namespace ICE.Utilities;
 
@@ -120,5 +122,28 @@ public class PlayerHelper
         }
 
         return false;
+    }
+    public static unsafe bool HasManipUnlocked(uint jobId)
+    {
+        Dictionary<uint, uint> ManipClassInfo = new()
+        {
+            [8] = 4574,
+            [9] = 4575,
+            [10] = 4576,
+            [11] = 4577,
+            [12] = 4578,
+            [13] = 4579,
+            [14] = 4580,
+            [15] = 4581,
+        };
+
+        if (ManipClassInfo.TryGetValue(jobId, out var actionId))
+        {
+            return ActionManager.Instance()->GetActionStatus(ActionType.Action, actionId, checkRecastActive: false, checkCastingActive: false) is 574 or 586;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace ICE.Ui
 {
@@ -26,7 +27,11 @@ namespace ICE.Ui
             P.windowSystem.RemoveWindow(this);
         }
 
-
+        public override bool DrawConditions()
+        {
+            return C.ShowOverlay
+                && (PlayerHelper.IsInCosmicZone());
+        }
 
         public override void Draw()
         {
@@ -81,17 +86,19 @@ namespace ICE.Ui
             var nextList = PlayerHandlers.GetMissionsForHour().nextMissions;
             foreach (var mission in currentList)
             {
-                ImGui.SameLine(0, 2);
-                var jobIcon = CosmicHelper.JobIconDict[mission.ClassId];
-                var imageSize = new Vector2(23, 23);
-                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
-                if (ImGui.IsItemHovered())
+                if (CosmicHelper.JobIconDict.TryGetValue(mission.ClassId, out var jobIcon))
                 {
-                    ImGui.BeginTooltip();
-                    ImGui.Text($"[{mission.MissionId}]");
                     ImGui.SameLine(0, 2);
-                    ImGui.Text($"{CosmicHelper.SheetMissionDict[mission.MissionId].Name}");
-                    ImGui.EndTooltip();
+                    var imageSize = new Vector2(23, 23);
+                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text($"[{mission.MissionId}]");
+                        ImGui.SameLine(0, 2);
+                        ImGui.Text($"{CosmicHelper.SheetMissionDict[mission.MissionId].Name}");
+                        ImGui.EndTooltip();
+                    }
                 }
             }
             ImGui.SameLine(0, 2);
@@ -100,28 +107,50 @@ namespace ICE.Ui
             ImGui.SameLine();
             foreach (var mission in nextList)
             {
-                ImGui.SameLine(0, 2);
-                var jobIcon = CosmicHelper.JobIconDict[mission.ClassId];
-                var imageSize = new Vector2(23, 23);
-                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
-                if (ImGui.IsItemHovered())
+                if (CosmicHelper.JobIconDict.TryGetValue(mission.ClassId, out var jobIcon))
                 {
-                    ImGui.BeginTooltip();
-                    ImGui.Text($"[{mission.MissionId}]");
                     ImGui.SameLine(0, 2);
-                    ImGui.Text($"{CosmicHelper.SheetMissionDict[mission.MissionId].Name}");
-                    ImGui.EndTooltip();
+                    var imageSize = new Vector2(23, 23);
+                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text($"[{mission.MissionId}]");
+                        ImGui.SameLine(0, 2);
+                        ImGui.Text($"{CosmicHelper.SheetMissionDict[mission.MissionId].Name}");
+                        ImGui.EndTooltip();
+                    }
                 }
             }
-            var jobId = Player.JobId;
-            if (CosmicHelper.CrafterJobList.Contains(jobId) || CosmicHelper.GatheringJobList.Contains(jobId))
+            if (PlayerHelper.UsingSupportedJob())
             {
-                var jobIcon = CosmicHelper.JobIconDict[jobId];
-                var imageSize = new Vector2(23, 23);
-                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
-                ImGui.SameLine();
-                ImGui.AlignTextToFramePadding();
-                Relic_XP.DrawScoreBar(new Vector2(340, 10), false);
+                if (CosmicHelper.CurrentLunarMission != 0)
+                {
+                    var missionId = CosmicHelper.CurrentLunarMission;
+                    foreach (var jobId in CosmicHelper.SheetMissionDict[missionId].Jobs)
+                    {
+                        if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                        {
+                            var imageSize = new Vector2(23, 23);
+                            ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                            ImGui.SameLine();
+                            ImGui.AlignTextToFramePadding();
+                            Relic_XP.DrawScoreBar(new Vector2(340, 10), false, jobId);
+                        }
+                    }
+                }
+                else
+                {
+                    var jobId = Player.JobId;
+                    if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                    {
+                        var imageSize = new Vector2(23, 23);
+                        ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                        ImGui.SameLine();
+                        ImGui.AlignTextToFramePadding();
+                        Relic_XP.DrawScoreBar(new Vector2(340, 10), false);
+                    }
+                }
             }
             if (C.ShowTotalScore)
             {

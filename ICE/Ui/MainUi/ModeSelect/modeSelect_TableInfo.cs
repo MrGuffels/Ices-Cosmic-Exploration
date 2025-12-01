@@ -3,6 +3,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using ECommons;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using System;
@@ -11,6 +12,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
+using static MissionTimer;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace ICE.Ui.MainUi.ModeSelect
@@ -164,38 +167,41 @@ namespace ICE.Ui.MainUi.ModeSelect
             return clicked;
         }
 
-        public static void DrawMissionTable(string tableName, List<Mission> missions)
+        public static unsafe void DrawMissionTablev2(string headerName, string tableName, List<Mission> missions)
         {
+            // Setting up the size of the table here, ideally I want this to be the width of the current available space
+            // Also setting up the header for here as well
             var availableSpace = ImGui.GetContentRegionAvail().X;
-            var textSize = ImGui.CalcTextSize(tableName);
+            var textSize = ImGui.CalcTextSize(headerName);
             var headerPadding = new Vector2(10, 5);
             var headerHeight = textSize.Y + headerPadding.Y * 2;
 
-            using (ImRaii.Child($"Table Header: {tableName}", new Vector2(availableSpace, headerHeight), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            // Custom header to display above the table. This is moreso for quick user viewability
+            using (ImRaii.Child($"Table Header: {headerName}", new Vector2(availableSpace, headerHeight), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
             {
                 var centeredPosX = (availableSpace - textSize.X) / 2;
 
                 ImGui.SetCursorPosY(headerPadding.Y);
                 ImGui.SetCursorPosX(centeredPosX);
-                ImGui.Text($"{tableName} Missions");
+                ImGui.Text($"{headerName} Missions");
             }
 
-            uint selectedJob = C.SelectedJob;
-            int totalColumns = 17; // Enabled, Manual, ID, Completion Status, Mission Name, Cosmo, Lunar, I, II, III, IV, Turnin, Gather, Notes
-
+            // Table settings, just so I can sort it out visibly vs... being shoved in the table
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
-                                        ImGuiTableFlags.Borders |
-                                        ImGuiTableFlags.Reorderable |         // Allow column reordering
-                                        ImGuiTableFlags.Hideable |             // Allow hiding columns via right-click
-                                        ImGuiTableFlags.SizingFixedFit;
+                                ImGuiTableFlags.Borders |
+                                ImGuiTableFlags.Reorderable |
+                                ImGuiTableFlags.Hideable |
+                                ImGuiTableFlags.SizingFixedFit;
+            int tableTotalColumns = 18; // How many columns am I using. 
 
+            // This is here to auto show/hide specific columns that might not be necessary (gathering profiles, and planetary tokens as Ex.)
             bool hasGathering = false;
             bool hasToken = false;
+
             foreach (var mission in missions)
             {
                 var id = mission.id;
                 var missionInfo = CosmicHelper.SheetMissionDict[id];
-
 
                 if (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList))
                     hasGathering = true;
@@ -203,14 +209,12 @@ namespace ICE.Ui.MainUi.ModeSelect
                     hasToken = true;
             }
 
-            if (ImGui.BeginTable($"MissionList###{tableName}_{selectedJob}", totalColumns, tableFlags))
+            if (ImGui.BeginTable($"MissionList_{tableName}", tableTotalColumns, tableFlags))
             {
-                float padding = 10f;
-
                 #region Table Column Setup
 
-                // Setup ALL columns
-                ImGui.TableSetupColumn("Enabled");
+                ImGui.TableSetupColumn("Enabled"); // 0
+                ImGui.TableSetupColumn("Job");
                 ImGui.TableSetupColumn("Manual");
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("✓");
@@ -218,33 +222,45 @@ namespace ICE.Ui.MainUi.ModeSelect
                 ImGui.TableSetupColumn("Cosmo");
                 ImGui.TableSetupColumn("Lunar");
                 ImGui.TableSetupColumn("Score");
+                ImGui.TableSetupColumn("Reward Item"); // 9
 
-                // XP columns
+                // Xp Columns Here
+                float padding = 10f;
                 float xpWidth = ImGui.CalcTextSize("III").X + padding;
-                ImGui.TableSetupColumn("I");
+                ImGui.TableSetupColumn("I"); // 10
                 ImGui.TableSetupColumn("II");
                 ImGui.TableSetupColumn("III");
                 ImGui.TableSetupColumn("IV");
-                ImGui.TableSetupColumn("V");
+                ImGui.TableSetupColumn("V"); // 14
 
-                ImGui.TableSetupColumn("Turnin Mode");
+                ImGui.TableSetupColumn("Turnin Mode"); // 15
                 ImGui.TableSetupColumn("Gathering Profile");
-                ImGui.TableSetupColumn("Mission Notes");
-                ImGui.TableSetupColumn("Reward Item");
-
-                if (!hasGathering)
-                    ImGui.TableSetColumnEnabled(14, false);
-                if (!hasToken)
-                    ImGui.TableSetColumnEnabled(16, false);
+                ImGui.TableSetupColumn("Mission Notes"); // 17
 
                 #endregion
 
-                #region Custom Headers
+                #region Auto-Hiding Columns
+
+                ImGui.TableSetColumnEnabled(1, (C.ShowCompletionWindow || C.GrindProvisionals)); // Job Column (Useful for provisionals/Timed)
+                ImGui.TableSetColumnEnabled(2, C.ShowManualMode);
+
+                if (C.Auto_ShowTokens)
+                {
+                    ImGui.TableSetColumnEnabled(9, hasToken);
+                }
+
+                ImGui.TableSetColumnEnabled(16, hasGathering);
+
+                #endregion
+
+                #region Custom Header Stuff
 
                 ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
+                int columnIndexCount = 0;
 
-                // Column 0: Enabled
-                ImGui.TableSetColumnIndex(0);
+                #region Enabled Column
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("Enabled");
                 if (ImGui.IsItemHovered() && ImGui.IsMouseClicked(ImGuiMouseButton.Left))
                 {
@@ -287,10 +303,40 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                     ImGui.EndPopup();
                 }
+                columnIndexCount++;
 
-                // Column 1: Manual
-                ImGui.TableSetColumnIndex(1);
-                ImGui.AlignTextToFramePadding();
+                #endregion
+
+                #region Jobs
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
+                ImGui.TableHeader("Jobs");
+                if (ImGui.IsItemHovered() && ImGui.IsMouseClicked(ImGuiMouseButton.Left))
+                {
+                    ImGui.OpenPopup("Jobs Options");
+                }
+                if (ImGui.BeginPopup("Jobs Options"))
+                {
+                    bool showAllJobs = C.ShowCompletionOnlyJob;
+                    if (ImGui.RadioButton("Show All Jobs", !showAllJobs))
+                    {
+                        C.ShowCompletionOnlyJob = false;
+                        C.Save();
+                    }
+                    if (ImGui.RadioButton("Show Only Current Job", showAllJobs))
+                    {
+                        C.ShowCompletionOnlyJob = true;
+                        C.Save();
+                    }
+                    ImGui.EndPopup();
+                }
+                columnIndexCount++;
+
+                #endregion
+
+                #region Manual
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("Manual");
                 if (ImGui.IsItemHovered())
                 {
@@ -298,9 +344,13 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.Text("Manual mode - requires manual intervention");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
 
-                // Column 2: ID
-                ImGui.TableSetColumnIndex(2);
+                #endregion
+
+                #region ID
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("ID");
                 if (ImGui.IsItemHovered())
                 {
@@ -308,9 +358,13 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.Text("Mission ID number");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
 
-                // Column 3: Completed (with Unicode checkmark)
-                ImGui.TableSetColumnIndex(3);
+                #endregion
+
+                #region Completed
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("✓");
                 if (ImGui.IsItemHovered())
                 {
@@ -318,9 +372,13 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.Text("Mission completion status");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
 
-                // Column 4: Mission Name
-                ImGui.TableSetColumnIndex(4);
+                #endregion
+
+                #region Mission Name
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("Mission Name");
                 if (ImGui.IsItemHovered())
                 {
@@ -328,10 +386,13 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.Text("Click mission name to view details");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
 
-                // Continue this pattern for all your columns...
-                // Column 5: Cosmo
-                ImGui.TableSetColumnIndex(5);
+                #endregion
+
+                #region Cosmocredits
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("Cosmo");
                 if (ImGui.IsItemHovered())
                 {
@@ -339,19 +400,27 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.Text("Cosmic Credits reward");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
 
-                // Column 6: Lunar
-                ImGui.TableSetColumnIndex(6);
-                ImGui.TableHeader("Lunar");
+                #endregion
+
+                #region Planetary Credits
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
+                ImGui.TableHeader("Planetary");
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text("Lunar Credits reward");
+                    ImGui.Text("Planetary Credits reward");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
 
-                // Column 7: Score
-                ImGui.TableSetColumnIndex(7);
+                #endregion
+
+                #region Score
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("Score");
                 if (ImGui.IsItemHovered())
                 {
@@ -359,53 +428,13 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.Text("Class Score reward");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
 
-                // XP Columns (8-12)
-                string[] xpLabels = { "I", "II", "III", "IV", "V" };
-                for (int i = 0; i < 5; i++)
-                {
-                    ImGui.TableSetColumnIndex(8 + i);
-                    ImGui.TableHeader(xpLabels[i]);
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.BeginTooltip();
-                        ImGui.Text($"Relic XP Type {xpLabels[i]} reward");
-                        ImGui.EndTooltip();
-                    }
-                }
+                #endregion
 
-                // Column 13: Turnin Mode
-                ImGui.TableSetColumnIndex(13);
-                ImGui.TableHeader("Turnin Mode");
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.BeginTooltip();
-                    ImGui.Text("Configure mission turnin settings");
-                    ImGui.EndTooltip();
-                }
+                #region Planet Tokens
 
-                // Column 14: Gathering Profile
-                ImGui.TableSetColumnIndex(14);
-                ImGui.TableHeader("Gathering Profile");
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.BeginTooltip();
-                    ImGui.Text("Select gathering profile for gather missions");
-                    ImGui.EndTooltip();
-                }
-
-                // Column 15: Mission Notes
-                ImGui.TableSetColumnIndex(15);
-                ImGui.TableHeader("Mission Notes");
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.BeginTooltip();
-                    ImGui.Text("Additional mission information and requirements");
-                    ImGui.EndTooltip();
-                }
-
-                // Column 16: Reward Item
-                ImGui.TableSetColumnIndex(16);
+                ImGui.TableSetColumnIndex(columnIndexCount);
                 ImGui.TableHeader("Token");
                 if (ImGui.IsItemHovered())
                 {
@@ -413,6 +442,69 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.Text("Tokens that can be earned from this mission");
                     ImGui.EndTooltip();
                 }
+                columnIndexCount++;
+
+                #endregion
+
+                #region Relic XP
+
+                string[] xpLabels = { "I", "II", "III", "IV", "V" };
+                for (int i = 0; i < 5; i++)
+                {
+                    ImGui.TableSetColumnIndex(columnIndexCount);
+                    ImGui.TableHeader(xpLabels[i]);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text($"Relic XP Type {xpLabels[i]} reward");
+                        ImGui.EndTooltip();
+                    }
+                    columnIndexCount++;
+                }
+
+                #endregion
+
+                #region Turnin Mode
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
+                ImGui.TableHeader("Turnin Mode");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Configure mission turnin settings");
+                    ImGui.EndTooltip();
+                }
+                columnIndexCount++;
+
+                #endregion
+
+                #region Gathering Profile
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
+                ImGui.TableHeader("Gathering Profile");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Select gathering profile for gather missions");
+                    ImGui.EndTooltip();
+                }
+                columnIndexCount++;
+
+                #endregion
+
+                #region Mission Notes
+
+                ImGui.TableSetColumnIndex(columnIndexCount);
+                ImGui.TableHeader("Mission Notes");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text("Additional mission information and requirements");
+                    ImGui.EndTooltip();
+                }
+                columnIndexCount++;
+
+                #endregion
 
                 #endregion
 
@@ -422,24 +514,36 @@ namespace ICE.Ui.MainUi.ModeSelect
                     var missionConfig = C.MissionConfig[Id];
                     var missionInfo = CosmicHelper.SheetMissionDict[Id];
 
-                    bool craftMission = missionInfo.Attributes.HasFlag(MissionAttributes.Craft);
-                    bool gatherMission = missionInfo.Attributes.HasFlag(MissionAttributes.Gather);
-                    bool fishMission = missionInfo.Attributes.HasFlag(MissionAttributes.Fish);
-                    bool critical = missionInfo.Attributes.HasFlag(MissionAttributes.Critical);
-
-                    bool dualclass = craftMission && (gatherMission || fishMission);
                     bool unsupported = UnsupportedMissions.Ids.Contains(Id);
                     bool hideUnsupported = C.HideUnsupportedMissions;
 
                     if (unsupported && hideUnsupported)
                         continue;
 
-                    ImGui.TableNextRow();
+                    if (C.ShowCompletionWindow)
+                    {
+                        if (C.ShowCompletion_MissingGold)
+                        {
+                            var managerPtr = WKSManager.Instance();
+                            if (managerPtr == null) continue;
 
-                    // Mission Enable/Disable Checkbox
+                            var manager = (WKSManagerCustom*)managerPtr;
+                            var isGold = manager->IsMissionGolded(Id);
+
+                            if (isGold)
+                                continue;
+                        }
+                        if (C.ShowSelectedJobOnly && !CosmicHelper.SheetMissionDict[Id].Jobs.Contains(C.SelectedJob))
+                        {
+                            continue;
+                        }
+                    }
+
+                    ImGui.TableNextRow();
                     ImGui.PushID(Id);
 
-                    // Enable | Disable Mission Selection
+                    #region Enabled Column Stuff
+
                     ImGui.TableSetColumnIndex(0);
                     bool enabled = missionConfig.Enabled;
                     if (Table_CenterCheckbox("##EnableMission", ref enabled))
@@ -464,8 +568,32 @@ namespace ICE.Ui.MainUi.ModeSelect
                         selectedMission = Id;
                     }
 
+                    #endregion
 
-                    // Manual mode checkbox
+                    #region Job Info
+
+                    ImGui.TableNextColumn();
+                    if (missionInfo.Jobs.Count > 1)
+                    {
+                        ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
+                        ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.Last()];
+                        Vector2 imageSize = new Vector2(23, 23);
+
+                        ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
+                        ImGui.SameLine(0, 2);
+                        ImGui.Image(job2Icon.GetWrapOrEmpty().Handle, imageSize);
+                    }
+                    else
+                    {
+                        ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
+                        Vector2 imageSize = new Vector2(23, 23);
+                        ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
+                    }
+
+                    #endregion
+
+                    #region Manual Mode
+
                     ImGui.TableNextColumn();
                     bool manualMode = missionConfig.ManualMode;
                     if (Table_CenterCheckbox("##Manual Mode", ref manualMode))
@@ -478,15 +606,24 @@ namespace ICE.Ui.MainUi.ModeSelect
                         selectedMission = Id;
                     }
 
-                    // Mission ID
+                    #endregion
+
+                    #region Mission Id
+
                     ImGui.TableNextColumn();
                     Table_FullCenterText(Id.ToString());
 
-                    // Completion Status
+                    #endregion
+
+                    #region Completion Status
+
                     ImGui.TableNextColumn();
                     CompletionStatus_Formatted(Id);
 
-                    // Mission Name
+                    #endregion
+
+                    #region Mission Name + Flag Info
+
                     ImGui.TableNextColumn();
                     if (unsupported)
                     {
@@ -494,6 +631,19 @@ namespace ICE.Ui.MainUi.ModeSelect
                         ImGuiEx.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle, "This is currently not supported yet. I'm working on bringing it over.\n" +
                                                 "It's just taking me time");
                         ImGui.PopStyleColor();
+                        ImGui.SameLine();
+                    }
+                    if (missionInfo.Attributes.HasFlag(MissionAttributes.ExpertCraft))
+                    {
+                        var crafterJobId = missionInfo.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
+                        if (!PlayerHelper.HasManipUnlocked(crafterJobId))
+                        {
+                            var color = EColor.Yellow;
+                            ImGuiEx.IconWithTooltip(color, FontAwesomeIcon.ExclamationTriangle, 
+                                                    "This is an expert craft by the games definition, and you don't have manipulation unlocked on this class.\n" +
+                                                    "You can enable this yourself, but do note that artisan will not allow you to craft with it until you've unlocked that skill.\n" +
+                                                    "You can still make a macro if you'd like, but it's either that or go do the class quest up to like... 68");
+                        }
                         ImGui.SameLine();
                     }
 
@@ -515,7 +665,10 @@ namespace ICE.Ui.MainUi.ModeSelect
                         }
                     }
 
-                    // Cosmo/Lunar Credits
+                    #endregion
+
+                    #region Cosmo | Planetary | Class Score | Tokens
+
                     ImGui.TableNextColumn();
                     Table_FullCenterText(missionInfo.CosmoCredit.ToString());
 
@@ -525,7 +678,14 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.TableNextColumn();
                     Table_FullCenterText(missionInfo.ClassScore.ToString());
 
-                    // XP Columns
+                    ImGui.TableNextColumn();
+                    string itemAmount = missionInfo.RewardItemAmount > 0 ? $"{missionInfo.RewardItemAmount}" : "-";
+                    Table_FullCenterText(itemAmount);
+
+                    #endregion
+
+                    #region Relic Xp Info
+
                     for (int i = 1; i < 6; i++)
                     {
                         ImGui.TableNextColumn();
@@ -540,11 +700,14 @@ namespace ICE.Ui.MainUi.ModeSelect
                         Table_FullCenterText(relicXp);
                     }
 
-                    // Mission Turnin Settings
+                    #endregion
+
+                    #region Mission Turnins
+
                     ImGui.TableNextColumn();
                     if (missionInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                     {
-                        Table_VertCenterText("Auto");
+                        Table_FullCenterText("Auto");
                         if (missionConfig.AutoTurnin == false)
                         {
                             missionConfig.AutoTurnin = true;
@@ -557,7 +720,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     }
                     else
                     {
-                        if (Table_ButtonCentered("Select Turnin"))
+                        if (Table_CenteredButton("Select Turnin"))
                         {
                             ImGui.OpenPopup("Mission Turnin Settings");
                         }
@@ -641,26 +804,28 @@ namespace ICE.Ui.MainUi.ModeSelect
                             ImGui.EndPopup();
                         }
                     }
+
+                    #endregion
+
+                    #region Gathering Profile Settings
+
                     bool gatherProfile = missionInfo.Attributes.HasFlag(MissionAttributes.Gather);
                     bool collectable = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables) || missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
 
-                    // Gather Mission Profile Settings
                     ImGui.TableNextColumn();
                     if (gatherProfile && !collectable)
                     {
                         string profileName = "???";
-                        var profileSettings = C.GatherSettings.Where(x => x.Id == missionConfig.GatherProfileId).FirstOrDefault();
-
-                        if (profileSettings != null)
+                        if (C.GatherProfiles.TryGetValue(missionConfig.GProfileId, out var profileSetting))
                         {
-                            profileName = profileSettings.Name;
+                            profileName = profileSetting.Name;
                         }
                         else
                         {
                             profileName = "???";
                         }
 
-                        if (Table_ButtonCentered($"{profileName}##GatherProfile_{profileName}"))
+                        if (Table_CenteredButton($"{profileName}"))
                         {
                             ImGui.OpenPopup("Selecting Gathering Profile");
                         }
@@ -675,26 +840,29 @@ namespace ICE.Ui.MainUi.ModeSelect
                             ImGui.Text($"Currently Selected: {profileName}");
                             ImGui.Separator();
 
-                            foreach (var profile in C.GatherSettings)
+                            foreach (var profile in C.GatherProfiles)
                             {
-                                if (profile != null)
+                                var id = profile.Key;
+                                bool profileSelected = missionConfig.GProfileId == id;
+                                ImGui.PushID($"{id}_{profile.Value.Name}");
+                                if (ImGui.RadioButton(profile.Value.Name, profileSelected))
                                 {
-                                    var profileId = profile.Id;
-                                    bool profileSelected = missionConfig.GatherProfileId == profileId;
-                                    if (ImGui.RadioButton(profile.Name, profileSelected))
-                                    {
-                                        missionConfig.GatherProfileId = profileId;
-                                        C.Save();
-                                    }
+                                    missionConfig.GProfileId = id;
+                                    C.Save();
                                 }
+                                ImGui.PopID();
                             }
 
                             ImGui.EndPopup();
                         }
                     }
+                    else if (gatherProfile && collectable)
+                    {
+                        Table_FullCenterText("Auto");
+                    }
                     else if (missionInfo.Attributes.HasFlag(MissionAttributes.Fish))
                     {
-                        if (Table_ButtonCentered($"Select Profile##Select_Fishing_Profile"))
+                        if (Table_CenteredButton($"Select Profile"))
                         {
                             ImGui.OpenPopup("Select Fishing Profile");
                         }
@@ -724,6 +892,10 @@ namespace ICE.Ui.MainUi.ModeSelect
                             ImGui.EndPopup();
                         }
                     }
+
+                    #endregion
+
+                    #region Notes
 
                     ImGui.TableNextColumn();
                     int notesCount = 0;
@@ -838,9 +1010,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                         }
                     }
 
-                    ImGui.TableNextColumn();
-                    string itemAmount = missionInfo.RewardItemAmount > 0 ? $"{missionInfo.RewardItemAmount}" : "-";
-                    Table_VertCenterText(itemAmount);
+                    #endregion
 
                     ImGui.PopID();
                 }
@@ -849,7 +1019,375 @@ namespace ICE.Ui.MainUi.ModeSelect
             }
         }
 
+        public static void DrawMissionDetails()
+        {
+            if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var mission))
+            {
+                var id = selectedMission;
+                ImGui.PushID($"{mission}_{id}");
+
+                #region Mission Name
+
+                ImGui.Text($"Mission:");
+                ImGui.SameLine(0, 5);
+                ImGui.TextDisabled($"[{id}]");
+                ImGui.SameLine(0, 5);
+                ImGui.Text($"{mission.Name}");
+
+                #endregion
+
+                if (ImGui.BeginTable("Detailed Mission Info", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+                {
+                    ImGui.TableSetupColumn("Name");
+                    ImGui.TableSetupColumn("Info");
+
+                    // Row 1
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Cosmocredits");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{mission.CosmoCredit}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Planetary Credits");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{mission.LunarCredit}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Class Score:");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{mission.ClassScore}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text($"Job(s)");
+
+                    ImGui.TableNextColumn();
+                    foreach (var job in mission.Jobs)
+                    {
+                        ISharedImmediateTexture? icon = CosmicHelper.JobIconDict[job];
+                        Vector2 size = new Vector2(20, 20);
+                        ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
+                        ImGui.SameLine();
+                    }
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text($"Completed:");
+
+                    ImGui.TableNextColumn();
+                    CompletionStatus_Normal(selectedMission);
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Relic XP Kind");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text("Amounts");
+
+                    foreach (var xp in mission.RelicXpInfo.OrderByDescending(x => x.Key))
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        string type = "";
+                        switch (xp.Key)
+                        {
+                            case 1:
+                                type = "I";
+                                break;
+                            case 2:
+                                type = "II";
+                                break;
+                            case 3:
+                                type = "III";
+                                break;
+                            case 4:
+                                type = "IV";
+                                break;
+                            case 5:
+                                type = "V";
+                                break;
+                            default:
+                                type = "???";
+                                break;
+                        }
+
+                        ImGui.Text($"Lv. {type}");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{xp.Value}");
+                    }
+
+                    if (mission.BronzeScore != 0)
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"Bronze Requirement");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{mission.BronzeScore}");
+                    }
+
+                    if (mission.SilverScore != 0)
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"Silver Requirement");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{mission.SilverScore}");
+                    }
+
+                    if (mission.GoldScore != 0)
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Gold Requirement");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{mission.GoldScore}");
+                    }
+
+                    ImGui.EndTable();
+                }
+
+                if (mission.Crafts_Main.Count > 0)
+                {
+                    WindowSpacer();
+
+                    var craftCount = 0;
+                    var job = mission.Jobs.First(x => CosmicHelper.CrafterJobList.Contains(x));
+                    ImGui.Text("Recipe Detailed Info");
+                    foreach (var craft in mission.Crafts_Main)
+                    {
+                        craftCount++;
+                        if (Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Recipe>().TryGetRow(craft.Key, out var recipe))
+                        {
+                            string itemName = recipe.ItemResult.Value.Name.ToString();
+                            if (ImGui.CollapsingHeader($"{itemName} [{craftCount}]"))
+                            {
+                                if (ImGui.BeginTable($"Recipe Detailed Info: {itemName} {craftCount}", 2, ImGuiTableFlags.SizingFixedFit))
+                                {
+                                    var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.Text("Durability");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{recipeInfo.Durability}");
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.Text("Progress");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{recipeInfo.Progress}");
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.Text("Max Quality");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{recipeInfo.Quality}");
+
+                                    ImGui.EndTable();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                WindowSpacer();
+
+                ImGui.Text("Mission Atributes");
+                if (mission.Attributes == MissionAttributes.None)
+                {
+                    ImGui.Text("None");
+                    return;
+                }
+                else
+                {
+                    foreach (MissionAttributes flag in Enum.GetValues<MissionAttributes>())
+                    {
+                        if (flag != MissionAttributes.None && mission.Attributes.HasFlag(flag))
+                        {
+                            ImGui.Text(flag.ToString());
+                        }
+                    }
+                }
+
+                if (CosmicHelper.MissionUnlock.TryGetValue(selectedMission, out var unlock))
+                {
+                    ImGui.Text("The following missions are required to have gold before you can do this one");
+                    foreach (var lockedMission in unlock)
+                    {
+                        CompletionStatus_Normal(lockedMission);
+                        ImGui.SameLine();
+                        ImGui.Text($"[{lockedMission}] - {CosmicHelper.SheetMissionDict[lockedMission].Name}");
+                    }
+
+                }
+
+                WindowSpacer();
+                ImGui.Text($"Mission Times!");
+
+                if (C.MissionConfig.TryGetValue(selectedMission, out var config))
+                {
+                    bool allowDelete = (ImGui.IsKeyDown(ImGuiKey.LeftShift) || ImGui.IsKeyDown(ImGuiKey.RightShift)) && (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl));
+
+                    using (ImRaii.Disabled(!allowDelete))
+                    {
+                        if (ImGui.Button("Reset Stats"))
+                        {
+                            P.MissionTimer.ResetTimers(selectedMission);
+                        }
+                    }
+                    if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text("Hold Shift + Control");
+                        ImGui.EndTooltip();
+                    }
+
+                    if (config.TurninRecords.Count > 0)
+                    {
+                        ImGui.Text($"Best Time: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff}");
+                        ImGui.Text($"Average Time: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}");
+                    }
+                    else
+                    {
+                        ImGui.Text("Best Time: --:--:--");
+                        ImGui.Text("Average Time: --:--:--");
+                    }
+
+                    ImGui.Text($"Amount of times completed: {config.TotalCompletions}");
+                    ImGui.Text($"Amount of timed abandoned: {config.FailedCounters}");
+
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
+                    {
+                        var baseScore = missionInfo.ClassScore; // Adjust this based on your actual property name
+
+                        ImGui.Separator();
+                        ImGui.Text("Estimated Score Per Hour:");
+                        ImGui.SameLine();
+                        ImGui.TextDisabled("?");
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+                            ImGui.Text("This is ASSUMING:");
+                            ImGui.Text("1: You have immaculate rng of getting the mission you want every time");
+                            ImGui.Text("2: You're hitting the threshold every time");
+                            ImGui.Text("This is based on your average time. \nSo get a good couple of runs to get a good feel for the timing");
+                            ImGui.EndTooltip();
+                        }
+
+                        bool ShowScorePerMinute = C.ShowSPM;
+
+                        if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                        {
+                            if (ImGui.Checkbox("Show Score Per Minute", ref ShowScorePerMinute))
+                            {
+                                C.ShowSPM = ShowScorePerMinute;
+                                C.Save();
+                            }
+
+                            var criticalScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageTime, baseScore, 1.0);
+                            if (!C.ShowSPM)
+                                criticalScore *= 60;
+
+                            string timeUnit = C.ShowSPM ? "pts/minute" : "pts/hr";
+                            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Critical: {criticalScore:F0} {timeUnit}");
+                        }
+                        else
+                        {
+                            if (ImGui.Checkbox("Show Score Per Minute", ref ShowScorePerMinute))
+                            {
+                                C.ShowSPM = ShowScorePerMinute;
+                                C.Save();
+                            }
+
+                            var ActualSPM = MissionStatsCalculator.CalculateActualScorePerMinute(config.TurninRecords, baseScore);
+                            var bronzeScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageBronzeTime, baseScore, 1.0);
+                            var silverScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageSilverTime, baseScore, 4.0);
+                            var goldScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageGoldTime, baseScore, 5.0);
+                            // Convert to per-hour if needed
+                            if (!C.ShowSPM)
+                            {
+                                ActualSPM *= 60;
+                                bronzeScore *= 60;
+                                silverScore *= 60;
+                                goldScore *= 60;
+                            }
+                            string timeUnit = C.ShowSPM ? "pts/minute" : "pts/hr";
+                            string actualTimeUnit = C.ShowSPM ? "Actual pts/minute" : "Actual pts/hr";
+
+                            ImGui.Text($"Actual {timeUnit}: {ActualSPM:F2}");
+                            ImGui.SameLine();
+                            ImGui.TextDisabled("?");
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.BeginTooltip();
+                                ImGui.Text("This is judged based off your current completion rate of bronze/silver/gold");
+                                ImGui.Text("It calculates the average score you get across all, and assuming you get that you were to consistently get that average across the hour, then it will tell you what it would be for that one mission");
+                                ImGui.Text("This is just really nerdy way of getting a more accurate average based off your completion rate");
+                                ImGui.EndTooltip();
+                            }
+                            if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                            {
+                                string averageSequenceScore = $"Average pts/minute [Sequence]: {MissionStatsCalculator.CalculateAverageSequenceScorePerMinute(id, 5):N2}";
+                                ImGui.Text(averageSequenceScore);
+                                ImGui.SameLine();
+                                ImGui.TextDisabled("?");
+                                if (ImGui.IsItemHovered())
+                                {
+                                    ImGui.BeginTooltip();
+                                    ImGui.Text("This is ASSUMING: You're getting gold across all prior missions (Because you have to do this one)");
+                                    ImGui.Text("This is really only here for people who are debating on doing sequential missions, \nso they can get the average and compare against just normal mission spamming");
+                                    ImGui.Text("For example, I found out it was ~30 points per minute worse than if I were to just spam the single mission for one series \n(not using food/pots, but also saving on resources)");
+                                    ImGui.EndTooltip();
+                                }
+                            }
+
+                            ImGui.TextColored(new Vector4(0.8f, 0.5f, 0.3f, 1.0f), $"Bronze: {bronzeScore:F0} {timeUnit} [{config.BronzeCompletion}/{config.TotalCompletions}]");
+                            ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"Silver: {silverScore:F0} {timeUnit} [{config.SilverCompletions}/{config.TotalCompletions}]");
+                            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Gold: {goldScore:F0} {timeUnit} [{config.GoldCompletions}/{config.TotalCompletions}]");
+                        }
+                    }
+
+
+                    if (config.TurninRecords.Count > 0 && ImGui.CollapsingHeader("View All Completed Times"))
+                    {
+                        for (int i = 0; i < config.TurninRecords.Count; i++)
+                        {
+                            var record = config.TurninRecords[i];
+
+                            ImGui.Text($"[{i+1}] \u2192 {TimeSpan.FromSeconds(record.Time):mm\\:ss\\.ff}");
+                            ImGui.SameLine();
+                            DrawColoredStar(record.State);
+
+                        }
+                    }
+                }
+
+                ImGui.PopID();
+            }
+        }
+
         #region Table Tools
+
+        private static void WindowSpacer()
+        {
+            ImGui.Dummy(new Vector2(0, 5));
+            ImGui.Separator();
+            ImGui.Dummy(new Vector2(0, 5));
+        }
 
         // Center a checkbox both horizontally and vertically in the current table cell
         private static bool Table_CenterCheckbox(string id, ref bool value)
@@ -862,16 +1400,6 @@ namespace ICE.Ui.MainUi.ModeSelect
             ImGui.AlignTextToFramePadding();
 
             return ImGui.Checkbox($"##{id}", ref value);
-        }
-        private static void Table_DrawCenteredImage(ISharedImmediateTexture textureId, Vector2 imageSize)
-        {
-            var cursorPos = ImGui.GetCursorPos();
-            var availWidth = ImGui.GetContentRegionAvail().X;
-
-            ImGui.SetCursorPosX(cursorPos.X + (availWidth - imageSize.X) * 0.5f);
-            ImGui.AlignTextToFramePadding();
-
-            ImGui.Image(textureId.GetWrapOrEmpty().Handle, imageSize);
         }
         private static void Table_VertCenterText(string text)
         {
@@ -900,7 +1428,7 @@ namespace ICE.Ui.MainUi.ModeSelect
 
             FontAwesome.Print(color, icon);
         }
-        private static bool Table_ButtonCentered(string label, Vector2? buttonSize = null)
+        private static bool Table_CenteredButton(string label, Vector2? buttonSize = null)
         {
             var cursorPosX = ImGui.GetCursorPosX();
             var availWidth = ImGui.GetContentRegionAvail().X;
@@ -914,22 +1442,11 @@ namespace ICE.Ui.MainUi.ModeSelect
             {
                 var textSize = ImGui.CalcTextSize(label);
                 var framePadding = ImGui.GetStyle().FramePadding;
-                actualButtonSize = new Vector2(textSize.X + framePadding.X * 2, textSize.Y + framePadding.Y * 2);
+                actualButtonSize = new Vector2(textSize.X + framePadding.X * 2 + 10f, textSize.Y + framePadding.Y * 2);
             }
 
             ImGui.SetCursorPosX(cursorPosX + (availWidth - actualButtonSize.X) * 0.5f);
             return ImGui.Button(label, actualButtonSize);
-        }
-        private static void Table_CenterHeaderText(string text)
-        {
-            var cursorPosX = ImGui.GetCursorPosX();
-            var availWidth = ImGui.GetContentRegionAvail().X;
-            var textWidth = ImGui.CalcTextSize(text).X;
-
-            ImGui.SetCursorPosX(cursorPosX + (availWidth - textWidth) * 0.5f);
-            ImGui.AlignTextToFramePadding();
-
-            ImGui.TableHeader(text);
         }
         private static void Table_FontCenter(FontAwesomeIcon icon)
         {

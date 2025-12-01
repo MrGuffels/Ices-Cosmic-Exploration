@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ICE.Ui.SettingTabs
 {
-    internal class MissionSettings
+    internal class Priority_Settings
     {
         public static void Draw()
         {

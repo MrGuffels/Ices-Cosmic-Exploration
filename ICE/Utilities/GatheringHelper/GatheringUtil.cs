@@ -139,6 +139,62 @@ public static unsafe partial class GatheringUtil
             RequiredGp = 100,
             RequiredLv = 68,
         }},
+        { "FieldMasteryIII", new GatheringActions
+        {
+            // 50% increase
+            ActionName = "Field Mastery III",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 295, SkillName = "", },
+                [17] = new() { ActionId = 294, SkillName = "", }
+            },
+            StatusId = 218,
+            StatusName = "Gathering Rate Up",
+            RequiredGp = 250,
+            RequiredLv = 10,
+        }},
+        { "FieldMasteryII", new GatheringActions
+        {
+            // 15% increase
+            ActionName = "Field Mastery II",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 237, SkillName = "", },
+                [17] = new() { ActionId = 220, SkillName = "", }
+            },
+            StatusId = 218,
+            StatusName = "Gathering Rate Up",
+            RequiredGp = 100,
+            RequiredLv = 5,
+        }},
+        { "FieldMasteryI", new GatheringActions
+        {
+            // 5% increase
+            ActionName = "Field Mastery I",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 235, SkillName = "", },
+                [17] = new() { ActionId = 218, SkillName = "", }
+            },
+            StatusId = 218,
+            StatusName = "Gathering Rate Up",
+            RequiredGp = 50,
+            RequiredLv = 4,
+        }},
+        { "FieldMasteryTemp", new GatheringActions
+        {
+            // 15% increase [temp]
+            ActionName = "Clear Vision | Flora Mastery",
+            ClassAction = new()
+            {
+                [16] = new() { ActionId = 4072, SkillName = "", },
+                [17] = new() { ActionId = 4086, SkillName = "", }
+            },
+            StatusId = 754,
+            StatusName = "Gathering Rate Up (Limited)",
+            RequiredGp = 50,
+            RequiredLv = 23,
+        }},
     };
 
     public static Dictionary<string, GatheringActions> GathCollectableBuffs = new()
@@ -1700,15 +1756,9 @@ public static unsafe partial class GatheringUtil
             {
                 new GathNodeInfo()
                 {
-                    Position = new Vector3(-314.19f, 27.94f, 121.84f),
-                    LandZone = new Vector3(-314.19f, 27.94f, 121.84f),
-                    NodeId = 35132,
-                },
-                new GathNodeInfo()
-                {
-                    Position = new Vector3(-317.83f, 28.43f, 135.26f),
-                    LandZone = new Vector3(-317.83f, 28.43f, 135.26f),
-                    NodeId = 35133,
+                    Position = new Vector3(-245.44f, 24.63f, 188.87f),
+                    LandZone = new Vector3(-245.44f, 24.63f, 188.87f),
+                    NodeId = 35131,
                 },
                 new GathNodeInfo()
                 {
@@ -1718,21 +1768,27 @@ public static unsafe partial class GatheringUtil
                 },
                 new GathNodeInfo()
                 {
-                    Position = new Vector3(-245.44f, 24.63f, 188.87f),
-                    LandZone = new Vector3(-245.44f, 24.63f, 188.87f),
-                    NodeId = 35131,
+                    Position = new Vector3(-317.83f, 28.43f, 135.26f),
+                    LandZone = new Vector3(-317.83f, 28.43f, 135.26f),
+                    NodeId = 35133,
                 },
                 new GathNodeInfo()
                 {
-                    Position = new Vector3(-216.66f, 19.97f, 105.91f),
-                    LandZone = new Vector3(-216.66f, 19.97f, 105.91f),
-                    NodeId = 35129,
+                    Position = new Vector3(-314.19f, 27.94f, 121.84f),
+                    LandZone = new Vector3(-314.19f, 27.94f, 121.84f),
+                    NodeId = 35132,
                 },
                 new GathNodeInfo()
                 {
                     Position = new Vector3(-243.67f, 20.00f, 90.38f),
                     LandZone = new Vector3(-243.67f, 20.00f, 90.38f),
                     NodeId = 35130,
+                },
+                new GathNodeInfo()
+                {
+                    Position = new Vector3(-216.66f, 19.97f, 105.91f),
+                    LandZone = new Vector3(-216.66f, 19.97f, 105.91f),
+                    NodeId = 35129,
                 },
             },
             [new Vector2(-168f, -181f)] = new()
@@ -2656,7 +2712,6 @@ public static unsafe partial class GatheringUtil
                     NodeId = 35302,
                 },
             },
-            // Export for Zone 1291, Flag (-552, 651)
             [new Vector2(-552f, 651f)] = new()
             {
                 new GathNodeInfo()
@@ -3239,7 +3294,6 @@ public static unsafe partial class GatheringUtil
                     NodeId = 35452,
                 },
             },
-            // Export for Zone 1291, Flag (-333, 560)
             [new Vector2(-333f, 560f)] = new()
             {
                 new GathNodeInfo()

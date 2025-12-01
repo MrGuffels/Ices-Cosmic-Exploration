@@ -1,4 +1,7 @@
-﻿using Lumina.Excel.Sheets;
+﻿using Dalamud.Interface;
+using ICE.Utilities.GatheringHelper;
+using Lumina.Excel.Sheets;
+using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -18,7 +21,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Mission_GatheringInfo", 8, tableFlags))
+            if (ImGui.BeginTable("Mission_GatheringInfo", 10, tableFlags))
             {
                 ImGui.TableSetupColumn("Key");
                 ImGui.TableSetupColumn("Mission Name");
@@ -27,6 +30,8 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetupColumn($"Gather Item [{i}]");
                     ImGui.TableSetupColumn($"Amount [{i}]");
                 }
+                ImGui.TableSetupColumn("Mission Radius");
+                ImGui.TableSetupColumn("Critical Location");
                 ImGui.TableHeadersRow();
 
                 foreach (var entry in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Overlaps(CosmicHelper.GatheringJobList)))
@@ -60,7 +65,29 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{item.Value}");
                     }
 
+                    ImGui.TableSetColumnIndex(8);
+                    if (entry.Value.MarkerId != 0)
+                    {
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        ImGui.Text(FontAwesomeIcon.Flag.ToIconString());
+                        ImGui.PopFont();
+                        if (ImGui.IsItemClicked())
+                        {
+                            var missionInfo = entry.Value;
+                            Utils.SetGatheringRing(missionInfo.TerritoryId, (int)missionInfo.MapPosition.X, (int)missionInfo.MapPosition.Y, missionInfo.Radius, missionInfo.Name);
+                        }
+                    }
 
+                    ImGui.TableNextColumn();
+                    if (GatheringUtil.CriticalLocations.TryGetValue(entry.Key, out var critical))
+                    {
+                        ImGuiEx.Icon(FontAwesomeIcon.FlagCheckered);
+                        if (ImGui.IsItemClicked())
+                        {
+                            var missionInfo = entry.Value;
+                            P.Navmesh.PathfindAndMoveTo(critical, false);
+                        }
+                    }
                 }
 
                 ImGui.EndTable();

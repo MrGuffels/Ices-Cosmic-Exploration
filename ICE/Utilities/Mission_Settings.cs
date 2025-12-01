@@ -32,6 +32,10 @@ namespace ICE.Utilities
             ["BountifulYieldII"] = 0,
             ["BonusIntegrityChance"] = 0,
             ["BonusIntegrity"] = 0,
+            ["FieldMasteryIII"] = 0,
+            ["FieldMasteryII"] = 0,
+            ["FieldMasteryI"] = 0,
+            ["FieldMasteryTemp"] = 0,
         };
 
         internal static bool Abandon = false;

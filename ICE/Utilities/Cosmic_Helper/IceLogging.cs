@@ -165,7 +165,7 @@ internal static class IceLogging
     public static class LogSystem
     {
         private static List<LogEntry> logs = new();
-        private static int maxLogCount = 1000; // Prevent memory bloat
+        private static int maxLogCount = 3000; // Prevent memory bloat
 
         public static IReadOnlyList<LogEntry> Logs => logs.AsReadOnly();
 

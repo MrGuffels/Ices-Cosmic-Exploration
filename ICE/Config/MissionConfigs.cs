@@ -10,7 +10,7 @@ namespace ICE.Config
     public class MissionConfigs : IYamlConfig
     {
         // Last edited version: 1
-        public int ConfigVersion { get; set; } = 0;
+        public int ConfigVersion { get; set; } = 9;
 
         #region Safety Settings
         public bool StopOnAbort { get; set; } = true;
@@ -82,19 +82,21 @@ namespace ICE.Config
         public bool ShowSinusMissions { get; set; } = true;
         public bool ShowPhaennaMissions { get; set; } = true;
         public bool RemoveAfterGold { get; set; } = false;
+        public bool ShowExtraMissionInfo { get; set; } = true;
 
         #endregion
 
         #region Table Settings
 
         public int TableSortOption { get; set; } = 0;
-        public bool ShowManualMode { get; set; } = false;
         public bool HideUnsupportedMissions { get; set; } = false;
         public bool AutoPickCurrentJob { get; set; } = false;
         public bool ShowCompletionWindow { get; set; } = false;
         public bool ShowCompletionOnlyJob { get; set; } = false;
         public bool ShowSelectedJobOnly { get; set; } = false;
         public bool ShowCompletion_MissingGold { get; set; } = false;
+        public bool ShowManualMode { get; set; } = false;
+        public bool Auto_ShowTokens { get; set; } = true;
 
         #endregion
 
@@ -125,6 +127,14 @@ namespace ICE.Config
         public List<GatherProfile> GatherSettings { get; set; } = new()
         {
             new GatherProfile { Id = 0, Name = "Defualt"},
+        };
+
+        public Dictionary<int, GatherProfile> GatherProfiles { get; set; } = new()
+        {
+            [0] = new GatherProfile() 
+            { 
+                Name = "Default",
+            },
         };
 
         #endregion
@@ -190,6 +200,16 @@ namespace ICE.Config
         #endregion
 
         public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
+
+        #region Tab Hider
+
+        public bool Show_StopWhen { get; set; } = true;
+        public bool Show_GatheringProfile { get; set; } = true;
+        public bool Show_MissionPriority { get; set; } = true;
+        public bool Show_MiscSettings { get; set; } = true;
+        public bool Show_HubActivities { get; set; } = true;
+
+        #endregion
 
         #region Debug
 
@@ -281,6 +301,7 @@ namespace ICE.Config
         public bool Enabled { get; set; } = false;
         public bool ManualMode { get; set; } = false;
         public int GatherProfileId { get; set; } = 0;
+        public int GProfileId { get; set; } = 0;
         public bool AutoTurnin { get; set; } = true;
         public bool TurninGold { get; set; } = false;
         public bool TurninSilver { get; set; } = false;
@@ -325,7 +346,6 @@ namespace ICE.Config
         public bool Enabled { get; set; } = false;
         public int MinGp { get; set; }
         public int MaxUse { get; set; } = -1;
-        public int RequiredLevel { get; set; }
     }
 
     public class GatherBuffs
@@ -339,7 +359,11 @@ namespace ICE.Config
             ["YieldI"] = new() { MinGp = 400 },
             ["BountifulYieldII"] = new() { MinGp = 100 },
             ["BonusIntegrity"] = new() { MinGp = 300 },
-            ["BonusIntegrityChance"] = new() { Enabled = true, MinGp = 0}
+            ["BonusIntegrityChance"] = new() { Enabled = true, MinGp = 0 },
+            ["FieldMasteryIII"] = new() { MinGp = 250 },
+            ["FieldMasteryII"] = new() { MinGp = 100 },
+            ["FieldMasteryI"] = new() { MinGp = 50 },
+            ["FieldMasteryTemp"] = new() { MinGp = 50},
         };
 
         public int BountifulMinItem { get; set; } = 4;
