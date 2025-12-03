@@ -2,6 +2,7 @@
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using ICE.Config;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
@@ -28,6 +29,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             Separator();
 
             ShowSystemButtons();
+            Separator();
+
+            PostMissionCommands();
         }
 
         private static void OverlaySettings()
@@ -332,6 +336,77 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             {
                 C.Show_HubActivities = showHubActivities;
                 C.Save();
+            }
+        }
+        private static void PostMissionCommands()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Play, "Post Mission Commands");
+            ImGui.Dummy(new Vector2(0, 5));
+
+            ImGui.TextWrapped("Input below a list of commands that you would like to run after a run has been completed. \n" +
+                              "This is kind of my way of letting you somewhat script/set up a sequence of other things that you would like to do that might not be included in the plugin itself. \n" +
+                              "If you want something more complex, just make an SND script at that point. And have this run that script post lol.");
+
+            if (ImGui.Button("Add New Command"))
+            {
+                C.PostMissionCommands.Add(new Config.MissionCommand 
+                { 
+                    command = "", 
+                    Delay = 0,
+                });
+                C.Save();
+            }
+
+            MissionCommand? toRemove = null;
+            int entryCounter = 0;
+
+            if (ImGui.BeginTable("Mission Commands", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+            {
+                ImGui.TableSetupColumn("Command");
+                ImGui.TableSetupColumn("Delay");
+                ImGui.TableSetupColumn("Remove");
+
+                ImGui.TableHeadersRow();
+
+                foreach (var entry in C.PostMissionCommands)
+                {
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.SetNextItemWidth(200);
+
+                    ImGui.PushID($"{entryCounter}_MissionCommand");
+                    string command = entry.command;
+                    if (ImGui.InputText("##Command", ref command))
+                    {
+                        entry.command = command;
+                        C.SaveDebounced();
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(100);
+                    int delay = entry.Delay;
+                    if (ImGui.InputInt("###Delay", ref delay))
+                    {
+                        entry.Delay = delay;
+                        C.SaveDebounced();
+                    }
+
+                    ImGui.TableNextColumn();
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, $"remove{C.PostMissionCommands.IndexOf(entry)}"))
+                    {
+                        toRemove = entry;
+                    }
+                    ImGui.PopID();
+                    entryCounter += 1;
+                }
+
+                if (toRemove != null)
+                {
+                    C.PostMissionCommands.Remove(toRemove);
+                    C.Save();
+                }
+
+                ImGui.EndTable();
             }
         }
 

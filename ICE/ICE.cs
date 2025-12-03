@@ -42,27 +42,12 @@ public sealed partial class ICE : IDalamudPlugin
         return config;
     }
 
-    private static T LoadEmbeddedConfig<T>(string resourceName) where T : IYamlConfig, new()
-    {
-        var config = YamlConfig.LoadFromResource<T>(resourceName);
-
-        if (config == null)
-        {
-            PluginLog.Warning($"[{typeof(T).Name}] Embedded config was null. Returning new default.");
-            config = new T();
-        }
-
-        PluginLog.Information($"[{typeof(T).Name}] Loaded from embedded resource: {resourceName}");
-        return config;
-    }
-
     // Window's that I use, base window to the settings... need these to actually show shit 
     internal WindowSystem windowSystem;
     internal MainWindow mainWindow;
     internal OverlayWindow overlayWindow;
     internal DebugWindow debugWindow;
     internal InfoWindow infoWindow;
-    internal DummyWindow dummyWindow;
 
     // Taskmanager from Ecommons
     internal TaskManager TaskManager;
@@ -100,7 +85,6 @@ public sealed partial class ICE : IDalamudPlugin
         overlayWindow = new();
         debugWindow = new();
         infoWindow = new();
-        dummyWindow = new();
 
         // timer stuff
         MissionTimer = new MissionTimer();
@@ -188,10 +172,6 @@ public sealed partial class ICE : IDalamudPlugin
         {
             debugWindow.IsOpen = true;
             return;
-        }
-        else if (firstArg.ToLower() == "test")
-        {
-            dummyWindow.IsOpen = true;
         }
         else if (firstArg.ToLower() == "i")
         {

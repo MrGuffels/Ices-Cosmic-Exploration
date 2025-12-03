@@ -1,18 +1,10 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Sounds;
 using ICE.Ui;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -27,6 +19,7 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.Enqueue(() => TurninMission(), "Turning in the mission to the moon gods", Utils.TaskConfig);
             P.TaskManager.Enqueue(() => JobSwapCheck(), "Checking to see if you need to swap jobs");
             P.TaskManager.Enqueue(() => GoldCheck(), "Checking if Gold Check Task needs to be completed");
+            P.TaskManager.Enqueue(() => CommandCheck(), "Checking for post mission commands");
         }
 
         public static unsafe bool? TurninMission()
@@ -266,6 +259,23 @@ namespace ICE.Scheduler.Tasks
                 SchedulerMain.State = IceState.Start;
             }
 
+            return true;
+        }
+
+        public static unsafe bool? CommandCheck()
+        {
+            foreach (var task in C.PostMissionCommands)
+            {
+                P.TaskManager.Enqueue(() => ExecuteCommand(task.command));
+                if (task.Delay > 0)
+                    P.TaskManager.EnqueueDelay(task.Delay);
+            }
+            return true;
+        }
+
+        public static bool? ExecuteCommand(string command)
+        {
+            Svc.Commands.ProcessCommand(command);
             return true;
         }
     }

@@ -1,10 +1,10 @@
 ﻿using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
-using ECommons.ExcelServices;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Utilities.Cosmic_Helper;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 
 namespace ICE.Utilities;
@@ -83,6 +83,25 @@ public class PlayerHelper
             count = 0;
             return false;
         }
+    }
+    public static bool HasFoodRunning()
+    {
+        if (!C.UseGatheringFood || C.GatheringFood == 0)
+            return true;
+
+        var foodBuff = Svc.ClientState.LocalPlayer.StatusList.FirstOrDefault(x => x.StatusId == 48 && x.RemainingTime > 10f);
+        if (foodBuff == null)
+            return false;
+        if (Svc.Data.GetExcelSheet<Item>().TryGetRow(C.GatheringFood, out var itemInfo))
+        {
+            var desiredFood = itemInfo.ItemAction.Value;
+            if (foodBuff.Param == desiredFood.DataHQ[1] + 10000)
+                return true;
+            if (foodBuff.Param == desiredFood.Data[1])
+                return true;
+        }
+
+        return false;
     }
     public static unsafe bool NeedsRepair(float below = 0)
     {

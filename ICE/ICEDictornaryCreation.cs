@@ -1,5 +1,6 @@
 ﻿using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Ui.MainUi.ModeSelect;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
@@ -573,6 +574,11 @@ public sealed partial class ICE
                 mission.Value.GProfileId = 0;
             }
         }
+
+        // This is here, merely for the reason of I want a random joke to show up every time they boot up the plugin. I even added some more!
+        var random = new Random();
+        modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count-1);
+
         C.Save();
     }
     private static string GetClassAcronym(uint jobId)

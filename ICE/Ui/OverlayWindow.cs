@@ -127,15 +127,18 @@ namespace ICE.Ui
                 if (CosmicHelper.CurrentLunarMission != 0)
                 {
                     var missionId = CosmicHelper.CurrentLunarMission;
-                    foreach (var jobId in CosmicHelper.SheetMissionDict[missionId].Jobs)
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo))
                     {
-                        if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                        foreach (var jobId in missionInfo.Jobs)
                         {
-                            var imageSize = new Vector2(23, 23);
-                            ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
-                            ImGui.SameLine();
-                            ImGui.AlignTextToFramePadding();
-                            Relic_XP.DrawScoreBar(new Vector2(340, 10), false, jobId);
+                            if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                            {
+                                var imageSize = new Vector2(23, 23);
+                                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                                ImGui.SameLine();
+                                ImGui.AlignTextToFramePadding();
+                                Relic_XP.DrawScoreBar(new Vector2(340, 10), false, jobId);
+                            }
                         }
                     }
                 }

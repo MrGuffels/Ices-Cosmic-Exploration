@@ -35,6 +35,12 @@ namespace ICE.Ui.MainUi
                     // Center and drawing the image now
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offsetX);
                     ImGui.Image(pluginIcon.Handle, imageSize);
+                    if (ImGui.IsItemClicked())
+                    {
+                        var random = new Random();
+                        modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count-1);
+                        modeSelect_TableInfo.selectedMission = 0;
+                    }
 
                     // Add spacing after image
                     ImGui.Dummy(new Vector2(0, 10));

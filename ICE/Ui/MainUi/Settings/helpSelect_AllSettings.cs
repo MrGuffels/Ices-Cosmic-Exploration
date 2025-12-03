@@ -52,6 +52,12 @@ namespace ICE.Ui.MainUi.Settings
             {
                 Misc_Settings.Draw();
             }
+
+            if (settingsTabs.Count > 0 && settingsTabs.All(x => !x.Value))
+            {
+                var firstKey = settingsTabs.Keys.First();
+                settingsTabs[firstKey] = true;
+            }
         }
 
         public static bool DrawCategoryTab(string label, string categoryId, FontAwesomeIcon? icon = null, int? textureId = null, float spacingAfter = 5)

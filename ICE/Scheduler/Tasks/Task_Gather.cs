@@ -32,6 +32,7 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(() => CheckReduceMission(), "Checking to see if we need to reduce items");
                 P.TaskManager.Enqueue(() => Mission_Settings.ResetCollectableState());
                 Task_CheckScore.Enqueue();
+                P.TaskManager.Enqueue(() => UseFood());
                 P.TaskManager.Enqueue(() => UseCordial(), "Checking to see if we should use cordial or not");
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathToNode());
@@ -142,6 +143,14 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
 
+            }
+            else if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) >= 4)
+            {
+                if (EzThrottler.Throttle("Telling navmesh to move to the node, cause the distance is still to far. . ."))
+                {
+                    IceLogging.Debug($"Telling Navmesh to path to: {location.LandZone}, Cause we still to far", "[Gathering: Navmesh Movement]");
+                    P.Navmesh.PathfindAndMoveTo(location.LandZone, false);
+                }
             }
             else if (P.Navmesh.IsRunning())
             {
@@ -399,7 +408,6 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
         }
-
         public static unsafe bool UseGatherAction(int profileId, int gatherChance, int? boonChance, bool missingDur, int availableGp)
         {
             C.GatherProfiles.TryGetValue(profileId, out var gatherProfile);
@@ -537,7 +545,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static bool CanUseGatheringAction(string actionName, int profileId, bool missingDur, int? boonChance = null)
         {
             var actionInfo = GatheringUtil.GathActionDict[actionName];
@@ -607,7 +614,6 @@ namespace ICE.Scheduler.Tasks
                 _ => false,
             };
         }
-
         private static bool CanUseCollectableAction(string action, bool missingDur = false)
         {
             var actionInfo = GatheringUtil.GathCollectableBuffs[action];
@@ -632,7 +638,6 @@ namespace ICE.Scheduler.Tasks
                 _ => false,
             };
         }
-
         public static unsafe bool NormalGpRotation(int collectability, bool missingDur = false)
         {
             if (EzThrottler.Throttle("Executing HighGPRotation", 100))
@@ -756,7 +761,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static unsafe void UseCollectableBuff(string action)
         {
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;
@@ -768,7 +772,6 @@ namespace ICE.Scheduler.Tasks
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
             }
         }
-
         public static unsafe void UseCollectableAction(string action)
         {
             var collectorAction = GatheringUtil.GathCollectableActions;
@@ -780,7 +783,6 @@ namespace ICE.Scheduler.Tasks
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
             }
         }
-
         public static bool? CheckReduceMission()
         {
             IceLogging.Info($"Current itemId: {Mission_Settings.item_collectableId}", "[Gather: Check Reduce Mission]");
@@ -796,7 +798,6 @@ namespace ICE.Scheduler.Tasks
 
             return true;
         }
-
         public static unsafe bool? CheckReduceItems()
         {
             if (Svc.Condition[ConditionFlag.Occupied39])
@@ -842,7 +843,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static bool? WaitForDesynthCompletion()
         {
             if (!Svc.Condition[ConditionFlag.Occupied39])
@@ -859,7 +859,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static unsafe void UseCordial()
         {
             if (EzThrottler.Throttle("Cordial usage check while moving"))
@@ -908,12 +907,54 @@ namespace ICE.Scheduler.Tasks
                 }
             }
         }
-
         private static bool WillOvercap(int recoveryGP)
         {
             return ((PlayerHelper.GetGp() + recoveryGP) > PlayerHelper.MaxGp());
         }
+        public static unsafe bool? UseFood()
+        {
+            var ItemId = C.GatheringFood;
+            if (C.UseGatheringFood && ItemId != 0)
+            {
+                PlayerHelper.GetItemCount(ItemId, out var HqCount, includeNq: false);
+                PlayerHelper.GetItemCount(ItemId, out var NqCount, includeHq: false);
 
+                if (HqCount > 0 || NqCount > 0)
+                {
+                    // We've gotten this far, which means we have a gathering item to use...
+                    if (!PlayerHelper.HasFoodRunning())
+                    {
+                        // We need to apply the food, since we have some, we're going to use some here
+                        if (EzThrottler.Throttle("Using Food Item", 3000))
+                        {
+                            if (HqCount > 0)
+                                ItemId += 1_000_000;
+
+                            ActionManager.Instance()->UseAction(ActionType.Item, ItemId, extraParam: 65535);
+                            IceLogging.Debug($"Attempting to use food: {ItemId}");
+                        }
+                        return false;
+                    }
+                    else
+                    {
+                        IceLogging.Info("We have food running, and it's the proper one! Continuing");
+                        return true;
+                    }
+                }
+                else
+                {
+                    IceLogging.Info("We are out of the current food, continuing on w/o buff");
+                    return true;
+                }
+            }
+            else
+            {
+                IceLogging.Info("We either don't have use food enabled, or have no food selected. Continuing on\n" +
+                               $"Use Food Enabled: {C.UseGatheringFood}\n" +
+                               $"ItemId of food: {ItemId}");
+                return true;
+            }
+        }
         private static void ThrottleMessage(string s, string handle)
         {
             if (EzThrottler.Throttle($"Throttling the following message: {s}", 1000))

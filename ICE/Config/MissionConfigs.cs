@@ -1,5 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,6 +111,8 @@ namespace ICE.Config
 
         #region Gathering Settings
         public int SelectedGatherIndex { get; set; } = 0;
+        public bool UseGatheringFood { get; set; } = false;
+        public uint GatheringFood { get; set; } = 0;
 
         #region Cordial Settings
 
@@ -200,6 +201,8 @@ namespace ICE.Config
         #endregion
 
         public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
+
+        public List<MissionCommand> PostMissionCommands { get; set; } = new();
 
         #region Tab Hider
 
@@ -381,5 +384,11 @@ namespace ICE.Config
         public int KeepAmount { get; set; } = 0;
         public int BuyAmount { get; set; } = 0;
         public bool KeepBuying { get; set; } = false;
+    }
+
+    public class MissionCommand
+    {
+        public required string command { get; set; }
+        public int Delay { get; set; } = 0;
     }
 }

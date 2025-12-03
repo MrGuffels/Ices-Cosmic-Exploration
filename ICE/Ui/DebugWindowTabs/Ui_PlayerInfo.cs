@@ -51,6 +51,10 @@ namespace ICE.Ui.DebugWindowTabs
                 if (PlayerHelper.GetItemCount(item.Id, out var count) && count > 0)
                     ImGui.Text($"{item.Name} | {item.Id}");
             }
+            if (ImGui.Button("Use Gathering Food"))
+            {
+                P.TaskManager.Enqueue(() => Task_Gather.UseFood());
+            }
 
             ClassInfo();
         }

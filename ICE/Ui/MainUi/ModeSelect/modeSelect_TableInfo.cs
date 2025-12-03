@@ -22,6 +22,32 @@ namespace ICE.Ui.MainUi.ModeSelect
     {
         public static HashSet<string> selectedTabs = new HashSet<string>();
         public static uint selectedMission = 0;
+        public static List<string> JokeList = new()
+        {
+            "What is a pirates favorite letter?\n" +
+            "You might thing it's R, but tis first love was the C\n" +
+            "(It helps if you verbally say it like a pirate)",
+
+            "You know, I was reading this book about anti-gravity recently,\n" +
+            "and honestly I'm having a hard time putting it down",
+
+            "Why are tennis pros always hugging each other?\n" +
+            "Because they start their match at \"Love All\"",
+
+            "Why can't ghost have babies?\n" +
+            "Because they have hallow-eenies",
+
+            "How do you save a drowning pirate?\n" +
+            "You give him Cprrrrrr",
+
+            "What is a skeleton's favorite snack?\n" +
+            "Ribs! Spare Ribs!",
+
+            "Honestly, just wanted to say thank you for using my plugin, you're appreciated <3",
+
+
+        };
+        public static int jokeId = 0;
 
         public static Dictionary<string, bool> headerStates = new();
 
@@ -1377,6 +1403,11 @@ namespace ICE.Ui.MainUi.ModeSelect
                 }
 
                 ImGui.PopID();
+            }
+            else
+            {
+                string joke = JokeList[jokeId];
+                ImGui.TextWrapped(joke);
             }
         }
 

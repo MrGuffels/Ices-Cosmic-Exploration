@@ -1,9 +1,12 @@
 using Dalamud.Game.ClientState.Conditions;
+using ECommons.Automation;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using System.Collections.Generic;
+using Callback = ECommons.Automation.Callback;
 using Time = (int start, int end);
 
 namespace ICE.Scheduler.Handlers;
@@ -194,6 +197,14 @@ internal static unsafe class PlayerHandlers
         {
             if (EzThrottler.Throttle("Turning off Stellar Buff"))
                 StatusManager.ExecuteStatusOff(4409);
+        }
+
+        if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("WKSReward", out var addon) && GenericHelpers.IsAddonReady(addon))
+        {
+            if (EzThrottler.Throttle("Closing the reward popup"))
+            {
+                GenericHandlers.FireCallback("WKSReward", true, -1);
+            }
         }
 
     }
