@@ -53,10 +53,10 @@ internal static class NpcData // Renamed the class to avoid conflict
                 NpcId = 1052608,
                 Name = "Mesouaidonque",
                 NpcLocation = new Vector3(18.23f, 1.69f, 19.42f),
-                Corner1 = new Vector3(),
-                Corner2 = new Vector3(),
-                Corner3 = new Vector3(),
-                Corner4 = new Vector3(),
+                Corner1 = new Vector3(17.80f, 1.69f, 15.94f),
+                Corner2 = new Vector3(15.13f, 1.69f, 18.62f),
+                Corner3 = new Vector3(14.78f, 1.69f, 17.21f),
+                Corner4 = new Vector3(17.40f, 1.69f, 15.17f),
             },
             new NPCInfo // Relic NPC
             {

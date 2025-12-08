@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ICE.Ui;
 using ICE.Ui.MainUi;
@@ -27,6 +28,8 @@ public static partial class ImGui_Tools
     // My Custom Header, Uses FontAwesomeIcon and a 
     public static bool DrawCategoryHeader_AutoSize(string label, FontAwesomeIcon? icon = null, IDalamudTextureWrap? imageTexture = null)
     {
+        float scale = ImGuiHelpers.GlobalScale;
+
         // Default Colors for Theming. This is really here to make sure it's formatted as I want it to be
         var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
         var textColor = ImGui.GetColorU32(ImGuiCol.Text);
@@ -51,9 +54,9 @@ public static partial class ImGui_Tools
 
         // This is currently how I'm going to autosize it based on the contents of the window.
         // (as of typing this). It gets the width of the window and expands it on that (these are meant for the sidebar)
-        // Height is currently set to 30, but I might change this to scale based on text size for people who have larger fonts...
+        // Height is scaled based on the global font scale
         float width = ImGui.GetContentRegionAvail().X;
-        float height = 30;
+        float height = 30 * scale;
 
         // Check for click, nice little rectangle area where it can be clicked at. This takes in account the above things to make sure it's only clicking within this area
         bool isHovered = ImGui.IsMouseHoveringRect(cursorPos, new Vector2(cursorPos.X + width, cursorPos.Y + height));
@@ -69,17 +72,18 @@ public static partial class ImGui_Tools
         if (isHovered)
             headerColor = ImGui.GetColorU32(ImGuiCol.HeaderHovered);
 
-        // Drawing the rectangle itself/ custom thingy. This is the container for all the fancy smancy stuff. 
-        drawList.AddRectFilled(cursorPos, new Vector2(cursorPos.X + width, cursorPos.Y + height), headerColor, 5.0f);
+        // Drawing the rectangle itself/ custom thingy. This is the container for all the fancy smancy stuff.
+        // Border radius scaled
+        drawList.AddRectFilled(cursorPos, new Vector2(cursorPos.X + width, cursorPos.Y + height), headerColor, 5.0f * scale);
 
         // Calculating the vertical spacing here, need to make sure it fits within our custom box nice and cozy
-        float imageSize = 23; // Used for images specifically, since I like things being aligned with each other
-        float textHeight = ImGui.CalcTextSize(label).Y; 
+        float imageSize = 23 * scale; // Used for images specifically, since I like things being aligned with each other
+        float textHeight = ImGui.CalcTextSize(label).Y;
         float verticalPadding = (height - textHeight) / 2;
 
         // Adding some padding to the left, don't need it feeling like it's right against the box. We're making somewhat bubbly things
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + verticalPadding);
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 8);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 8 * scale);
 
         // Drawing either an image, icon, or nothing at all (should really only be the first 2, but on the off chance I decide to just use text)
         if (imageTexture != null)
@@ -88,13 +92,13 @@ public static partial class ImGui_Tools
             float imageYOffset = (textHeight - imageSize) / 2;
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + imageYOffset);
 
-            // Adding a little bit of padding here for the image -> text
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 4); // Current set to -4 to bring it closer, but can be changed to give it more space (lowering the number) or removing more space (increasing number)
+            // Adding a little bit of padding here for the image -> text (scaled)
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 4 * scale); // Current set to -4 to bring it closer, but can be changed to give it more space (lowering the number) or removing more space (increasing number)
 
             ImGui.Image(imageTexture.Handle, new Vector2(imageSize, imageSize));
 
-            // Resetting the Y position for text, to make sure it lines up
-            ImGui.SameLine(0, 2);
+            // Resetting the Y position for text, to make sure it lines up (scaled spacing)
+            ImGui.SameLine(0, 2 * scale);
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - imageYOffset);
         }
         else if (icon.HasValue)
@@ -115,9 +119,9 @@ public static partial class ImGui_Tools
         ImGui.Text(label);
         ImGui.PopStyleColor();
 
-        // Replace the badge count section with the caret icon
+        // Replace the badge count section with the caret icon (scaled padding)
         float iconSize = ImGui.CalcTextSize(FontAwesomeIcon.CaretDown.ToIconString()).X;
-        float rightPadding = 10;
+        float rightPadding = 10 * scale;
 
         float iconXPos = cursorPos.X + width - iconSize - rightPadding;
         float iconYPos = cursorPos.Y + verticalPadding;
@@ -210,14 +214,16 @@ public static partial class ImGui_Tools
     /// <returns></returns>
     public static bool DrawCategoryButton(string label, string categoryId, FontAwesomeIcon? icon = null, float spacingAfter = 5)
     {
+        float scale = ImGuiHelpers.GlobalScale;
+
         // Default coloring here
         var headerColor = ImGui.GetColorU32(ImGuiCol.Button);
         var textColor = ImGui.GetColorU32(ImGuiCol.Text);
 
         // Setting the values of the content size (padding, spacing, ect) that way it's used across the board
-        float horizontalPadding = 8;
-        float verticalPadding = 4;
-        float iconTextSpacing = 4;
+        float horizontalPadding = 8 * scale;
+        float verticalPadding = 4 * scale;
+        float iconTextSpacing = 4 * scale;
 
         // These are to make sure that they're drawn in place
         var drawList = ImGui.GetWindowDrawList();
@@ -258,8 +264,8 @@ public static partial class ImGui_Tools
         if (isHovered)
             headerColor = ImGui.GetColorU32(ImGuiCol.HeaderHovered);
 
-        // Draw background rectangle with rounded corners
-        drawList.AddRectFilled(cursorPos, new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight), headerColor, 5.0f);
+        // Draw background rectangle with rounded corners (scaled)
+        drawList.AddRectFilled(cursorPos, new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight), headerColor, 5.0f * scale);
 
         // Position cursor with padding
         ImGui.SetCursorScreenPos(new Vector2(cursorPos.X + horizontalPadding, cursorPos.Y + verticalPadding));
@@ -277,8 +283,8 @@ public static partial class ImGui_Tools
         ImGui.SetCursorScreenPos(cursorPos);
         ImGui.InvisibleButton($"##{categoryId}_btn", new Vector2(contentWidth, contentHeight));
 
-        // Add spacing after the button
-        ImGui.SameLine(0, spacingAfter);
+        // Add spacing after the button (scaled)
+        ImGui.SameLine(0, spacingAfter * scale);
 
         return isExpanded;
     }
@@ -291,10 +297,12 @@ public static partial class ImGui_Tools
 
     public static void DrawJobButtons(uint jobId, string tooltip)
     {
+        float scale = ImGuiHelpers.GlobalScale;
+
         uint selectedJob = C.SelectedJob;
         bool state = selectedJob == jobId;
         ISharedImmediateTexture? icon = state ? CosmicHelper.JobIconDict[jobId] : CosmicHelper.GreyTexture[jobId];
-        Vector2 size = new Vector2(26, 26);
+        Vector2 size = new Vector2(26 * scale, 26 * scale);
         bool autoPickCurrentJob = C.AutoPickCurrentJob;
 
         if (StyledImageButton.DrawStyledImageButton(icon, size, state))

@@ -78,8 +78,12 @@ namespace ICE.Scheduler
                         }
                         return false;
                     }
-
-                    if (!P.Navmesh.IsRunning() && Player.DistanceTo(craftingSpot) < 1)
+                    if (!P.Navmesh.IsReady())
+                    {
+                        Utils.VnavBuildInfo();
+                        return false;
+                    }
+                    else if (!P.Navmesh.IsRunning() && Player.DistanceTo(craftingSpot) < 1)
                     {
 
                         craftingSpot = Vector3.Zero;

@@ -6,12 +6,14 @@ using ECommons;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
+using ICE.Utilities.GatheringHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
 using static MissionTimer;
 using static System.Net.Mime.MediaTypeNames;
@@ -661,8 +663,11 @@ namespace ICE.Ui.MainUi.ModeSelect
                     }
                     if (missionInfo.Attributes.HasFlag(MissionAttributes.ExpertCraft))
                     {
+                        if (EzThrottler.Throttle("Throttling the manip update every couple of seconds", 1000))
+                            PlayerHelper.UpdateHasManip();
+
                         var crafterJobId = missionInfo.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
-                        if (!PlayerHelper.HasManipUnlocked(crafterJobId))
+                        if (PlayerHelper.ManipClassInfo.TryGetValue(crafterJobId, out var manipInfo) && !manipInfo.HasUnlocked)
                         {
                             var color = EColor.Yellow;
                             ImGuiEx.IconWithTooltip(color, FontAwesomeIcon.ExclamationTriangle, 
@@ -688,6 +693,15 @@ namespace ICE.Ui.MainUi.ModeSelect
                         {
                             selectedMission = Id;
                             Utils.SetGatheringRing(missionInfo.TerritoryId, (int)missionInfo.MapPosition.X, (int)missionInfo.MapPosition.Y, missionInfo.Radius, missionInfo.Name);
+                        }
+                    }
+                    if (GatheringUtil.CriticalLocations.TryGetValue(Id, out var criticalLoc))
+                    {
+                        ImGui.SameLine();
+                        ImGuiEx.Icon(FontAwesomeIcon.FlagCheckered);
+                        if (ImGui.IsItemClicked())
+                        {
+                            Utils.SetFlagForNPC(missionInfo.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
                         }
                     }
 
@@ -1178,6 +1192,37 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{mission.GoldScore}");
+                    }
+
+                    if (mission.MarkerId != 0)
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Gathering Zone");
+
+                        ImGui.TableNextColumn();
+
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        ImGui.Text(FontAwesomeIcon.Flag.ToIconString());
+                        ImGui.PopFont();
+                        if (ImGui.IsItemClicked())
+                        {
+                            Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
+                        }
+                    }
+
+                    if (GatheringUtil.CriticalLocations.TryGetValue(selectedMission, out var criticalLoc))
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Critical Area");
+
+                        ImGui.TableNextColumn();
+                        ImGuiEx.Icon(FontAwesomeIcon.Flag);
+                        if (ImGui.IsItemClicked())
+                        {
+                            Utils.SetFlagForNPC(mission.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
+                        }
                     }
 
                     ImGui.EndTable();

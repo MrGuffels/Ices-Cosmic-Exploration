@@ -19,8 +19,11 @@ namespace ICE.Scheduler
             IceLogging.Debug("Stopping the plugin state", "[Schedular - Disable Plugin]");
             P.TaskManager.Abort();
             State = IceState.Idle;
-            if (P.Navmesh.IsRunning() && P.Navmesh.IsReady())
-                P.Navmesh.Stop();
+            if (P.Navmesh.Installed)
+            {
+                if (P.Navmesh.IsRunning())
+                    P.Navmesh.Stop();
+            }
 
             return true;
         }

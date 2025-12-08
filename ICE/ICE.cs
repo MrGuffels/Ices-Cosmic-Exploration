@@ -5,6 +5,7 @@ using ICE.Config;
 using ICE.IPC;
 using ICE.Ui;
 using ICE.Ui.MainUi;
+using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
 using static ICE.Utilities.CosmicHelper;
@@ -119,6 +120,7 @@ public sealed partial class ICE : IDalamudPlugin
         ConfigMigrator.UpdateConfigMissionList();
         ConfigMigrator.MigrateConfigv1();
         ConfigMigrator.CheckMissions();
+        GatheringUtil.UpdateCriticalWeather();
     }
 
     private static void Init()

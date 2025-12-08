@@ -1752,6 +1752,23 @@ public static partial class GatheringUtil
                 },
             },
         },
+        // Export for Mission [1000] - EX: Elemental-esque River Specimens
+        [1000] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1XS2/jOAz+K4XO9sLv2L6l2bYTIH2gzmAOxWAh23QiRJZSSe5ji/z3gfxI7DRJd4oCu4e9GST18SNFUvQbGleKT7BUclIsUPyGLhhOKYwpRbESFRhIK2eEwU6Zd6ppjmInjAx0JwgXRL2i2DbQVF68ZLTKId+Jtf2mwbrmPFtqsPrD0V81ThAa6Go9XwqQS05zFNuWNUA+DV1jRKPBCetDMpNlVXYMPNvyPqDQneKUQqZ6B+2+mfOxWy5ygumRlNpOEAyS6rXHLolcXryC7Dn29xj7/oBx0CUdryBZkkKdY1Lz1gLZCRKFs5VEsd+mMQjf4/ZRoxb1DisCLDtWGp5tBfswwTChTockyN8wwaqpjI7E/mln7zrc9vR8iSnBK3mJn7jQAANBF51rDOX3kPEnECi2dc4OlXYQ6oroOezSeU4WV7is4x6zBQUhOyf67nMUuyPLe8d+ABVuNga6eFECDxpvS0Dfy5wnz3g9ZaoiinB2hQnr0mPaBppVAq5BSrwAFCNkoJuaE7rhDFCL8LoGFOs8HcCbcak+jXcnQMJhhshER/SNx1q/45OsIVMC00klBDD1RVHuoX5ZrAfZvov4oPfaqqmXRPG17mbCFomCdT03d9zbmhqLr6Hch3vP9JmUKSbqklAqT+jvKyZvqw7hOyOPFWhmyIfCGvkQmHnqRqYX2IWZukVq+s4oC/Og8N00RBsDzYhUt4VmKVH88Fbz1SnYDrNREDnHozynFZwlCou8kkrj3XBRYvqN85VG6EbRD8CrXTdprQSl4+j6SovmpASx12/XhG1VutP/sAx0jV96MsfSshayybRnO6NQZ7v1nijB2eIr/Ief8j+DBbAci9cPKfQgLF0vf/IqpdvsDSycINoa7AI8ajLgcMBqLsj6mKeR77hbk2O+BkYnvHV2pAReqWv8gmLH1inUzTcuFIgJrhZLNSOlfhPtRrHflfX6U4nm0dUfveekmfR+9H5tOLEB6F2lm4dd9d7DY0UE5InCqtIPsV6Gfquke/c5in6/IvfL4f+COl5Q/3r5dCN5wium+ucMdMvo63cJP5bAbni9YI+fMKH63rrL6o1uKw9dKwsiE3I/Mz1wLDO0LWzaTg5BgS0bRy7a/Oxmd7u5P2wFzfh+eEN7c9yOTszxKk0pYYuzabkGmSkuBm+XfSrB0xyYIhmmOqvaX2MwLnUi+mYo9vxof/9yh6uxnptJJQqcQUJ1Lbf0/cj/YO30Nwb6z/zFJGssoKjoN8zyjoXePv1DPAaV0ybMNerrm+ZzPllCttreYO+HxhqsVp9eSvTh88590zLPeN1sG7Krz/7ygWKEGWd/PdiWZZn2z7MLCiUwhakJ8rGCs3vyBOJMb1ukBCZRH7Hn5UBj9trAC6PC9T3bLFJcmF6YhSYeZYXpOsUoLPwwTAOo26DBbSPsEXP+CbGewyyyIEiLzMxssE0PR7mJwyI1vcAbZZZj+U6Ro80v8Ihm45wPAAA=",
+                "AH4_H4sIAAAAAAAACu1XS2/jOAz+K4XO9sLv2L6l2bYToI9Bk8EcisFCtuhEiCKlktzHFvnvC9lRYqdJOjtbYPewN4OkPn6kSIp+Q8NaixFWWo2qGcrf0AXHBYMhYyjXsgYHGeU15bBTEqsaE5QHaeagr5IKSfUryn0HjdXFS8lqAmQnNvbrFutGiHJuwJqPwHw1OEnqoKvVdC5BzQUjKPc9r4d8GrrByAa9E96HZEbzemkZRL4XfUDBnhKMQak7B/2uWfCxWyEJxexISv0gSXpJjTbHLqmaX7yC6jiO9xjHcY9xYpOOFzCZ00qfY9rwNgJlBRONy4VCebxJY5K+x+2iZhvUr1hT4OWx0oh8L9mHSfoJDSySpH/CCOu2MiyJ/dPB3nWEm9PTOWYUL9QlfhLSAPQENrrQ6cvvoRRPIFHum5wdKu0kNRXRcWjTeU5nV3jZxD3kMwZSWSfm7gnKw4EXvWPfg0rXawddvGiJe423JWDuZSomz3g15rqmmgp+hSm36XF9B13XEm5AKTwDlCPkoNuGE7oVHNAG4XUFKDd5OoB3LZT+ZbyvEhQcZohcdETfemz0Oz6TFZRaYjaqpQSuPynKPdRPi/Ug23cRH/TeWLX1MtFiZbqZ8tlEw6qZmzvum5oays+h3IV7z/SZLgtM9SVlTJ3Q39dc3dUW4RunjzUYZijOskEEBbgxZIkbZVnlpkHkuQVOSJREXkS8GK0ddE2VvqsMS4Xyh7eGr0nBdpgNkiw4HuU5q+FsorEktdIG71bIJWZfhFgYBDuKvgNe7LrJaBVoE4ftKyOa0iXIvX67oXyrQrk/+M1z0A1+6cgC38g2kG2mI39gZqF1PtFS8NlnuE8OuPcOuPfCjvtrmAEnWL5+yGAf4XdRF2ybu55FkGRbg118R016HA5YTSVdHfM0iINwa3LMV8/ohDdrR5cgan2DX+wFmtYbVhrkCNezub6mS/Mi+q1ivyeb5aeW7ZNrPjqPSTvn4+z90nDi/Tebip2Gtnbv4bGmEshEY12bZ9isQn+roP9hQf5fUD9fUP96+diBPBI1191zDrrj7PWbgu9z4LeiWa+HT5gyc2/2sjqDmxS4wFkSul5FMjdKA3CzQZi4CYmyMoGqCnGK1j/s5N7s7Q9bQTu8H97Q3hT3sxNTvC4KRvnsbLxcgSq1kL2Xyz+V4DEBrmmJmcmq8dcaDJcmETuzQ4tonO0vY2F/T06N41pWuIQJM6W9iSbO4g920HjtoP/ML81khSVUNfuCObEszCoaH+LRK6RN/kKnuc0xmYrRHMrF9kI7fzdeb8/65Q3FHD637tsOesardvVQ9va6mwjKEeaC//Hge57nBj/OLhgsgWvMXFCPNZzd0yeQZ2b1okvgCnURO14O9GmnKxKIo7hKY7coSOVGYVW5RQqRW2RBUGVJSaIwa7qixd1E2CHm/wyxjsMSE+KVELseeKUbDYrKTWPwXOIHSRhUnlGj9V9zYsptqQ8AAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
         // Export for Mission [1002] - EX: Bubble Bursters Distribution Survey [10/21]
         [1002] = new FishingTools()
         {

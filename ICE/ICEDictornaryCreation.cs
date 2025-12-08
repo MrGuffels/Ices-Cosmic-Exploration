@@ -1,6 +1,8 @@
 ﻿using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Config;
 using ICE.Ui.MainUi.ModeSelect;
+using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
@@ -579,7 +581,51 @@ public sealed partial class ICE
         var random = new Random();
         modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count-1);
 
-        C.Save();
+        if (!C.ShowManualMode)
+        {
+            foreach (var mission in C.MissionConfig)
+            {
+                mission.Value.ManualMode = false;
+            }
+        }
+
+        // Just a safety check for fishing missions. 
+        // If a mission has a preset, and it's not on by default/on the off chance someone turned it off and didn't input a preset name, will auto enable
+        foreach (var mission in C.MissionConfig)
+        {
+            var id = mission.Key;
+            if (GatheringUtil.FishingPreset.TryGetValue(id, out var fishProfile))
+            {
+                if (fishProfile.FishingPreset.Count > 0)
+                {
+                    // we have a fishing preset here. Time to check to see if we need to enable it (if it doesn't have a custom profile)
+                    if (!mission.Value.Use_BuildinPreset && mission.Value.AutoHookPresetName == string.Empty)
+                        mission.Value.Use_BuildinPreset = true;
+                }
+            }
+        }
+
+        // quick check on gathering profiles. We should always have a "default" profile set
+        // and for specifically first time creation, if the default profile is the only existing, then we should go ahead and import -> set all the profiles
+        if (!C.GatherProfiles.TryGetValue(0, out var profileDefault))
+        {
+            // We somehow are missing a default profile. . . which is honestly quite impressive how the fuck people manage to do this. 
+            C.GatherProfiles.Add(0, new GatherProfile
+            {
+                Id = 0,
+                Name = "Default"
+            });
+        }
+        if (C.GatherProfiles.Count == 1)
+        {
+            // This is a first time setup more than likely (nobody at this point has just the "default" profile for things, that's insanity)
+            // So going to inialize the first time setup and auto-select all the profiles at once
+
+            GatherSettings.SetupAllProfiles();
+        }
+
+
+        C.SaveDebounced();
     }
     private static string GetClassAcronym(uint jobId)
     {

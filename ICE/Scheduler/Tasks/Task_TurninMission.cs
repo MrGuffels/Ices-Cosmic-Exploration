@@ -103,7 +103,7 @@ namespace ICE.Scheduler.Tasks
                             }
 
                             // We need to path to the collection point, and get as *-close-* as we can. 
-                            if (GatheringUtil.CriticalLocations.TryGetValue(id, out var location) && location != Vector3.Zero)
+                            if (GatheringUtil.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
                             {
                                 if (collectionPoint == null)
                                 {
@@ -113,12 +113,12 @@ namespace ICE.Scheduler.Tasks
                                         if (EzThrottler.Throttle("Telling navmesh to move to the spot"))
                                         {
                                             IceLogging.Debug("We're not close enough to the turnin point to find out where one's at. So going to the location where it might be at");
-                                            P.Navmesh.PathfindAndMoveTo(location, false);
+                                            P.Navmesh.PathfindAndMoveTo(location.RawLocation, false);
                                         }
                                     }
                                     else
                                     {
-                                        if (C.UseMountInMission && !Player.IsBusy && Player.DistanceTo(location) > C.MountRadius && !Svc.Condition[ConditionFlag.Mounted])
+                                        if (C.UseMountInMission && !Player.IsBusy && Player.DistanceTo(location.RawLocation) > C.MountRadius && !Svc.Condition[ConditionFlag.Mounted])
                                         {
                                             if (EzThrottler.Throttle("Mounting the mount"))
                                                 Utils.MountAction();
@@ -130,14 +130,14 @@ namespace ICE.Scheduler.Tasks
                                     if (EzThrottler.Throttle("We're pathfinding wooo"))
                                         IceLogging.Debug("We're pathfinding to the turnin point!");
 
-                                    if (Player.DistanceTo(location) > 75 && P.Navmesh.IsRunning())
+                                    if (Player.DistanceTo(location.RawLocation) > 75 && P.Navmesh.IsRunning())
                                     {
                                         if (EzThrottler.Throttle("Waiting to be in a better range", 1000))
                                         {
                                             IceLogging.Debug("Waiting to be within 50 yalms of the turnin point");
                                         }
                                     }
-                                    else if (Player.DistanceTo(location) <= 75 || !P.Navmesh.IsRunning())
+                                    else if (Player.DistanceTo(location.RawLocation) <= 75 || !P.Navmesh.IsRunning())
                                     {
 
                                         if (!PathfoundToRed)
@@ -151,7 +151,7 @@ namespace ICE.Scheduler.Tasks
                                             if (EzThrottler.Throttle("dismounting"))
                                                 Utils.Dismount();
                                         }
-                                        else if (C.UseMountInMission && !Player.IsBusy && Player.DistanceTo(location) > C.MountRadius && !Svc.Condition[ConditionFlag.Mounted])
+                                        else if (C.UseMountInMission && !Player.IsBusy && Player.DistanceTo(location.RawLocation) > C.MountRadius && !Svc.Condition[ConditionFlag.Mounted])
                                         {
                                             if (EzThrottler.Throttle("Mounting the mount"))
                                                 Utils.MountAction();

@@ -420,6 +420,15 @@ namespace ICE.Config
                 C.ConfigVersion = 10;
                 C.Save();
             }
+            if (C.ConfigVersion == 10)
+            {
+                if (C.MissionConfig.TryGetValue(1000, out var profile))
+                {
+                    profile.Use_BuildinPreset = true;
+                }
+                C.ConfigVersion = 11;
+                C.Save();
+            }
         }
 
         public static void UpdateConfigMissionList()

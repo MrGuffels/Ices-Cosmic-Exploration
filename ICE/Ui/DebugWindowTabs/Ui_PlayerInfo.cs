@@ -82,6 +82,15 @@ namespace ICE.Ui.DebugWindowTabs
                 // 574 | Is unlocked
                 // 586 | Is unlocked for current class/ready to use
             }
+
+            ImGui.Separator();
+            PlayerHelper.UpdateHasManip();
+
+            ImGui.Text($"Custom Is Busy: {PlayerHelper.CustomIsBusy}");
+            foreach (var job in PlayerHelper.ManipClassInfo)
+            {
+                ImGui.Text($"JobID: {job.Key} | HasUnlocked: {job.Value.HasUnlocked}");
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.ClientState.Objects.SubKinds;
+﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -21,12 +22,6 @@ public class PlayerHelper
     {
         var jobId = Player.JobId;
         return jobId >= 8 || jobId <= 18;
-    }
-
-    public static unsafe int GetLevel(int expArrayIndex = -1)
-    {
-        if (expArrayIndex == -1) expArrayIndex = Svc.ClientState.LocalPlayer?.ClassJob.Value.ExpArrayIndex ?? 0;
-        return UIState.Instance()->PlayerState.ClassJobLevels[expArrayIndex];
     }
 
     public static bool IsInCosmicZone() => IsInSinusArdorum() || IsInPhaenna();
@@ -142,27 +137,36 @@ public class PlayerHelper
 
         return false;
     }
-    public static unsafe bool HasManipUnlocked(uint jobId)
-    {
-        Dictionary<uint, uint> ManipClassInfo = new()
-        {
-            [8] = 4574,
-            [9] = 4575,
-            [10] = 4576,
-            [11] = 4577,
-            [12] = 4578,
-            [13] = 4579,
-            [14] = 4580,
-            [15] = 4581,
-        };
 
-        if (ManipClassInfo.TryGetValue(jobId, out var actionId))
+    public class ManipInfo
+    {
+        public uint ActionId { get; set; }
+        public bool HasUnlocked { get; set; }
+    }
+
+    public static Dictionary<uint, ManipInfo> ManipClassInfo = new()
+    {
+        [8] = new ManipInfo { ActionId = 4574, HasUnlocked = true },
+        [9] = new ManipInfo { ActionId = 4575, HasUnlocked = true },
+        [10] = new ManipInfo { ActionId = 4576, HasUnlocked = true },
+        [11] = new ManipInfo { ActionId = 4577, HasUnlocked = true },
+        [12] = new ManipInfo { ActionId = 4578, HasUnlocked = true },
+        [13] = new ManipInfo { ActionId = 4579, HasUnlocked = true },
+        [14] = new ManipInfo { ActionId = 4580, HasUnlocked = true },
+        [15] = new ManipInfo { ActionId = 4581, HasUnlocked = true },
+    };
+
+    public static unsafe void UpdateHasManip()
+    {
+        if (Player.IsBusy)
+            return;
+
+        foreach (var jobId in CosmicHelper.CrafterJobList)
         {
-            return ActionManager.Instance()->GetActionStatus(ActionType.Action, actionId, checkRecastActive: false, checkCastingActive: false) is 574 or 586;
-        }
-        else
-        {
-            return false;
+            if (ManipClassInfo.TryGetValue(jobId, out var info))
+            {
+                info.HasUnlocked = ActionManager.Instance()->GetActionStatus(ActionType.Action, info.ActionId, checkRecastActive: false, checkCastingActive: false) is 574 or 586;
+            }
         }
     }
 }

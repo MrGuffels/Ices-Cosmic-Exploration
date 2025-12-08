@@ -47,6 +47,17 @@ public static unsafe class Utils
         agent->OpenMapByMapId(map.RowId, territoryId);
     }
 
+    public static void SetRawFlagforNpc(uint territoryId, float x, float y)
+    {
+        var map = ExcelHelper.TerritorySheet.GetRow(territoryId).Map.Value;
+
+        var agent = AgentMap.Instance();
+
+        agent->FlagMarkerCount = 0;
+        agent->SetFlagMapMarker(territoryId, map.RowId, x, y);
+        agent->OpenMapByMapId(map.RowId, territoryId);
+    }
+
     public static float MapToWorld(float value, uint scale, int offset) => -offset * (scale / 100.0f) + 50.0f * (value - 1) * (scale / 100.0f);
 
     public static Vector2 MapToWorld(Vector2 coordinates, ushort sizeFactor, short offsetX, short offsetY)
@@ -177,5 +188,11 @@ public static unsafe class Utils
         float g = ((color >> 8) & 0xFF) / 255f;
         float r = (color & 0xFF) / 255f;
         return new Vector4(r, g, b, a);
+    }
+
+    public static void VnavBuildInfo()
+    {
+        if (EzThrottler.Throttle("Vnavmesh throttle message", 1000))
+            IceLogging.Debug($"Navmesh isn't ready. % built is at: {P.Navmesh.BuildProgress}");
     }
 }

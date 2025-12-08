@@ -46,10 +46,7 @@ namespace ICE.Scheduler.Tasks
                         if (config.Use_BuildinPreset)
                         {
                             P.AutoHook.DeleteAllAnonymousPresets();
-                            foreach (var preset in GatheringUtil.FishingPreset[missionId].FishingPreset)
-                            {
-                                P.AutoHook.CreateAndSelectAnonymousPreset(preset);
-                            }
+                            FishingTask(missionId);
                         }
                     }
                 }
@@ -61,11 +58,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         // Using the build in presets that are included in the plugin.
                         P.AutoHook.DeleteAllAnonymousPresets();
-                        var presetList = GatheringUtil.FishingPreset[missionId];
-                        foreach (var preset in presetList.FishingPreset)
-                        {
-                            P.AutoHook.CreateAndSelectAnonymousPreset(preset);
-                        }
+                        FishingTask(missionId);
                     }
                     else
                     {
@@ -95,5 +88,50 @@ namespace ICE.Scheduler.Tasks
 
             return true;
         }
+
+        public static void FishingTask(uint missionId)
+        {
+            P.TaskManager.Enqueue(() => ClearFishingPreset(), "Clearing All Fishing Presets");
+            P.TaskManager.EnqueueDelay(150);
+            P.TaskManager.Enqueue(() => ImportPresetsSequentially(missionId));
+        }
+
+        private static bool? ClearFishingPreset()
+        {
+            if (P.AutoHook.Installed)
+            {
+                P.AutoHook.DeleteAllAnonymousPresets();
+            }
+            return true;
+        }
+        private static void ImportPresetsSequentially(uint missionId)
+        {
+            bool? ImportOtherPresets(string preset)
+            {
+                P.AutoHook.CreateAndSelectAnonymousPreset(preset);
+                return true;
+            }
+
+            var presetList = GatheringUtil.FishingPreset[missionId];
+            var presets = presetList.FishingPreset.ToList();
+
+            if (presets.Count == 0)
+                return;
+
+            IceLogging.Debug($"Current Fish Preset Count for [{missionId}]: {presets.Count}");
+
+            // Import first preset immediately
+            P.AutoHook.CreateAndSelectAnonymousPreset(presets[0]);
+
+            // Queue remaining presets with delays
+            for (int i = 1; i < presets.Count; i++)
+            {
+                var preset = presets[i]; // Capture for closure
+
+                P.TaskManager.EnqueueDelay(100);
+                P.TaskManager.Enqueue(() => ImportOtherPresets(preset));
+            }
+        }
+
     }
 }

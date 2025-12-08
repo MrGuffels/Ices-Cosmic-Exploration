@@ -275,8 +275,9 @@ namespace ICE.Scheduler.Tasks
             {
                 var nodeId = gatherInfo[Mission_Settings.nodeCounter].NodeId;
                 var node = Svc.Objects.Where(x => x.BaseId == nodeId).FirstOrDefault();
-                if (!node.IsTargetable)
+                if (node == null || !node.IsTargetable)
                 {
+                    IceLogging.Debug($"Is node null: {node == null} | Is node Targetable: {node.IsTargetable}");
                     Mission_Settings.nodeCounter += 1;
                     Mission_Settings.nodeTotal += 1;
                 }
@@ -287,7 +288,11 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? PathToNode()
         {
-            if (P.Navmesh.IsRunning())
+            if (!P.Navmesh.IsReady())
+            {
+                Utils.VnavBuildInfo();
+            }
+            else if (P.Navmesh.IsRunning())
             {
                 IceLogging.Info("Pathing to the gathering node has now started");
                 return true;
@@ -336,7 +341,11 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Debug($"Distance to node position: {Player.DistanceTo(location.Position)}");
             }
 
-            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 4)
+            if (!P.Navmesh.IsReady())
+            {
+                Utils.VnavBuildInfo();
+            }
+            else if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 4)
             {
                 // Time to check to see if the node is targetable 
                 if (Svc.Condition[ConditionFlag.Gathering])

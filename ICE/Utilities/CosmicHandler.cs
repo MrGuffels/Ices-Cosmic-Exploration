@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace ICE.Utilities
                 classId = missionInfo.JobId;
             else
             */
-            classId = (uint)(Svc.ClientState.LocalPlayer?.ClassJob.RowId);
+            classId = Player.ClassJob.RowId;
 
             if (classId is >= 8 and <= 18)
             {

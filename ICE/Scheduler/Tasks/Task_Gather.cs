@@ -69,7 +69,12 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? PathToNode()
         {
-            if (P.Navmesh.IsRunning())
+            if (!P.Navmesh.IsReady())
+            {
+                Utils.VnavBuildInfo();
+                return false;
+            }
+            else if (P.Navmesh.IsRunning())
             {
                 IceLogging.Info("Pathing to the gathering node has now started");
                 return true;
@@ -120,7 +125,11 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Debug($"Distance to node position: {Player.DistanceTo(location.Position)}");
             }
 
-            if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 4)
+            if (!P.Navmesh.IsReady())
+            {
+                Utils.VnavBuildInfo();
+            }
+            else if (!P.Navmesh.IsRunning() && Player.DistanceTo(location.Position) <= 4)
             {
                 // Time to check to see if the node is targetable 
                 if (Svc.Condition[ConditionFlag.Gathering])

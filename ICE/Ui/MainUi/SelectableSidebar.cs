@@ -1,9 +1,11 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Textures.TextureWraps;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using ICE.Ui.MainUi.ModeSelect;
 using ICE.Utilities.ImGuiTools;
+using SharpDX.Direct2D1.Effects;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -18,7 +20,11 @@ namespace ICE.Ui.MainUi
 
         public static void Draw()
         {
-            if (ImGui.BeginChild("MainUi_Sidebar", new Vector2(200, -1), true))
+            var scale = ImGuiHelpers.GlobalScaleSafe;
+            int baseSize = 200;
+            var scaledWidth = baseSize * scale;
+
+            if (ImGui.BeginChild("MainUi_Sidebar", new Vector2(scaledWidth, -1), true))
             {
                 // Image/Icon of the plugin
                 var pluginIcon = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), PluginIcon).GetWrapOrEmpty();
@@ -80,11 +86,6 @@ namespace ICE.Ui.MainUi
                     string SinusAsset = "ICE.Resources.Sinus_Ardorum.png";
                     string PhaennaAsset = "ICE.Resources.Phaenna.png";
 
-                    float iconSize = 32;
-                    float iconSpacing = 8;
-                    float availWidth = ImGui.GetContentRegionAvail().X;
-                    float startX = (availWidth - (iconSize + iconSpacing) * 4 + iconSpacing) * 0.5f;
-                    ImGui.SetCursorPosX(startX);
                     bool autoSelectMoon = C.AutoSelectMoon;
                     if (ImGui.Checkbox("Auto Select Moon", ref autoSelectMoon))
                     {
@@ -108,10 +109,15 @@ namespace ICE.Ui.MainUi
                     }
                     ImGui.Dummy(new (0, 3));
 
+                    float iconSize = 23 * scale;
+                    float iconSpacing = 4;
+                    float availWidth = ImGui.GetContentRegionAvail().X;
+                    float startX = (availWidth - (iconSize + iconSpacing) * 4 + iconSpacing) * 0.5f;
+
                     ImGui.SetCursorPosX(startX);
                     bool sinusEnabled = C.ShowSinusMissions;
                     var SinusTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), SinusAsset).GetWrapOrEmpty();
-                    if (StyledImageButton.DrawStyledImageButton(SinusTexture, new Vector2(23, 23), sinusEnabled))
+                    if (StyledImageButton.DrawStyledImageButton(SinusTexture, new Vector2(iconSize, iconSize), sinusEnabled))
                     {
                         C.ShowSinusMissions = !sinusEnabled;
                         C.AutoSelectMoon = false;
@@ -126,7 +132,7 @@ namespace ICE.Ui.MainUi
                     bool phaennaEnabled = C.ShowPhaennaMissions;
                     var PhaennaTextures = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), PhaennaAsset).GetWrapOrEmpty();
 
-                    if (StyledImageButton.DrawStyledImageButton(PhaennaTextures, new Vector2(23, 23), phaennaEnabled))
+                    if (StyledImageButton.DrawStyledImageButton(PhaennaTextures, new Vector2(iconSize, iconSize), phaennaEnabled))
                     {
                         C.ShowPhaennaMissions = !phaennaEnabled;
                         C.AutoSelectMoon = false;
@@ -144,8 +150,8 @@ namespace ICE.Ui.MainUi
                 }
                 if (ImGui_Tools.DrawCategoryHeader_AutoSize("Class Selection", imageTexture: GreyscaleJob()))
                 {
-                    float iconSize = 32;
-                    float iconSpacing = 8;
+                    float iconSize = 26 * scale;
+                    float iconSpacing = 4;
                     float availWidth = ImGui.GetContentRegionAvail().X;
                     float startX = (availWidth - (iconSize + iconSpacing) * 4 + iconSpacing) * 0.5f;
                     
@@ -202,6 +208,7 @@ namespace ICE.Ui.MainUi
         private static void DrawSelectableWithIcon(FontAwesomeIcon icon, string label, string id)
         {
             bool isSelected = currentSelection == id;
+            float scale = ImGuiHelpers.GlobalScale;
 
             // Change background color if selected
             if (isSelected)
@@ -209,13 +216,13 @@ namespace ICE.Ui.MainUi
                 ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.HeaderActive));
             }
 
-            // Indent for items under categories
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 16);
+            // Indent for items under categories (scaled)
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 16 * scale);
 
             float width = ImGui.GetContentRegionAvail().X;
 
-            // Invisible selectable as the clickable area
-            if (ImGui.Selectable($"##{id}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25)))
+            // Invisible selectable as the clickable area (scaled height)
+            if (ImGui.Selectable($"##{id}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25 * scale)))
             {
                 currentSelection = id;
             }
@@ -229,10 +236,10 @@ namespace ICE.Ui.MainUi
                 var rectMin = ImGui.GetItemRectMin();
                 var rectMax = ImGui.GetItemRectMax();
 
-                // Draw a 3-4 pixel wide bar on the left
+                // Draw a 3-4 pixel wide bar on the left (scaled)
                 drawList.AddRectFilled(
                     rectMin,
-                    new Vector2(rectMin.X + 3, rectMax.Y),
+                    new Vector2(rectMin.X + 3 * scale, rectMax.Y),
                     ImGui.GetColorU32(new Vector4(0.4f, 0.7f, 1.0f, 1.0f)) // Your accent color here
                 );
             }
@@ -240,20 +247,21 @@ namespace ICE.Ui.MainUi
             // Get the position of that selectable we just drew
             float itemY = ImGui.GetItemRectMin().Y;
 
-            // Set cursor back to draw icon and text on top
-            ImGui.SetCursorScreenPos(new Vector2(ImGui.GetItemRectMin().X + 8, itemY + 4));
+            // Set cursor back to draw icon and text on top (scaled offsets)
+            ImGui.SetCursorScreenPos(new Vector2(ImGui.GetItemRectMin().X + 8 * scale, itemY + 4 * scale));
 
             ImGuiEx.Icon(icon);
             ImGui.SameLine();
             ImGui.Text(label);
 
-            // Add small spacing between items
-            ImGui.Dummy(new Vector2(0, 2));
+            // Add small spacing between items (scaled)
+            ImGui.Dummy(new Vector2(0, 2 * scale));
         }
 
         private static void DrawSelectableWithImage(uint iconId, string label, string id)
         {
             bool isSelected = currentSelection == id;
+            float scale = ImGuiHelpers.GlobalScale;
 
             // Change background color if selected
             if (isSelected)
@@ -261,13 +269,13 @@ namespace ICE.Ui.MainUi
                 ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.HeaderActive));
             }
 
-            // Indent for items under categories
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 16);
+            // Indent for items under categories (scaled)
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 16 * scale);
 
             float width = ImGui.GetContentRegionAvail().X;
 
-            // Invisible selectable as the clickable area
-            if (ImGui.Selectable($"##{id}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25)))
+            // Invisible selectable as the clickable area (scaled height)
+            if (ImGui.Selectable($"##{id}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25 * scale)))
             {
                 currentSelection = id;
             }
@@ -280,16 +288,16 @@ namespace ICE.Ui.MainUi
             // Get the position of that selectable we just drew
             float itemY = ImGui.GetItemRectMin().Y;
 
-            // Set cursor back to draw image and text on top
-            ImGui.SetCursorScreenPos(new Vector2(ImGui.GetItemRectMin().X + 8, itemY + 2));
+            // Set cursor back to draw image and text on top (scaled offsets)
+            ImGui.SetCursorScreenPos(new Vector2(ImGui.GetItemRectMin().X + 8 * scale, itemY + 2 * scale));
 
             Svc.Texture.TryGetFromGameIcon(iconId, out var iconImage);
             if (iconImage != null)
             {
                 var image = iconImage.GetWrapOrEmpty();
-                Vector2 imageSize = new Vector2(25, 25);
-                // Center image vertically in the 25px height
-                float imageYOffset = (25 - imageSize.Y) / 2;
+                Vector2 imageSize = new Vector2(25 * scale, 25 * scale); // Scaled image
+                                                                         // Center image vertically in the scaled height
+                float imageYOffset = (25 * scale - imageSize.Y) / 2;
                 ImGui.SetCursorScreenPos(new Vector2(ImGui.GetCursorScreenPos().X, ImGui.GetCursorScreenPos().Y + imageYOffset));
                 ImGui.Image(image.Handle, imageSize);
             }
@@ -298,8 +306,8 @@ namespace ICE.Ui.MainUi
             ImGui.AlignTextToFramePadding();
             ImGui.Text(label);
 
-            // Add small spacing between items
-            ImGui.Dummy(new Vector2(0, 2));
+            // Add small spacing between items (scaled)
+            ImGui.Dummy(new Vector2(0, 2 * scale));
         }
 
         private static IDalamudTextureWrap? GreyscaleJob()

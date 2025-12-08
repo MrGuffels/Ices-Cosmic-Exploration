@@ -6,7 +6,6 @@ namespace ICE.Utilities.GatheringHelper;
 
 public static unsafe partial class GatheringUtil
 {
-
     public class GatheringActions
     {
         /// <summary>
@@ -378,146 +377,197 @@ public static unsafe partial class GatheringUtil
 
     // Sinus
 
-    private static Vector3 AstromagneticStorm1 = new Vector3(176.24f, 9.40f, 560.07f);
-    private static Vector3 AstromagneticStorm2 = new Vector3(-91.58f, 19.32f, -241.99f);
-    private static Vector3 AstromagneticStorm3 = new Vector3(-72.76f, 51.00f, 768.64f);
-    private static Vector3 AstromagneticStorm4 = new Vector3(-464.50f, 37.89f, -69.89f);
+    private static CriticalInfo AstromagneticStorm1 = new()
+    {
+        RawLocation = new Vector3(176.24f, 9.40f, 560.07f),
+        MapInfo = new Vector2(24.7f, 32.5f)
+    };
+    private static CriticalInfo AstromagneticStorm2 = new()
+    {
+        RawLocation = new Vector3(-91.58f, 19.32f, -241.99f),
+        MapInfo = new Vector2(19.7f, 16.6f)
+    };
+    private static CriticalInfo AstromagneticStorm3 = new()
+    {
+        RawLocation = new Vector3(-72.76f, 51.00f, 768.64f),
+        MapInfo = new Vector2(19.9f, 36.9f)
+    };
+    private static CriticalInfo AstromagneticStorm4 = new()
+    {
+        RawLocation = new Vector3(-464.50f, 37.89f, -69.89f),
+        MapInfo = new Vector2(12.2f, 20.1f)
+    };
 
-    private static Vector3 MeteorShower1 = new Vector3(-219.93f, 24.16f, 209.98f);
-    private static Vector3 MeteorShower2 = new Vector3(34.86f, 34.38f, -349.75f);
-    private static Vector3 MeteorShower3 = new Vector3(845.90f, -58.44f, -390.45f);
-    private static Vector3 MeteorShower4 = new Vector3(497.36f, -115.32f, -845.65f);
+    private static CriticalInfo MeteorShower1 = new()
+    {
+        RawLocation = new Vector3(-219.93f, 24.16f, 209.98f),
+        MapInfo = new(17.1f, 25.7f)
+    };
+    private static CriticalInfo MeteorShower2 = new()
+    {
+        RawLocation = new Vector3(34.86f, 34.38f, -349.75f),
+        MapInfo = new(22.2f, 14.5f)
+    };
+    private static CriticalInfo MeteorShower3 = new()
+    {
+        RawLocation = new Vector3(845.90f, -58.44f, -390.45f),
+        MapInfo = new(38.1f, 13.9f)
+    };
+    private static CriticalInfo MeteorShower4 = new()
+    {
+        RawLocation = new Vector3(497.36f, -115.32f, -845.65f),
+        MapInfo = new Vector2(31.3f, 4.4f)
+    };
 
-    private static Vector3 SporingMist1 = new Vector3(539.43f, 36.38f, 49.89f);
-    private static Vector3 SporingMist2 = new Vector3(654.32f, 52.00f, 100.13f);
-    private static Vector3 SporingMist3 = new Vector3(379.62f, 51.39f, 704.14f);
-    private static Vector3 SporingMist4 = new Vector3(99.66f, 18.11f, -209.80f);
+    private static CriticalInfo SporingMist1 = new()
+    {
+        RawLocation = new Vector3(539.43f, 36.38f, 49.89f),
+        MapInfo = new Vector2(32.3f, 22.5f)
+    };
+    private static CriticalInfo SporingMist2 = new()
+    {
+        RawLocation = new Vector3(654.32f, 52.00f, 100.13f),
+        MapInfo = new Vector2(34.6f, 23.5f)
+    };
+    private static CriticalInfo SporingMist3 = new()
+    {
+        RawLocation = new Vector3(379.62f, 51.39f, 704.14f),
+        MapInfo = new Vector2(29.1f, 35.6f)
+    };
+    private static CriticalInfo SporingMist4 = new()
+    {
+        RawLocation = new Vector3(99.66f, 18.11f, -209.80f),
+        MapInfo = new Vector2(23.5f, 17.3f)
+    };
 
     // Phaenna
-    private static Vector3 Thunderstorms1 = new Vector3(417.57f, 52.00f, -445.41f);
-    private static Vector3 Thunderstorms2 = new Vector3(432.76f, 54.13f, -169.80f);
-    private static Vector3 Thunderstorms3 = new Vector3(169.79f, 41.00f, -210.79f);
-    private static Vector3 Thunderstorms4 = new Vector3(-615.30f, 8.26f, -515.45f);
-
-    private static Vector3 AnnealingWinds1 = new Vector3(239.77f, 133.83f, -704.44f);
-    private static Vector3 AnnealingWinds2 = new Vector3(-506.27f, -8.42f, -751.29f);
-    private static Vector3 AnnealingWinds3 = new Vector3(410.29f, 18.90f, 25.14f);
-    private static Vector3 AnnealingWinds4 = new Vector3(10.10f, 7.98f, 339.70f);
-
-    private static Vector3 GlassRain1 = new Vector3(407.15f, -229.45f, 224.76f);
-    private static Vector3 GlassRain2 = new Vector3(544.42f, -251.07f, 634.55f);
-    private static Vector3 GlassRain3 = new Vector3(148.96f, -9.99f, 487.46f);
-    private static Vector3 GlassRain4 = new Vector3(-488.32f, 25.05f, 35.65f);
-
-    public static Dictionary<uint, Vector3> CriticalLocations = new()
+    private static CriticalInfo Thunderstorms1 = new()
     {
-        // Sinus
+        RawLocation = new Vector3(417.57f, 52.00f, -445.41f),
+        MapInfo = new Vector2(29.9f, 12.6f),
+    };
+    private static CriticalInfo Thunderstorms2 = new()
+    {
+        RawLocation = new Vector3(432.76f, 54.13f, -169.80f),
+        MapInfo = new Vector2(30.1f, 18.1f)
+    };
+    private static CriticalInfo Thunderstorms3 = new()
+    {
+        RawLocation = new Vector3(169.79f, 41.00f, -210.79f),
+        MapInfo = new Vector2(24.9f, 17.3f)
+    };
+    private static CriticalInfo Thunderstorms4 = new()
+    {
+        RawLocation = new Vector3(-615.30f, 8.26f, -515.45f),
+        MapInfo = new Vector2(9.2f, 11.2f)
+    };
 
-        // Astromagnetic Storm 1/α
-        [518] = AstromagneticStorm1,
-        [522] = AstromagneticStorm1,
-        [530] = AstromagneticStorm1,
+    private static CriticalInfo AnnealingWinds1 = new()
+    {
+        RawLocation = new Vector3(239.77f, 133.83f, -704.44f),
+        MapInfo = new Vector2(26.3f, 7.4f)
+    };
+    private static CriticalInfo AnnealingWinds2 = new()
+    {
+        RawLocation = new Vector3(-506.27f, -8.42f, -751.29f),
+        MapInfo = new Vector2(11.2f, 6.2f)
+    };
+    private static CriticalInfo AnnealingWinds3 = new()
+    {
+        RawLocation = new Vector3(410.29f, 18.90f, 25.14f),
+        MapInfo = new Vector2(29.6f, 22.2f)
+    };
+    private static CriticalInfo AnnealingWinds4 = new()
+    {
+        RawLocation = new Vector3(10.10f, 7.98f, 339.70f),
+        MapInfo = new Vector2(21.7f, 28.3f)
+    };
 
-        [537] = AstromagneticStorm2,
-        [543] = AstromagneticStorm2,
+    private static CriticalInfo GlassRain1 = new()
+    {
+        RawLocation = new Vector3(407.15f, -229.45f, 224.76f),
+        MapInfo = new Vector2(29.3f, 25.6f)
+    };
+    private static CriticalInfo GlassRain2 = new()
+    {
+        RawLocation = new Vector3(544.42f, -251.07f, 634.55f),
+        MapInfo = new Vector2(32.5f, 34.2f)
+    };
+    private static CriticalInfo GlassRain3 = new()
+    {
+        RawLocation = new Vector3(148.96f, -9.99f, 487.46f),
+        MapInfo = new Vector2(24.6f, 31.4f)
+    };
+    private static CriticalInfo GlassRain4 = new()
+    {
+        RawLocation = new Vector3(-488.32f, 25.05f, 35.65f),
+        MapInfo = new Vector2(11.8f, 22.3f)
+    };
 
-        // Astromagnetic Storm - 2/β
-        [512] = AstromagneticStorm3,
-        [521] = AstromagneticStorm3,
-        [527] = AstromagneticStorm3,
+    public class CriticalInfo
+    {
+        public Vector3 RawLocation { get; set; }
+        public Vector2 MapInfo { get; set; }
+    }
 
-        [533] = AstromagneticStorm4,
-        [536] = AstromagneticStorm4,
-        [542] = AstromagneticStorm4,
+    public static Dictionary<uint, CriticalInfo> CriticalLocations = new();
 
-        // Meteor Showers - 1/α
-        [515] = MeteorShower1,
-        [524] = MeteorShower1,
-        [538] = MeteorShower1,
+    public static void UpdateCriticalWeather()
+    {
+        // Sinus - Astromagnetic Storm 1/α
+        AddKeys(AstromagneticStorm1, 518, 522, 530);
+        AddKeys(AstromagneticStorm2, 537, 543);
 
-        [519] = MeteorShower2,
-        [523] = MeteorShower2,
+        // Astromagnetic Storm 2/β
+        AddKeys(AstromagneticStorm3, 512, 521, 527);
+        AddKeys(AstromagneticStorm4, 533, 536, 542);
 
-        // Meteor Showers - 2/β
-        [516] = MeteorShower3,
-        [520] = MeteorShower3,
-        [525] = MeteorShower3,
+        // Meteor Showers 1/α
+        AddKeys(MeteorShower1, 515, 524, 538);
+        AddKeys(MeteorShower2, 519, 523);
 
-        [531] = MeteorShower4,
-        [534] = MeteorShower4,
-        [539] = MeteorShower4,
+        // Meteor Showers 2/β
+        AddKeys(MeteorShower3, 516, 520, 525);
+        AddKeys(MeteorShower4, 531, 534, 539);
 
-        // Sporing Mist - 1/α
-        [517] = SporingMist1,
-        [532] = SporingMist1,
+        // Sporing Mist 1/α
+        AddKeys(SporingMist1, 517, 532);
+        AddKeys(SporingMist2, 514, 529, 541);
 
-        [514] = SporingMist2,
-        [529] = SporingMist2,
-        [541] = SporingMist2,
+        // Sporing Mist 2/β
+        AddKeys(SporingMist3, 513, 526, 528);
+        AddKeys(SporingMist4, 535, 540, 544);
 
-        // Sporing Mist - 2/β
-        [513] = SporingMist3,
-        [526] = SporingMist3,
-        [528] = SporingMist3,
-
-        [535] = SporingMist4,
-        [540] = SporingMist4,
-        [544] = SporingMist4,
-
-        // Phaenna
-
-        // Thunderstorm 1/α
-        [1007] = Thunderstorms1,
-        [1019] = Thunderstorms1,
-        [1025] = Thunderstorms1,
-
-        [1016] = Thunderstorms2,
-        [1022] = Thunderstorms2,
+        // Phaenna - Thunderstorm 1/α
+        AddKeys(Thunderstorms1, 1007, 1019, 1025);
+        AddKeys(Thunderstorms2, 1016, 1022);
 
         // Thunderstorm 2/β
-        [1017] = Thunderstorms3,
-        [1023] = Thunderstorms3,
-        [1034] = Thunderstorms3,
-
-        [1010] = Thunderstorms4,
-        [1026] = Thunderstorms4,
-        [1031] = Thunderstorms4,
+        AddKeys(Thunderstorms3, 1017, 1023, 1034);
+        AddKeys(Thunderstorms4, 1010, 1026, 1031);
 
         // Annealing Winds 1/α
-        [1028] = AnnealingWinds1,
-        [1032] = AnnealingWinds1,
-        [1037] = AnnealingWinds1,
-
-        [1011] = AnnealingWinds2,
-        [1020] = AnnealingWinds2,
-        [1035] = AnnealingWinds2,
+        AddKeys(AnnealingWinds1, 1028, 1032, 1037);
+        AddKeys(AnnealingWinds2, 1011, 1020, 1035);
 
         // Annealing Winds 2/β
-        [1013] = AnnealingWinds3,
-        [1029] = AnnealingWinds3,
-        [1038] = AnnealingWinds3,
-
-        [1008] = AnnealingWinds4,
-        [1036] = AnnealingWinds4,
+        AddKeys(AnnealingWinds3, 1013, 1029, 1038);
+        AddKeys(AnnealingWinds4, 1008, 1036);
 
         // Glass Rain 1/α
-        [1009] = GlassRain1,
-        [1014] = GlassRain1,
-        [1021] = GlassRain1,
-
-        [1030] = GlassRain2,
-        [1039] = GlassRain2,
+        AddKeys(GlassRain1, 1009, 1014, 1021);
+        AddKeys(GlassRain2, 1030, 1039);
 
         // Glass Rain 2/β
+        AddKeys(GlassRain3, 1015, 1018, 1033);
+        AddKeys(GlassRain4, 1012, 1024, 1027);
+    }
 
-        [1012] = GlassRain3,
-        [1024] = GlassRain3,
-        [1027] = GlassRain3,
-
-        [1015] = GlassRain4,
-        [1018] = GlassRain4,
-        [1033] = GlassRain4,
-    };
+    private static void AddKeys(CriticalInfo location, params uint[] keys)
+    {
+        foreach (var key in keys)
+            CriticalLocations[key] = location;
+    }
 
     public class GathNodeInfo
     {

@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
@@ -84,8 +85,18 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGuiEx.Icon(FontAwesomeIcon.FlagCheckered);
                         if (ImGui.IsItemClicked())
                         {
-                            var missionInfo = entry.Value;
-                            P.Navmesh.PathfindAndMoveTo(critical, false);
+                            if (P.Navmesh.Installed)
+                            {
+                                if (P.Navmesh.IsReady())
+                                {
+                                    var missionInfo = entry.Value;
+                                    P.Navmesh.PathfindAndMoveTo(critical.RawLocation, false);
+                                }
+                                else
+                                {
+                                    Utils.VnavBuildInfo();
+                                }
+                            }
                         }
                     }
                 }

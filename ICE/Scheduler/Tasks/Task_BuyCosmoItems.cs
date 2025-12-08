@@ -32,31 +32,51 @@ namespace ICE.Scheduler.Tasks
 
             if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
             {
-                if (P.Navmesh.IsRunning())
+                if (P.Navmesh.Installed)
                 {
-                    if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
+                    if (P.Navmesh.IsReady())
                     {
-                        IceLogging.Debug("Pathing to NPC has reached the distance thresh, stopping");
-                        P.Navmesh.Stop();
-                        return true;
+                        if (P.Navmesh.IsRunning())
+                        {
+                            if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
+                            {
+                                IceLogging.Debug("Pathing to NPC has reached the distance thresh, stopping");
+                                P.Navmesh.Stop();
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            IceLogging.Debug($"Distance to the npc is correct, commending repair");
+                            return true;
+                        }
                     }
-                }
-                else
-                {
-                    IceLogging.Debug($"Distance to the npc is correct, commending repair");
-                    return true;
+                    else
+                    {
+                        Utils.VnavBuildInfo();
+                    }
                 }
             }
             else
             {
-                if (!P.Navmesh.IsRunning())
+                if (P.Navmesh.Installed)
                 {
-                    if (EzThrottler.Throttle("Pathing to repair NPC"))
+                    if (P.Navmesh.IsReady())
                     {
-                        IceLogging.Debug($"Pathing to: {npcEntry.Name}");
+                        if (!P.Navmesh.IsRunning())
+                        {
+                            if (EzThrottler.Throttle("Pathing to repair NPC"))
+                            {
+                                IceLogging.Debug($"Pathing to: {npcEntry.Name}");
 
-                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
-                        P.Navmesh.PathfindAndMoveTo(randomPoint, false);
+                                Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
+                                P.Navmesh.PathfindAndMoveTo(randomPoint, false);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Utils.VnavBuildInfo();
                     }
                 }
             }

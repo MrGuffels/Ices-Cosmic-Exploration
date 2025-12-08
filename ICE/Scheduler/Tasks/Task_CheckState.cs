@@ -198,6 +198,12 @@ namespace ICE.Scheduler.Tasks
                                 IceLogging.Info("On a gathering class, kicking over to the gathering action", "[Task: Check State]");
                                 SchedulerMain.State = IceState.Gather;
                             }
+                            else if (s.HasFlag(MissionAttributes.Fish))
+                            {
+                                IceLogging.Debug("We seem to be in the middle of a fishing mission. Going to reset/import all the presets");
+                                Task_ExecuteMission.FishingTask(currentMissionId);
+                                SchedulerMain.State = IceState.ScoreCheck;
+                            }
                             else
                             {
                                 // Not currently in the middle of an action, so time to check score and go from there.

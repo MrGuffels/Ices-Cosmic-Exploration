@@ -1,4 +1,5 @@
 ﻿using ECommons.EzIpcManager;
+using SharpDX.Direct3D11;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

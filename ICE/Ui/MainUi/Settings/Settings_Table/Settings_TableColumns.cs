@@ -62,6 +62,13 @@ public static class Settings_TableColumns
         if (ImGui.Checkbox("Show Manual Mode Column", ref showManualMode))
         {
             C.ShowManualMode = showManualMode;
+            if (!showManualMode)
+            {
+                foreach (var mission in C.MissionConfig)
+                {
+                    mission.Value.ManualMode = false;
+                }
+            }
             C.Save();
         }
         ImGuiEx.HelpMarker("Only enable this if you want plan on doing missions YOURSELF. AND NOT AUTOMATING IT. " +
@@ -85,7 +92,7 @@ public static class Settings_TableColumns
 
         ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
         bool relicTurnin = C.TurninRelic;
-        if (ImGui.Checkbox($"Turnin if relic is complete", ref relicTurnin))
+        if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_GeneralSetting", ref relicTurnin))
         {
             if (relicTurnin)
                 C.GrindProvisionals = false;

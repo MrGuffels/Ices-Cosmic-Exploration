@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
@@ -589,7 +590,11 @@ namespace ICE.Scheduler.Tasks
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
                         bool unSupported = UnsupportedMissions.Ids.Contains(id);
-                        bool manipUnlocked = PlayerHelper.HasManipUnlocked(mission.Jobs.Last());
+
+                        PlayerHelper.UpdateHasManip();
+                        var jobId = mission.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
+
+                        bool manipUnlocked = PlayerHelper.ManipClassInfo.TryGetValue(jobId, out var manipInfo) && manipInfo.HasUnlocked;
                         bool isManipReq = mission.Attributes.HasFlag(MissionAttributes.ExpertCraft);
 
                         IceLogging.Debug($"[Mission: {id}]" +
@@ -1033,7 +1038,12 @@ namespace ICE.Scheduler.Tasks
 
                 Vector3 closestNode = gatherInfo[0].LandZone;
 
-                if (!P.Navmesh.IsRunning())
+                if (!P.Navmesh.IsReady())
+                {
+                    Utils.VnavBuildInfo();
+                    return false;
+                }
+                else if (!P.Navmesh.IsRunning())
                 {
                     if (!Svc.Condition[ConditionFlag.Unknown101])
                     {
@@ -1097,6 +1107,10 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"Mission ID: {missionId} | Map Position: {missionEntry.MapPosition} | Moon Territory: {missionEntry.TerritoryId}");
                 }
 
+                if (!P.Navmesh.IsReady())
+                {
+                    Utils.VnavBuildInfo();
+                }
                 if (!P.Navmesh.IsRunning())
                 {
                     if (!Svc.Condition[ConditionFlag.Unknown101])

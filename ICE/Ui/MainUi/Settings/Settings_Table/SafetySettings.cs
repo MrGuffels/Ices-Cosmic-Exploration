@@ -8,8 +8,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
     internal class SafetySettings
     {
-        private static bool animationLockAbandon = C.AnimationLockAbandon;
-        private static bool stopOnAbort = C.StopOnAbort;
         private static bool rejectUnknownYesNo = C.RejectUnknownYesno;
         private static bool delayGrabMission = C.DelayGrabMission;
         private static int delayAmount = C.DelayIncrease;
@@ -63,7 +61,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             {
                 ImGui.SetNextItemWidth(150);
                 ImGui.SameLine();
-                if (ImGui.SliderInt("ms###Crafting", ref delayCraftAmount, 6000, 20000))
+                if (ImGui.SliderInt("ms###Crafting", ref delayCraftAmount, 500, 5000))
                 {
                     if (C.DelayCraftIncrease != delayCraftAmount)
                     {

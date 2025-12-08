@@ -126,7 +126,11 @@ namespace ICE.Scheduler.Tasks
 
             if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
             {
-                if (P.Navmesh.IsRunning())
+                if (!P.Navmesh.IsReady())
+                {
+                    Utils.VnavBuildInfo();
+                }
+                else if (P.Navmesh.IsRunning())
                 {
                     if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
                     {
@@ -143,7 +147,11 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                if (!P.Navmesh.IsRunning())
+                if (!P.Navmesh.IsReady())
+                {
+                    Utils.VnavBuildInfo();
+                }
+                else if (!P.Navmesh.IsRunning())
                 {
                     if (EzThrottler.Throttle("Pathing to repair NPC"))
                     {

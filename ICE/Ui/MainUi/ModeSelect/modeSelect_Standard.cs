@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
@@ -16,12 +17,14 @@ namespace ICE.Ui.MainUi.ModeSelect
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, 10).Push(ImGuiStyleVar.ChildBorderSize, 1);
 
             // Header at the top
-            using (var headerChild = ImRaii.Child("##modeSelect_StandardHeader", new Vector2(0, 45), true, ImGuiWindowFlags.NoScrollbar))
+            float scale = ImGuiHelpers.GlobalScale;
+
+            using (var headerChild = ImRaii.Child("##modeSelect_StandardHeader", new Vector2(0, 45 * scale), true, ImGuiWindowFlags.NoScrollbar))
             {
                 if (!headerChild.Success) return;
 
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 10);
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 10 * scale);
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5 * scale);
 
                 string modeType = string.Empty;
                 FontAwesomeIcon modeIcon = FontAwesomeIcon.List;
@@ -45,7 +48,7 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                 ImGuiEx.IconWithText(modeIcon, $"{modeType} Mode");
 
-                ImGui.SameLine(0, 10);
+                ImGui.SameLine(0, 10 * scale);
 
                 // Adjust the Y position to center the button vertically with the text
                 float textHeight = ImGui.GetTextLineHeight();
@@ -100,18 +103,18 @@ namespace ICE.Ui.MainUi.ModeSelect
                 uint currentJobId = Player.JobId;
                 bool usingSupportedJob = CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId);
 
-                ImGui.SameLine(0, 10);
+                ImGui.SameLine(0, 10 * scale);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
 
                 using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob))
                 {
-                    if (ImGui.Button("Start", new Vector2(150, 0)))
+                    if (ImGui.Button("Start", new Vector2(150 * scale, 0)))
                     {
                         SchedulerMain.EnablePlugin();
                     }
                 }
 
-                ImGui.SameLine(0, 10);
+                ImGui.SameLine(0, 10 * scale);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
                 using (ImRaii.Disabled(SchedulerMain.State == IceState.Idle))
                 {
@@ -119,7 +122,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     using (ImRaii.PushColor(ImGuiCol.ButtonHovered, new Vector4(0.9f, 0.3f, 0.3f, 1.0f)))
                     using (ImRaii.PushColor(ImGuiCol.ButtonActive, new Vector4(0.7f, 0.1f, 0.1f, 1.0f)))
                     {
-                        if (ImGui.Button("Stop", new Vector2(150, 0)))
+                        if (ImGui.Button("Stop", new Vector2(150 * scale, 0)))
                         {
                             SchedulerMain.DisablePlugin();
                         }
@@ -176,7 +179,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                         ImGui.TableNextColumn();
 
                         bool relicTurnin = C.TurninRelic;
-                        if (ImGui.Checkbox($"Turnin if relic is complete", ref relicTurnin))
+                        if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_RelicGrind", ref relicTurnin))
                         {
                             if (relicTurnin)
                                 C.GrindProvisionals = false;
@@ -248,18 +251,20 @@ namespace ICE.Ui.MainUi.ModeSelect
                         }
                         if (EnableRelicXp)
                         {
-                            bool IgnoreManual = C.XPRelicIgnoreManual;
-                            if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
-                            {
-                                C.XPRelicIgnoreManual = IgnoreManual;
-                                C.Save();
-                            }
-
                             bool OnlySelected = C.XPRelicOnlyEnabled;
                             if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
                             {
                                 C.XPRelicOnlyEnabled = OnlySelected;
                                 C.Save();
+                            }
+                            if (C.ShowManualMode)
+                            {
+                                bool IgnoreManual = C.XPRelicIgnoreManual;
+                                if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
+                                {
+                                    C.XPRelicIgnoreManual = IgnoreManual;
+                                    C.Save();
+                                }
                             }
                         }
                     }
@@ -381,98 +386,125 @@ namespace ICE.Ui.MainUi.ModeSelect
                 int dRankEnabled = modeSelect_TableInfo.missionList.ContainsKey("DRank") ? modeSelect_TableInfo.missionList["DRank"].Count(mission => mission.enabled) : 0;
                 int allEnabled = modeSelect_TableInfo.missionList.ContainsKey("All Enabled") ? modeSelect_TableInfo.missionList["All Enabled"].Count(mission => mission.enabled) : 0;
 
-                if (C.GrindProvisionals)
+                float scrollbarSize = ImGui.GetStyle().ScrollbarSize;
+                float buttonRowHeight = (ImGui.GetTextLineHeight() + 8 * scale + 4 * scale) + scrollbarSize;
+
+                using (var missionButtons = ImRaii.Child("##tab_scroll", new Vector2(0, buttonRowHeight), false, ImGuiWindowFlags.HorizontalScrollbar))
                 {
-                    ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
-                    ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
-                    ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
-                    ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
-                    ImGui_Tools.EndCategoryButtonRow();
+                    if (!missionButtons.Success)
+                        return;
+
+                    if (C.GrindProvisionals)
+                    {
+                        ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
+                        ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
+                        ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
+                        ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
+                        ImGui_Tools.EndCategoryButtonRow();
+                    }
+                    else
+                    {
+                        ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
+                        ImGui_Tools.DrawCategoryButton($"Critical [{criticalEnabled}]", "main_Critical");
+                        ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
+                        ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
+                        ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
+                        ImGui_Tools.DrawCategoryButton($"A Rank [{aRankEnabled}]", "main_ARank");
+                        ImGui_Tools.DrawCategoryButton($"B Rank [{bRankEnabled}]", "main_BRank");
+                        ImGui_Tools.DrawCategoryButton($"C Rank [{cRankEnabled}]", "main_CRank");
+                        ImGui_Tools.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank", spacingAfter: 0);
+                        ImGui_Tools.EndCategoryButtonRow();
+                    }
+                }
+
+                if (C.ShowExtraMissionInfo)
+                {
+                    if (ImGui.BeginTable("Mission Info | Extra Details", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.Resizable, Vector2.Zero))
+                    {
+                        ImGui.TableSetupColumn("Mission Selection Viewer", ImGuiTableColumnFlags.WidthFixed, 200f);
+                        ImGui.TableSetupColumn("Specific Mission Info", ImGuiTableColumnFlags.WidthStretch);
+
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        MissionTableInfo();
+
+                        ImGui.TableNextColumn();
+                        using (var missionInfoChild = ImRaii.Child("##modeSelect_MissionInfo", new Vector2(0, 0), false))
+                        {
+                            modeSelect_TableInfo.DrawMissionDetails();
+                        }
+
+                        ImGui.EndTable();
+                    }
                 }
                 else
                 {
-                    ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
-                    ImGui_Tools.DrawCategoryButton($"Critical [{criticalEnabled}]", "main_Critical");
-                    ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
-                    ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
-                    ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
-                    ImGui_Tools.DrawCategoryButton($"A Rank [{aRankEnabled}]", "main_ARank");
-                    ImGui_Tools.DrawCategoryButton($"B Rank [{bRankEnabled}]", "main_BRank");
-                    ImGui_Tools.DrawCategoryButton($"C Rank [{cRankEnabled}]", "main_CRank");
-                    ImGui_Tools.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank", spacingAfter: 0); // No spacing after last button
-                    ImGui_Tools.EndCategoryButtonRow();
+                    MissionTableInfo();
                 }
+            }
+        }
 
-                if (ImGui.BeginTable("Mission Info Window Screen", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.Resizable | ImGuiTableFlags.Hideable, Vector2.Zero))
+        private static void MissionTableInfo()
+        {
+            using (var missionTableChild = ImRaii.Child("##modeSelect_MissionTables", new Vector2(0, 0), false))
+            {
+                var enabledTabs = ImGui_Tools.CategoryStates;
+                if (C.GrindProvisionals)
                 {
-                    ImGui.TableSetupColumn("Mission Selection Viewer");
-                    ImGui.TableSetupColumn("Specific Mission Info", ImGuiTableColumnFlags.WidthStretch);
+                    modeSelect_TableInfo.missionList["All Enabled"] = modeSelect_TableInfo.missionList["All Enabled"]
+                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                        .ToList(); // ToList() if you need a List<T>, otherwise the IOrderedEnumerable is fine
 
-                    ImGui.TableSetColumnEnabled(1, C.ShowExtraMissionInfo);
+                    modeSelect_TableInfo.missionList["Sequence"] = modeSelect_TableInfo.missionList["Sequence"]
+                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                        .ToList();
 
-                    ImGui.TableNextRow();
-                    ImGui.TableSetColumnIndex(0);
-                    using (var missionTableChild = ImRaii.Child("##modeSelect_MissionTables", new Vector2(0, 0), false))
+                    modeSelect_TableInfo.missionList["Weather"] = modeSelect_TableInfo.missionList["Weather"]
+                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                        .ToList();
+
+                    modeSelect_TableInfo.missionList["Timed"] = modeSelect_TableInfo.missionList["Timed"]
+                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                        .ToList();
+
+                    if (enabledTabs["main_AllEnabled"])
+                        modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.missionList["All Enabled"]);
+                    if (enabledTabs["main_Sequence"])
+                        modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.missionList["Sequence"]);
+                    if (enabledTabs["main_Weather"])
+                        modeSelect_TableInfo.DrawMissionTablev2("Weather", "Weather_Missions", modeSelect_TableInfo.missionList["Weather"]);
+                    if (enabledTabs["main_Timed"])
+                        modeSelect_TableInfo.DrawMissionTablev2("Timed", "Timed_Missions", modeSelect_TableInfo.missionList["Timed"]);
+                }
+                else
+                {
+                    if (enabledTabs["main_AllEnabled"])
                     {
-                        var enabledTabs = ImGui_Tools.CategoryStates;
-                        if (C.GrindProvisionals)
+                        if (modeSelect_TableInfo.missionList["All Enabled"].Count > 0)
                         {
-                            modeSelect_TableInfo.missionList["All Enabled"] = modeSelect_TableInfo.missionList["All Enabled"]
-                                .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                                .ToList(); // ToList() if you need a List<T>, otherwise the IOrderedEnumerable is fine
-
-                            modeSelect_TableInfo.missionList["Sequence"] = modeSelect_TableInfo.missionList["Sequence"]
-                                .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                                .ToList();
-
-                            modeSelect_TableInfo.missionList["Weather"] = modeSelect_TableInfo.missionList["Weather"]
-                                .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                                .ToList();
-
-                            modeSelect_TableInfo.missionList["Timed"] = modeSelect_TableInfo.missionList["Timed"]
-                                .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                                .ToList();
-
-                            if (enabledTabs["main_AllEnabled"])
-                                modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.missionList["All Enabled"]);
-                            if (enabledTabs["main_Sequence"])
-                                modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.missionList["Sequence"]);
-                            if (enabledTabs["main_Weather"])
-                                modeSelect_TableInfo.DrawMissionTablev2("Weather", "Weather_Missions", modeSelect_TableInfo.missionList["Weather"]);
-                            if (enabledTabs["main_Timed"])
-                                modeSelect_TableInfo.DrawMissionTablev2("Timed", "Timed_Missions", modeSelect_TableInfo.missionList["Timed"]);
+                            modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["All Enabled"]));
                         }
                         else
                         {
-                            if (enabledTabs["main_AllEnabled"])
-                                modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["All Enabled"]));
-                            if (enabledTabs["main_Critical"])
-                                modeSelect_TableInfo.DrawMissionTablev2("Critical", "Critical_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Critical"]));
-                            if (enabledTabs["main_Sequence"])
-                                modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Sequence"]));
-                            if (enabledTabs["main_Weather"])
-                                modeSelect_TableInfo.DrawMissionTablev2("Weather", "Weather_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Weather"]));
-                            if (enabledTabs["main_Timed"])
-                                modeSelect_TableInfo.DrawMissionTablev2("Timed", "Timed_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Timed"]));
-                            if (enabledTabs["main_ARank"])
-                                modeSelect_TableInfo.DrawMissionTablev2("A Rank", "A_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["ARank"]));
-                            if (enabledTabs["main_BRank"])
-                                modeSelect_TableInfo.DrawMissionTablev2("B Rank", "B_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["BRank"]));
-                            if (enabledTabs["main_CRank"])
-                                modeSelect_TableInfo.DrawMissionTablev2("C Rank", "C_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["CRank"]));
-                            if (enabledTabs["main_DRank"])
-                                modeSelect_TableInfo.DrawMissionTablev2("D Rank", "D_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["DRank"]));
+                            ImGui.Text("HEY. ENABLE SOME MISSIONS SO WE CAN DISPLAY SOMETHING HERE");
                         }
                     }
-
-                    ImGui.TableNextColumn();
-                    using (var missionInfoChild = ImRaii.Child("##modeSelect_MissionInfo", new Vector2(0, 0), false))
-                    {
-
-                        modeSelect_TableInfo.DrawMissionDetails();
-                    }
-
-                    ImGui.EndTable();
+                    if (enabledTabs["main_Critical"])
+                        modeSelect_TableInfo.DrawMissionTablev2("Critical", "Critical_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Critical"]));
+                    if (enabledTabs["main_Sequence"])
+                        modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Sequence"]));
+                    if (enabledTabs["main_Weather"])
+                        modeSelect_TableInfo.DrawMissionTablev2("Weather", "Weather_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Weather"]));
+                    if (enabledTabs["main_Timed"])
+                        modeSelect_TableInfo.DrawMissionTablev2("Timed", "Timed_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Timed"]));
+                    if (enabledTabs["main_ARank"])
+                        modeSelect_TableInfo.DrawMissionTablev2("A Rank", "A_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["ARank"]));
+                    if (enabledTabs["main_BRank"])
+                        modeSelect_TableInfo.DrawMissionTablev2("B Rank", "B_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["BRank"]));
+                    if (enabledTabs["main_CRank"])
+                        modeSelect_TableInfo.DrawMissionTablev2("C Rank", "C_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["CRank"]));
+                    if (enabledTabs["main_DRank"])
+                        modeSelect_TableInfo.DrawMissionTablev2("D Rank", "D_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["DRank"]));
                 }
             }
         }
