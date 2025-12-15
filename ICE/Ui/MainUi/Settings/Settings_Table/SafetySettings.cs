@@ -70,6 +70,16 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
                 }
             }
+            bool jumpIfStuck = C.JumpIfStuck;
+            if (ImGui.Checkbox("Jump if stuck during nav movement", ref jumpIfStuck))
+            {
+                C.JumpIfStuck = jumpIfStuck;
+                C.Save();
+            }
+            ImGuiEx.HelpMarker(
+                "If you get stuck while navmesh moving, this will allow you to jump after a certain time has passed (3s currently)\n" +
+                "NOTE: THIS IS EXPERIMENTAL. IT WORKS, BUT IT STILL LOOKS SUS. IF YOU SEE A POINT AND YOUR STUCK, REPORT IT PLEASE\n" +
+                "through the logs function, and give info about it so we can fix it.");
         }
     }
 }

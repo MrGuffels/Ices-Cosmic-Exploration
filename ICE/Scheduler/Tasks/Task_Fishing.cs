@@ -149,20 +149,10 @@ namespace ICE.Scheduler.Tasks
                 }
                 else if (EzThrottler.Throttle("Adding counter for bait not equipped"))
                 {
-                    if (CosmicHelper.CurrentMissionInfo.Attributes.HasFlag(MissionAttributes.Collectables) && !PlayerHelper.HasStatusId(805))
-                    {
-                        if (EzThrottler.Throttle("Attempting to turn on collectability"))
-                            Svc.Commands.ProcessCommand("/ahstart");
-                        return false;
-                    }
-
                     BaitCounter++;
                     IceLogging.Debug($"Adding 1 to the counter. Counter is at: {BaitCounter}");
                     if (BaitCounter >= 2)
                     {
-                        string message = "HEY. You have your dismount setting way to low. (Probably at 0.), change it to like 10? Maybe. Just not 0. To prevent this from happening again";
-                        IceLogging.ChatError(message, "[I.C.E. Fishing]");
-
                         foreach (var bait in GatheringUtil.MoonBaits)
                         {
                             foreach (var baitId in bait.Value)

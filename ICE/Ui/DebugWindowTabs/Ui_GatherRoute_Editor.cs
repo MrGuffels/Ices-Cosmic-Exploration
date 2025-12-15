@@ -2,7 +2,9 @@
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using ICE.Utilities.GatheringHelper;
+using Pictomancy;
 using System.Collections.Generic;
 using System.IO;
 using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
@@ -18,11 +20,21 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool showOnlyVisibleNodes = false;
         private static float maxDistance = 75.0f;
 
+        private static bool showSelectedNode = false;
+        private static bool showRouteBetween = true;
+
         private static FileDialogManager fileDialogManager = new FileDialogManager();
 
         public static unsafe void Draw()
         {
             var routes = GatheringRouteLoader.LoadAllRoutes();
+
+            // used for picto drawing here
+            List<(uint nodeId, Vector3 position)> AllNodes = new();
+
+
+
+            // end picto stuff
 
             using (var quickAccess = ImRaii.Child("Quick Access Routes", new Vector2(200, 120), true))
             {
@@ -145,7 +157,7 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.PopID();
                     }
                 }
-            } // Child window ends here
+            }
 
             ImGui.SameLine(0, 5);
 
@@ -174,7 +186,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                     var routeList = GatheringRouteLoader.GetRoute(selectedZone, selectedRoute);
 
-                    using (var routeListUi = ImRaii.Child("Route List Ui Selector", new Vector2(150, 175), true))
+                    using (var routeListUi = ImRaii.Child("Route List Ui Selector", new Vector2(150, 200), true))
                     {
                         if (!routeListUi.Success)
                             return;
@@ -184,14 +196,19 @@ namespace ICE.Ui.DebugWindowTabs
                             var routeItem = routeList[i];
                             var nodeId = routeItem.NodeId;
 
-                            ImGui.PushID(nodeId);
+                            if (!AllNodes.Contains((nodeId, routeItem.Position)))
+                            {
+                                AllNodes.Add((nodeId, routeItem.Position));
+                            }
+
+                            ImGui.PushID($"{nodeId}_routeViewer");
 
                             var isSelected = nodeId == selectedNode;
                             if (ImGui.Selectable($"{nodeId}", isSelected))
                             {
                                 selectedNode = nodeId;
                             }
-                            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
+                            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right) && ImGui.IsItemHovered())
                             {
                                 ImGui.OpenPopup("Options for node");
                             }
@@ -201,8 +218,12 @@ namespace ICE.Ui.DebugWindowTabs
                                 if (ImGui.Selectable("Remove Node"))
                                 {
                                     routeList.Remove(routeItem);
-                                    ImGui.CloseCurrentPopup();
                                 }
+                                if (ImGui.Selectable("Path to node"))
+                                {
+                                    P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(routeItem.LandZone, stayMounted: true), Utils.TaskConfig);
+                                }
+
                                 ImGui.EndPopup();
                             }
 
@@ -253,13 +274,15 @@ namespace ICE.Ui.DebugWindowTabs
                         if (!allNodeViewer.Success)
                             return;
 
+                        ImGui.Text("All Node Viewer");
+
                         foreach (var x in Svc.Objects.Where(x => x.ObjectKind == ObjectKind.GatheringPoint && Player.DistanceTo(x.Position) <= maxDistance)
                                                      .OrderBy(x => Player.DistanceTo(x.Position)))
                         {
-                            ImGui.PushID($"{x.BaseId}_{x.Position}");
+                            ImGui.PushID($"{x.BaseId}_{x.Position}_NodeViewer");
 
                             ImGui.Text($"Id: {x.BaseId} | Distance: {Player.DistanceTo(x.Position):N2}");
-                            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
+                            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right) && ImGui.IsItemHovered())
                             {
                                 ImGui.OpenPopup("Node Viewer Popup");
                             }
@@ -284,10 +307,131 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGui.PopID();
                         }
                     }
+
+                    var nodeEditorSpace = ImGui.GetContentRegionAvail();
+                    using (var nodeEditorUi = ImRaii.Child("Node Editor Ui", nodeEditorSpace))
+                    {
+                        if (!nodeEditorUi.Success)
+                            return;
+
+                        var route = routeList.Where(x => x.NodeId == selectedNode).FirstOrDefault();
+                        if (route != null)
+                        {
+                            ImGui.Text($"Node Id: {route.NodeId}");
+                            ImGui.Text($"Node Position: {route.Position}");
+
+                            // Player Land Zone (currently static, might change this later)
+                            Vector3 playerLandZone = route.LandZone;
+                            ImGui.Text("Player Land Zone");
+                            ImGui.SetNextItemWidth(200);
+                            if (ImGui.InputFloat3("##Player Land Zone", ref playerLandZone))
+                            {
+                                route.LandZone = playerLandZone;
+                            }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Set to current position"))
+                            {
+                                route.LandZone = Player.Position;
+                            }
+
+                            // Radius Start/End
+                            ImGui.Text("Radius Info");
+                            float radiusStart = route.RadiusStart;
+                            float radiusEnd = route.RadiusEnd;
+
+                            ImGui.SetNextItemWidth(100);
+                            if (ImGui.DragFloat("Start##radiusStart", ref radiusStart, 1, -360, 360))
+                            {
+                                route.RadiusStart = radiusStart;
+                            }
+
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(100);
+                            if (ImGui.DragFloat("End##radiusEnd", ref radiusEnd, 1, -360, 360))
+                            {
+                                route.RadiusEnd = radiusEnd;
+                            }
+
+                            // Min/Max Distance
+                            ImGui.Text("Distance to Node");
+                            float minDistance = route.MinDistance;
+                            float maxDistance = route.MaxDistance;
+
+                            ImGui.SetNextItemWidth(100);
+                            if (ImGui.DragFloat("Start##minDistance", ref minDistance, 0.1f, 0, 5))
+                            {
+                                route.MinDistance = minDistance;
+                            }
+
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(100);
+                            if (ImGui.DragFloat("End##maxDistance", ref maxDistance, 0.1f, 0, 5))
+                            {
+                                route.MaxDistance = maxDistance;
+                            }
+
+                            if (ImGui.Button("Path to node"))
+                            {
+                                P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(route.LandZone, stayMounted: true), Utils.TaskConfig);
+                            }
+
+                            if (ImGui.Button("Test Path to all Nodes"))
+                            {
+                                var firstPosition = Vector3.Zero;
+                                foreach (var routeItem in routeList)
+                                {
+                                    if (firstPosition == Vector3.Zero)
+                                        firstPosition = routeItem.LandZone;
+
+                                    P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(routeItem.LandZone, stayMounted: true), Utils.TaskConfig);
+                                }
+                                P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(firstPosition, stayMounted: true), Utils.TaskConfig);
+                            }
+
+                            if (ImGui.Button("Stop Task"))
+                            {
+                                P.TaskManager.Tasks.Clear();
+                                P.TaskManager.Abort();
+                                P.Navmesh.Stop();
+                            }
+                        }
+                    }
                 }
             }
 
             fileDialogManager.Draw();
+
+            using (var drawing = PictoService.Draw())
+            {
+                if (drawing == null)
+                    return;
+
+                if (showRouteBetween && AllNodes.Count > 1)
+                {
+                    for (int i = 0; i < AllNodes.Count; i++)
+                    {
+                        var lineColor = C.PictoColor_Circle;
+                        var currentNode = AllNodes[i];
+
+                        // Draw line from previous node to current (skip only the first node)
+                        if (i != 0)
+                        {
+                            var prevNode = AllNodes[i-1];
+                            drawing.AddLine(prevNode.position, currentNode.position, 0, lineColor);
+                        }
+
+                        // If this is the last node, draw closing line back to first
+                        if (i == AllNodes.Count - 1)
+                        {
+                            var firstNode = AllNodes[0];
+                            drawing.AddLine(currentNode.position, firstNode.position, 0, lineColor);
+                        }
+
+                        drawing.AddText(new Vector3(currentNode.position.X, currentNode.position.Y + 1, currentNode.position.Z), C.PictoColor_Dot, $"Node: {currentNode.nodeId}", 1);
+                        drawing.AddDot(currentNode.position, 5, C.PictoColor_Dot);
+                    }
+                }
+            }
         }
 
         private static uint GetJobIdForFlag(uint territoryId, Vector2 map)

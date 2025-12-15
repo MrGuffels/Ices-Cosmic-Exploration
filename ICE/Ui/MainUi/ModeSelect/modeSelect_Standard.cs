@@ -19,6 +19,23 @@ namespace ICE.Ui.MainUi.ModeSelect
             // Header at the top
             float scale = ImGuiHelpers.GlobalScale;
 
+            bool autoSelectMoon = C.AutoSelectMoon;
+            if (autoSelectMoon)
+            {
+                if (PlayerHelper.IsInSinusArdorum() && (!C.ShowSinusMissions || C.ShowPhaennaMissions))
+                {
+                    C.ShowSinusMissions = true;
+                    C.ShowPhaennaMissions = false;
+                    C.Save();
+                }
+                else if (PlayerHelper.IsInPhaenna() && (C.ShowSinusMissions || !C.ShowPhaennaMissions))
+                {
+                    C.ShowSinusMissions = false;
+                    C.ShowPhaennaMissions = true;
+                    C.Save();
+                }
+            }
+
             using (var headerChild = ImRaii.Child("##modeSelect_StandardHeader", new Vector2(0, 45 * scale), true, ImGuiWindowFlags.NoScrollbar))
             {
                 if (!headerChild.Success) return;

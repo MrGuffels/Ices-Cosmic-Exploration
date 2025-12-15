@@ -19,6 +19,7 @@ namespace ICE.Config
         public bool DelayCraft { get; set; } = true;
         public int DelayCraftIncrease { get; set; } = 2500;
         public bool AnimationLockAbandon { get; set; } = true;
+        public bool JumpIfStuck { get; set; } = false;
 
         #endregion
 

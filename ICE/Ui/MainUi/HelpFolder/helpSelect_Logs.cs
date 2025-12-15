@@ -120,7 +120,7 @@ namespace ICE.Ui.MainUi.HelpFolder
                                     ImGuiTableFlags.ScrollY |
                                     ImGuiTableFlags.SizingFixedFit;
 
-            if (ImGui.BeginTable("Destination Log Viewer", 4, flags))
+            if (ImGui.BeginTable("Destination Log Viewer", 5, flags))
             {
                 ImGui.TableSetupColumn("Timestamp");
                 ImGui.TableSetupColumn("Start");
@@ -130,25 +130,47 @@ namespace ICE.Ui.MainUi.HelpFolder
                 ImGui.TableHeadersRow();
 
                 var filteredLogs = DestinationLogs.Logs.AsEnumerable();
+                var entryNumber = 0;
+
                 foreach (var log in filteredLogs.OrderByDescending(l => l.Timestamp))
                 {
                     ImGui.TableNextRow();
 
+                    ImGui.PushID($"{log.PlayerDestination}_{entryNumber}");
+
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text(log.Timestamp.ToString("HH:mm:ss"));
+                    Table_VertCenterText(log.Timestamp.ToString("HH:mm:ss"));
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"X: {log.PlayerStart.X:N2}, Y: {log.PlayerStart.Y:N2}, Z: {log.PlayerStart.Z:N2}");
+                    Table_VertCenterText($"X: {log.PlayerStart.X:N2}, Y: {log.PlayerStart.Y:N2}, Z: {log.PlayerStart.Z:N2}");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"X: {log.PlayerDestination.X:N2}, Y: {log.PlayerDestination.Y:N2}, Z: {log.PlayerDestination.Z:N2}");
+                    Table_VertCenterText($"X: {log.PlayerDestination.X:N2}, Y: {log.PlayerDestination.Y:N2}, Z: {log.PlayerDestination.Z:N2}");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{log.Distance}");
+                    Table_VertCenterText($"{log.Distance}");
+
+                    ImGui.TableNextColumn();
+                    if (ImGui.Button("Copy Info"))
+                    {
+                        var clipboardText = new StringBuilder();
+                        clipboardText.AppendLine($"Start: X: {log.PlayerStart.X:N2}, Y: {log.PlayerStart.Y:N2}, Z: {log.PlayerStart.Z:N2}");
+                        clipboardText.Append($"End: X: {log.PlayerDestination.X:N2}, Y: {log.PlayerDestination.Y:N2}, Z: {log.PlayerDestination.Z:N2}");
+                        ImGui.SetClipboardText($"{clipboardText}");
+                        Notify.Success("Log copied to clipbard");
+                    }
+                    ImGui.PopID();
+
+                    entryNumber += 1;
                 }
 
                 ImGui.EndTable();
             }
+        }
+        private static void Table_VertCenterText(string text)
+        {
+            ImGui.AlignTextToFramePadding();
+            ImGui.TextUnformatted(text);
         }
     }
 }
