@@ -18,7 +18,7 @@ namespace ICE.Scheduler.Tasks
                 new(PathToRelicNPC, "Heading to the relic NPC for turnin"),
                 new(TalkToResearchWay, "Talk to researchway"),
                 new(SelectReport, "Selecting Report"),
-                new(SelectRelicClass, "Selecting the class to turnin on")
+                new(SelectRelicClass, "Selecting the class to turnin on", Utils.TaskConfig)
             );
         }
 
@@ -66,6 +66,7 @@ namespace ICE.Scheduler.Tasks
                         IceLogging.Debug($"Pathing to: {npcEntry.Name}");
 
                         Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
+                        IceLogging.DestinationLogs.Log(randomPoint);
                         P.Navmesh.PathfindAndMoveTo(randomPoint, false);
                     }
                 }
@@ -119,35 +120,62 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? SelectRelicClass()
         {
-            uint selectedClass = Player.JobId - 8;
-            uint selectedEntry = 0;
-            foreach (var job in C.ClassesUnlocked)
+            Dictionary<uint, bool> jobUnlocked = new()
             {
-                if (job.Value)
-                    selectedEntry += 1;
-                if (job.Key == Player.JobId)
-                {
-                    selectedClass = selectedEntry - 1;
-                    break;
-                }
+                [8] = true,
+                [9] = true,
+                [10] = true,
+                [11] = true,
+                [12] = true,
+                [13] = true,
+                [14] = true,
+                [15] = true,
+                [16] = true,
+                [17] = true,
+                [18] = true,
+            };
+            foreach (var jobId in jobUnlocked)
+            {
+                if (Player.GetUnsyncedLevel((Job)jobId.Key) == 0)
+                    jobUnlocked[jobId.Key] = false;
+            }
 
+            if (EzThrottler.Throttle("Throttle job unlock message", 1000))
+                IceLogging.Debug($"Amount of jobs unlocked: {jobUnlocked.Where(x => x.Value).Count()}");
+            uint selectedEntry = 0;
+            foreach (var jobId in jobUnlocked)
+            {
+                if (Player.JobId == jobId.Key)
+                    break;
+                else
+                {
+                    if (jobId.Value)
+                        selectedEntry += 1;
+                }
             }
 
 
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var selectIconString) && selectIconString.IsAddonReady)
             {
                 if (EzThrottler.Throttle($"Selecting jobId: {Player.JobId}"))
-                    selectIconString.Entries[selectedClass].Select();
+                {
+                    IceLogging.Debug($"Selecting Entry: {selectedEntry} for job: {Player.JobId} to turnin relic");
+                    selectIconString.Entries[selectedEntry].Select();
+                }
             }
             else if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var selectYesno) && selectYesno.IsAddonReady)
             {
                 if (EzThrottler.Throttle("Selecting yes for turnin"))
+                {
+                    IceLogging.Verbose("Selecting yes for the turnin");
                     selectYesno.Yes();
+                }
             }
             else if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talk) && talk.IsAddonReady)
             {
                 if (EzThrottler.Throttle("Clicking the talk dialog", 50))
                 {
+                    IceLogging.Verbose("Clicking the talk dialog");
                     talk.Click();
                 }
             }

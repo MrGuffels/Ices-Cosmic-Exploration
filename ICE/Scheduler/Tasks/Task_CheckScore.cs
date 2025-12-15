@@ -5,6 +5,7 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Reflection;
+using YamlDotNet.Core.Tokens;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
@@ -15,7 +16,6 @@ namespace ICE.Scheduler.Tasks
         public static void Enqueue()
         {
             var Id = CosmicHelper.CurrentLunarMission;
-            // var mission = CosmicHelper.Dict_CosmicMissions[Id];
             var mission = CosmicHelper.SheetMissionDict[Id];
 
             var jobs = mission.Jobs;
@@ -27,7 +27,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if (CosmicHelper.CrafterJobList.Overlaps(jobs))
             {
-                IceLogging.Info("Currently on a crafting job");
+                IceLogging.Info("Currently on a crafting job, checking for crafting scoring", "Task: Score Check");
                 P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Craft);
                 P.TaskManager.Enqueue(() => Crafts(), "Checking for crafting score mission");
             }
@@ -315,12 +315,15 @@ namespace ICE.Scheduler.Tasks
 
         public static unsafe bool? Crafts()
         {
+            string tag = "Check Score: Crafts";
+            IceLogging.Verbose("Checking score progress with crafts", tag);
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
             {
                 if (missionInfo.Addon->AtkValuesCount > 4) // Really just here to make sure that the addon atkValues are fully loaded...
                 {
                     if (CosmicHandler.IsMissionTimedOut())
                     {
+                        IceLogging.Debug("Mission is timed out, attempting to abandon", tag);
                         SchedulerMain.State = IceState.AbandonMission;
                         P.TaskManager.Tasks.Clear();
                         return true;
@@ -335,6 +338,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (missionInfo.CriticalScore == 1)
                         {
+                            IceLogging.Verbose("We've completed the critical!", tag);
                             shouldTurnin = true;
                         }
                     }
@@ -353,11 +357,6 @@ namespace ICE.Scheduler.Tasks
                                 SchedulerMain.State = IceState.Craft;
                                 return true;
                             }
-                        }
-
-                        if (mission.Crafts_Pre.Count > 0)
-                        {
-
                         }
 
                         // Next, need to check to see if there is a bronze threshold that is required, and make sure we're hitting it (if there is any)
@@ -388,7 +387,7 @@ namespace ICE.Scheduler.Tasks
                                 // AutoTurnin enabled, going to check for gold only since we have materials/time still
                                 if (GoldGoal)
                                 {
-                                    IceLogging.Info("Auto turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                    IceLogging.Info("Auto turnin was enabled, and hit the max score.", tag);
                                     shouldTurnin = true;
                                 }
                             }
@@ -396,7 +395,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 if (GoldGoal && config.TurninGold)
                                 {
-                                    IceLogging.Info("Gold Turnin was enabled, and hit the max score.", "[Craft Scoring]");
+                                    IceLogging.Info("Gold Turnin was enabled, and hit the max score.", tag);
                                     shouldTurnin = true;
                                 }
                                 else if (SilverGoal && config.TurninSilver)
@@ -421,7 +420,7 @@ namespace ICE.Scheduler.Tasks
 
                     if (shouldTurnin)
                     {
-                        IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
+                        IceLogging.Debug("The threshold for scoring was met. Time to turnin", tag);
 
                         SchedulerMain.State = IceState.TurninMission;
                         P.TaskManager.Tasks.Clear();
@@ -441,7 +440,30 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", "[Craft Scoring]");
+                        IceLogging.Debug("Minimum scoring isn't met for your current preset. Continuing on", tag);
+                        if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                            IceLogging.Debug("Critical score is still 0", tag);
+                        else
+                        {
+                            var currentScore = missionInfo.CurrentScore;
+                            var silverScore = mission.SilverScore;
+                            var goldScore = mission.GoldScore;
+
+                            IceLogging.Debug("Still missing score/items...", tag);
+                            foreach (var item in mission.Crafts_Main)
+                            {
+                                var itemId = item.Value.ItemId;
+                                var recipeEntry = item.Value;
+
+                                PlayerHelper.GetItemCount(itemId, out var count);
+                                IceLogging.Debug($"ItemID: {itemId}, current amount: {count}");
+                            }
+                            IceLogging.Debug("Score board: \n" +
+                                             $"Current score: {currentScore}\n" +
+                                             $"Bronze goal: {mission.BronzeScore}" +
+                                             $"Silver goal: {silverScore}\n" +
+                                             $"Gold goal: {goldScore}", tag);
+                        }
 
                         return true;
                     }
@@ -730,9 +752,6 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Debug("The threshold for scoring was met. Time to turnin", "[Craft Scoring]");
 
-                        SchedulerMain.State = IceState.TurninMission;
-                        P.TaskManager.Tasks.Clear();
-
                         if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                             Mission_Settings.TurninState = TurninState.Gold;
                         else
@@ -742,6 +761,9 @@ namespace ICE.Scheduler.Tasks
                             var goldScore = mission.GoldScore;
                             MedalChecker(currentScore, silverScore, goldScore);
                         }
+
+                        SchedulerMain.State = IceState.TurninMission;
+                        P.TaskManager.Tasks.Clear();
 
                         return true;
                     }

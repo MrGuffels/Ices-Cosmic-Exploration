@@ -21,21 +21,20 @@ public static partial class CosmicHelper
     {
         var dict = new Dictionary<uint, CustomNotes>();
 
+        // Dual Class Missions
+        AddMissions(dict, 256f, "I would HIGHLY recommend doing these as you first start out.\n" +
+                                "Knocks out 2 classes at once, allowing you to double dip and get done quicker.\n" +
+                                "Make sure the turnin is on silver, gold isn't worth the extra time" +
+                                "Also, best for A Rank level on Sinus",
+                                496, 497, 498, 502, 503, 504);
+
+        AddMissions(dict, 228f, "Best fishing mission.... period. Which sucks.\n" +
+                                "Turnin on silver for best results. Don't do the other dual class, it's not worth",
+                                509);
+
         // Basic Sinus A Ranks
         AddMissions(dict, 241f, "Best Score Per Minute outside of weather missions",
                     295, 115, 70, 205, 25, 340, 160, 250);
-
-        // Dual Craft MIN/BTN
-        AddMissions(dict, 256f,
-                   "Best A Rank for gathering, while also double dipping into crafters which is best for both worlds\n" +
-                   "Silver turnin is recommended for this, due to the time not spent on crafting",
-                   496, 497, 498, 502, 503, 504);
-
-        // Dual Craft FSH
-        AddMissions(dict, 228f,
-                   "Best A Rank for FISHING, while also double dipping into crafters which is best for both worlds\n" +
-                   "Silver turnin is HIGHLY recommended for this, due to the time not spent on crafting and fish RNG. Silver ends up being ~228 SPM, VS. Gold being ~152 SPM",
-                   509);
 
         // Sinus Weather Missions
         AddMissions(dict, 490f,
@@ -72,6 +71,19 @@ public static partial class CosmicHelper
                    "Criticals are always worth doing for score",
                     1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1016, 1017, 1018, 
                     1019, 1020, 1021, 1022, 1023, 1024, 1025, 1026, 1027, 1028, 1029, 1030);
+
+        AddMissions(dict, 211f,
+                    "Best general gathering ones to do on Phaenna, not better than dual class.\n" +
+                    "But if you're sticking around for weather missions, might as well do this.",
+                    909, 951);
+
+        AddMissions(dict, 437f,
+                    "Really good weather missions for scoring, if these are up, you typically want to aim to do them.",
+                    917, 959);
+
+        AddMissions(dict, 392f,
+                    "Second best weather missions for scoring, still good to focus over the basic A Ranks",
+                    896, 938);
 
 
 

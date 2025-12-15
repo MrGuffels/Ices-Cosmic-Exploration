@@ -95,6 +95,7 @@ namespace ICE.Scheduler
                         {
                             if (EzThrottler.Throttle("Telling navemesh to move to crafting spot"))
                             {
+                                IceLogging.DestinationLogs.Log(craftingSpot);
                                 P.Navmesh.PathfindAndMoveTo(craftingSpot, false);
                             }
                         }

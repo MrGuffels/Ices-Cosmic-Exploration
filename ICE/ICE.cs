@@ -5,6 +5,7 @@ using ICE.Config;
 using ICE.IPC;
 using ICE.Ui;
 using ICE.Ui.MainUi;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
@@ -18,13 +19,11 @@ public sealed partial class ICE : IDalamudPlugin
 
     internal static ICE P = null!;
     private readonly Configuration Config;
-    private static WaypointInfo? waypointInfo;
     private static MissionConfigs missionConfigs;
     public MissionTimer MissionTimer { get; private set; }
 
     public static Configuration OldConfig => P.Config;
     public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
-    public static WaypointInfo D => waypointInfo ??= LoadConfig<WaypointInfo>();
 
     // Yaml Config Loaders. For both loading a yaml in the config folder, and for embedded
     private static T LoadConfig<T>() where T : IYamlConfig, new()
@@ -121,6 +120,7 @@ public sealed partial class ICE : IDalamudPlugin
         ConfigMigrator.MigrateConfigv1();
         ConfigMigrator.CheckMissions();
         GatheringUtil.UpdateCriticalWeather();
+        TestLoadRoutes();
     }
 
     private static void Init()
@@ -294,6 +294,31 @@ public sealed partial class ICE : IDalamudPlugin
                                  $"/ice only (ids) - makes only select missions enabled" +
                                  $"/ice flag (id) - opens the map and flags the mission (if it has one).\n";
             Svc.Chat.Print(helpMessage);
+        }
+    }
+
+    public void TestLoadRoutes()
+    {
+        try
+        {
+            // Clear cache first to force reload
+            GatheringRouteLoader.ClearCache();
+
+            var routes = GatheringRouteLoader.LoadAllRoutes();
+
+            IceLogging.Info($"Successfully loaded {routes.Count} zones with {routes.Sum(x => x.Value.Count)} total routes");
+
+            // Test getting a specific route
+            var testRoute = GatheringRouteLoader.GetRoute(1237, new Vector2(-690f, -752f));
+            if (testRoute != null)
+            {
+                IceLogging.Info($"Test route loaded successfully with {testRoute.Count} nodes");
+            }
+        }
+        catch (Exception ex)
+        {
+            IceLogging.Error($"Failed to load routes: {ex.Message}");
+            IceLogging.Error(ex.StackTrace ?? "No stack trace");
         }
     }
 }

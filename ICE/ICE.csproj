@@ -1,57 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/13.0">
 
-  <PropertyGroup>
-    <Version>0.0.73.32</Version>
-    <Description>Who said we couldn't explore the moon!.</Description>
-    <PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
-    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
-    <IsPackable>true</IsPackable>
-    <RootNamespace>ICE</RootNamespace>
-    <TargetFramework>net9.0-windows7.0</TargetFramework>
-    <InformationalVersion>$([System.DateTime]::UtcNow.ToString("yyyy\-MM\-dd HH\:mm\:ss"))</InformationalVersion>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-	<NoWarn>CS8618; CS8625; CS8629; </NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Version>0.0.73.38</Version>
+		<Description>Who said we couldn't explore the moon!.</Description>
+		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
+		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+		<IsPackable>true</IsPackable>
+		<RootNamespace>ICE</RootNamespace>
+		<TargetFramework>net9.0-windows7.0</TargetFramework>
+		<InformationalVersion>$([System.DateTime]::UtcNow.ToString("yyyy\-MM\-dd HH\:mm\:ss"))</InformationalVersion>
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+		<NoWarn>CS8618; CS8625; CS8629; </NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="ICE.json" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\ALC.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\ARM.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\BSM.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\BTN.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\CUL.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\FSH.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\GSM.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\LTW.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\MIN.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\WVR.png" />
-    <EmbeddedResource Include="Resources\GreyscaleJobs\CRP.png" />
-    <EmbeddedResource Include="Resources\Icon.png" />
-    <EmbeddedResource Include="Sounds\Task_Completed.mp3" />
-    <EmbeddedResource Include="Resources\Phaenna.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Sinus_Ardorum.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="ICE.json" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\ALC.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\ARM.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\BSM.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\BTN.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\CUL.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\FSH.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\GSM.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\LTW.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\MIN.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\WVR.png" />
+		<EmbeddedResource Include="Resources\GreyscaleJobs\CRP.png" />
+		<EmbeddedResource Include="Resources\Icon.png" />
+		<EmbeddedResource Include="Sounds\Task_Completed.mp3" />
+		<EmbeddedResource Include="Resources\Phaenna.png">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\Sinus_Ardorum.png">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\GatheringRoutes\**\*.yaml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\MissionScores.csv" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\MissionScores.csv" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
-  </ItemGroup>
-	
-  <ItemGroup>
-      <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
-	  <ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj" />
-  </ItemGroup>
-	
-  <ItemGroup>
-    <PackageReference Update="DalamudPackager" Version="13.1.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="NAudio" Version="2.2.1" />
+		<PackageReference Include="YamlDotNet" Version="16.3.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
+		<ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Update="DalamudPackager" Version="13.1.0" />
+	</ItemGroup>
 </Project>

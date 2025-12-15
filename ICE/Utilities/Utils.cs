@@ -153,20 +153,23 @@ public static unsafe class Utils
     {
         bool useMount = C.MountId != 0 && PlayerState.Instance()->IsMountUnlocked(C.MountId);
 
-        if (useMount)
+        if (!Player.IsCasting && !Player.Mounting)
         {
-            ActionManager.Instance()->UseAction(ActionType.Mount, C.MountId);
-            IceLogging.Info($"Attempting to mount: {C.MountName}");
-        }
-        else
-        {
-            ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
-            IceLogging.Info($"Resorting to using the mount roulette");
+            if (useMount)
+            {
+                ActionManager.Instance()->UseAction(ActionType.Mount, C.MountId);
+                IceLogging.Info($"Attempting to mount: {C.MountName}");
+            }
+            else
+            {
+                ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
+                IceLogging.Info($"Resorting to using the mount roulette");
+            }
         }
     }
     public static unsafe void Dismount()
     {
-        if (Svc.Condition[ConditionFlag.Mounted])
+        if (Player.Mounted)
         {
             ActionManager.Instance()->UseAction(ActionType.GeneralAction, 9);
         }

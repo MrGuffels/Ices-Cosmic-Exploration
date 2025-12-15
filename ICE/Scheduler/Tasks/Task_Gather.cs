@@ -28,15 +28,22 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 IceLogging.Debug("Not currently gathering, starting fresh instead");
-                Task_CheckScore.Enqueue();
-                P.TaskManager.Enqueue(() => CheckReduceMission(), "Checking to see if we need to reduce items");
+                if (CosmicHelper.SheetMissionDict[CosmicHelper.CurrentLunarMission].Attributes.HasFlag(MissionAttributes.ReducedItems))
+                {
+                    Task_CheckScore.Enqueue();
+                    P.TaskManager.Enqueue(() => CheckReduceMission(), "Checking to see if we need to reduce items");
+                    P.TaskManager.EnqueueDelay(500);
+                    Task_CheckScore.Enqueue();
+                }
+                else
+                {
+                    Task_CheckScore.Enqueue();
+                }
                 P.TaskManager.Enqueue(() => Mission_Settings.ResetCollectableState());
-                Task_CheckScore.Enqueue();
                 P.TaskManager.Enqueue(() => UseFood());
                 P.TaskManager.Enqueue(() => UseCordial(), "Checking to see if we should use cordial or not");
                 P.TaskManager.Enqueue(() => CheckGatherLocation(), "Checking to see if gathering flags needs updated");
                 P.TaskManager.Enqueue(() => PathToNode());
-                P.TaskManager.Enqueue(() => NavmeshMovement());
             }
         }
 
@@ -47,11 +54,21 @@ namespace ICE.Scheduler.Tasks
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
             var missionFlag = missionEntry.MapPosition;
-            var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
-            if (Mission_Settings.previousMap != missionFlag)
+            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId, missionFlag);
+            if (gatherInfo != null && Mission_Settings.previousMap != missionFlag)
             {
+
                 Mission_Settings.previousMap = missionFlag;
-                Mission_Settings.nodeCounter = 0;
+                var closestNodeIndex = gatherInfo
+                    .Select((node, index) => new { Node = node, Index = index })
+                    .Where(x => Svc.Objects.Any(obj => obj.IsTargetable && obj.BaseId == x.Node.NodeId))
+                    .OrderBy(x => {
+                        var gameObject = Svc.Objects.First(obj => obj.BaseId == x.Node.NodeId);
+                        return Player.DistanceTo(gameObject.Position);
+                    })
+                    .Select(x => x.Index)
+                    .FirstOrDefault();
+                Mission_Settings.nodeCounter = closestNodeIndex;
             }
             else
             {
@@ -69,56 +86,69 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? PathToNode()
         {
-            if (!P.Navmesh.IsReady())
-            {
-                Utils.VnavBuildInfo();
-                return false;
-            }
-            else if (P.Navmesh.IsRunning())
-            {
-                IceLogging.Info("Pathing to the gathering node has now started");
-                return true;
-            }
-            else
-            {
-                ThrottleMessage("- - - Path To Node - - -", "[Path to Node]");
-
-                var zoneId = Player.Territory;
-                var missionEntry = CosmicHelper.CurrentMissionInfo;
-                var missionFlag = missionEntry.MapPosition;
-                var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
-
-                if (gatherInfo.Count-1 < Mission_Settings.nodeCounter)
-                {
-                    // Counter has hit the max capacity it can for this particular nodeset, resetting back to 0
-                    Mission_Settings.nodeCounter = 0;
-                }
-
-                var location = gatherInfo[Mission_Settings.nodeCounter];
-                if (location == null)
-                {
-                    IceLogging.Error("Somehow we ended up out of the bounds of the index. Stopping plugin");
-                    SchedulerMain.DisablePlugin();
-                }
-                else
-                {
-                    if (EzThrottler.Throttle("Enabling pathfinding to navmesh"))
-                    {
-                        IceLogging.Debug($"Telling Navmesh to path to: {location.LandZone}", "[Gathering: Navmesh moveto]");
-                        P.Navmesh.PathfindAndMoveTo(location.LandZone, false);
-                    }
-                }
-            }
-
-            return false;
-        }
-        private static bool? NavmeshMovement()
-        {
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
             var missionFlag = missionEntry.MapPosition;
-            var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
+            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId, missionFlag);
+
+            if (gatherInfo.Count - 1 < Mission_Settings.nodeCounter)
+            {
+                // Counter has hit the max capacity it can for this particular nodeset, resetting back to 0
+                Mission_Settings.nodeCounter = 0;
+            }
+
             var location = gatherInfo[Mission_Settings.nodeCounter];
+            if (location == null)
+            {
+                IceLogging.Error("Somehow we ended up out of the bounds of the index. Stopping plugin");
+                SchedulerMain.DisablePlugin();
+            }
+            else
+            {
+                IceLogging.Debug($"Telling Navmesh to path to: {location.LandZone}", "[Gathering: Navmesh moveto]");
+                P.TaskManager.Enqueue(() => NavmeshMovement(location));
+                return true;
+            }  
+
+            return false;
+        }
+        private static bool? NavmeshMovement(Resources.GatheringRoutes.GathNodeInfo location)
+        {
+            if (!Task_NavmeshMove.NavToDestination(location.LandZone, distance: 1))
+            {
+                UseCordial();
+                ThrottleMessage("Currently in the process of moving, so going to wait", "Task_Gather: NavmeshMovement");
+                return false;
+            }
+            else
+            {
+                // Time to check to see if the node is targetable 
+                if (Svc.Condition[ConditionFlag.Gathering])
+                {
+                    P.TaskManager.Insert(() => GatheringInteraction(), "Gathering mode", Utils.TaskConfig);
+                    return true;
+                }
+                else if (Svc.Objects.Where(x => x.BaseId == location.NodeId).Where(t => t.IsTargetable) != null)
+                {
+                    // Target was a valid target, going to add a task to try and interact w/ the node now and get the gathering window up
+                    IceLogging.Info("Targeting the target for gathering", "[Task_Gathering]");
+                    P.TaskManager.Insert(() => OpenGatheringMenu(), "Opening the gathering menu");
+                    return true;
+                }
+                else
+                {
+                    // No valid target was found. Going to continue onward to the next node. 
+                    IceLogging.Info("No valid target was found for gathering, increasing counter", "[Task_Gathering]");
+                    Mission_Settings.nodeCounter++;
+                    return true;
+                }
+            }
+
+            /*
+            var zoneId = Player.Territory;
+            var missionEntry = CosmicHelper.CurrentMissionInfo;
+            var missionFlag = missionEntry.MapPosition;
+            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId, missionFlag);
 
             if (EzThrottler.Throttle("Distance to node debugger"))
             {
@@ -158,6 +188,7 @@ namespace ICE.Scheduler.Tasks
                 if (EzThrottler.Throttle("Telling navmesh to move to the node, cause the distance is still to far. . ."))
                 {
                     IceLogging.Debug($"Telling Navmesh to path to: {location.LandZone}, Cause we still to far", "[Gathering: Navmesh Movement]");
+                    IceLogging.DestinationLogs.Log(location.LandZone);
                     P.Navmesh.PathfindAndMoveTo(location.LandZone, false);
                 }
             }
@@ -186,13 +217,14 @@ namespace ICE.Scheduler.Tasks
             }
 
             return false;
+            */
         }
         private static bool? OpenGatheringMenu()
         {
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
             var missionFlag = missionEntry.MapPosition;
-            var gatherInfo = GatheringUtil.MoonGatherLocations[zoneId][missionFlag];
+            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId, missionFlag);
             var location = gatherInfo[Mission_Settings.nodeCounter];
 
             if (CosmicHandler.IsMissionTimedOut())
@@ -335,7 +367,7 @@ namespace ICE.Scheduler.Tasks
                                     }
                                 }
 
-                                if (EzThrottler.Throttle("Gathering item for score"))
+                                if (EzThrottler.Throttle("Gathering item for score", 100))
                                 {
                                     // if we're here, then we just need to gather for score. So... gathering for score lol
                                     gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault().Gather();
@@ -496,16 +528,19 @@ namespace ICE.Scheduler.Tasks
                 if (!PlayerHelper.HasStatusId(MasteryBuff) && (SelectBestFieldMastery(gatherChance, availableGp) != null))
                 {
                     string? ActionName = SelectBestFieldMastery(gatherChance, availableGp);
-                    if (EzThrottler.Throttle($"Using Gathering Action: {ActionName}"))
+                    if (ActionName != null)
                     {
-                        uint jobId = Player.JobId;
+                        if (EzThrottler.Throttle($"Using Gathering Action: {ActionName}", 100))
+                        {
+                            uint jobId = Player.JobId;
 
-                        IceLogging.Debug($"Using the following action: {ActionName} to gain some collectability from the node", debugOnly: true);
-                        var actionId = GatheringUtil.GathActionDict[ActionName].ClassAction[jobId].ActionId;
-                        ActionManager.Instance()->UseAction(ActionType.Action, actionId);
-                        Mission_Settings.SkillUseAmount[ActionName] += 1;
+                            IceLogging.Debug($"Using the following action: {ActionName} to gain some collectability from the node", debugOnly: true);
+                            var actionId = GatheringUtil.GathActionDict[ActionName].ClassAction[jobId].ActionId;
+                            ActionManager.Instance()->UseAction(ActionType.Action, actionId);
+                            Mission_Settings.SkillUseAmount[ActionName] += 1;
+                        }
+                        return true;
                     }
-                    return true;
                 }
 
                 int playerLevel = Player.Level;
@@ -658,7 +693,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (!PlayerHelper.HasStatusId(3911) && GatheringUtil.CollectStandardCharges() > 0)
                     {
-                        if (EzThrottler.Throttle("Using special buff", 1000))
+                        if (EzThrottler.Throttle("Using special buff", 100))
                         {
                             ActionManager.Instance()->UseAction(ActionType.GeneralAction, 27);
                         }
@@ -680,7 +715,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (!PlayerHelper.HasStatusId(3911) && GatheringUtil.CollectStandardCharges() > 0)
                         {
-                            if (EzThrottler.Throttle("Using special buff"))
+                            if (EzThrottler.Throttle("Using special buff", 100))
                             {
                                 ActionManager.Instance()->UseAction(ActionType.GeneralAction, 27);
                             }
@@ -776,7 +811,7 @@ namespace ICE.Scheduler.Tasks
             var jobId = Player.JobId;
 
             var actionId = collectorBuffs[action].ClassAction[jobId].ActionId;
-            if (EzThrottler.Throttle("Using Action Buff", 500))
+            if (EzThrottler.Throttle("Using Action Buff", 100))
             {
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
             }
@@ -787,7 +822,7 @@ namespace ICE.Scheduler.Tasks
             var jobId = Player.JobId;
 
             var actionId = collectorAction[action].ClassAction[jobId].ActionId;
-            if (EzThrottler.Throttle("using Action Action for collectables"))
+            if (EzThrottler.Throttle("using Action Action for collectables", 100))
             {
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
             }

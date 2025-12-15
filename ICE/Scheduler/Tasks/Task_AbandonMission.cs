@@ -17,6 +17,7 @@ namespace ICE.Scheduler.Tasks
             P.TaskManager.Enqueue(() => AbandonMission(), "Abandoning the current mission");
             P.TaskManager.Enqueue(() => Task_TurninMission.JobSwapCheck(), "Checking to see if we need to swap jobs");
             P.TaskManager.Enqueue(() => Task_TurninMission.GoldCheck(), "Checking post mission state + gold state condition");
+            P.TaskManager.Enqueue(() => Task_TurninMission.CommandCheck(), "Checking for post mission commands");
             if (C.DelayGrabMission)
                 P.TaskManager.EnqueueDelay(C.DelayIncrease);
         }
@@ -36,7 +37,9 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
+                    Task_TurninMission.UpdateScoreInfo();
                     var duration = P.MissionTimer.CompleteMission();
+                    Mission_Settings.TurninState = TurninState.None;
 
                     // Log the results
                     if (C.MissionConfig.TryGetValue(Task_TurninMission.PreviousMissionId, out var config))
@@ -58,6 +61,8 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 Task_TurninMission.PreviousMissionId = CosmicHelper.CurrentLunarMission;
+                if (EzThrottler.Throttle("Score Check Update"))
+                    Task_TurninMission.ScoreCheck();
 
                 if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
                 {

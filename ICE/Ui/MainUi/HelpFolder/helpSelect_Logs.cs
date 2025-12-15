@@ -18,7 +18,21 @@ namespace ICE.Ui.MainUi.HelpFolder
             using (var headerChild = ImRaii.Child("##helpSelect_Logs", new Vector2(0, 0), true, ImGuiWindowFlags.NoScrollbar))
             {
                 if (!headerChild.Success) return; // Ensures that it was loaded properly before continuing.
-                LogHelperViewer();
+                if (ImGui.BeginTabBar("Ice Log Tabs"))
+                {
+                    if (ImGui.BeginTabItem("Main Logs"))
+                    {
+                        LogHelperViewer();
+                        ImGui.EndTabItem();
+                    }
+                    if (ImGui.BeginTabItem("Destination Logs"))
+                    {
+                        DestinationLogViewer();
+                        ImGui.EndTabItem();
+                    }
+
+                    ImGui.EndTabBar();
+                }
             }
         }
 
@@ -93,6 +107,44 @@ namespace ICE.Ui.MainUi.HelpFolder
 
                     ImGui.TableNextColumn();
                     ImGui.Text(log.Message);
+                }
+
+                ImGui.EndTable();
+            }
+        }
+
+        private static void DestinationLogViewer()
+        {
+            ImGuiTableFlags flags = ImGuiTableFlags.RowBg |
+                                    ImGuiTableFlags.Borders |
+                                    ImGuiTableFlags.ScrollY |
+                                    ImGuiTableFlags.SizingFixedFit;
+
+            if (ImGui.BeginTable("Destination Log Viewer", 4, flags))
+            {
+                ImGui.TableSetupColumn("Timestamp");
+                ImGui.TableSetupColumn("Start");
+                ImGui.TableSetupColumn("Destination");
+                ImGui.TableSetupColumn("Distance");
+
+                ImGui.TableHeadersRow();
+
+                var filteredLogs = DestinationLogs.Logs.AsEnumerable();
+                foreach (var log in filteredLogs.OrderByDescending(l => l.Timestamp))
+                {
+                    ImGui.TableNextRow();
+
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text(log.Timestamp.ToString("HH:mm:ss"));
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"X: {log.PlayerStart.X:N2}, Y: {log.PlayerStart.Y:N2}, Z: {log.PlayerStart.Z:N2}");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"X: {log.PlayerDestination.X:N2}, Y: {log.PlayerDestination.Y:N2}, Z: {log.PlayerDestination.Z:N2}");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{log.Distance}");
                 }
 
                 ImGui.EndTable();

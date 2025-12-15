@@ -1,415 +1,293 @@
 ﻿using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Interface.Textures;
+using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using ICE.Utilities.GatheringHelper;
-using Pictomancy;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
 
 namespace ICE.Ui.DebugWindowTabs
 {
     internal class Ui_GatherRoute_Editor
     {
+        private static Vector2 selectedRoute = Vector2.Zero;
         private static uint selectedZone = 0;
-        private static Vector2 selectedFlag = Vector2.Zero;
+        private static uint selectedNode = 0;
 
-        // Gathering Node Settings
-        private static bool PictoCircle = false;
-        private static bool PictoDot = false;
-        private static float maxDistance = 25;
+        private static bool showOnlyVisibleNodes = false;
+        private static float maxDistance = 75.0f;
 
-        // Node Viewier
-        private static uint nodeId = 0;
-
-        // Selected Node Entry
-        private static int selectedNodeIndex = 0;
-
-        private static List<uint> MissionIds = new();
-        private static Dictionary<uint, bool> IsNodeValid = new();
-
+        private static FileDialogManager fileDialogManager = new FileDialogManager();
 
         public static unsafe void Draw()
         {
-            if (ImGui.Button("Add Missing Flags"))
+            var routes = GatheringRouteLoader.LoadAllRoutes();
+
+            using (var quickAccess = ImRaii.Child("Quick Access Routes", new Vector2(200, 120), true))
             {
-                UpdateMissions();
-            }
-            ImGui.SameLine();
-            if (ImGui.Button("Export All Data"))
-            {
-                var exportData = ExportAllGatheringData();
-                ImGui.SetClipboardText(exportData);
-                Svc.Chat.Print("All gathering data exported to clipboard!");
-            }
-            ImGui.SameLine();
-            using (ImRaii.Disabled(selectedFlag == Vector2.Zero))
-            {
-                if (ImGui.Button("Export Selected Flag"))
+                if (!quickAccess.Success)
+                    return;
+
+                ImGui.Text("Export Settings");
+                ImGui.Separator();
+                ImGui.Dummy(new Vector2(0, 5));
+
+                // Author Name Input
+                ImGui.Text("Author Name:");
+                ImGui.SetNextItemWidth(200);
+                string authorName = C.AuthorName;
+                if (ImGui.InputText("##AuthorName", ref authorName, 100))
                 {
-                    var exportData = ExportSingleFlag(selectedZone, selectedFlag);
-                    ImGui.SetClipboardText(exportData);
-                    Svc.Chat.Print($"Flag data for Zone {selectedZone} at ({selectedFlag.X}, {selectedFlag.Y}) exported to clipboard!");
+                    C.AuthorName = authorName;
+                    C.SaveDebounced();
                 }
             }
 
-            ImGui.Separator();
+            ImGui.SameLine(0, 10);
 
-            if (ImGui.BeginTable("Gathering_RouteEditor", 2, ImGuiTableFlags.Resizable))
+            using (var quickAccess2 = ImRaii.Child("Quick Access Routes 2", new Vector2(300, 120), true))
             {
-                ImGui.TableNextRow();
+                if (!quickAccess2.Success)
+                    return;
 
-                // First Column, Gathering Section Selector
-                ImGui.TableSetColumnIndex(0);
-                if (ImGui.BeginChild("Route_GatheringSelector", new Vector2(0, 0), true))
+                // Custom Path Display
+                ImGui.Text("Export Location:");
+                string displayPath = string.IsNullOrEmpty(C.CustomRoutePath)
+                    ? "Using default plugin config folder"
+                    : C.CustomRoutePath;
+
+                ImGui.TextWrapped(displayPath);
+
+                ImGui.Dummy(new Vector2(0, 5));
+
+                // Browse button to set custom path
+                if (ImGui.Button("Browse for Export Folder"))
                 {
-                    foreach (var moon in GatheringUtil.MoonGatherLocations)
+                    fileDialogManager.OpenFolderDialog("Select Export Folder", (success, path) =>
                     {
-                        ImGui.Text($"ZoneId: {moon.Key}");
-
-                        var sortedFlags = moon.Value.OrderBy(flag => GetJobIdForFlag(moon.Key, flag.Key))
-                                                    .ThenBy(flag => flag.Key.X);
-
-                        foreach (var flag in sortedFlags)
+                        if (success && !string.IsNullOrEmpty(path))
                         {
-                            var isSelected = selectedZone == moon.Key && selectedFlag == flag.Key;
+                            C.CustomRoutePath = path;
+                            C.Save();
+                            PluginLog.Information($"Export path set to: {path}");
+                        }
+                    });
+                }
 
-                            uint jobId = GetJobIdForFlag(moon.Key, flag.Key);
-                            ISharedImmediateTexture? jobIcon = CosmicHelper.JobIconDict[jobId];
+                ImGui.SameLine();
 
-                            ImGui.PushID($"{moon.Key}_{flag.Key.X}_{flag.Key.Y}");
+                // Clear custom path button
+                if (!string.IsNullOrEmpty(C.CustomRoutePath))
+                {
+                    if (ImGui.Button("Use Default"))
+                    {
+                        C.CustomRoutePath = string.Empty;
+                        C.Save();
+                    }
 
-                            // Draw icon first
-                            if (jobIcon != null)
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("Clear custom path and use default plugin config folder");
+                    }
+                }
+            }
+
+            ImGui.SameLine(0, 10);
+
+            var remainingQuickAccess = ImGui.GetContentRegionAvail();
+            using (var quickAccess3 = ImRaii.Child("Quick Access 3", new Vector2(remainingQuickAccess.X, 120), true))
+            {
+                if (!quickAccess3.Success)
+                    return;
+
+                GatheringRouteExportUI.DrawExportAllButton();
+
+                ImGui.Dummy(new Vector2(0, 5));
+
+                if (selectedRoute != Vector2.Zero)
+                {
+                    GatheringRouteExportUI.DrawExportSelectedButton(selectedZone, selectedRoute);
+                }
+            }
+
+            using (var routeSelectorUi = ImRaii.Child("Route Selector Window", new Vector2(200, 0), true))
+            {
+                if (!routeSelectorUi.Success)
+                    return;
+
+                foreach (var planet in routes)
+                {
+                    var planetTerritory = planet.Key;
+                    ImGui.Text($"Zone: {planetTerritory}");
+                    foreach (var mapLocation in planet.Value)
+                    {
+                        var location = mapLocation.Key;
+
+                        ImGui.PushID($"{location}");
+
+                        bool isSelected = selectedRoute == location;
+                        string selectable = isSelected ? $"-> X: {location.X}, Y: {location.Y}" : $"X: {location.X}, Y: {location.Y}";
+
+                        var jobId = GetJobIdForFlag(planetTerritory, location);
+
+                        ImGui.Image(CosmicHelper.JobIconDict[jobId].GetWrapOrEmpty().Handle, new Vector2(20, 20));
+                        ImGui.SameLine(0, 4);
+
+                        float availableWidth = ImGui.GetContentRegionAvail().X;
+
+                        if (ImGui.Selectable(selectable, isSelected, ImGuiSelectableFlags.None, new Vector2(availableWidth, 20)))
+                        {
+                            selectedRoute = location;
+                            selectedZone = planetTerritory;
+                        }
+
+                        ImGui.PopID();
+                    }
+                }
+            } // Child window ends here
+
+            ImGui.SameLine(0, 5);
+
+            var windowSizeRemaining = ImGui.GetContentRegionAvail();
+            using (var routeEditorUi = ImRaii.Child("Route Editor Window", windowSizeRemaining, true))
+            {
+                if (!routeEditorUi.Success)
+                    return;
+
+                if (selectedRoute == Vector2.Zero)
+                {
+                    ImGui.Text("No route is selected");
+                }
+                else
+                {
+                    string missions = string.Join(", ", GetMissionsForFlag(selectedZone, selectedRoute));
+                    ImGui.Text($"Location: {MoonName(selectedZone)}");
+                    ImGui.Text($"Missions: {missions}");
+                    ImGui.Text($"Map Zone: X:{selectedRoute.X}, Z: {selectedRoute.Y}");
+
+                    ImGui.Dummy(new Vector2(0, 5));
+
+                    ImGui.Separator();
+
+                    ImGui.Dummy(new Vector2(0, 5));
+
+                    var routeList = GatheringRouteLoader.GetRoute(selectedZone, selectedRoute);
+
+                    using (var routeListUi = ImRaii.Child("Route List Ui Selector", new Vector2(150, 175), true))
+                    {
+                        if (!routeListUi.Success)
+                            return;
+
+                        for (int i = 0; i < routeList.Count; i++)
+                        {
+                            var routeItem = routeList[i];
+                            var nodeId = routeItem.NodeId;
+
+                            ImGui.PushID(nodeId);
+
+                            var isSelected = nodeId == selectedNode;
+                            if (ImGui.Selectable($"{nodeId}", isSelected))
                             {
-                                var iconSize = new Vector2(ImGui.GetTextLineHeight(), ImGui.GetTextLineHeight());
-                                ImGui.Image(jobIcon.GetWrapOrDefault().Handle, iconSize);
-                                ImGui.SameLine();
+                                selectedNode = nodeId;
+                            }
+                            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
+                            {
+                                ImGui.OpenPopup("Options for node");
                             }
 
-                            // Then the selectable text
-                            string mapPos = $"X: {flag.Key.X} Z: {flag.Key.Y} [{flag.Value.Count}]";
-                            string label = isSelected ? $"→ {mapPos}" : $"{mapPos}";
-                            if (ImGui.Selectable(label, isSelected))
+                            if (ImGui.BeginPopup("Options for node"))
                             {
-                                selectedZone = moon.Key;
-                                selectedFlag = flag.Key;
-                                selectedNodeIndex = 0;
-
-                                MissionIds.Clear();
-                                foreach (var mission in CosmicHelper.SheetMissionDict)
+                                if (ImGui.Selectable("Remove Node"))
                                 {
-                                    var id = mission.Key;
-                                    var mapFlag = mission.Value.MapPosition;
-                                    if (mapFlag == selectedFlag)
-                                        MissionIds.Add(id);
+                                    routeList.Remove(routeItem);
+                                    ImGui.CloseCurrentPopup();
                                 }
+                                ImGui.EndPopup();
+                            }
+
+                            // Drag source
+                            if (ImGui.BeginDragDropSource())
+                            {
+                                unsafe
+                                {
+                                    int dragIndex = i;
+                                    byte* dataPtr = (byte*)&dragIndex;
+                                    ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(dataPtr, sizeof(int));
+                                    ImGui.SetDragDropPayload("ROUTE_REORDER", data);
+                                }
+                                ImGui.Text($"Moving: {nodeId}");
+                                ImGui.EndDragDropSource();
+                            }
+
+                            // Drop target
+                            if (ImGui.BeginDragDropTarget())
+                            {
+                                unsafe
+                                {
+                                    var payload = ImGui.AcceptDragDropPayload("ROUTE_REORDER");
+                                    if (!payload.IsNull)
+                                    {
+                                        int sourceIndex = *(int*)payload.Data;
+
+                                        // Reorder the list
+                                        if (sourceIndex != i && sourceIndex >= 0 && sourceIndex < routeList.Count)
+                                        {
+                                            var item = routeList[sourceIndex];
+                                            routeList.RemoveAt(sourceIndex);
+                                            routeList.Insert(i, item);
+                                        }
+                                    }
+                                }
+                                ImGui.EndDragDropTarget();
                             }
 
                             ImGui.PopID();
                         }
                     }
 
-                    ImGui.EndChild();
-                }
+                    ImGui.SameLine(0, 5);
 
-                // Second Column, route viewer
-                ImGui.TableSetColumnIndex(1);
-                var textLineHeight = ImGui.GetTextLineHeightWithSpacing();
-                var childHeight = textLineHeight * 8 + 20;
-                if (ImGui.BeginChild("Editor_GatheringSelector", new Vector2(0, childHeight + 150), false))
-                {
-                    string missions = "";
-                    foreach (var id in MissionIds)
+                    using (var allNodeViewer = ImRaii.Child("All Node Ui Viewer", new Vector2(200, 200), true))
                     {
-                        missions += $"{id}, ";
-                    }
-                    ImGui.Text($"Missions: {missions}");
+                        if (!allNodeViewer.Success)
+                            return;
 
-                    if (ImGui.Button("Open map position"))
-                    {
-                        var missionEntry = CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == selectedFlag
-                                                                             && x.Value.TerritoryId == selectedZone).FirstOrDefault();
-                        if (missionEntry.Key != 0)
+                        foreach (var x in Svc.Objects.Where(x => x.ObjectKind == ObjectKind.GatheringPoint && Player.DistanceTo(x.Position) <= maxDistance)
+                                                     .OrderBy(x => Player.DistanceTo(x.Position)))
                         {
-                            var mission = missionEntry.Value;
-                            Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
-                        }
-                    }
-                    if (ImGui.Button("Copy Map Info"))
-                    {
-                        if (selectedFlag != Vector2.Zero)
-                        {
-                            var exportData = ExportSingleFlag(selectedZone, selectedFlag);
-                            ImGui.SetClipboardText(exportData);
-                            Svc.Chat.Print("Map info copied to clipboard!");
-                        }
-                    }
-                    if (ImGui.Button("Check Nodes"))
-                    {
-                        TestNodes();
-                    }
+                            ImGui.PushID($"{x.BaseId}_{x.Position}");
 
-                    ImGui.Separator();
-
-                    if (ImGui.BeginTable("NodeEditTable", 3, ImGuiTableFlags.SizingFixedFit))
-                    {
-                        // Set up column widths
-                        ImGui.TableSetupColumn("NodeSelector", ImGuiTableColumnFlags.WidthStretch, 200);
-                        ImGui.TableSetupColumn("NodeViewer", ImGuiTableColumnFlags.WidthStretch, 200);
-                        ImGui.TableSetupColumn("Buttons", ImGuiTableColumnFlags.WidthFixed, 100f);
-
-                        ImGui.TableNextRow();
-
-                        // Node Selector
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text("Node Selector");
-                        if (ImGui.BeginChild("NodeSelector", new Vector2(0, childHeight), true))
-                        {
-                            if (selectedFlag != Vector2.Zero)
+                            ImGui.Text($"Id: {x.BaseId} | Distance: {Player.DistanceTo(x.Position):N2}");
+                            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
                             {
-                                var nodeList = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag];
+                                ImGui.OpenPopup("Node Viewer Popup");
+                            }
 
-                                for (int i = 0; i < nodeList.Count; i++)
+                            if (ImGui.BeginPopup("Node Viewer Popup"))
+                            {
+                                if (ImGui.Selectable("Add node to list"))
                                 {
-                                    var nodeInfo = nodeList[i];
-
-                                    ImGui.PushID($"node_{i}");
-
-                                    // Up button (disabled if first item)
-                                    using (ImRaii.Disabled(i == 0))
+                                    routeList.Add(new Resources.GatheringRoutes.GathNodeInfo()
                                     {
-                                        if (ImGui.ArrowButton("up", ImGuiDir.Up))
-                                        {
-                                            // Swap with previous item
-                                            (nodeList[i], nodeList[i - 1]) = (nodeList[i - 1], nodeList[i]);
+                                        NodeId = x.BaseId,
+                                        Position = x.Position,
+                                        LandZone = Player.Position,
+                                    });
 
-                                            // Adjust selected index if needed
-                                            if (selectedNodeIndex == i)
-                                                selectedNodeIndex = i - 1;
-                                            else if (selectedNodeIndex == i - 1)
-                                                selectedNodeIndex = i;
-                                        }
-                                    }
-
-                                    ImGui.SameLine();
-
-                                    // Down button (disabled if last item)
-                                    using (ImRaii.Disabled(i == nodeList.Count - 1))
-                                    {
-                                        if (ImGui.ArrowButton("down", ImGuiDir.Down))
-                                        {
-                                            // Swap with next item
-                                            (nodeList[i], nodeList[i + 1]) = (nodeList[i + 1], nodeList[i]);
-
-                                            // Adjust selected index if needed
-                                            if (selectedNodeIndex == i)
-                                                selectedNodeIndex = i + 1;
-                                            else if (selectedNodeIndex == i + 1)
-                                                selectedNodeIndex = i;
-                                        }
-                                    }
-
-                                    ImGui.SameLine();
-
-                                    // Validation check mark/cross
-                                    if (IsNodeValid.TryGetValue(nodeInfo.NodeId, out var state))
-                                    {
-                                        if (state)
-                                        {
-                                            FontAwesome.Print(EColor.Green, FontAwesome.Check);
-                                            ImGui.SameLine();
-                                        }
-                                        else
-                                        {
-                                            FontAwesome.Print(EColor.Red, FontAwesome.Cross);
-                                            ImGui.SameLine();
-                                        }
-                                    }
-
-                                    // Node selectable
-                                    string label = $"Node: {nodeInfo.NodeId}";
-                                    if (ImGui.Selectable(label, selectedNodeIndex == i))
-                                    {
-                                        selectedNodeIndex = i;
-                                    }
-
-                                    ImGui.PopID();
+                                    ImGui.CloseCurrentPopup();
                                 }
+
+                                ImGui.EndPopup();
                             }
 
-                            ImGui.EndChild();
+                            ImGui.PopID();
                         }
-
-                        // Node Viewer
-                        ImGui.TableSetColumnIndex(1);
-                        ImGui.Text("Gathering Node Viewer");
-                        if (ImGui.BeginChild("Node Viewer", new Vector2(0, childHeight), true))
-                        {
-                            foreach (var x in Svc.Objects
-                                .Where(x => x.ObjectKind == ObjectKind.GatheringPoint & Player.DistanceTo(x.Position) <= maxDistance)
-                                    .OrderBy(x => Player.DistanceTo(x.Position))
-                            .ToList())
-                            {
-                                if (ImGui.Selectable($"Id: {x.BaseId} | Distance: {Player.DistanceTo(x.Position):N2}"))
-                                {
-                                    nodeId = x.BaseId;
-                                }
-                            }
-                            ImGui.EndChild();
-                        }
-
-                        // Side Buttons
-                        ImGui.TableSetColumnIndex(2);
-                        ImGui.Text(" ");
-                        if (ImGui.BeginChild("SideButtons", new Vector2(0, childHeight), true))
-                        {
-                            using (ImRaii.Disabled(nodeId == 0))
-                            {
-                                if (ImGui.Button("Add Node", new Vector2(-1, 0)))
-                                {
-                                    var x = Svc.Objects.Where(x => x.BaseId == nodeId).FirstOrDefault();
-                                    if (x != null)
-                                    {
-                                        var gatheringZone = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag];
-                                        var playerPos = Player.Position;
-
-                                        var addNode = new GatheringUtil.GathNodeInfo()
-                                        {
-                                            LandZone = playerPos,
-                                            Position = x.Position,
-                                            NodeId = x.BaseId
-                                        };
-                                        gatheringZone.Add(addNode);
-                                    }
-
-                                    nodeId = 0;
-                                }
-                            }
-
-                            using (ImRaii.Disabled(!ImGui.GetIO().KeyShift))
-                            {
-                                if (ImGui.Button("Remove", new Vector2(-1, 0)))
-                                {
-                                    var nodeInfo = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag][selectedNodeIndex];
-                                    GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag].Remove(nodeInfo);
-                                    selectedNodeIndex -= 1;
-                                }
-                            }
-                            ImGui.EndChild();
-                        }
-
-                        ImGui.EndTable();
-                    }
-
-                    ImGui.EndChild();
-                }
-
-                if (selectedFlag != Vector2.Zero)
-                {
-                    if (GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag].Count > 0)
-                    {
-                        ImGui.Checkbox("Draw Node Position", ref PictoCircle);
-                        ImGui.SameLine();
-                        Vector4 circleColor = Utils.FromUintABGR(C.PictoColor_Circle);
-                        ImGui.SetNextItemWidth(200);
-                        if (ImGui.ColorEdit4("##CircleColorEditor", ref circleColor))
-                        {
-                            C.PictoColor_Circle = Utils.ToUintABGR(circleColor);
-                            C.Save();
-                        }
-
-                        ImGui.Checkbox("Draw Land Position", ref PictoDot);
-                        ImGui.SameLine();
-                        Vector4 dotColor = Utils.FromUintABGR(C.PictoColor_Dot);
-                        ImGui.SetNextItemWidth(200);
-                        if (ImGui.ColorEdit4("##DotColorEditor", ref dotColor))
-                        {
-                            C.PictoColor_Dot = Utils.ToUintABGR(dotColor);
-                            C.Save();
-                        }
-
-                        var nodeInfo = GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag][selectedNodeIndex];
-
-                        ImGui.Text($"Position -> X: {nodeInfo.Position.X:N2}, Y: {nodeInfo.Position.Y:N2}, Z: {nodeInfo.Position.Z:N2}");
-                        ImGui.Text($"NodeId: {nodeInfo.NodeId}");
-
-                        ImGui.Text($"Player Position");
-                        Vector3 nodePlayerPos = nodeInfo.LandZone;
-                        ImGui.SetNextItemWidth(200);
-                        if (ImGui.DragFloat3($"##Player_Position: {nodeInfo.NodeId}", ref nodePlayerPos))
-                        {
-                            nodeInfo.LandZone = nodePlayerPos;
-                        }
-                        ImGui.SameLine();
-                        if (ImGui.Button("Set to current POS"))
-                        {
-                            Vector3 currentPos = Player.Position;
-                            nodeInfo.LandZone = currentPos;
-                        }
-                        if (ImGui.Button("Nav to node"))
-                        {
-                            P.Navmesh.PathfindAndMoveTo(nodeInfo.LandZone, false);
-                        }
-                        ImGui.SameLine();
-                        if (ImGui.Button("Stop naving"))
-                        {
-                            P.Navmesh.Stop();
-                        }
-                        ImGui.SameLine();
-                        if (ImGui.Button("Mount"))
-                        {
-                            Utils.MountAction();
-                        }
-
-                        using (var drawList = PictoService.Draw())
-                        {
-                            if (drawList == null)
-                                return;
-
-                            if (PictoCircle)
-                            {
-                                PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", nodeInfo.Position, 3f, Utils.FromUintABGR(C.PictoColor_Circle));
-                            }
-                            if (PictoDot)
-                            {
-                                drawList.AddDot(nodeInfo.LandZone, 5f, C.PictoColor_Dot);
-                            }
-                        }
-                    }
-                }
-
-                ImGui.EndTable();
-            }
-        }
-
-        private static void UpdateMissions()
-        {
-            foreach (var mission in CosmicHelper.SheetMissionDict)
-            {
-                if (mission.Value.MapPosition != Vector2.Zero 
-                && (mission.Value.Jobs.Contains(16) || mission.Value.Jobs.Contains(17)))
-                {
-                    uint zoneId = mission.Value.TerritoryId;
-                    Vector2 flag = mission.Value.MapPosition;
-
-                    if (GatheringUtil.MoonGatherLocations.TryGetValue(zoneId, out var moon))
-                    {
-                        if (!moon.ContainsKey(flag))
-                        {
-                            // Location doesn't exist, time to input it in.
-                            moon[flag] = new();
-                        }
-                    }
-                    else
-                    {
-                        GatheringUtil.MoonGatherLocations[zoneId] = new()
-                        {
-                            [flag] = new()
-                        };
                     }
                 }
             }
+
+            fileDialogManager.Draw();
         }
 
         private static uint GetJobIdForFlag(uint territoryId, Vector2 map)
@@ -430,86 +308,153 @@ namespace ICE.Ui.DebugWindowTabs
                 return 8;
         }
 
-        private static string ExportAllGatheringData()
+        private static List<uint> GetMissionsForFlag(uint territoryId, Vector2 map)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("public static Dictionary<uint, Dictionary<Vector2, List<GathNodeInfo>>> MoonGatherLocations = new()");
-            sb.AppendLine("{");
-
-            // Sort zones by key
-            foreach (var zone in GatheringUtil.MoonGatherLocations.OrderBy(z => z.Key))
+            List<uint> missions = new();
+            foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.MapPosition == map && x.Value.TerritoryId == territoryId))
             {
-                sb.AppendLine($"\t[{zone.Key}] = new()");
-                sb.AppendLine("\t{");
+                missions.Add(mission.Key);
+            }
 
-                // Sort flags by job ID first, then by X coordinate (west to east)
-                var sortedFlags = zone.Value.OrderBy(flag => GetJobIdForFlag(zone.Key, flag.Key))
-                                            .ThenBy(flag => flag.Key.X);
+            return missions;
+        }
 
-                foreach (var flag in sortedFlags)
+        private static string MoonName(uint territoryId)
+        {
+            if (territoryId == 1237)
+                return "Sinus Ardorum";
+            else if (territoryId == 1291)
+                return "Phaenna";
+            else
+            {
+                return "???";
+            }
+        }
+
+        public static class GatheringRouteExportUI
+        {
+            private static string? _lastExportMessage = null;
+            private static DateTime _lastExportMessageTime = DateTime.MinValue;
+            private static bool _lastExportSuccess = false;
+
+            public static void DrawExportAllButton()
+            {
+                if (ImGui.Button("Export All Routes"))
                 {
-                    sb.AppendLine($"\t\t[new Vector2({flag.Key.X}f, {flag.Key.Y}f)] = new()");
-                    sb.AppendLine("\t\t\t{");
-
-                    foreach (var node in flag.Value)
+                    try
                     {
-                        sb.AppendLine("\t\t\t\tnew GathNodeInfo()");
-                        sb.AppendLine("\t\t\t\t{");
-                        sb.AppendLine($"\t\t\t\t\tPosition = new Vector3({node.Position.X:N2}f, {node.Position.Y:N2}f, {node.Position.Z:N2}f),");
-                        sb.AppendLine($"\t\t\t\t\tLandZone = new Vector3({node.LandZone.X:N2}f, {node.LandZone.Y:N2}f, {node.LandZone.Z:N2}f),");
-                        sb.AppendLine($"\t\t\t\t\tNodeId = {node.NodeId},");
-                        sb.AppendLine("\t\t\t\t},");
+                        GatheringRouteLoader.ExportAllRoutes();
+                        var exportPath = GetDefaultExportPath();
+                        _lastExportMessage = $"Successfully exported all routes to:\n{exportPath}";
+                        _lastExportSuccess = true;
+                        _lastExportMessageTime = DateTime.Now;
                     }
-
-                    sb.AppendLine("\t\t\t},");
+                    catch (Exception ex)
+                    {
+                        PluginLog.Error($"Export failed: {ex.Message}");
+                        _lastExportMessage = $"Export failed: {ex.Message}";
+                        _lastExportSuccess = false;
+                        _lastExportMessageTime = DateTime.Now;
+                    }
                 }
 
-                sb.AppendLine("\t},");
-            }
-
-            sb.AppendLine("};");
-            return sb.ToString();
-        }
-
-        private static string ExportSingleFlag(uint zoneId, Vector2 flag)
-        {
-            if (!GatheringUtil.MoonGatherLocations.TryGetValue(zoneId, out var zone) ||
-                !zone.TryGetValue(flag, out var nodes))
-            {
-                return "// No data found for the selected flag";
-            }
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"// Export for Zone {zoneId}, Flag ({flag.X}, {flag.Y})");
-            sb.AppendLine($"[new Vector2({flag.X}f, {flag.Y}f)] = new()");
-            sb.AppendLine("{");
-
-            foreach (var node in nodes)
-            {
-                sb.AppendLine("    new GathNodeInfo()");
-                sb.AppendLine("    {");
-                sb.AppendLine($"        Position = new Vector3({node.Position.X:N2}f, {node.Position.Y:N2}f, {node.Position.Z:N2}f),");
-                sb.AppendLine($"        LandZone = new Vector3({node.LandZone.X:N2}f, {node.LandZone.Y:N2}f, {node.LandZone.Z:N2}f),");
-                sb.AppendLine($"        NodeId = {node.NodeId},");
-                sb.AppendLine("    },");
-            }
-
-            sb.AppendLine("},");
-            return sb.ToString();
-        }
-
-        private static void TestNodes()
-        {
-            IsNodeValid.Clear();
-
-            foreach (var node in GatheringUtil.MoonGatherLocations[selectedZone][selectedFlag])
-            {
-                bool isClear = false;
-                if (Vector3.Distance(node.Position, node.LandZone) <= 3)
+                if (ImGui.IsItemHovered())
                 {
-                    isClear = true;
+                    ImGui.SetTooltip("Export all routes to plugin config folder");
                 }
-                IsNodeValid[node.NodeId] = isClear;
+
+                DrawExportMessage();
+            }
+
+            public static void DrawExportSelectedButton(uint zoneId, Vector2 flag)
+            {
+                if (ImGui.Button("Export Selected Route"))
+                {
+                    try
+                    {
+                        GatheringRouteLoader.ExportRoute(zoneId, flag);
+                        var exportPath = GetDefaultExportPath();
+                        _lastExportMessage = $"Successfully exported route to:\n{exportPath}";
+                        _lastExportSuccess = true;
+                        _lastExportMessageTime = DateTime.Now;
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginLog.Error($"Export failed: {ex.Message}");
+                        _lastExportMessage = $"Export failed: {ex.Message}";
+                        _lastExportSuccess = false;
+                        _lastExportMessageTime = DateTime.Now;
+                    }
+                }
+
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Export this route to plugin config folder");
+                }
+
+                DrawExportMessage();
+            }
+
+            public static void DrawExportAllButtonWithCustomPath()
+            {
+                if (ImGui.Button("Export All Routes (Choose Location)"))
+                {
+                    // TODO: Add file picker dialog integration
+                    ImGui.OpenPopup("export_path_picker");
+                }
+
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Export all routes to a custom location");
+                }
+
+                // Placeholder for file picker popup
+                if (ImGui.BeginPopup("export_path_picker"))
+                {
+                    ImGui.Text("File picker not yet implemented");
+                    ImGui.Text("Use default location button for now");
+                    ImGui.EndPopup();
+                }
+            }
+
+            public static void DrawExportSelectedButtonWithCustomPath(uint zoneId, Vector2 flag)
+            {
+                if (ImGui.Button("Export Selected Route (Choose Location)"))
+                {
+                    // TODO: Add file picker dialog integration
+                    ImGui.OpenPopup("export_path_picker_selected");
+                }
+
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Export this route to a custom location");
+                }
+
+                // Placeholder for file picker popup
+                if (ImGui.BeginPopup("export_path_picker_selected"))
+                {
+                    ImGui.Text("File picker not yet implemented");
+                    ImGui.Text("Use default location button for now");
+                    ImGui.EndPopup();
+                }
+            }
+
+            private static void DrawExportMessage()
+            {
+                if (_lastExportMessage != null && (DateTime.Now - _lastExportMessageTime).TotalSeconds < 5)
+                {
+                    var color = _lastExportSuccess
+                        ? new Vector4(0.0f, 1.0f, 0.0f, 1.0f)  // Green
+                        : new Vector4(1.0f, 0.0f, 0.0f, 1.0f); // Red
+
+                    ImGui.TextColored(color, _lastExportMessage);
+                }
+            }
+
+            private static string GetDefaultExportPath()
+            {
+                var configDir = Svc.PluginInterface.GetPluginConfigDirectory();
+                return Path.Combine(configDir, "ExportedRoutes");
             }
         }
     }

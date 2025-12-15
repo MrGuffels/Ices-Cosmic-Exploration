@@ -7,16 +7,8 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
-using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
 using static MissionTimer;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ICE.Ui.MainUi.ModeSelect
 {
@@ -109,6 +101,8 @@ namespace ICE.Ui.MainUi.ModeSelect
                                                      .Sum(exp => exp.Value)).ToList();
                 case 9: // Map Location
                     return missions.OrderBy(m => missionInfo[m.id].MarkerId).ToList();
+                case 10: // Mission Score
+                    return missions.OrderByDescending(m => missionInfo[m.id].ClassScore).ToList();
                 default:
                     return missions.ToList();
             }
@@ -1059,6 +1053,22 @@ namespace ICE.Ui.MainUi.ModeSelect
             }
         }
 
+        public class ScoringInfo
+        {
+            public int Multipler { get; set; } = 1;
+            public double Score { get; set; } = 0;
+            public double Cosmocredits { get; set; } = 0;
+            public double Planetcredits { get; set; } = 0;
+            public int TotalCompleted { get; set; } = 0;
+        }
+        public static Dictionary<string, ScoringInfo> MissionScores = new()
+        {
+            ["Critical"] = new(),
+            ["Bronze"] = new() { Multipler = 1 },
+            ["Silver"] = new() { Multipler = 4 },
+            ["Gold"] = new() { Multipler = 5 },
+        };
+
         public static void DrawMissionDetails()
         {
             if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var mission))
@@ -1343,7 +1353,9 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                     if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
                     {
-                        var baseScore = missionInfo.ClassScore; // Adjust this based on your actual property name
+                        var baseScore = missionInfo.ClassScore;
+                        var comsoCredit = missionInfo.CosmoCredit;
+                        var planetCredit = missionInfo.LunarCredit;
 
                         ImGui.Separator();
                         ImGui.Text("Estimated Score Per Hour:");
@@ -1360,34 +1372,156 @@ namespace ICE.Ui.MainUi.ModeSelect
                         }
 
                         bool ShowScorePerMinute = C.ShowSPM;
+                        foreach (var kind in MissionScores)
+                        {
+                            var tier = kind.Key;
+                            var info = kind.Value;
+
+                            var averageTime = tier switch
+                            {
+                                "Critical" => config.AverageTime,
+                                "Bronze" => config.AverageBronzeTime,
+                                "Silver" => config.AverageSilverTime,
+                                "Gold" => config.AverageGoldTime,
+                                _ => 0
+                            };
+
+                            var totalComplete = tier switch
+                            {
+                                "Critical" => config.CriticalCompletions,
+                                "Gold" => config.GoldCompletions,
+                                "Silver" => config.SilverCompletions,
+                                "Bronze" => config.BronzeCompletion,
+                                _ => 0
+                            };
+
+                            info.Score = MissionStatsCalculator.CalculateCurrencyPerMinute(averageTime, baseScore, info.Multipler);
+                            info.Cosmocredits = MissionStatsCalculator.CalculateCurrencyPerMinute(averageTime, comsoCredit, info.Multipler);
+                            info.Planetcredits = MissionStatsCalculator.CalculateCurrencyPerMinute(averageTime, planetCredit, info.Multipler);
+                            info.TotalCompleted = totalComplete;
+
+                            if (!C.ShowSPM)
+                            {
+                                info.Score *= 60;
+                                info.Cosmocredits *= 60;
+                                info.Planetcredits *= 60;
+                            }
+                        }
 
                         if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                         {
-                            if (ImGui.Checkbox("Show Score Per Minute", ref ShowScorePerMinute))
-                            {
-                                C.ShowSPM = ShowScorePerMinute;
-                                C.Save();
-                            }
-
-                            var criticalScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageTime, baseScore, 1.0);
+                            var criticalScore = MissionStatsCalculator.CalculateCurrencyPerMinute(config.AverageTime, baseScore, 1.0);
                             if (!C.ShowSPM)
                                 criticalScore *= 60;
 
-                            string timeUnit = C.ShowSPM ? "pts/minute" : "pts/hr";
-                            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Critical: {criticalScore:F0} {timeUnit}");
-                        }
-                        else
-                        {
-                            if (ImGui.Checkbox("Show Score Per Minute", ref ShowScorePerMinute))
+                            string showingX = ShowScorePerMinute ? "Per Minute" : "Per Hour";
+                            if (ImGui.Checkbox($"Showing score {showingX} currently", ref ShowScorePerMinute))
                             {
                                 C.ShowSPM = ShowScorePerMinute;
                                 C.Save();
                             }
+                            if (ImGui.BeginTable("Critical Scoring Info", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+                            {
+                                ImGui.TableSetupColumn("Turnin");
+                                ImGui.TableSetupColumn("Score");
+                                ImGui.TableSetupColumn("Cosmo Credits");
+                                ImGui.TableSetupColumn("Planet Credits");
 
+                                ImGui.TableHeadersRow();
+
+                                var entry = MissionScores["Critical"];
+
+                                ImGui.TableNextRow();
+                                ImGui.TableSetColumnIndex(0);
+                                ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Critical");
+
+                                ImGui.TableNextColumn();
+                                ImGui.Text($"{entry.Score:N2}");
+
+                                ImGui.TableNextColumn();
+                                ImGui.Text($"{entry.Cosmocredits:N2}");
+
+                                ImGui.TableNextColumn();
+                                ImGui.Text($"{entry.Planetcredits:N2}");
+
+                                ImGui.EndTable();
+                            }
+                        }
+                        else
+                        {
+                            List<(string type, Vector4 color)> turninTypes = new()
+                            {
+                                new() { type = "Bronze", color = new Vector4(0.8f, 0.5f, 0.3f, 1.0f)},
+                                new() { type = "Silver", color = new Vector4(0.7f, 0.7f, 0.7f, 1.0f)},
+                                new() { type = "Gold", color = new Vector4(1.0f, 0.84f, 0.0f, 1.0f)}
+                            };
+                            string showingX = ShowScorePerMinute ? "Per Minute" : "Per Hour";
+                            if (ImGui.Checkbox($"Showing Score {showingX} Currently", ref ShowScorePerMinute))
+                            {
+                                C.ShowSPM = ShowScorePerMinute;
+                                C.Save();
+                            }
+                            if (ImGui.BeginTable("Critical Scoring Info", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+                            {
+                                ImGui.TableSetupColumn("Turnin");
+                                ImGui.TableSetupColumn("Score");
+                                ImGui.TableSetupColumn("Cosmo Credits");
+                                ImGui.TableSetupColumn("Planet Credits");
+
+                                ImGui.TableHeadersRow();
+
+                                foreach (var type in turninTypes)
+                                {
+                                    var entry = MissionScores[type.type];
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.TextColored(type.color, $"{type.type} [{entry.TotalCompleted}]");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{entry.Score:N2}");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{entry.Cosmocredits:N2}");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{entry.Planetcredits:N2}");
+                                }
+
+                                ImGui.TableNextRow();
+                                ImGui.TableSetColumnIndex(0);
+                                ImGui.Text("Average");
+                                ImGui.SameLine();
+                                ImGui.TextDisabled("?");
+                                if (ImGui.IsItemHovered())
+                                {
+                                    ImGui.SetTooltip("This is judged based off your current completion rate of bronze/silver/gold.\n" +
+                                                     "It calculates the average score you get across all, and assuming you get that you were to consistently get that average across the hour, \n" +
+                                                     "then it will tell you what it would be for that one mission. \n" +
+                                                     "This is just really nerdy way of getting a more accurate average based off your completion rate");
+                                }
+
+                                ImGui.TableNextColumn();
+                                var score = MissionStatsCalculator.CalculateActualScorePerMinute(config.TurninRecords, baseScore);
+                                ImGui.Text($"{score:N2}");
+
+                                ImGui.TableNextColumn();
+                                var credits = MissionStatsCalculator.CalculateActualScorePerMinute(config.TurninRecords, comsoCredit);
+                                ImGui.Text($"{credits:N2}");
+
+                                ImGui.TableNextColumn();
+                                var planet = MissionStatsCalculator.CalculateActualScorePerMinute(config.TurninRecords, planetCredit);
+                                ImGui.Text($"{planet:N2}");
+
+
+
+                                ImGui.EndTable();
+                            }
+                            /*
                             var ActualSPM = MissionStatsCalculator.CalculateActualScorePerMinute(config.TurninRecords, baseScore);
-                            var bronzeScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageBronzeTime, baseScore, 1.0);
-                            var silverScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageSilverTime, baseScore, 4.0);
-                            var goldScore = MissionStatsCalculator.CalculateScorePerMinute(config.AverageGoldTime, baseScore, 5.0);
+                            var bronzeScore = MissionStatsCalculator.CalculateCurrencyPerMinute(config.AverageBronzeTime, baseScore, 1.0);
+                            var silverScore = MissionStatsCalculator.CalculateCurrencyPerMinute(config.AverageSilverTime, baseScore, 4.0);
+                            var goldScore = MissionStatsCalculator.CalculateCurrencyPerMinute(config.AverageGoldTime, baseScore, 5.0);
+
                             // Convert to per-hour if needed
                             if (!C.ShowSPM)
                             {
@@ -1429,6 +1563,11 @@ namespace ICE.Ui.MainUi.ModeSelect
                             ImGui.TextColored(new Vector4(0.8f, 0.5f, 0.3f, 1.0f), $"Bronze: {bronzeScore:F0} {timeUnit} [{config.BronzeCompletion}/{config.TotalCompletions}]");
                             ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"Silver: {silverScore:F0} {timeUnit} [{config.SilverCompletions}/{config.TotalCompletions}]");
                             ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), $"Gold: {goldScore:F0} {timeUnit} [{config.GoldCompletions}/{config.TotalCompletions}]");
+#if DEBUG
+                            var creditPerMinute = MissionStatsCalculator.CalculateCurrencyPerMinute(config.AverageGoldTime, mission.CosmoCredit, 5.0);
+                            ImGui.Text($"Credit/minute: {creditPerMinute:N2}");
+#endif
+                            */
                         }
                     }
 

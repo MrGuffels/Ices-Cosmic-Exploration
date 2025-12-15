@@ -8,6 +8,7 @@ using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
 using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Scheduler.Tasks
@@ -508,6 +509,8 @@ namespace ICE.Scheduler.Tasks
 
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
+                var maxStage = CosmicHelper.MaxRelicLevel;
+
                 var wksManager = WKSManager.Instance();
                 if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                     return null;
@@ -527,22 +530,46 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    for (byte type = 1; type < 6; type++)
+                    if (stage != maxStage)
                     {
-                        if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
-                            break;
-
-                        var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
-
-                        var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
-                        var requiredXp = neededXP - currentXp;
-                        if (!XPTable.ContainsKey(type))
+                        for (byte type = 1; type < 6; type++)
                         {
-                            XPTable[type] = new XPType()
+                            if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                                break;
+
+                            var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
+
+                            var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
+                            var requiredXp = neededXP - currentXp;
+                            if (!XPTable.ContainsKey(type))
                             {
-                                CurrentXP = currentXp,
-                                NeededXP = neededXP,
-                            };
+                                XPTable[type] = new XPType()
+                                {
+                                    CurrentXP = currentXp,
+                                    NeededXP = neededXP,
+                                };
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (byte type = 1; type < 6; type++)
+                        {
+                            if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                                break;
+
+                            var maxXP = wksManager->ResearchModule->GetMaxAnalysis(toolClassId, type);
+
+                            var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
+                            var requiredXp = maxXP - currentXp;
+                            if (!XPTable.ContainsKey(type))
+                            {
+                                XPTable[type] = new XPType()
+                                {
+                                    CurrentXP = currentXp,
+                                    NeededXP = maxXP,
+                                };
+                            }
                         }
                     }
                 }
@@ -757,56 +784,44 @@ namespace ICE.Scheduler.Tasks
 
             return true;
         }
-
         public static bool? FindReroll()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
-                List<uint> RankId = new() { 5, 4, 3, 2, 1 };
                 List<uint> AExRank = new List<uint>();
                 List<uint> ARank = new List<uint>();
                 List<uint> BRank = new List<uint>();
                 List<uint> CRank = new List<uint>();
                 List<uint> DRank = new List<uint>();
 
+                // Track mission appearance counts
                 foreach (var mission in x.StellerMissions)
                 {
-                    var rank = CosmicHelper.SheetMissionDict[mission.MissionId].Rank;
+                    var missionId = mission.MissionId;
+
+                    // Increment appearance count
+                    if (!Mission_Settings.missionAppearanceCounts.ContainsKey(missionId))
+                        Mission_Settings.missionAppearanceCounts[missionId] = 0;
+                    Mission_Settings.missionAppearanceCounts[missionId]++;
+
+                    var rank = CosmicHelper.SheetMissionDict[missionId].Rank;
                     switch (rank)
                     {
-                        case 5:
-                            AExRank.Add(mission.MissionId);
-                            break;
-                        case 4:
-                            ARank.Add(mission.MissionId);
-                            break;
-                        case 3:
-                            BRank.Add(mission.MissionId);
-                            break;
-                        case 2:
-                            CRank.Add(mission.MissionId);
-                            break;
+                        case 5: AExRank.Add(missionId); break;
+                        case 4: ARank.Add(missionId); break;
+                        case 3: BRank.Add(missionId); break;
+                        case 2: CRank.Add(missionId); break;
                         case 1:
-                            DRank.Add(mission.MissionId);
-                            break;
-                        default:
-                            DRank.Add(mission.MissionId);
-                            break;
+                        default: DRank.Add(missionId); break;
                     }
                 }
 
-                bool CheckARanks = (ExARankMissions.Count > 0 || ARankMissions.Count > 0) && (AExRank.Count > 0 || (ARank.Count > 0));
+                bool CheckARanks = (ExARankMissions.Count > 0 || ARankMissions.Count > 0) && (AExRank.Count > 0 || ARank.Count > 0);
                 bool CheckBRanks = (BRankMissions.Count > 0 && BRank.Count > 0);
                 bool CheckCRanks = (CRankMissions.Count > 0 && CRank.Count > 0);
                 bool CheckDRanks = (DRankMissions.Count > 0 && DRank.Count > 0);
 
                 var random = new Random();
-                ShuffleList(AExRank, random);
-                ShuffleList(ARank, random);
-                ShuffleList(BRank, random);
-                ShuffleList(CRank, random);
-                ShuffleList(DRank, random);
-
                 void ShuffleList<T>(List<T> list, Random rnd)
                 {
                     for (int i = list.Count - 1; i > 0; i--)
@@ -816,66 +831,151 @@ namespace ICE.Scheduler.Tasks
                     }
                 }
 
+                ShuffleList(AExRank, random);
+                ShuffleList(ARank, random);
+                ShuffleList(BRank, random);
+                ShuffleList(CRank, random);
+                ShuffleList(DRank, random);
+
+                // small function to find a frequent mission that might be locking us
+                uint FindFrequentMission(List<uint> missionList, int threshold = 3)
+                {
+                    foreach (var missionId in missionList)
+                    {
+                        if (Mission_Settings.missionAppearanceCounts.TryGetValue(missionId, out int count) && count >= threshold)
+                        {
+                            return missionId;
+                        }
+                    }
+                    return 0;
+                }
+
                 if (CheckARanks)
                 {
+                    // Check for frequent missions in A/AEx ranks first
+                    uint frequentAEx = FindFrequentMission(AExRank, Mission_Settings.rerollThreshold);
+                    uint frequentA = FindFrequentMission(ARank, Mission_Settings.rerollThreshold);
+
                     if (AExRank.Count > 2)
                     {
-                        IceLogging.Debug($"Only AEX Rank missions are available (impressive). Forcing an AEX rank to be accepted");
-                        missionToAbandon = AExRank.First();
-                        Mission_Settings.previouslyAbandoned = 5;
+                        if (frequentAEx != 0)
+                        {
+                            missionToAbandon = frequentAEx;
+                            IceLogging.Debug($"Abandoning frequently appearing AEX mission (appeared {Mission_Settings.missionAppearanceCounts[frequentAEx]} times)");
+                            Mission_Settings.previouslyAbandoned = 5;
+                        }
+                        else
+                        {
+                            IceLogging.Debug($"Only AEX Rank missions are available. Forcing an AEX rank to be accepted");
+                            missionToAbandon = AExRank.First();
+                            Mission_Settings.previouslyAbandoned = 5;
+                        }
                     }
                     else if (ARank.Count > 2)
                     {
-                        IceLogging.Debug($"Only A Rank missions are available (impressive...). Forcing an A rank to be accepted");
-                        missionToAbandon = ARank.First();
-                        Mission_Settings.previouslyAbandoned = 4;
+                        if (frequentA != 0)
+                        {
+                            missionToAbandon = frequentA;
+                            IceLogging.Debug($"Abandoning frequently appearing A mission (appeared {Mission_Settings.missionAppearanceCounts[frequentA]} times)");
+                            Mission_Settings.previouslyAbandoned = 4;
+                        }
+                        else
+                        {
+                            IceLogging.Debug($"Only A Rank missions are available. Forcing an A rank to be accepted");
+                            missionToAbandon = ARank.First();
+                            Mission_Settings.previouslyAbandoned = 4;
+                        }
                     }
                     else
                     {
                         if (Mission_Settings.previouslyAbandoned == 5)
                         {
-                            missionToAbandon = ARank.First();
-                            IceLogging.Debug($"Abandonding Rank 4 Mission.");
-                            Mission_Settings.previouslyAbandoned = 4;
+                            if (frequentA != 0)
+                            {
+                                missionToAbandon = frequentA;
+                                IceLogging.Debug($"Abandoning frequently appearing A mission (appeared {Mission_Settings.missionAppearanceCounts[frequentA]} times)");
+                                Mission_Settings.previouslyAbandoned = 4;
+                            }
+                            else
+                            {
+                                missionToAbandon = ARank.First();
+                                IceLogging.Debug($"Abandoning Rank 4 Mission.");
+                                Mission_Settings.previouslyAbandoned = 4;
+                            }
                         }
                         else if (Mission_Settings.previouslyAbandoned == 4)
                         {
-                            missionToAbandon = AExRank.First();
-                            IceLogging.Debug($"Abandoning Rank 5 Mission");
-                            Mission_Settings.previouslyAbandoned = 5;
+                            if (frequentAEx != 0)
+                            {
+                                missionToAbandon = frequentAEx;
+                                IceLogging.Debug($"Abandoning frequently appearing AEX mission (appeared {Mission_Settings.missionAppearanceCounts[frequentAEx]} times)");
+                                Mission_Settings.previouslyAbandoned = 5;
+                            }
+                            else
+                            {
+                                missionToAbandon = AExRank.First();
+                                IceLogging.Debug($"Abandoning Rank 5 Mission");
+                                Mission_Settings.previouslyAbandoned = 5;
+                            }
                         }
                         else
                         {
                             missionToAbandon = ARank.First();
-                            IceLogging.Debug($"Startin off w/ abandoning an A rank");
+                            IceLogging.Debug($"Starting off w/ abandoning an A rank");
                             Mission_Settings.previouslyAbandoned = 4;
-
                         }
                     }
                 }
                 else if (CheckBRanks)
                 {
-                    missionToAbandon = BRank.First();
+                    uint frequentB = FindFrequentMission(BRank, Mission_Settings.rerollThreshold);
+                    if (frequentB != 0)
+                    {
+                        missionToAbandon = frequentB;
+                        IceLogging.Debug($"Abandoning frequently appearing B mission (appeared {Mission_Settings.missionAppearanceCounts[frequentB]} times)");
+                    }
+                    else
+                    {
+                        missionToAbandon = BRank.First();
+                    }
                     Mission_Settings.previouslyAbandoned = 3;
                 }
                 else if (CheckCRanks)
                 {
-                    missionToAbandon = CRank.First();
+                    uint frequentC = FindFrequentMission(CRank, Mission_Settings.rerollThreshold);
+                    if (frequentC != 0)
+                    {
+                        missionToAbandon = frequentC;
+                        IceLogging.Debug($"Abandoning frequently appearing C mission (appeared {Mission_Settings.missionAppearanceCounts[frequentC]} times)");
+                    }
+                    else
+                    {
+                        missionToAbandon = CRank.First();
+                    }
                     Mission_Settings.previouslyAbandoned = 2;
                 }
                 else if (CheckDRanks)
                 {
-                    missionToAbandon = DRank.First();
+                    uint frequentD = FindFrequentMission(DRank, Mission_Settings.rerollThreshold);
+                    if (frequentD != 0)
+                    {
+                        missionToAbandon = frequentD;
+                        IceLogging.Debug($"Abandoning frequently appearing D mission (appeared {Mission_Settings.missionAppearanceCounts[frequentD]} times)");
+                    }
+                    else
+                    {
+                        missionToAbandon = DRank.First();
+                    }
                     Mission_Settings.previouslyAbandoned = 1;
                 }
 
-                // If we found a mission to abandon
                 if (missionToAbandon != 0)
                 {
-                    var abandonMission = x.StellerMissions.Where(m => m.MissionId == missionToAbandon).First();
+                    var abandonMission = x.StellerMissions.First(m => m.MissionId == missionToAbandon);
                     abandonMission.Select();
                     P.TaskManager.Insert(() => GrabMission(missionToAbandon, true), "Going to abandon mission now");
                     IceLogging.Debug($"Attempting to abandon mission ID: {missionToAbandon} (Rank: {CosmicHelper.SheetMissionDict[missionToAbandon].Rank})");
+                    Mission_Settings.missionAppearanceCounts[missionToAbandon] = 0;
 
                     return true;
                 }
@@ -897,7 +997,6 @@ namespace ICE.Scheduler.Tasks
                 new(() => FrameDelay(16), "Giving time before you kick in the mission")
             );
         }
-
         private static bool? GrabMission(uint missionId, bool reroll = false)
         {
             if (CosmicHelper.CurrentLunarMission != 0)
@@ -1028,7 +1127,7 @@ namespace ICE.Scheduler.Tasks
                 Vector2 MapCenter = missionEntry.MapPosition;
                 var missionTerritory = missionEntry.TerritoryId;
                 var mapId = missionEntry.MapPosition;
-                var gatherInfo = GatheringUtil.MoonGatherLocations[missionTerritory][mapId];
+                var gatherInfo = GatheringRouteLoader.GetRoute(missionTerritory, mapId);
 
                 if (gatherInfo.Count == 0)
                 {
@@ -1038,6 +1137,24 @@ namespace ICE.Scheduler.Tasks
 
                 Vector3 closestNode = gatherInfo[0].LandZone;
 
+                if (!P.Navmesh.IsRunning())
+                {
+                    foreach (var node in gatherInfo)
+                    {
+                        if (Player.DistanceTo(node.Position) < 5)
+                        {
+                            IceLogging.Debug("We're close to a gathering node. So continuing on.");
+                            return true;
+                        }
+                    }
+                }
+                
+                if (!Task_NavmeshMove.NavToDestination(closestNode))
+                {
+                    return false;
+                }
+
+                /*
                 if (!P.Navmesh.IsReady())
                 {
                     Utils.VnavBuildInfo();
@@ -1059,6 +1176,7 @@ namespace ICE.Scheduler.Tasks
                         // We ideally don't want to be trying to try and pathfind while on this. Need to wait for us to get off the hoverboard
                         if (EzThrottler.Throttle("Inializing movement for pathfinding"))
                         {
+                            IceLogging.DestinationLogs.Log(closestNode);
                             P.Navmesh.PathfindAndMoveTo(closestNode, false);
                         }
                     }
@@ -1091,6 +1209,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
+                */
             }
             else if (missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
             {
@@ -1107,6 +1226,44 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"Mission ID: {missionId} | Map Position: {missionEntry.MapPosition} | Moon Territory: {missionEntry.TerritoryId}");
                 }
 
+                var navPos = Vector3.Zero;
+
+                if (!P.Navmesh.IsRunning())
+                {
+                    foreach (var fishSpot in fishingHole)
+                    {
+                        if (Player.DistanceTo(fishSpot.FishingSpot) < 2)
+                        {
+                            IceLogging.Info("We're currently at a fishing spot! Continuing onto facing position -> grabbing the mission");
+                            fishingHoleLoc = Vector3.Zero;
+                            return true;
+                        }
+                    }
+                }
+
+                if (fishingHoleLoc == Vector3.Zero)
+                {
+                    var _random = new Random();
+                    var randomIndex = _random.Next(fishingHole.Count);
+                    if (EzThrottler.Throttle("Setting destination"))
+                    {
+                        IceLogging.Debug($"Random number generator said we're going to the following fishing hole #: {randomIndex}");
+                        fishingHoleLoc = fishingHole[randomIndex].FishingSpot;
+                    }
+                }
+                else
+                {
+                    if (!Task_NavmeshMove.NavToDestination(fishingHoleLoc))
+                    {
+                        if (EzThrottler.Throttle("Waitin for nav to finish"))
+                        {
+                            IceLogging.Debug($"Waiting for navmesh to get to: {fishingHoleLoc}");
+                        }
+                        return false;
+                    }
+                }
+
+                /*
                 if (!P.Navmesh.IsReady())
                 {
                     Utils.VnavBuildInfo();
@@ -1130,8 +1287,10 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Debug($"Random number generator said we're going to the following fishing hole #: {randomIndex}");
                             if (randomIndex < fishingHole.Count)
                             {
-                                P.Navmesh.PathfindAndMoveTo(fishingHole[randomIndex].FishingSpot, false);
-                                fishingHoleLoc = fishingHole[randomIndex].FishingSpot;
+                                Vector3 navPos = fishingHole[randomIndex].FishingSpot;
+                                IceLogging.DestinationLogs.Log(navPos);
+                                P.Navmesh.PathfindAndMoveTo(navPos, false);
+                                fishingHoleLoc = navPos;
                                 IceLogging.Debug($"Told navmesh to move to the following spot: {fishingHoleLoc}");
                             }
                         }
@@ -1167,6 +1326,7 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
+                */
             }
             else
             {

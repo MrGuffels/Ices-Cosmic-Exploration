@@ -58,5 +58,8 @@ namespace ICE.Utilities
             NextCollectableStep = 0;
             item_collectableId = 0;
         }
+
+        public static Dictionary<uint, int> missionAppearanceCounts = new Dictionary<uint, int>();
+        public static int rerollThreshold = 3;
     }
 }

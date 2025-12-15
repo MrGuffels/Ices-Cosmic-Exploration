@@ -201,36 +201,6 @@ namespace ICE.Ui.MainUi.ModeSelect
                         }
 
                         ImGui.Separator();
-                        if (ImGui.CollapsingHeader("Unlocked Classes"))
-                        {
-                            ImGui.Indent(15);
-                            foreach (var job in C.ClassesUnlocked)
-                            {
-                                string jobName = job.Key switch
-                                {
-                                    8 => "CRP",
-                                    9 => "BSM",
-                                    10 => "ARM",
-                                    11 => "GSM",
-                                    12 => "LTW",
-                                    13 => "WVR",
-                                    14 => "ALC",
-                                    15 => "CUL",
-                                    16 => "MIN",
-                                    17 => "BTN",
-                                    18 => "FSH",
-                                    _ => "???"
-                                };
-
-                                bool unlocked = job.Value;
-                                if (ImGui.Checkbox($"{jobName}##{jobName}_{job.Key}", ref unlocked))
-                                {
-                                    C.ClassesUnlocked[job.Key] = unlocked;
-                                    C.Save();
-                                }
-                            }
-                            ImGui.Unindent(15);
-                        }
 
                         bool EnableRelicXp = C.XPRelicGrind;
                         if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))

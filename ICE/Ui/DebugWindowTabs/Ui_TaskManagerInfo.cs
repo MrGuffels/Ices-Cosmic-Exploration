@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ICE.Utilities.Cosmic_Helper;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -90,6 +91,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static async Task<List<Vector3>> FindTask(Vector3 currentPos)
         {
+            IceLogging.DestinationLogs.Log(pathToArea);
             return await P.Navmesh.Pathfind(currentPos, pathToArea, false);
         }
     }

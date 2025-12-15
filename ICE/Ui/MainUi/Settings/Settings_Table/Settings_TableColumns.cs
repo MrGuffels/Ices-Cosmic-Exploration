@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ICE.Config;
+using ICE.Utilities.Cosmic_Helper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +10,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table;
 
 public static class Settings_TableColumns
 {
-    private static string[] missionSortOptions = ["Id", "Name", "Cosmo Credits", "Lunar Credits", "Exp I", "Exp II", "Exp III", "Exp IV", "Exp V", "Map Location"];
+    private static string[] missionSortOptions = ["Id", "Name", "Cosmo Credits", "Lunar Credits", "Exp I", "Exp II", "Exp III", "Exp IV", "Exp V", "Map Location", "Class Score"];
 
     public static void ColumnSettings()
     {
@@ -74,6 +76,47 @@ public static class Settings_TableColumns
         ImGuiEx.HelpMarker("Only enable this if you want plan on doing missions YOURSELF. AND NOT AUTOMATING IT. " +
                            "Or if you're letting a different plugin do all the automating of turning in, craftings, gathering... and not letting I.C.E. handle interacting with those plugins");
     }
+
+    private static bool ApplyToAllClasses = true;
+    private static bool ApplyToSpecicClass = false;
+    private static int SpecificClass = 8;
+    private static int selectedClassIndex = 0;
+
+    private static readonly string[] classOptions = new[]
+    {
+        "Carpenter (CRP)",      // 0
+        "Blacksmith (BSM)",     // 1
+        "Armorer (ARM)",        // 2
+        "Goldsmith (GSM)",      // 3
+        "Leatherworker (LTW)",  // 4
+        "Weaver (WVR)",         // 5
+        "Alchemist (ALC)",      // 6
+        "Culinarian (CUL)",     // 7
+        "Miner (MIN)",          // 8
+        "Botanist (BTN)",       // 9
+        "Fisher (FSH)"          // 10
+    };
+
+    private static readonly int[] classIds = new[]
+    {
+        8,  // Carpenter
+        9,  // Blacksmith
+        10, // Armorer
+        11, // Goldsmith
+        12, // Leatherworker
+        13, // Weaver
+        14, // Alchemist
+        15, // Culinarian
+        16, // Miner
+        17, // Botanist
+        18  // Fisher
+    };
+
+    private static bool AnyTurnin = true;
+    private static bool TurninGold = false;
+    private static bool TurninSilver = false;
+    private static bool TurninBronze = false;
+
     public static void GeneralMissionSettings()
     {
         bool onlyGrabMission = C.OnlyGrabMission;
@@ -111,6 +154,114 @@ public static class Settings_TableColumns
                              "3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
                              "4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
                              "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
+        }
+        if (ImGui.Button("Quick Apply Turnins"))
+        {
+            ImGui.OpenPopup("Quick Apply_Mission Turnins");
+        }
+
+        if (ImGui.BeginPopup("Quick Apply_Mission Turnins"))
+        {
+            if (ImGui.RadioButton("Apply to all classes", ApplyToAllClasses))
+            {
+                ApplyToAllClasses = true;
+                ApplyToSpecicClass = false;
+            }
+
+            if (ImGui.RadioButton("Apply to specific class", ApplyToSpecicClass))
+            {
+                ApplyToAllClasses = false;
+                ApplyToSpecicClass = true;
+            }
+            if (ImGui.Combo("##ClassSelector", ref selectedClassIndex, classOptions, classOptions.Length))
+            {
+                // Update SpecificClass when selection changes
+                SpecificClass = classIds[selectedClassIndex];
+                IceLogging.Debug($"Selected class: {classOptions[selectedClassIndex]}, ID: {SpecificClass}");
+            }
+            ImGui.Separator();
+            ImGui.Text("Select Turnin Options");
+            ImGui.Dummy(new Vector2(0, 2));
+
+            if (ImGui.Checkbox("Auto", ref AnyTurnin))
+            {
+                if (AnyTurnin)
+                {
+                    TurninGold = false;
+                    TurninSilver = false;
+                    TurninBronze = false;
+
+                    AnyTurnin = true;
+                }
+                else
+                {
+                    if (!(TurninBronze && TurninSilver && TurninGold))
+                    {
+                        AnyTurnin = true;
+                    }
+                }
+
+                C.Save();
+            }
+            ImGuiEx.HelpMarker("This option will strive to get the best result, but will turn in any result if necessary without stopping.");
+
+            ImGui.Separator();
+
+            if (ImGui.Checkbox("Gold", ref TurninGold))
+            {
+                if (AnyTurnin && TurninGold)
+                    AnyTurnin = false;
+
+            }
+            if (ImGui.Checkbox("Silver", ref TurninSilver))
+            {
+                if (AnyTurnin && TurninSilver)
+                    AnyTurnin = false;
+
+            }
+            if (ImGui.Checkbox("Bronze", ref TurninBronze))
+            {
+                if (AnyTurnin && TurninBronze)
+                    AnyTurnin = false;
+
+            }
+
+            if (!AnyTurnin && !TurninGold && !TurninSilver && !TurninBronze)
+                AnyTurnin = true;
+
+            ImGui.Separator();
+
+            if (ImGui.Button("Apply"))
+            {
+                var amountApplied = 0;
+                foreach (var mission in C.MissionConfig)
+                {
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(mission.Key, out var sheetInfo))
+                    {
+                        if (ApplyToSpecicClass && !sheetInfo.Jobs.Contains((uint)SpecificClass))
+                            continue;
+
+                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                            continue;
+
+                        if (C.MissionConfig.TryGetValue(mission.Key, out var config))
+                        {
+                            config.AutoTurnin = AnyTurnin;
+                            config.TurninGold = TurninGold;
+                            config.TurninSilver = TurninSilver;
+                            config.TurninBronze = TurninBronze;
+                        }
+                        amountApplied += 1;
+                    }
+                }
+                C.SaveDebounced();
+
+                Notify.Success($"Applied settings to: {amountApplied} missions, just for you buddy.");
+                ImGui.CloseCurrentPopup();
+            }
+
+
+            ImGui.EndPopup();
         }
     }
 }

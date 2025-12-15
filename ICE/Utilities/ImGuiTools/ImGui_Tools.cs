@@ -33,7 +33,7 @@ public static partial class ImGui_Tools
         // Default Colors for Theming. This is really here to make sure it's formatted as I want it to be
         var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
         var textColor = ImGui.GetColorU32(ImGuiCol.Text);
-        var textDisabledColor = ImGui.GetColorU32(ImGuiCol.TextDisabled);
+        // var textColor = ImGui.GetColorU32(ImGuiCol.TextDisabled);
 
 
         // This is here to make sure that
@@ -103,7 +103,7 @@ public static partial class ImGui_Tools
         }
         else if (icon.HasValue)
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, textDisabledColor); // Disabled text color here to match the rest of it
+            ImGui.PushStyleColor(ImGuiCol.Text, textColor); // Disabled text color here to match the rest of it
             ImGuiEx.Icon(icon.Value);
             ImGui.PopStyleColor();
             ImGui.SameLine();
@@ -115,7 +115,7 @@ public static partial class ImGui_Tools
         }
 
         // Actual label here, disabled text color
-        ImGui.PushStyleColor(ImGuiCol.Text, textDisabledColor);
+        ImGui.PushStyleColor(ImGuiCol.Text, textColor);
         ImGui.Text(label);
         ImGui.PopStyleColor();
 
@@ -127,7 +127,7 @@ public static partial class ImGui_Tools
         float iconYPos = cursorPos.Y + verticalPadding;
 
         ImGui.SetCursorScreenPos(new Vector2(iconXPos, iconYPos));
-        ImGui.PushStyleColor(ImGuiCol.Text, textDisabledColor);
+        ImGui.PushStyleColor(ImGuiCol.Text, textColor);
         ImGuiEx.Icon(isExpanded ? FontAwesomeIcon.CaretSquareDown : FontAwesomeIcon.CaretSquareRight);
         ImGui.PopStyleColor();
 

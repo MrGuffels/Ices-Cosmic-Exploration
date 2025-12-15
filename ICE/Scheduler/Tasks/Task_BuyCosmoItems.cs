@@ -70,6 +70,7 @@ namespace ICE.Scheduler.Tasks
                                 IceLogging.Debug($"Pathing to: {npcEntry.Name}");
 
                                 Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
+                                IceLogging.DestinationLogs.Log(randomPoint);
                                 P.Navmesh.PathfindAndMoveTo(randomPoint, false);
                             }
                         }

@@ -481,13 +481,23 @@ public sealed partial class ICE
 
         CosmicHelper.LoadMissionScores();
 
+        foreach (var entry in C.ScoreKeeper)
+        {
+            if (SheetMissionDict.TryGetValue(entry.Key, out var missionEntry) && missionEntry.ClassScore == 0)
+                missionEntry.ClassScore = entry.Value;
+        }
+
         foreach (var entry in SheetMissionDict)
         {
             var missionId = entry.Key;
 
-            if (MissionScoreDict.TryGetValue(missionId, out var score))
+            if (MissionScoreDict.TryGetValue(missionId, out var score) && score != 0)
             {
                 entry.Value.ClassScore = score;
+            }
+            else if (C.ScoreKeeper.TryGetValue(missionId, out var storedScore) && storedScore != 0)
+            {
+                entry.Value.ClassScore = storedScore;
             }
             else
             {

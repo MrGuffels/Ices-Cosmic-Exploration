@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Objects.SubKinds;
 using ECommons.GameHelpers;
+using ICE.Utilities.Cosmic_Helper;
 using Pictomancy;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace ICE.Ui.DebugWindowTabs
                         Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
                         if (ImGui.Button($"Path to random point##{npcEntry.Name}"))
                         {
+                            IceLogging.DestinationLogs.Log(randomPoint);
                             P.Navmesh.PathfindAndMoveTo(randomPoint, false);
                         }
 

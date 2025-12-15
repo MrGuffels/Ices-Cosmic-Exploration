@@ -82,6 +82,7 @@ namespace ICE.Config
         public bool ShowPhaennaMissions { get; set; } = true;
         public bool RemoveAfterGold { get; set; } = false;
         public bool ShowExtraMissionInfo { get; set; } = true;
+        public Dictionary<uint, uint> ScoreKeeper { get; set; } = new();
 
         #endregion
 
@@ -237,6 +238,9 @@ namespace ICE.Config
 
         public bool DisablePathfindingToRedAlert { get; set; } = false;
         public bool ShowDebugGatherInfo { get; set; } = false;
+        public string AuthorName { get; set; } = "Puni.sh Community";
+        public string CustomRoutePath { get; set; } = string.Empty;
+
 
         #endregion
 

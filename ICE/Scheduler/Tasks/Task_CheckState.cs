@@ -302,6 +302,8 @@ namespace ICE.Scheduler.Tasks
 
         private static unsafe bool RelicInfo(out bool isComplete, out int currentStage, out Dictionary<int, XPType> XPTable)
         {
+            var maxStage = CosmicHelper.MaxRelicLevel;
+
             string tag = "Relic Info Check";
             currentStage = 0; // Must initialize out parameters
             isComplete = false; // Must initialize out parameters
@@ -320,37 +322,64 @@ namespace ICE.Scheduler.Tasks
 
             currentStage = stage;
 
-            for (byte type = 1; type < 6; type++)
+            if (currentStage != maxStage)
             {
-                if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                for (byte type = 1; type < 6; type++)
                 {
-                    continue;
-                }
-
-                var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
-                var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
-
-                if (!XPTable.ContainsKey(type))
-                {
-                    XPTable[type] = new XPType()
+                    if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
                     {
-                        CurrentXP = currentXp,
-                        NeededXP = neededXP,
-                    };
+                        continue;
+                    }
+
+                    var neededXP = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
+                    var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
+
+                    if (!XPTable.ContainsKey(type))
+                    {
+                        XPTable[type] = new XPType()
+                        {
+                            CurrentXP = currentXp,
+                            NeededXP = neededXP,
+                        };
+                    }
+                }
+            }
+            else
+            {
+                // We're checking to make sure the max stage is completed
+                for (byte type = 1; type < 6; type++)
+                {
+                    if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                    {
+                        continue;
+                    }
+
+                    var maxXP = wksManager->ResearchModule->GetMaxAnalysis(toolClassId, type);
+                    var currentXp = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
+
+
+                    if (!XPTable.ContainsKey(type))
+                    {
+                        XPTable[type] = new XPType()
+                        {
+                            CurrentXP = currentXp,
+                            NeededXP = maxXP,
+                        };
+                    }
                 }
             }
 
-            for (int i = 0; i < XPTable.Count; i++)
-            {
-                var bar = XPTable[i + 1];
-                IceLogging.Debug($"Checking: [{i+1}] Current: {bar.CurrentXP} | Needed: {bar.NeededXP}", tag);
-                if (bar.CurrentXP < bar.NeededXP)
+                for (int i = 0; i < XPTable.Count; i++)
                 {
-                    IceLogging.Debug($"We're missing XP, so going to change this to false");
-                    isComplete = false;
-                    return false;
+                    var bar = XPTable[i + 1];
+                    IceLogging.Debug($"Checking: [{i+1}] Current: {bar.CurrentXP} | Needed: {bar.NeededXP}", tag);
+                    if (bar.CurrentXP < bar.NeededXP)
+                    {
+                        IceLogging.Debug($"We're missing XP, so going to change this to false");
+                        isComplete = false;
+                        return false;
+                    }
                 }
-            }
 
             isComplete = true;
             return true;

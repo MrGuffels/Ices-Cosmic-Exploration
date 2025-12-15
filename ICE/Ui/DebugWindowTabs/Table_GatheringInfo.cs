@@ -90,6 +90,7 @@ namespace ICE.Ui.DebugWindowTabs
                                 if (P.Navmesh.IsReady())
                                 {
                                     var missionInfo = entry.Value;
+                                    IceLogging.DestinationLogs.Log(critical.RawLocation);
                                     P.Navmesh.PathfindAndMoveTo(critical.RawLocation, false);
                                 }
                                 else

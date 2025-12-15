@@ -20,7 +20,6 @@ public static partial class GatheringUtil
     public static Dictionary<uint, FishingTools> FishingPreset = new()
     {
         // D Rank
-
         // Export for Mission [451] -  Lunch Emergency
         [451] = new FishingTools()
         {
@@ -904,7 +903,25 @@ public static partial class GatheringUtil
             },
         },
         [543] = new FishingTools { },
-        [544] = new FishingTools { },
+        [544] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1WS2/jOAz+K4XONuD365Zm206B9IE6gzkUe1AsOhaqWBlJbidb5L8vZFuJnSYNdlAs9rA3m6Q+fqQoku9o0ig+xVLJablE2Tu6qvGCwYQxlCnRgIW0ckZr2CuJUd0SlHlJaqFHQbmgaoMy10K38upXwRoCZC/W9tsO647zotJg7Yenv1qcKLHQzXpeCZAVZwRlruOMkD+HbjHSeHTCOUtmWjWrE4EFrhOcYWRAOGNQKBNJ4Dru0Mw7z4ILQjEzAJEbjACC3uyayupqA3LgKDxgGIYjhpHJOX6BvKKlusS05akF0ghyhYsXibKwz2KUfMQdoqY96iNWFOoCBnyiw3PROGOeOSroXzDFqqsE4/XwtHeQb78/Pa8wo/hFXuNXLjTASGDC8a2x/AkK/goCZa5OkvEZjDyYhF3S5Q1etZFN6iUDIQ2qvk2CMj92gg90R1DJdmuhq19K4P5l6VTPef6G17e1aqiivL7BtDYJsF0LzRoBdyAlXgLKELLQfUsC3fMakNUhbNaAMp2JI3gzLtVv4z0KkHCcIbLRCX3nsdXv+eRrKJTAbNoIAbX6oigPUL8s1qNsP0R81Htr1RVIrvhaP1BaL3MF67YT7rn3RTQRX0N5CPeR6RtdLTBV15Qx+Yn+qanlQ2MQvtf0ZwOaGQrCNCj9yLNx5IV2EJDETtPYtf3S8RzPcZ3YSdDWQjMq1UOpWUqUPXcFrlOw6wdhGkWno7xSFVCxkReXmDGNd8/FCrNvnL9oBNNdfgBu/7Vcgtp16hIzCVbfuXulDs/08F7UJTBwY921DGauBK8H4+78cccfHJ/BEmqCxeYLeLXAf/BmwQ4j7Sy8KN0Z7GmfNDlGbWg1F3R9ylMcev7O5JSvkdEn3no7/SwmpQIxxc2yUjO60gPI7RSH76VdNRrRTTj9MWjlXdMN048z+ZPxqvcC06lMXT3Bz4YKILnCqtFTTy8eJ4rtTPH80xr5/87/nTs3HW7Km1oNz1nooWab7xJ+VFDf83YDnbxiyvRbNQ900AlxGHiR6yQ2JpDYASx8O40KYpeJ5xWJS4qSBGj7p2mF/Wr7vBN03fD5HR20xSA83RbvOK8ZXVbq4pFBwUdzwP0su7cEakULzHRKtbPOYLLSWRiadZ35IKf+eHNMtKdGlLiAnOnmteMenlnSwq2F/jM7fr7GAsqGfcM1MSz06hYe4zEqmz5hvtXe3S2Z82kFxcvu+gb7vTNaU357wOdveK0lrfv2qoZTux/T+rMT782OPathES88lyycxC7D0rGDwHXslMShDU6JiyQqMURuW8QdrinDRmEF5KKt3BGe74ZeUSbEToMitoPAj+3EA2yHZRxjl0DiFRht/wa46t9DWg4AAA==",
+            },
+            AmountRequired = 3,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Moonlight Pleco"] = new List<uint>()
+                {
+                    45945,
+                },
+            },
+        },
 
         #endregion
 

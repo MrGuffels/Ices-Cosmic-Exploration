@@ -1,0 +1,113 @@
+zone_id: 1237
+zone_name: Sinus Ardorum
+job: MIN
+flag:
+  x: -463
+  y: -729
+author: Ice
+date_modified: 2025-12-14T02:04:36.3068689Z
+nodes:
+- node_id: 35056
+  position:
+    x: -419.94
+    y: 66.8
+    z: -692.3
+  land_zone:
+    x: -420.66
+    y: 65.99
+    z: -690.31
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35055
+  position:
+    x: -428.39
+    y: 67.89
+    z: -704.01
+  land_zone:
+    x: -429.45
+    y: 67.01
+    z: -702.27
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35054
+  position:
+    x: -447.28
+    y: 68.51
+    z: -707.15
+  land_zone:
+    x: -445.43
+    y: 67.66
+    z: -707.8
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35053
+  position:
+    x: -461.66
+    y: 69.71
+    z: -713.83
+  land_zone:
+    x: -462.73
+    y: 68.9
+    z: -712.48
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35052
+  position:
+    x: -462.91
+    y: 71.27
+    z: -731.6
+  land_zone:
+    x: -464.34
+    y: 70.41
+    z: -730.15
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35051
+  position:
+    x: -467.54
+    y: 73.48
+    z: -747.74
+  land_zone:
+    x: -469.22
+    y: 72.59
+    z: -747.28
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35050
+  position:
+    x: -469.04
+    y: 76.77
+    z: -770.29
+  land_zone:
+    x: -470.74
+    y: 76.04
+    z: -769.39
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35049
+  position:
+    x: -492.64
+    y: 78.8
+    z: -777
+  land_zone:
+    x: -492.14
+    y: 77.9
+    z: -775
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5

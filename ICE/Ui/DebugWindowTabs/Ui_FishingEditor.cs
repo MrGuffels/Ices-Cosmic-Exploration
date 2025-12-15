@@ -2,6 +2,7 @@
 using ECommons.Automation;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
@@ -409,6 +410,7 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 if (EzThrottler.Throttle("Starting Test Navmesh"))
                 {
+                    IceLogging.DestinationLogs.Log(moveTo);
                     P.Navmesh.PathfindAndMoveTo(moveTo, false);
                 }
                 return false;

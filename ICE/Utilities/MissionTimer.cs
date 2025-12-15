@@ -136,25 +136,11 @@ public class MissionTimer
 
     public static class MissionStatsCalculator
     {
-        public static double CalculateScorePerHour(double averageTimeSeconds, uint baseScore, double multiplier)
+        public static double CalculateCurrencyPerMinute(double averageTimeSeconds, uint baseScore, double multiplier)
         {
             if (averageTimeSeconds <= 0) return 0;
 
-            double hoursPerCompletion = averageTimeSeconds / 3600.0;
-            double completionsPerHour = 1.0 / hoursPerCompletion;
-            double scorePerCompletion = baseScore * multiplier;
-
-            return completionsPerHour * scorePerCompletion;
-        }
-        public static double CalculateScorePerMinute(double averageTimeSeconds, uint baseScore, double multiplier)
-        {
-            if (averageTimeSeconds <= 0) return 0;
-
-            double hoursPerCompletion = averageTimeSeconds / 60.0;
-            double completionsPerHour = 1.0 / hoursPerCompletion;
-            double scorePerCompletion = baseScore * multiplier;
-
-            return completionsPerHour * scorePerCompletion;
+            return (60.0 * baseScore * multiplier) / averageTimeSeconds;
         }
         public static double CalculateAverageSequenceScorePerMinute(uint id, int multiplier)
         {

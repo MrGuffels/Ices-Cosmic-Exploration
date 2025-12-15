@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Sounds;
 using ICE.Ui;
@@ -13,6 +14,9 @@ namespace ICE.Scheduler.Tasks
     {
         public static uint PreviousMissionId = 0;
         private static bool PathfoundToRed = false;
+        private static int PreviousScore = 0;
+        private static bool HasInteracted = false;
+        private static int TickRate = 0;
 
         public static void Enqueue()
         {
@@ -30,6 +34,7 @@ namespace ICE.Scheduler.Tasks
             if (id == 0)
             {
                 PathfoundToRed = false;
+                HasInteracted = false;
 
                 // Complete the timer and get duration
                 var duration = P.MissionTimer.CompleteMission();
@@ -46,6 +51,7 @@ namespace ICE.Scheduler.Tasks
                     P.AutoHook.DeleteAllAnonymousPresets();
                 }
 
+                UpdateScoreInfo();
                 Mission_Settings.TurninState = TurninState.None;
 
                 if (Mission_Settings.StopAfterCurrent)
@@ -65,6 +71,9 @@ namespace ICE.Scheduler.Tasks
             {
                 var critical = CosmicHelper.SheetMissionDict[id].Attributes.HasFlag(MissionAttributes.Critical);
                 PreviousMissionId = id;
+
+                if (EzThrottler.Throttle("Checking for previous score"))
+                    PreviousScore = ScoreCheck();
 
                 if (critical)
                 {
@@ -86,12 +95,31 @@ namespace ICE.Scheduler.Tasks
                                 return false;
                             }
 
-                            if (!Player.IsBusy)
+                            if (!HasInteracted)
                             {
-                                if (EzThrottler.Throttle("Turning into colleciton point", 6000))
+                                if (Svc.Condition[ConditionFlag.OccupiedInQuestEvent] || Svc.Condition[ConditionFlag.OccupiedInEvent])
                                 {
-                                    Utils.TargetgameObject(collectionPoint);
-                                    Utils.InteractWithObject(collectionPoint);
+                                    HasInteracted = true;
+                                }
+                                else
+                                {
+                                    if (EzThrottler.Throttle("Interacting with thing", 500))
+                                    {
+                                        Utils.TargetgameObject(collectionPoint);
+                                        Utils.InteractWithObject(collectionPoint);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (EzThrottler.Throttle("Telling it to wait this much before turning it off", 6000))
+                                {
+                                    TickRate += 1;
+                                }
+                                if (TickRate > 1)
+                                {
+                                    TickRate = 0;
+                                    HasInteracted = false;
                                 }
                             }
                         }
@@ -113,6 +141,7 @@ namespace ICE.Scheduler.Tasks
                                         if (EzThrottler.Throttle("Telling navmesh to move to the spot"))
                                         {
                                             IceLogging.Debug("We're not close enough to the turnin point to find out where one's at. So going to the location where it might be at");
+                                            IceLogging.DestinationLogs.Log(location.RawLocation);
                                             P.Navmesh.PathfindAndMoveTo(location.RawLocation, false);
                                         }
                                     }
@@ -143,6 +172,7 @@ namespace ICE.Scheduler.Tasks
                                         if (!PathfoundToRed)
                                         {
                                             P.Navmesh.Stop();
+                                            IceLogging.DestinationLogs.Log(collectionPoint.Position);
                                             P.Navmesh.PathfindAndMoveTo(collectionPoint.Position, false);
                                             PathfoundToRed = true;
                                         }
@@ -277,6 +307,40 @@ namespace ICE.Scheduler.Tasks
         {
             Svc.Commands.ProcessCommand(command);
             return true;
+        }
+
+        public static unsafe int ScoreCheck()
+        {
+            var wksManager = WKSManager.Instance();
+            if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
+                return 0;
+
+            var scores = wksManager->Scores;
+            return scores[(int)Player.JobId - 8];
+        }
+
+        public static void UpdateScoreInfo()
+        {
+            var multiplier = 1;
+            var turnin = Mission_Settings.TurninState;
+            if (turnin == TurninState.Gold)
+                multiplier = 5;
+            else if (turnin == TurninState.Silver)
+                multiplier = 4;
+
+            var scoreDifference = (ScoreCheck() - PreviousScore);
+            if (scoreDifference != 0)
+            {
+                scoreDifference = scoreDifference / multiplier;
+                IceLogging.Debug($"Base Mission score is: {scoreDifference}");
+                C.ScoreKeeper[PreviousMissionId] = (uint)scoreDifference;
+
+                if (CosmicHelper.SheetMissionDict.TryGetValue(PreviousMissionId, out var missionInfo))
+                {
+                    missionInfo.ClassScore = (uint)scoreDifference;
+                }
+                C.Save();
+            }
         }
     }
 }

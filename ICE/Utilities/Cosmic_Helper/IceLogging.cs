@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ECommons.GameHelpers;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace ICE.Utilities.Cosmic_Helper;
@@ -159,6 +160,36 @@ internal static class IceLogging
             Level = level;
             Message = message;
             Category = category;
+        }
+    }
+
+    public class DestinationEntry
+    {
+        public DateTime Timestamp { get; set; }
+        public Vector3 PlayerStart { get; set; }
+        public Vector3 PlayerDestination { get; set; }
+        public float Distance { get; set; }
+
+        public DestinationEntry(Vector3 end)
+        {
+            Timestamp = DateTime.Now;
+            PlayerStart = Player.Position;
+            PlayerDestination = end;
+            Distance = Vector3.Distance(Player.Position, end);
+        }
+    }
+
+    public static class DestinationLogs
+    {
+        private static List<DestinationEntry> logs = new();
+        private static int maxDestinationCount = 3000;
+
+        public static IReadOnlyList<DestinationEntry> Logs => logs.AsReadOnly();
+        public static void Log(Vector3 end)
+        {
+            logs.Add(new DestinationEntry(end));
+            if (logs.Count > maxDestinationCount)
+                logs.RemoveAt(0);
         }
     }
 

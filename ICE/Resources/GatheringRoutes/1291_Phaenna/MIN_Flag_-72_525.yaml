@@ -1,0 +1,87 @@
+zone_id: 1291
+zone_name: Phaenna
+job: MIN
+flag:
+  x: -72
+  y: 525
+author: Puni.sh Community
+date_modified: 2025-12-14T02:04:36.3068689Z
+nodes:
+- node_id: 35337
+  position:
+    x: -64.8
+    y: 34.13
+    z: 475.99
+  land_zone:
+    x: -63.61
+    y: 33.61
+    z: 477.18
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35338
+  position:
+    x: -79.2
+    y: 34.77
+    z: 470.77
+  land_zone:
+    x: -78.73
+    y: 33.96
+    z: 471.71
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35335
+  position:
+    x: -122.09
+    y: 34.94
+    z: 525.76
+  land_zone:
+    x: -121.1
+    y: 33.82
+    z: 525.23
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35336
+  position:
+    x: -123.45
+    y: 34.98
+    z: 544.07
+  land_zone:
+    x: -122.88
+    y: 33.82
+    z: 542.84
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35333
+  position:
+    x: -32.31
+    y: 34.31
+    z: 575.29
+  land_zone:
+    x: -33.94
+    y: 33.91
+    z: 574.79
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35334
+  position:
+    x: -29.12
+    y: 34.71
+    z: 561.02
+  land_zone:
+    x: -30.5
+    y: 34.07
+    z: 561.93
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5

@@ -1,0 +1,69 @@
+zone_id: 1237
+zone_name: Sinus Ardorum
+job: BTN
+flag:
+  x: 188
+  y: -201
+author: Ice
+date_modified: 2025-12-14T02:04:36.3068689Z
+nodes:
+- node_id: 35225
+  position: &o0
+    x: 178.51
+    y: 28.34
+    z: -234.28
+  land_zone: *o0
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35226
+  position: &o1
+    x: 197.68
+    y: 31.66
+    z: -243.88
+  land_zone: *o1
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35230
+  position: &o2
+    x: 144.96
+    y: 22.66
+    z: -198.45
+  land_zone: *o2
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35229
+  position: &o3
+    x: 167.5
+    y: 24.01
+    z: -186.32
+  land_zone: *o3
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35228
+  position: &o4
+    x: 230.11
+    y: 26.8
+    z: -167.23
+  land_zone: *o4
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35227
+  position: &o5
+    x: 234.4
+    y: 27.38
+    z: -175.04
+  land_zone: *o5
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5

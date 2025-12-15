@@ -18,7 +18,7 @@ namespace ICE.Utilities.Cosmic
             489, 490, 491, 492, 493, 494, 495,
             // 508,509, // Dual Craft (A Rank)
             511, 510, // Dual Craft (Ex+ Rank)
-            543, 544,
+            543,
 
             1003, 
             // 1004, 1005, 

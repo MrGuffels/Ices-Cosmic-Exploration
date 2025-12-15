@@ -82,8 +82,8 @@ internal class DebugWindow : Window
                     selectedDebugIndex = i;
                 }
             }
-            ImGui.EndChild();
         }
+        ImGui.EndChild();
 
         ImGui.SameLine(0, spacing);
 

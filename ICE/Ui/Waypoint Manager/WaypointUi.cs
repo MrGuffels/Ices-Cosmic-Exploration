@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface;
 using ECommons.GameHelpers;
+using ICE.Utilities.Cosmic_Helper;
 
 namespace ICE.Ui.Waypoint_Manager;
 
@@ -92,6 +93,7 @@ public static class WaypointUi
             {
                 Vector3[] waypoints = _currentPathFile.Waypoints.Select(wp => wp.ToVector3()).ToArray();
 
+                IceLogging.DestinationLogs.Log(waypoints.Last());
                 P.Navmesh.MoveTo(new System.Collections.Generic.List<Vector3>(waypoints), false);
             }
         }
