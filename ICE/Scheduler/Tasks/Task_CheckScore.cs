@@ -33,10 +33,10 @@ namespace ICE.Scheduler.Tasks
             }
             else if (CosmicHelper.GatheringJobList.Overlaps(jobs))
             {
-                var jobId = Player.JobId;
+                var jobId = Player.Job;
 
                 IceLogging.Info($"Currently on a gathering job {jobId}");
-                if (jobId == 18)
+                if (jobId == (Job)18)
                 {
                     P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Fish);
                     P.TaskManager.Enqueue(() => Fish(), "Checking fishing missions for score");

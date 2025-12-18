@@ -14,7 +14,7 @@ namespace ICE.Scheduler.Tasks
         {
             if (PlayerHelper.NeedsRepair(C.RepairPercent))
             {
-                var currentJob = Player.JobId;
+                var currentJob = (uint)Player.Job;
 
                 if ((C.SelfRepairGather && CosmicHelper.GatheringJobList.Contains(currentJob)) || (C.SelfRepairCrafter && CosmicHelper.CrafterJobList.Contains(currentJob)))
                 {
@@ -58,7 +58,7 @@ namespace ICE.Scheduler.Tasks
         public static unsafe bool? PathToRepair()
         {
             var zoneId = Player.Territory;
-            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
+            var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
 
             if (EzThrottler.Throttle("Log Throttle for repair", 2000))
             {
@@ -102,7 +102,7 @@ namespace ICE.Scheduler.Tasks
         public static unsafe bool? RepairAtNpc()
         {
             var zoneId = Player.Territory;
-            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
+            var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
 
             IGameObject? gameObject = null;
             Utils.TryGetObjectByDataId(npcEntry.NpcId, out gameObject);

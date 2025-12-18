@@ -122,7 +122,7 @@ namespace ICE.Scheduler.Tasks
             SpecialMissionCount = 0;
             BasicMissionCount = 0;
 
-            uint currentJobId = Player.JobId;
+            uint currentJobId = (uint)Player.Job;
 
             foreach (var mission in C.MissionConfig)
             {
@@ -145,7 +145,7 @@ namespace ICE.Scheduler.Tasks
                         continue;
 
                     // Territory Check, cause people seem to also be forgetting this
-                    if (missionInfo.TerritoryId != Player.Territory)
+                    if (missionInfo.TerritoryId != Player.Territory.RowId)
                         continue;
 
                     // Alright, mission was double checked to make sure it was enabled
@@ -470,7 +470,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         IceLogging.Debug($"Only relic grind was enabled. Continuing to re-roll mission now");
                         HashSet<uint> EnabledMissions = new();
-                        foreach (var mission in C.MissionConfig.Where(x => x.Value.Enabled && SheetMissionDict[x.Key].Jobs.Contains(Player.JobId)))
+                        foreach (var mission in C.MissionConfig.Where(x => x.Value.Enabled && SheetMissionDict[x.Key].Jobs.Contains((uint)Player.Job)))
                         {
                             EnabledMissions.Add(mission.Key);
                         }
@@ -515,7 +515,7 @@ namespace ICE.Scheduler.Tasks
                 if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                     return null;
 
-                var job = Player.JobId;
+                var job = (uint)Player.Job;
                 var toolClassId = (byte)(job - 7);
                 var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
                 var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
@@ -720,7 +720,7 @@ namespace ICE.Scheduler.Tasks
 
                     if (C.MissionConfig.TryGetValue(m.Key, out var config) && config.Enabled)
                     {
-                        if (m.Value.TerritoryId != Player.Territory)
+                        if (m.Value.TerritoryId != Player.Territory.RowId)
                         {
                             IceLogging.Debug($"Skipping: [{m.Key}] due to being in a different zone");
                             IceLogging.Debug($"Current Zone: {Player.Territory} | Mission Zone: {m.Value.TerritoryId}");
@@ -1097,7 +1097,7 @@ namespace ICE.Scheduler.Tasks
 
             var missionEntry = CosmicHelper.SheetMissionDict[missionId];
             var missionConfig = C.MissionConfig[missionId];
-            var currentJob = Player.JobId;
+            var currentJob = (uint)Player.Job;
 
             if (!missionEntry.Jobs.Contains(currentJob))
             {
@@ -1365,7 +1365,7 @@ namespace ICE.Scheduler.Tasks
         private static bool? ChangeJob(uint missionId)
         {
             var jobId = CosmicHelper.SheetMissionDict[missionId].Jobs.First();
-            if (Player.JobId == jobId)
+            if ((uint)Player.Job == jobId)
                 return true;
             else
             {

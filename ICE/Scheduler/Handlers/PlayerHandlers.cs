@@ -245,7 +245,7 @@ internal static unsafe class PlayerHandlers
         var territoryId = Player.Territory;
 
         // Select the appropriate map based on territoryId
-        Dictionary<int, List<TimedInfo>> selectedMap = territoryId switch
+        Dictionary<int, List<TimedInfo>> selectedMap = territoryId.RowId switch
         {
             // Add your actual territory IDs here
             1291 => PhaennaMapV2,

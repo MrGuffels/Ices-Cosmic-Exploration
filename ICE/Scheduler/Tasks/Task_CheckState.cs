@@ -227,7 +227,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    var currentJob = Player.JobId;
+                    var currentJob = (uint)Player.Job;
 
                     bool repairVendor = C.RepairAtVendor && PlayerHelper.NeedsRepair(C.RepairPercent);
                     bool selfRepairCraft = C.SelfRepairCrafter && PlayerHelper.NeedsRepair(C.RepairPercent) && CosmicHelper.CrafterJobList.Contains(currentJob);
@@ -315,7 +315,7 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
 
-            var job = Player.JobId;
+            var job = (uint)Player.Job;
             var toolClassId = (byte)(job - 7);
             var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
             var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];

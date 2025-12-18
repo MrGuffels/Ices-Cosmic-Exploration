@@ -18,8 +18,6 @@ namespace ICE.Utilities
         {
             Food = Svc.Data.GetExcelSheet<Item>().Where(IsGatherFood).Select(x => (x.RowId, x.Name.ToString())).ToArray();
             // Pots = Svc.Data.GetExcelSheet<Item>().Where(IsCraftersPot).Select(x => (x.RowId, x.Name.ToString())).ToArray();
-            Manuals = Svc.Data.GetExcelSheet<Item>().Where(IsManual).Select(x => (x.RowId, x.Name.ToString())).ToArray();
-            SquadronManuals = Svc.Data.GetExcelSheet<Item>().Where(IsSquadronManual).Select(x => (x.RowId, x.Name.ToString())).ToArray();
         }
 
         internal static ItemFood? GetItemConsumableProperties(Item item, bool hq)
@@ -39,26 +37,6 @@ namespace ICE.Utilities
                 return false; // not a 'meal'
             var consumable = GetItemConsumableProperties(item, false);
             return consumable != null && consumable.Value.Params.Any(p => p.BaseParam.RowId is 10 or 72 or 73); // gp/gathering/perception
-        }
-
-        internal static bool IsManual(Item item)
-        {
-            if (item.ItemUICategory.RowId != 63)
-                return false; // not 'other'
-            if (!item.ItemAction.IsValid)
-                return false;
-            var action = item.ItemAction.Value;
-            return action.Type == 816 && action.Data[0] is 300 or 301 or 1751 or 5329;
-        }
-
-        internal static bool IsSquadronManual(Item item)
-        {
-            if (item.ItemUICategory.RowId != 63)
-                return false; // not 'other'
-            if (!item.ItemAction.IsValid)
-                return false;
-            var action = item.ItemAction.Value;
-            return action.Type == 816 && action.Data[0] is 2291 or 2292 or 2293 or 2294;
         }
     }
 }

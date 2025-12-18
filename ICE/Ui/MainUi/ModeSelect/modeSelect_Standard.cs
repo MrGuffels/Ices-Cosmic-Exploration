@@ -117,7 +117,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.EndPopup();
                 }
 
-                uint currentJobId = Player.JobId;
+                uint currentJobId = (uint)Player.Job;
                 bool usingSupportedJob = CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId);
 
                 ImGui.SameLine(0, 10 * scale);

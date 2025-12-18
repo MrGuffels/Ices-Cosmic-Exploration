@@ -54,8 +54,8 @@ public sealed partial class ICE
             if (!CosmicHelper.WeatherSelection.Contains(timeAndWeather))
             {
                 var timeSheet = Svc.Data.GetExcelSheet<WKSMissionLotterySpecialCond>().GetRow(timeAndWeather);
-                startTime = timeSheet.Unknown1; // Start Time
-                endTime = timeSheet.Unknown2; // End Time
+                startTime = timeSheet.StartTimeHour; // Start Time
+                endTime = timeSheet.EndTimeHour; // End Time
             }
             else
             {
@@ -378,33 +378,24 @@ public sealed partial class ICE
             // Something to note here, a mission can only have a max of 3 types of XP at a time.
             // Which is why there's only 3 entries.
 
-            uint Cosmo = ExpSheet.GetRow(keyId).Unknown0;
-            uint Lunar = ExpSheet.GetRow(keyId).Unknown1;
+            uint Cosmo = ExpSheet.GetRow(keyId).CosmoCredits;
+            uint Lunar = ExpSheet.GetRow(keyId).PlanetCredits;
             uint rewardItemId = 0;
             uint rewardItemAmount = 0;
 
-            if (ExpSheet.GetRow(keyId).Unknown2 != 0)
+            for (var i = 0; i < 3; i++)
             {
-                var xp1Kind = ExpSheet.GetRow(keyId).Unknown12;
-                var xp1Amount = ExpSheet.GetRow(keyId).Unknown2;
-                relicXp[xp1Kind] = xp1Amount;
+                var expKind = ExpSheet.GetRow(keyId).TypeIndex[i];
+                var expAmount = ExpSheet.GetRow(keyId).ResearchReward[i];
+
+                if (expKind != 0)
+                    relicXp[expKind] = expAmount;
             }
-            if (ExpSheet.GetRow(keyId).Unknown3 != 0)
+
+            if (ExpSheet.GetRow(keyId).ItemCount != 0)
             {
-                var xp2Kind = ExpSheet.GetRow(keyId).Unknown13;
-                var xp2Amount = ExpSheet.GetRow(keyId).Unknown3;
-                relicXp[xp2Kind] = xp2Amount;
-            }
-            if (ExpSheet.GetRow(keyId).Unknown4 != 0)
-            {
-                var xp3Kind = ExpSheet.GetRow(keyId).Unknown14;
-                var xp3Amount = ExpSheet.GetRow(keyId).Unknown4;
-                relicXp[xp3Kind] = xp3Amount;
-            }
-            if (ExpSheet.GetRow(keyId).Unknown15 != 0)
-            {
-                rewardItemId = ExpSheet.GetRow(keyId).Unknown15; // Column 15 | Item
-                rewardItemAmount = ExpSheet.GetRow(keyId).Unknown8;
+                rewardItemId = ExpSheet.GetRow(keyId).Item.RowId; // Column 15 | Item
+                rewardItemAmount = ExpSheet.GetRow(keyId).ItemCount;
             }
 
             if (!SheetMissionDict.ContainsKey(keyId))

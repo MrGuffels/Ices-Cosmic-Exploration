@@ -113,14 +113,14 @@ namespace ICE.Scheduler.Tasks
                     if (EzThrottler.Throttle("Closing Gathering Window"))
                         ECommons.Automation.Callback.Fire(gather, true, -1);
                 }
-                else if (Player.JobId == 18)
+                else if ((uint)Player.Job == 18)
                 {
                     StopFishing();
                 }
                 return false;
             }
 
-            if (Player.JobId != crafterJobId)
+            if ((uint)Player.Job != crafterJobId)
             {
                 if (EzThrottler.Throttle("Swapping to crafter job"))
                     GearsetHandler.TaskClassChange((Job)crafterJobId);
@@ -173,13 +173,13 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(() => GatheringInteraction(), "Interacting with the gathering node");
                 return true;
             }
-            else if (Player.JobId != gatheringJobId)
+            else if ((uint)Player.Job != gatheringJobId)
             {
                 if (EzThrottler.Throttle("Swapping to crafter job"))
                     GearsetHandler.TaskClassChange((Job)gatheringJobId);
                 return false;
             }
-            else if (Player.JobId == 16 || Player.JobId == 17)
+            else if ((uint)Player.Job == 16 || (uint)Player.Job == 17)
             {
                 bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent);
 
@@ -200,7 +200,7 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(() => Task_Gather.PathandCheckNode(), "Pathing to the gathering node");
                 return true;
             }
-            else if (Player.JobId == 18)
+            else if ((uint)Player.Job == 18)
             {
                 IceLogging.Info("We're on a fishing job, so going fishing.", handle);
                 bool selfRepairGather = C.SelfRepairGather && PlayerHelper.NeedsRepair(C.RepairPercent);
@@ -277,7 +277,7 @@ namespace ICE.Scheduler.Tasks
 
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;
             var collectorAction = GatheringUtil.GathCollectableActions;
-            var jobId = Player.JobId;
+            var jobId = (uint)Player.Job;
 
             if (P.Navmesh.IsRunning())
             {

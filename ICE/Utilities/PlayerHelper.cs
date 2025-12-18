@@ -20,7 +20,7 @@ public class PlayerHelper
 
     public static bool UsingSupportedJob()
     {
-        var jobId = Player.JobId;
+        var jobId = (uint)Player.Job;
         return jobId >= 8 || jobId <= 18;
     }
 

@@ -236,52 +236,52 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{rewardSheet.RowId}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown0}");
+                        ImGui.Text($"{rewardSheet.CosmoCredits}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown1}");
+                        ImGui.Text($"{rewardSheet.PlanetCredits}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown2}");
+                        ImGui.Text($"{rewardSheet.ResearchReward[0]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown3}");
+                        ImGui.Text($"{rewardSheet.ResearchReward[1]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown4}");
+                        ImGui.Text($"{rewardSheet.ResearchReward[2]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown8}");
+                        ImGui.Text($"{rewardSheet.ItemCount}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown9}");
+                        ImGui.Text($"{rewardSheet.Tool[0]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown10}");
+                        ImGui.Text($"{rewardSheet.Tool[1]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown11}");
+                        ImGui.Text($"{rewardSheet.Tool[2]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown12}");
+                        ImGui.Text($"{rewardSheet.ResearchReward[0]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown13}");
+                        ImGui.Text($"{rewardSheet.ResearchReward[1]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown14}");
+                        ImGui.Text($"{rewardSheet.ResearchReward[2]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown15}");
+                        ImGui.Text($"{rewardSheet.Item.RowId}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown16}");
+                        ImGui.Text($"{rewardSheet.ExpModifier[0]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown17}");
+                        ImGui.Text($"{rewardSheet.ExpModifier[0]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Unknown18}");
+                        ImGui.Text($"{rewardSheet.ExpModifier[0]}");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{rewardSheet.Unknown19}");

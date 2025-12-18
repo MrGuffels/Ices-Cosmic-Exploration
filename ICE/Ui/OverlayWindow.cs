@@ -152,7 +152,7 @@ namespace ICE.Ui
                 }
                 else
                 {
-                    var jobId = Player.JobId;
+                    var jobId = (uint)Player.Job;
                     if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
                     {
                         var imageSize = new Vector2(23, 23);
@@ -223,7 +223,7 @@ namespace ICE.Ui
 
             if (C.ShowExpBars)
             {
-                var currentJobId = Player.JobId;
+                var currentJobId = (uint)Player.Job;
 
                 bool showExp = (CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId));
 

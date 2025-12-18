@@ -122,7 +122,7 @@ namespace ICE.Scheduler.Tasks
         private static bool? PathToGambaNpc()
         {
             var zoneId = Player.Territory;
-            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault();
+            var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault();
 
             if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
             {
@@ -180,7 +180,7 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                var researchId = NpcData.MoonNpcs[Player.Territory].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault().NpcId;
+                var researchId = NpcData.MoonNpcs[Player.Territory.RowId].Where(x => x.type == NpcData.NpcType.Gamba).FirstOrDefault().NpcId;
 
                 Utils.TryGetObjectByDataId(researchId, out var researchNpc);
                 if (EzThrottler.Throttle("Interacting with gambaNpc!"))

@@ -8,7 +8,7 @@
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
 		<IsPackable>true</IsPackable>
 		<RootNamespace>ICE</RootNamespace>
-		<TargetFramework>net9.0-windows7.0</TargetFramework>
+		<TargetFramework>net10.0-windows8.0</TargetFramework>
 		<InformationalVersion>$([System.DateTime]::UtcNow.ToString("yyyy\-MM\-dd HH\:mm\:ss"))</InformationalVersion>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<NoWarn>CS8618; CS8625; CS8629; </NoWarn>
@@ -44,6 +44,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="NAudio" Version="2.2.1" />
+		<PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />
 	</ItemGroup>
 
@@ -53,6 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Update="DalamudPackager" Version="13.1.0" />
+		<PackageReference Update="DalamudPackager" Version="14.0.0" />
+		<PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.39" />
 	</ItemGroup>
 </Project>

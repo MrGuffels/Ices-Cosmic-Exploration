@@ -25,7 +25,7 @@ namespace ICE.Scheduler.Tasks
         public static bool? PathToRelicNPC()
         {
             var zoneId = Player.Territory;
-            var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Relic).FirstOrDefault();
+            var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Relic).FirstOrDefault();
 
             if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
             {
@@ -90,7 +90,7 @@ namespace ICE.Scheduler.Tasks
                 }
             }
 
-            var researchId = NpcData.MoonNpcs[Player.Territory].Where(x => x.type == NpcData.NpcType.Relic).FirstOrDefault().NpcId;
+            var researchId = NpcData.MoonNpcs[Player.Territory.RowId].Where(x => x.type == NpcData.NpcType.Relic).FirstOrDefault().NpcId;
 
             Utils.TryGetObjectByDataId(researchId, out var researchNpc);
             if (EzThrottler.Throttle("Interacting with researchingway"))
@@ -136,7 +136,7 @@ namespace ICE.Scheduler.Tasks
             };
             foreach (var jobId in jobUnlocked)
             {
-                if (Player.GetUnsyncedLevel((Job)jobId.Key) == 0)
+                if (Player.GetLevel((Job)jobId.Key) == 0)
                     jobUnlocked[jobId.Key] = false;
             }
 
@@ -145,7 +145,7 @@ namespace ICE.Scheduler.Tasks
             uint selectedEntry = 0;
             foreach (var jobId in jobUnlocked)
             {
-                if (Player.JobId == jobId.Key)
+                if ((uint)Player.Job == jobId.Key)
                     break;
                 else
                 {
@@ -157,9 +157,9 @@ namespace ICE.Scheduler.Tasks
 
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var selectIconString) && selectIconString.IsAddonReady)
             {
-                if (EzThrottler.Throttle($"Selecting jobId: {Player.JobId}"))
+                if (EzThrottler.Throttle($"Selecting jobId: {(uint)Player.Job}"))
                 {
-                    IceLogging.Debug($"Selecting Entry: {selectedEntry} for job: {Player.JobId} to turnin relic");
+                    IceLogging.Debug($"Selecting Entry: {selectedEntry} for job: {(uint)Player.Job} to turnin relic");
                     selectIconString.Entries[selectedEntry].Select();
                 }
             }

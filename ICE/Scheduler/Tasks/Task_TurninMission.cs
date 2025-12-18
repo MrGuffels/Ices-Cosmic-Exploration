@@ -204,7 +204,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
                 {
-                    if (Player.JobId == 18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
+                    if ((uint)Player.Job == 18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
                     {
                         if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
                             Task_DualClass.StopFishing();
@@ -236,7 +236,7 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
-            if (Player.JobId != Mission_Settings.StartJob && Mission_Settings.StartJob != 0)
+            if (Player.Job != Mission_Settings.StartJob && Mission_Settings.StartJob != 0)
             {
                 if (EzThrottler.Throttle("Swapping to crafter job", 1000))
                     GearsetHandler.TaskClassChange((Job)Mission_Settings.StartJob);
@@ -316,7 +316,7 @@ namespace ICE.Scheduler.Tasks
                 return 0;
 
             var scores = wksManager->Scores;
-            return scores[(int)Player.JobId - 8];
+            return scores[(int)(uint)Player.Job - 8];
         }
 
         public static void UpdateScoreInfo()

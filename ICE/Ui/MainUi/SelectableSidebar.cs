@@ -143,9 +143,9 @@ namespace ICE.Ui.MainUi
                         ImGui.SetTooltip("Phaenna");
                     }
                 }
-                if (C.AutoPickCurrentJob && (CosmicHelper.CrafterJobList.Contains(Player.JobId) || CosmicHelper.GatheringJobList.Contains(Player.JobId)) && C.SelectedJob != Player.JobId)
+                if (C.AutoPickCurrentJob && (CosmicHelper.CrafterJobList.Contains((uint)Player.Job) || CosmicHelper.GatheringJobList.Contains((uint)Player.Job)) && C.SelectedJob != (uint)Player.Job)
                 {
-                    C.SelectedJob = Player.JobId;
+                    C.SelectedJob = (uint)Player.Job;
                     C.Save();
                 }
                 if (ImGui_Tools.DrawCategoryHeader_AutoSize("Class Selection", imageTexture: GreyscaleJob()))

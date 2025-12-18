@@ -120,7 +120,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Trying To Turnin/Abandon", 1000))
 
-                    if (Player.JobId == 18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
+                    if (Player.Job == (Job)18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
                     {
                         if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
                             Task_DualClass.StopFishing();

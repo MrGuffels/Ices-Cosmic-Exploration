@@ -27,7 +27,7 @@ namespace ICE.Scheduler.Tasks
 
         private static bool? PathToCreditVendor()
         {
-            var zoneId = Player.Territory;
+            var zoneId = Player.Territory.RowId;
             var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Credit).FirstOrDefault();
 
             if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
@@ -93,7 +93,7 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                var researchId = NpcData.MoonNpcs[Player.Territory].Where(x => x.type == NpcData.NpcType.Credit).FirstOrDefault().NpcId;
+                var researchId = NpcData.MoonNpcs[Player.Territory.RowId].Where(x => x.type == NpcData.NpcType.Credit).FirstOrDefault().NpcId;
 
                 Utils.TryGetObjectByDataId(researchId, out var researchNpc);
                 if (EzThrottler.Throttle("Interacting with researchingway"))

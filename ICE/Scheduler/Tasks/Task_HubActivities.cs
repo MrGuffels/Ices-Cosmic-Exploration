@@ -57,7 +57,7 @@ namespace ICE.Scheduler
 
         public static bool? RegisterCraftingPosition()
         {
-            if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
+            if (CosmicHelper.CrafterJobList.Contains((uint)Player.Job))
                 craftingSpot = Player.Position;
 
             return true;
@@ -65,7 +65,7 @@ namespace ICE.Scheduler
 
         public static bool? PathBackToCraftingSpot()
         {
-            if (CosmicHelper.CrafterJobList.Contains(Player.JobId))
+            if (CosmicHelper.CrafterJobList.Contains((uint)Player.Job))
             {
                 if (craftingSpot != Vector3.Zero)
                 {
@@ -120,7 +120,7 @@ namespace ICE.Scheduler
             }
             else
             {
-                IceLogging.Info($"We're not on a crafting job. (Allegedly) which means that we don't need to path back | Player Job: {Player.JobId}");
+                IceLogging.Info($"We're not on a crafting job. (Allegedly) which means that we don't need to path back | Player Job: {(uint)Player.Job}");
                 return true;
             }
         }

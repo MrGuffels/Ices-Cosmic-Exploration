@@ -11,9 +11,9 @@ namespace ICE.Ui.DebugWindowTabs
             if (ImGui.BeginTable($"WKSMission Time Sheet", 4, ImGuiTableFlags.SizingFixedFit))
             {
                 ImGui.TableSetupColumn("Key");
-                ImGui.TableSetupColumn("Unknown 0");
-                ImGui.TableSetupColumn("Unknown 1");
-                ImGui.TableSetupColumn("Unknown 2");
+                ImGui.TableSetupColumn("Weather Required");
+                ImGui.TableSetupColumn("Start Hour");
+                ImGui.TableSetupColumn("End Hour");
 
                 ImGui.TableHeadersRow();
 
@@ -25,13 +25,13 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"{entry.RowId}");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Unknown0}");
+                    ImGui.Text($"{entry.WeatherRequired}"); // Unknown 0
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Unknown1}");
+                    ImGui.Text($"{entry.StartTimeHour}"); // Unknown 1
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.Unknown2}");
+                    ImGui.Text($"{entry.EndTimeHour}"); // Unknown 2
 
                 }
 

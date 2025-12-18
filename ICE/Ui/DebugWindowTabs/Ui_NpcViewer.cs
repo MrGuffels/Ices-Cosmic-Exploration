@@ -16,7 +16,7 @@ namespace ICE.Ui.DebugWindowTabs
         public static void Draw()
         {
             var territoryid = Player.Territory;
-            var moonNpcs = NpcData.MoonNpcs[territoryid];
+            var moonNpcs = NpcData.MoonNpcs[territoryid.RowId];
             ImGui.Text($"Territory Id: {territoryid}");
             ImGui.Text($"Valid Moon NPC Info: {moonNpcs != null}");
             if (moonNpcs != null)

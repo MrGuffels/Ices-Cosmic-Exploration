@@ -25,7 +25,7 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.SetClipboardText($"{Player.Position.X:N2}f, {Player.Position.Y:N2}f, {Player.Position.Z:N2}f");
             }
             ImGui.Text($"Job: {Player.Job}");
-            ImGui.Text($"JobId: {Player.JobId}");
+            ImGui.Text($"JobId: {(uint)Player.Job}");
             ImGui.Text($"Current Territory/ZoneId: {Player.Territory}");
             if (Svc.Targets.Target != null)
             {

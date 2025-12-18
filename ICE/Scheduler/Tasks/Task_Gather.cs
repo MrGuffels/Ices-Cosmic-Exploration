@@ -55,7 +55,7 @@ namespace ICE.Scheduler.Tasks
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
             var missionFlag = missionEntry.MapPosition;
-            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId, missionFlag);
+            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId.RowId, missionFlag);
 
             if (gatherInfo != null)
             {
@@ -130,7 +130,7 @@ namespace ICE.Scheduler.Tasks
             var zoneId = Player.Territory;
             var missionEntry = CosmicHelper.CurrentMissionInfo;
             var missionFlag = missionEntry.MapPosition;
-            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId, missionFlag);
+            var gatherInfo = GatheringRouteLoader.GetRoute(zoneId.RowId, missionFlag);
 
             var location = gatherInfo[Mission_Settings.nodeCounter];
             if (!Task_NavmeshMove.NavToDestination(location.LandZone, distance: 1))
@@ -207,7 +207,7 @@ namespace ICE.Scheduler.Tasks
 
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;
             var collectorAction = GatheringUtil.GathCollectableActions;
-            var jobId = Player.JobId;
+            var jobId = (uint)Player.Job;
 
             if (P.Navmesh.IsRunning())
             {
@@ -447,7 +447,7 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (EzThrottler.Throttle($"Using Gathering Action: {ActionName}", 100))
                         {
-                            uint jobId = Player.JobId;
+                            uint jobId = (uint)Player.Job;
 
                             IceLogging.Debug($"Using the following action: {ActionName} to gain some collectability from the node", debugOnly: true);
                             var actionId = GatheringUtil.GathActionDict[ActionName].ClassAction[jobId].ActionId;
@@ -470,7 +470,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle($"Using Gathering Action: {"FieldMasteryTemp"}", 100))
                     {
-                        uint jobId = Player.JobId;
+                        uint jobId = (uint)Player.Job;
 
                         IceLogging.Debug($"Using the following action: {"FieldMasteryTemp"} to gain some collectability from the node", debugOnly: true);
                         var actionId = GatheringUtil.GathActionDict["FieldMasteryTemp"].ClassAction[jobId].ActionId;
@@ -490,7 +490,7 @@ namespace ICE.Scheduler.Tasks
                     var actionInfo = GatheringUtil.GathActionDict[action];
                     if (EzThrottler.Throttle($"Using Gathering Action: {action}"))
                     {
-                        uint jobId = Player.JobId;
+                        uint jobId = (uint)Player.Job;
 
                         IceLogging.Debug($"Using the following action: {action} on the node", debugOnly: true);
                         var actionId = GatheringUtil.GathActionDict[action].ClassAction[jobId].ActionId;
@@ -723,7 +723,7 @@ namespace ICE.Scheduler.Tasks
         public static unsafe void UseCollectableBuff(string action)
         {
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;
-            var jobId = Player.JobId;
+            var jobId = (uint)Player.Job;
 
             var actionId = collectorBuffs[action].ClassAction[jobId].ActionId;
             if (EzThrottler.Throttle("Using Action Buff", 100))
@@ -734,7 +734,7 @@ namespace ICE.Scheduler.Tasks
         public static unsafe void UseCollectableAction(string action)
         {
             var collectorAction = GatheringUtil.GathCollectableActions;
-            var jobId = Player.JobId;
+            var jobId = (uint)Player.Job;
 
             var actionId = collectorAction[action].ClassAction[jobId].ActionId;
             if (EzThrottler.Throttle("using Action Action for collectables", 100))

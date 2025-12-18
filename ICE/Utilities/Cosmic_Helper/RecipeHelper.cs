@@ -22,7 +22,7 @@ public static partial class CosmicHelper
         RecipeInfo info = new();
 
         Job CrafterJob = (Job)jobId;
-        var level = Player.GetUnsyncedLevel(CrafterJob);
+        var level = Player.GetLevel(CrafterJob);
         var recipeSheet = Svc.Data.GetExcelSheet<Recipe>().GetRow(recipeId);
         var recipeLevelValue = recipeSheet.RecipeLevelTable.RowId;
         var levelTable = recipeLevelValue == 0 && level < 100 ? Svc.Data.GetExcelSheet<RecipeLevelTable>().First(x => x.ClassJobLevel == level) : recipeSheet.RecipeLevelTable.Value;

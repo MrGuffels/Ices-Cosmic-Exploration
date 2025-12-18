@@ -11,7 +11,7 @@ public static class AddonHelper
     public static unsafe void OpenRecipeNote()
     {
         int[] basicCrafts = [1008, 1, 170, 663, 302, 464, 1101, 901];
-        uint recipeId = (uint)basicCrafts[Player.JobId-8];
+        uint recipeId = (uint)basicCrafts[(uint)Player.Job-8];
 
         AgentRecipeNote.Instance()->OpenRecipeByRecipeId(ExcelHelper.RecipeSheet.GetRow(recipeId).RowId);
     }

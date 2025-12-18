@@ -209,7 +209,7 @@ namespace ICE.Ui.DebugWindowTabs
                 if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
                     return 0;
 
-                var job = Player.JobId;
+                var job = (uint)Player.Job;
                 var toolClassId = (byte)(job - 7);
                 var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
                 var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];
