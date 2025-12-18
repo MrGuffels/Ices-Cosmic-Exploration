@@ -25,7 +25,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text($"{entry.RowId}");
 
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{entry.WeatherRequired}"); // Unknown 0
+                    ImGui.Text($"{entry.WeatherRequired.Value.Name}"); // Unknown 0
 
                     ImGui.TableNextColumn();
                     ImGui.Text($"{entry.StartTimeHour}"); // Unknown 1

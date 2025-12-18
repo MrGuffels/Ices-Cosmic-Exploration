@@ -254,13 +254,13 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{rewardSheet.ItemCount}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Tool[0]}");
+                        ImGui.Text($"{rewardSheet.Tool[0].Value.RowId}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Tool[1]}");
+                        ImGui.Text($"{rewardSheet.Tool[1].Value.RowId}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.Tool[2]}");
+                        ImGui.Text($"{rewardSheet.Tool[2].Value.RowId}");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{rewardSheet.ResearchReward[0]}");
@@ -278,10 +278,10 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text($"{rewardSheet.ExpModifier[0]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.ExpModifier[0]}");
+                        ImGui.Text($"{rewardSheet.ExpModifier[1]}");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{rewardSheet.ExpModifier[0]}");
+                        ImGui.Text($"{rewardSheet.ExpModifier[2]}");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{rewardSheet.Unknown19}");
