@@ -401,7 +401,7 @@ namespace ICE.Ui.DebugWindowTabs
 
             fileDialogManager.Draw();
 
-            using (var drawing = PictoService.Draw())
+            using (var drawing = PictoService.Draw(hints: Utils.GetPictoHints()))
             {
                 if (drawing == null)
                     return;

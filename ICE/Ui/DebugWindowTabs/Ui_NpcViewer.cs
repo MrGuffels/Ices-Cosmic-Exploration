@@ -32,7 +32,7 @@ namespace ICE.Ui.DebugWindowTabs
                             P.Navmesh.PathfindAndMoveTo(randomPoint, false);
                         }
 
-                        using (var drawList = PictoService.Draw())
+                        using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
                         {
                             drawList.AddQuadFilled(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, C.PictoColor_Circle);
                         }

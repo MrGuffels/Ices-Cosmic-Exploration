@@ -51,7 +51,7 @@ namespace ICE.Ui.DebugWindowTabs
                 }
             }
 
-            using (var drawList = PictoService.Draw())
+            using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
             {
                 int wpNumber = 0;
 
