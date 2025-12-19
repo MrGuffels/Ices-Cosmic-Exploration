@@ -27,6 +27,11 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.Text($"Job: {Player.Job}");
             ImGui.Text($"JobId: {(uint)Player.Job}");
             ImGui.Text($"Current Territory/ZoneId: {Player.Territory}");
+            if (PlayerHelper.IsInCosmicZone())
+            {
+                var currentMission = CosmicHelper.CurrentLunarMission;
+                ImGui.Text($"Current Mission: {currentMission}");
+            }
             if (Svc.Targets.Target != null)
             {
                 var currentTarget = Svc.Targets.Target;
