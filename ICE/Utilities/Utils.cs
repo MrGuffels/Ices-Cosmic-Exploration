@@ -10,6 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Utilities.Cosmic_Helper;
+using Pictomancy;
 using SharpDX.Direct3D11;
 using System;
 
@@ -198,4 +199,6 @@ public static unsafe class Utils
         if (EzThrottler.Throttle("Vnavmesh throttle message", 1000))
             IceLogging.Debug($"Navmesh isn't ready. % built is at: {P.Navmesh.BuildProgress}");
     }
+
+    public static PctDrawHints GetPictoHints() => new(clipNativeUI: !C.DisableHudClipping);
 }

@@ -241,6 +241,7 @@ namespace ICE.Config
         public bool ShowDebugGatherInfo { get; set; } = false;
         public string AuthorName { get; set; } = "Puni.sh Community";
         public string CustomRoutePath { get; set; } = string.Empty;
+        public bool DisableHudClipping { get; set; } = false;
 
 
         #endregion

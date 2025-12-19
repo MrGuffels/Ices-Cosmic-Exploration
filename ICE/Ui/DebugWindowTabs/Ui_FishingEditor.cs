@@ -282,7 +282,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                         uint holeNumber = 1;
 
-                        using (var drawList = PictoService.Draw())
+                        using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
                         {
                             if (viewAllFishingSpots)
                             {
