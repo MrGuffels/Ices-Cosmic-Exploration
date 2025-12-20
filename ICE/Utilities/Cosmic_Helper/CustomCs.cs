@@ -5,8 +5,11 @@ namespace ICE.Utilities;
 [StructLayout(LayoutKind.Explicit)]
 unsafe struct WKSManagerCustom
 {
-    [FieldOffset(0xC55)] public fixed byte MissionCompletionFlags[136];
-    [FieldOffset(0xCDD)] public fixed byte MissionGoldFlags[136];
+    [FieldOffset(0xC18)] public ushort CurrentMissionId;
+
+    [FieldOffset(0xC61)] public fixed byte MissionCompletionFlags[172];
+    [FieldOffset(0xD0D)] public fixed byte MissionGoldFlags[172];
+
 
     public bool IsMissionCompleted(uint missionUnitId)
     {

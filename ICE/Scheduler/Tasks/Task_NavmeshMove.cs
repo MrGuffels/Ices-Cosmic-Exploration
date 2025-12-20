@@ -12,9 +12,13 @@ namespace ICE.Scheduler.Tasks
         {
             bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
             bool mounted = Player.Mounted;
-            bool inMission = CosmicHelper.CurrentLunarMission == 0;
+            bool inMission = CosmicHelper.CurrentLunarMission != 0;
             float minMountDistance = C.MountRadius;
             float dismountDistance = C.DismountRadius;
+
+            bool useInMission = C.UseMountInMission && inMission;
+            bool useOutsideMission = C.UseMountOutsideMission && !inMission;
+            bool useMount = useInMission || useOutsideMission;
 
             if (!P.Navmesh.Installed)
             {
@@ -33,12 +37,7 @@ namespace ICE.Scheduler.Tasks
 
                 if (!mounted && Player.DistanceTo(pos) > minMountDistance)
                 {
-                    if (inMission && C.UseMountInMission)
-                    {
-                        if (EzThrottler.Throttle("Using mount"))
-                            Utils.MountAction();
-                    }
-                    else if (!inMission && C.UseMountOutsideMission)
+                    if (useMount)
                     {
                         if (EzThrottler.Throttle("Using mount"))
                             Utils.MountAction();
@@ -132,9 +131,13 @@ namespace ICE.Scheduler.Tasks
         {
             bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
             bool mounted = Player.Mounted;
-            bool inMission = CosmicHelper.CurrentLunarMission == 0;
+            bool inMission = CosmicHelper.CurrentLunarMission != 0;
             float minMountDistance = C.MountRadius;
             float dismountDistance = C.DismountRadius;
+
+            bool useInMission = C.UseMountInMission && inMission;
+            bool useOutsideMission = C.UseMountOutsideMission && !inMission;
+            bool useMount = useInMission || useOutsideMission;
 
             if (!P.Navmesh.Installed)
             {
@@ -153,12 +156,7 @@ namespace ICE.Scheduler.Tasks
 
                 if (!mounted && Player.DistanceTo(pos) > minMountDistance)
                 {
-                    if (inMission && C.UseMountInMission)
-                    {
-                        if (EzThrottler.Throttle("Using mount"))
-                            Utils.MountAction();
-                    }
-                    else if (!inMission && C.UseMountOutsideMission)
+                    if (useMount)
                     {
                         if (EzThrottler.Throttle("Using mount"))
                             Utils.MountAction();

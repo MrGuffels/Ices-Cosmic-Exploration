@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/13.0">
+<Project Sdk="Dalamud.NET.Sdk/14.0">
 
 	<PropertyGroup>
-		<Version>0.0.73.39</Version>
+		<Version>0.0.74.0</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -54,7 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Update="DalamudPackager" Version="14.0.0" />
+		<PackageReference Update="DalamudPackager" Version="14.0.1" />
 		<PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.39" />
 	</ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 ﻿using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System.Collections.Generic;
 using System.Reflection;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -8,7 +9,7 @@ namespace ICE.Ui.DebugWindowTabs
 {
     internal class Ui_PlayerInfo
     {
-        public static void Draw()
+        public static unsafe void Draw()
         {
             ImGui.Text("Need to actually put the player info here. It got lost");
             ImGui.Spacing();
@@ -29,7 +30,9 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.Text($"Current Territory/ZoneId: {Player.Territory}");
             if (PlayerHelper.IsInCosmicZone())
             {
-                var currentMission = CosmicHelper.CurrentLunarMission;
+                var manager = (WKSManagerCustom*)WKSManager.Instance();
+                var currentMission = manager->CurrentMissionId;
+
                 ImGui.Text($"Current Mission: {currentMission}");
             }
             if (Svc.Targets.Target != null)

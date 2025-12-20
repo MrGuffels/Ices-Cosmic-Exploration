@@ -19,11 +19,11 @@ public static partial class CosmicHelper
         {
             try
             {
-                var manager = WKSManager.Instance();
+                var manager = (WKSManagerCustom*)WKSManager.Instance();
                 if (manager == null)
                     return 0; // or some default value
 
-                return manager->CurrentMissionUnitRowId;
+                return manager->CurrentMissionId;
             }
             catch (AccessViolationException)
             {

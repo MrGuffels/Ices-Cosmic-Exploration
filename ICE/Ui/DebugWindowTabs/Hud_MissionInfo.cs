@@ -36,36 +36,50 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetupColumn("###Info", ImGuiTableColumnFlags.WidthFixed, 150);
                     ImGui.TableSetupColumn("###UiInfo", ImGuiTableColumnFlags.WidthFixed, 100);
 
-                    ImGui.TableNextRow();
-
-                    ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Current Score:");
-
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"{currentScore}");
+                    var missionId = CosmicHelper.CurrentLunarMission;
+                    
 
                     ImGui.TableNextRow();
 
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Silver Score:");
-
+                    ImGui.Text("Current Mission:");
                     ImGui.TableNextColumn();
-                    ImGui.Text($"{silverScore}");
+                    ImGui.Text($"{missionId}");
 
-                    ImGui.TableNextRow();
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission) && !mission.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        ImGui.TableNextColumn();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Current Score:");
+                        ImGui.TableNextColumn();
 
-                    ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Gold Score:");
+                        ImGui.Text($"{currentScore}");
 
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"{goldScore}");
+                        ImGui.TableNextRow();
 
-                    ImGui.TableNextRow();
-                    ImGui.TableSetColumnIndex(0);
-                    ImGui.Text("Critical Value:");
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Silver Score:");
 
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"{x.CriticalScore}");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{silverScore}");
+
+                        ImGui.TableNextRow();
+
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Gold Score:");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{goldScore}");
+                    }
+                    else if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Critical Value:");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{x.CriticalScore}");
+                    }
 
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
@@ -122,6 +136,7 @@ namespace ICE.Ui.DebugWindowTabs
                         score += 1;
                     }
 
+                    /*
                     var currentlyEquippped = wks->FishingBait | 0;
 
                     ImGui.TableNextRow();
@@ -129,6 +144,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.Text("Bait:");
                     ImGui.TableNextColumn();
                     ImGui.Text($"{currentlyEquippped}");
+                    */
 
 
                     ImGui.EndTable();
