@@ -67,6 +67,14 @@ namespace ICE.Scheduler.Tasks
         }
         public static bool? RefreshMissionUi()
         {
+            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talkUi) && talkUi.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Closing the talk"))
+                    talkUi.Click();
+
+                return false;
+            }
+
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && !hud.IsAddonReady)
             {
                 IceLogging.Info("Mission Selection Hud is no longer visible and been refreshed. Continuing on");
@@ -237,7 +245,6 @@ namespace ICE.Scheduler.Tasks
             if (hasBasic)
             {
                 P.TaskManager.Enqueue(() => OpenTab("Standard"), "Opening the standard mission tab");
-                P.TaskManager.Enqueue(() => FrameDelay(16), "Delaying 8 frames for tab");
                 P.TaskManager.Enqueue(CheckStandard, "Checking the standard missions for any potentional missions");
             }
 
@@ -260,7 +267,7 @@ namespace ICE.Scheduler.Tasks
                             x.CriticalMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(16), "Delaying 8 frames for tab"),
+                                new(() => FrameDelay(8), "Delaying 8 frames for tab"),
                                 new(CheckCritical, "Checking to see if current missions match up with the critical")
                             );
                             break;
@@ -270,7 +277,7 @@ namespace ICE.Scheduler.Tasks
                             x.ProvisionalMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(16), "Delaying 8 frames for tab"),
+                                new(() => FrameDelay(8), "Delaying 8 frames for tab"),
                                 new(CheckProvisional, "Checking to see if any provisional missions exist")
                             );
                             break;
@@ -280,7 +287,7 @@ namespace ICE.Scheduler.Tasks
                             x.BasicMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(16), "Delaying 8 frames for the tab"),
+                                new(() => FrameDelay(8), "Delaying 8 frames for the tab"),
                                 new(() => CheckExp(), "Checking Exp Missions")
                             );
                             break;
@@ -290,7 +297,7 @@ namespace ICE.Scheduler.Tasks
                             x.BasicMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(16), "Throwing a delay in to make sure you're on the right tab"),
+                                new(() => FrameDelay(8), "Throwing a delay in to make sure you're on the right tab"),
                                 new(() => FindReroll(), "Finding->Accepting next reroll")
                             );
                             break;
@@ -300,7 +307,7 @@ namespace ICE.Scheduler.Tasks
                             x.ProvisionalMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(16), "Delaying for 16 frames"),
+                                new(() => FrameDelay(8), "Delaying for 16 frames"),
                                 new(() => CheckAllProvisional(), "Checking all provisionals")
                             );
                             break;
@@ -310,7 +317,7 @@ namespace ICE.Scheduler.Tasks
                             x.BasicMissions();
                             P.TaskManager.InsertMulti
                             (
-                                new(() => FrameDelay(16), "Delaying 8 frames for tab"),
+                                new(() => FrameDelay(8), "Delaying 8 frames for tab"),
                                 new(CheckStandard, "Checking the standard missions for any potentional missions")
                             );
                             break;
@@ -992,11 +999,16 @@ namespace ICE.Scheduler.Tasks
         {
             P.TaskManager.InsertMulti(
                 new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
-                new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                new(() => GrabMission(missionId), "Selecting mission for grabbing"),
-                new(() => FrameDelay(16), "Giving time before you kick in the mission")
+                new(() => GrabMission(missionId), "Selecting mission for grabbing")
             );
         }
+
+        private static unsafe void InitiateMission(uint missionId)
+        {
+            var WKSInstance = WKSManager.Instance();
+            WKSInstance->MissionModule->InitiateMission((ushort)missionId);
+        }
+
         private static bool? GrabMission(uint missionId, bool reroll = false)
         {
             if (CosmicHelper.CurrentLunarMission != 0)
@@ -1006,88 +1018,26 @@ namespace ICE.Scheduler.Tasks
                 timeoutAmount = 0;
                 return true;
             }
-            else if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
+            else
             {
-                if (EzThrottler.Throttle("Selecting Yesno window"))
+                IceLogging.Verbose($"Selecting the mission: {missionId}");
+                InitiateMission(missionId);
+
+                if (reroll)
                 {
-                    if (CosmicHandler.commenceStrings.Any(s => NormalizeWhitespace(select.Text).StartsWith(NormalizeWhitespace(s), StringComparison.OrdinalIgnoreCase)) || !C.RejectUnknownYesno)
-                    {
-                        select.Yes();
-                        if (reroll)
-                            SchedulerMain.State = IceState.AbandonMission;
-                        else
-                            SchedulerMain.State = IceState.ExecutingMission;
-                        IceLogging.Debug($"Current State upon  grabbing mission: {SchedulerMain.State}");
-                        P.TaskManager.Tasks.Clear();
-                        Mission_Settings.nodeTotal = 0;
-                        P.TaskManager.Insert(() => CosmicHelper.CurrentLunarMission != 0);
-                        IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
-
-                        return true;
-                    }
-                    else
-                    {
-                        IceLogging.Debug($"Unexpected text: '{select.Text}'", "[ICE_GrabMission]");
-
-                        if (EzThrottler.Throttle("Unexpected Abandon Window..."))
-                        {
-                            select.No();
-                            return false;
-                        }
-                    }
+                    SchedulerMain.State = IceState.AbandonMission;
+                    Task_AbandonMission.ForceAbandon = true;
                 }
+                else
+                    SchedulerMain.State = IceState.ExecutingMission;
+                IceLogging.Debug($"Current State upon  grabbing mission: {SchedulerMain.State}");
+                P.TaskManager.Tasks.Clear();
+                Mission_Settings.nodeTotal = 0;
+                P.TaskManager.Insert(() => CosmicHelper.CurrentLunarMission != 0);
+                IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
+
+                return true;
             }
-            else if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var mission) && mission.IsAddonReady)
-            {
-                if (!reroll)
-                {
-                    if (FrameThrottler.Throttle("Timeout Check", 16))
-                    {
-                        timeoutAmount+= 1;
-                    }
-
-                    if (timeoutAmount >= maxTimeout)
-                    {
-                        IceLogging.Info("We've met the timeout threshold on grabbing a mission. Unsure if the timer just... ran out or something? *-shrugs-* starting the whol process again");
-                        SchedulerMain.State = IceState.GrabMission;
-                        P.TaskManager.Tasks.Clear();
-                        timeoutAmount = 0;
-                        return true;
-                    }
-                }
-
-                var selectedMission = mission.StellerMissions.Where(x => x.MissionId == missionId).FirstOrDefault();
-                if (selectedMission != null)
-                {
-                    if (EzThrottler.Throttle("Initating the quest"))
-                    {
-                        selectedMission.Initiate();
-                    }
-                    return false;
-                }
-                if (FrameThrottler.Throttle("Checking tab for mission", 8))
-                {
-                    if (FrameThrottler.Throttle("Checking Weather Tab for mission", 16))
-                    {
-                        mission.ProvisionalMissions();
-                        return false;
-                    }
-                    if (FrameThrottler.Throttle("Checking Standard Tab for missions", 16))
-                    {
-                        mission.BasicMissions();
-                        return false;
-                    }
-                }
-            }
-            else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
-            {
-                if (EzThrottler.Throttle("Opening the moon hud cause it somehow just slipped through/got turned off", 2000))
-                {
-                    moonHud.Mission();
-                }
-            }
-
-            return false;
         }
 
         private static Vector3 fishingHoleLoc = Vector3.Zero;

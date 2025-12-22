@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Textures;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
@@ -127,7 +128,7 @@ namespace ICE.Ui.DebugWindowTabs
                             ImGuiTableFlags.Reorderable |         // Allow column reordering
                             ImGuiTableFlags.Hideable;             // Allow hiding columns via right-click
 
-            if (ImGui.BeginTable("Moon Mission Information Table", 34, tableFlags)) // Increased column count by 1
+            if (ImGui.BeginTable("Moon Mission Information Table", 35, tableFlags)) // Increased column count by 1
             {
                 ImGui.TableSetupColumn("ID");
                 ImGui.TableSetupColumn("Jobs");
@@ -170,6 +171,7 @@ namespace ICE.Ui.DebugWindowTabs
                     ImGui.TableSetupColumn($"Amount [G-{i}]");
                 }
                 ImGui.TableSetupColumn("Completion");
+                ImGui.TableSetupColumn("Activate Mission");
 
                 ImGui.TableHeadersRow();
 
@@ -388,6 +390,27 @@ namespace ICE.Ui.DebugWindowTabs
                     var isGold = manager->IsMissionGolded(entry.Key);
                     Completion(entry.Key);
 
+                    ImGui.TableSetColumnIndex(34);
+                    if (CosmicHelper.CurrentLunarMission != 0)
+                    {
+                        if (ImGui.Button("Turn in"))
+                        {
+                            ReportMission();
+                        }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Abandon"))
+                        {
+                            AbandonMission();
+                        }
+                    }
+                    else
+                    {
+                        if (ImGui.Button("Initiate"))
+                        {
+                            InitiateMission(entry.Key);
+                        }
+                    }
+
                     ImGui.PopID();
                 }
 
@@ -596,6 +619,24 @@ namespace ICE.Ui.DebugWindowTabs
                 return $"\"{field.Replace("\"", "\"\"")}\"";
             }
             return field;
+        }
+
+        private static unsafe void InitiateMission(uint missionId)
+        {
+            var WKSInstance = WKSManager.Instance();
+            WKSInstance->MissionModule->InitiateMission((ushort)missionId);
+        }
+
+        private static unsafe void AbandonMission()
+        {
+            var WKSInstance = WKSManager.Instance();
+            WKSInstance->MissionModule->AbandonMission();
+        }
+
+        private static unsafe void ReportMission()
+        {
+            var WKSInstance = WKSManager.Instance();
+            WKSInstance->MissionModule->ReportMission();
         }
     }
 }

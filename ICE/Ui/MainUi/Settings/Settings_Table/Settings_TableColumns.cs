@@ -10,7 +10,10 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table;
 
 public static class Settings_TableColumns
 {
-    private static string[] missionSortOptions = ["Id", "Name", "Cosmo Credits", "Lunar Credits", "Exp I", "Exp II", "Exp III", "Exp IV", "Exp V", "Map Location", "Class Score"];
+    private static string[] missionSortOptions = 
+        ["Id", "Name", "Cosmo Credits", "Lunar Credits", 
+        "Exp I", "Exp II", "Exp III", "Exp IV", "Exp V", 
+        "Map Location", "Class Score", "Class Exp"];
 
     public static void ColumnSettings()
     {

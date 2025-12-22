@@ -1,4 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Utilities.Cosmic_Helper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -13,9 +14,9 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var x) && x.IsAddonReady)
             {
-                currentScore = x.CurrentScore;
-                silverScore = x.SilverScore;
-                goldScore = x.GoldScore;
+                // currentScore = x.CurrentScore;
+                // silverScore = x.SilverScore;
+                // goldScore = x.GoldScore;
 
                 var isAddonReady = AddonHelper.IsAddonActive("WKSMissionInfomation");
                 ImGui.Text($"Addon Ready: {isAddonReady}");
@@ -53,7 +54,18 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text("Current Score:");
                         ImGui.TableNextColumn();
 
-                        ImGui.Text($"{currentScore}");
+                        if (x.CurrentScore == null)
+                        {
+                            if (EzThrottler.Throttle("Throwing error message"))
+                            {
+                                IceLogging.Error("Score was not obtainable");
+                            }
+                            ImGui.Text("???");
+                        }
+                        else
+                        {
+                            ImGui.Text($"{x.CurrentScore.Value}");
+                        }
 
                         ImGui.TableNextRow();
 
@@ -61,7 +73,18 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text("Silver Score:");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{silverScore}");
+                        if (x.CurrentScore == null)
+                        {
+                            if (EzThrottler.Throttle("Throwing error message"))
+                            {
+                                IceLogging.Error("Score was not obtainable");
+                            }
+                            ImGui.Text("???");
+                        }
+                        else
+                        {
+                            ImGui.Text($"{x.SilverScore.Value}");
+                        }
 
                         ImGui.TableNextRow();
 
@@ -69,7 +92,18 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text("Gold Score:");
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{goldScore}");
+                        if (x.CurrentScore == null)
+                        {
+                            if (EzThrottler.Throttle("Throwing error message"))
+                            {
+                                IceLogging.Error("Score was not obtainable");
+                            }
+                            ImGui.Text("???");
+                        }
+                        else
+                        {
+                            ImGui.Text($"{x.GoldScore.Value}");
+                        }
                     }
                     else if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                     {

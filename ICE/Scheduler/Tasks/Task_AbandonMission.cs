@@ -1,4 +1,5 @@
 ﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic_Helper;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace ICE.Scheduler.Tasks
         }
 
         public static bool WasAbandoned = false;
+        public static bool ForceAbandon = false;
 
         public static bool? AbandonMission()
         {
@@ -30,6 +32,7 @@ namespace ICE.Scheduler.Tasks
 
             if (CosmicHelper.CurrentLunarMission == 0)
             {
+                ForceAbandon = false;
                 if (WasAbandoned)
                 {
                     IceLogging.Debug("Mission was abandoned");
@@ -64,92 +67,54 @@ namespace ICE.Scheduler.Tasks
                 if (EzThrottler.Throttle("Score Check Update"))
                     Task_TurninMission.ScoreCheck();
 
-                if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var select) && select.IsAddonReady)
+                if (Player.Job == (Job)18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
                 {
-                    if (CosmicHandler.abandonStrings.Any(s => NormalizeWhitespace(select.Text).Contains(NormalizeWhitespace(s), StringComparison.OrdinalIgnoreCase)) || !C.RejectUnknownYesno)
+                    if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
+                        Task_DualClass.StopFishing();
+
+                    return false;
+                }
+
+                if (!ForceAbandon)
+                {
+                    if (EzThrottler.Throttle("Trying to turnin/abandon", 250))
                     {
-                        if (EzThrottler.Throttle("Selecting Yes, mission is properly abandoning"))
+                        if (EzThrottler.Throttle("Attempt to Turnin", 1000))
                         {
-                            IceLogging.Debug($"Expected abandon mission text... abandoning mission", "[Abandon Mission]");
-                            select.Yes();
-                            if (Mission_Settings.StopAfterCurrent)
-                            {
-                                SchedulerMain.State = IceState.Idle;
-                                P.TaskManager.Tasks.Clear();
-                            }
-                            else
-                            {
-                                SchedulerMain.State = IceState.Start;
-                            }
+                            ReportMissionInstance();
                         }
-                    }
-                    else
-                    {
-                        IceLogging.Debug($"Actual text: '{select.Text}'");
-                        IceLogging.Debug($"Actual text length: {select.Text.Length}");
-                        IceLogging.Debug($"Trimmed text: '{select.Text.Trim()}'");
-                        IceLogging.Debug($"Trimmed length: {select.Text.Trim().Length}");
-
-                        if (EzThrottler.Throttle("Unexpected Abandon Window..."))
+                        else if (EzThrottler.Throttle("Attempting to abandon", 1000))
                         {
-                            var actualText = select.Text.Trim();
-                            var expectedFrench = "Êtes-vous sûre de vouloir abandonner la mission en cours ?";
-
-                            // Debug the ACTUAL text character by character
-                            IceLogging.Error("=== ACTUAL TEXT BREAKDOWN ===");
-                            for (int i = 0; i < actualText.Length; i++)
-                            {
-                                IceLogging.Error($"Actual char {i}: '{actualText[i]}' (Unicode: {(int)actualText[i]})");
-                            }
-
-                            // Debug the EXPECTED text character by character
-                            IceLogging.Error("=== EXPECTED TEXT BREAKDOWN ===");
-                            IceLogging.Error($"Expected: '{expectedFrench}'");
-                            IceLogging.Error($"Expected length: {expectedFrench.Length}");
-                            for (int i = 0; i < expectedFrench.Length; i++)
-                            {
-                                IceLogging.Error($"Expected char {i}: '{expectedFrench[i]}' (Unicode: {(int)expectedFrench[i]})");
-                            }
-
-                            IceLogging.Error($"Unexpected abandon window??? {select.Text}", "[Abandon Mission]");
-                            select.No();
+                            AbandonMissionInstance();
+                            IceLogging.Debug("Attempting to abandon.", "Abandon Mission");
+                            WasAbandoned = true;
                         }
                     }
                 }
-                else if(GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var addon) && addon.IsAddonReady)
+                else
                 {
-                    if (EzThrottler.Throttle("Trying To Turnin/Abandon", 1000))
-
-                    if (Player.Job == (Job)18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
+                    if (EzThrottler.Throttle("Attempting to abandon", 250))
                     {
-                        if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
-                            Task_DualClass.StopFishing();
-
-                        return false;
-                    }
-
-                    if (EzThrottler.Throttle("Attempt to turnin", 500))
-                    {
-                        addon.Report();
-                    }
-                    else if (EzThrottler.Throttle("Telling it to abandon the mission", 500))
-                    {
-                        IceLogging.Debug("Attempting to abandon.", "[Abandoning Mission]");
-                        addon.Abandon();
+                        AbandonMissionInstance();
+                        IceLogging.Debug("Attempting to abandon.", "Abandon Mission");
                         WasAbandoned = true;
-                    }
-                }
-                else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var SpaceHud) && SpaceHud.IsAddonReady)
-                {
-                    if (EzThrottler.Throttle("Opening the current mission info Ui"))
-                    {
-                        IceLogging.Debug("WKSMissionInformation missing. Attempting opening.", "[Abandoning Mission]");
-                        SpaceHud.Mission();
                     }
                 }
             }
 
             return false;
+        }
+
+        private static unsafe void AbandonMissionInstance()
+        {
+            var WKSInstance = WKSManager.Instance();
+            WKSInstance->MissionModule->AbandonMission();
+        }
+
+        private static unsafe void ReportMissionInstance()
+        {
+            var WKSInstance = WKSManager.Instance();
+            WKSInstance->MissionModule->ReportMission();
         }
 
         private static string NormalizeWhitespace(string text)

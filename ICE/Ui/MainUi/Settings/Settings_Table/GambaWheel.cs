@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +16,7 @@ namespace ICE.Ui.SettingTabs
         private static int gambaCreditsMinimum = C.GambaCreditsMinimum;
         private static bool gambaPreferSmallerWheel = C.GambaPreferSmallerWheel;
 
-        public static void Draw()
+        public static unsafe void Draw()
         {
             if (ImGui.Checkbox("Enable Auto Gamba", ref gambaEnabled))
             {
@@ -48,6 +51,16 @@ namespace ICE.Ui.SettingTabs
                 C.Save();
             }
             ImGuiEx.HelpMarker("This will make the Gamba prefer wheels with less items.");
+
+            if (PlayerHelper.IsInCosmicZone())
+            {
+                var territory = Player.Territory.RowId;
+                var itemId = CosmicHelper.PlanetCreditInfo[territory];
+                PlayerHelper.GetItemCount(itemId, out var credits);
+
+                ImGui.Text($"Current location: {territory} | Currency Amount: {credits}");
+            }
+
             ImGui.Separator();
             ImGui.TextUnformatted("Configure the weights for each item in the Gamba. Higher weight = more desirable.");
             ImGui.Spacing();

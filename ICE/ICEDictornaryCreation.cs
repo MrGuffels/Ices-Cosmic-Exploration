@@ -383,6 +383,18 @@ public sealed partial class ICE
             uint rewardItemId = 0;
             uint rewardItemAmount = 0;
 
+            // Exp Modifiers
+            uint expModifier_1 = 0;
+            uint expModifier_2 = 0;
+            uint expModifier_3 = 0;
+
+            if (ExpSheet.TryGetRow(keyId, out var rewardSheet))
+            {
+                expModifier_1 = rewardSheet.ExpModifier[0].ToUInt();
+                expModifier_2 = rewardSheet.ExpModifier[1].ToUInt();
+                expModifier_3 = rewardSheet.ExpModifier[2].ToUInt();
+            }
+
             for (var i = 0; i < 3; i++)
             {
                 var expKind = ExpSheet.GetRow(keyId).TypeIndex[i];
@@ -417,6 +429,10 @@ public sealed partial class ICE
                     BronzeScore = bronze,
                     SilverScore = silver,
                     GoldScore = gold,
+
+                    ExpModifier_1 = expModifier_1,
+                    ExpModifier_2 = expModifier_2,
+                    ExpModifier_3 = expModifier_3,
 
                     RewardItem = rewardItemId,
                     RewardItemAmount = rewardItemAmount,

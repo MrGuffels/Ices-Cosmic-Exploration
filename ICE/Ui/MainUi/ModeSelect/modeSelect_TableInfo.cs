@@ -7,7 +7,9 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
+using SharpDX.DirectWrite;
 using System.Collections.Generic;
+using static FFXIVClientStructs.FFXIV.Client.Graphics.Render.Skeleton;
 using static MissionTimer;
 
 namespace ICE.Ui.MainUi.ModeSelect
@@ -103,6 +105,11 @@ namespace ICE.Ui.MainUi.ModeSelect
                     return missions.OrderBy(m => missionInfo[m.id].MarkerId).ToList();
                 case 10: // Mission Score
                     return missions.OrderByDescending(m => missionInfo[m.id].ClassScore).ToList();
+                case 11: // Class Exp
+                    return missions.OrderByDescending(m => Math.Max(
+                                                           Math.Max(missionInfo[m.id].ExpModifier_1, missionInfo[m.id].ExpModifier_2),
+                                                           missionInfo[m.id].ExpModifier_3
+                                                     )).ToList();
                 default:
                     return missions.ToList();
             }
@@ -754,26 +761,300 @@ namespace ICE.Ui.MainUi.ModeSelect
                     }
                     else
                     {
-                        if (Table_CenteredButton("Select Turnin"))
+                        Vector4 BronzeColor = new Vector4(0.804f, 0.498f, 0.196f, 1.0f);
+                        Vector4 SilverColor = new Vector4(0.753f, 0.753f, 0.753f, 1.0f);
+                        Vector4 GoldColor = new Vector4(1.0f, 0.843f, 0.0f, 1.0f);
+                        Vector4 DisabledColor = new Vector4(0.4f, 0.4f, 0.4f, 1.0f);
+
+                        var fontSize = ImGui.GetFontSize();
+                        var framePadding = ImGui.GetStyle().FramePadding;
+                        var buttonSize = new Vector2(fontSize + framePadding.X * 2, fontSize + framePadding.Y * 2);
+                        var spacing = ImGui.GetStyle().ItemSpacing.X;
+                        var totalWidth = (buttonSize.X * 3) + (spacing * 2);
+
+                        // Center the group
+                        var cursorPosX = ImGui.GetCursorPosX();
+                        var availWidth = ImGui.GetContentRegionAvail().X;
+                        ImGui.SetCursorPosX(cursorPosX + (availWidth - totalWidth) * 0.5f);
+
+                        // Gold
+                        ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninGold || missionConfig.AutoTurnin ? GoldColor : DisabledColor);
+                        if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold", buttonSize))
                         {
-                            ImGui.OpenPopup("Mission Turnin Settings");
+                            // If AutoTurnin is on, we're enabling individual controls
+                            if (missionConfig.AutoTurnin)
+                            {
+                                missionConfig.AutoTurnin = false;
+                                missionConfig.TurninGold = false;  // Turn off gold
+                                missionConfig.TurninSilver = true; // Keep others on
+                                missionConfig.TurninBronze = true;
+                            }
+                            else
+                            {
+                                // Toggle the button
+                                missionConfig.TurninGold = !missionConfig.TurninGold;
+
+                                // Check the new state
+                                if (missionConfig.TurninGold && missionConfig.TurninSilver && missionConfig.TurninBronze)
+                                {
+                                    // All three enabled -> AutoTurnin mode
+                                    missionConfig.AutoTurnin = true;
+                                    missionConfig.TurninGold = false;
+                                    missionConfig.TurninSilver = false;
+                                    missionConfig.TurninBronze = false;
+                                }
+                                else if (!missionConfig.TurninGold && !missionConfig.TurninSilver && !missionConfig.TurninBronze)
+                                {
+                                    // All three disabled -> AutoTurnin mode (don't disable any)
+                                    missionConfig.AutoTurnin = true;
+                                }
+                            }
+
+                            C.SaveDebounced();
                         }
+                        // Right-click to enable only this one
+                        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+                        {
+                            missionConfig.AutoTurnin = false;
+                            missionConfig.TurninGold = true;
+                            missionConfig.TurninSilver = false;
+                            missionConfig.TurninBronze = false;
+                            C.SaveDebounced();
+                        }
+                        ImGui.PopStyleColor();
                         if (ImGui.IsItemHovered())
                         {
                             ImGui.BeginTooltip();
+
                             if (missionConfig.AutoTurnin)
-                                ImGui.Text($"Auto Turnin - True");
+                            {
+                                ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Gold Enabled");
+
+                                ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Silver Enabled");
+
+                                ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Bronze Enabled");
+                            }
                             else
                             {
                                 if (missionConfig.TurninGold)
-                                    ImGui.Text($"Gold Enabled");
+                                {
+                                    ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Gold Enabled");
+                                }
                                 if (missionConfig.TurninSilver)
-                                    ImGui.Text($"Silver Enabled");
+                                {
+                                    ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Silver Enabled");
+                                }
                                 if (missionConfig.TurninBronze)
-                                    ImGui.Text($"Bronze Enabled");
+                                {
+                                    ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Bronze Enabled");
+                                }
                             }
 
+                            ImGui.Text("Right click to only enable gold");
+
                             ImGui.EndTooltip();
+                        }
+
+                        ImGui.SameLine();
+
+                        // Silver
+                        ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninSilver || missionConfig.AutoTurnin ? SilverColor : DisabledColor);
+                        if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver", buttonSize))
+                        {
+                            // If AutoTurnin is on, we're enabling individual controls
+                            if (missionConfig.AutoTurnin)
+                            {
+                                missionConfig.AutoTurnin = false;
+                                missionConfig.TurninGold = true;
+                                missionConfig.TurninSilver = false;  // Turn off silver
+                                missionConfig.TurninBronze = true;
+                            }
+                            else
+                            {
+                                // Toggle the button
+                                missionConfig.TurninSilver = !missionConfig.TurninSilver;
+
+                                // Check the new state
+                                if (missionConfig.TurninGold && missionConfig.TurninSilver && missionConfig.TurninBronze)
+                                {
+                                    // All three enabled -> AutoTurnin mode
+                                    missionConfig.AutoTurnin = true;
+                                    missionConfig.TurninGold = false;
+                                    missionConfig.TurninSilver = false;
+                                    missionConfig.TurninBronze = false;
+                                }
+                                else if (!missionConfig.TurninGold && !missionConfig.TurninSilver && !missionConfig.TurninBronze)
+                                {
+                                    // All three disabled -> AutoTurnin mode (don't disable any)
+                                    missionConfig.AutoTurnin = true;
+                                }
+                            }
+
+                            C.SaveDebounced();
+                        }
+                        // Right-click to enable only this one
+                        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+                        {
+                            missionConfig.AutoTurnin = false;
+                            missionConfig.TurninGold = false;
+                            missionConfig.TurninSilver = true;
+                            missionConfig.TurninBronze = false;
+                            C.SaveDebounced();
+                        }
+                        ImGui.PopStyleColor();
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+
+                            if (missionConfig.AutoTurnin)
+                            {
+                                ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Gold Enabled");
+
+                                ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Silver Enabled");
+
+                                ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Bronze Enabled");
+                            }
+                            else
+                            {
+                                if (missionConfig.TurninGold)
+                                {
+                                    ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Gold Enabled");
+                                }
+                                if (missionConfig.TurninSilver)
+                                {
+                                    ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Silver Enabled");
+                                }
+                                if (missionConfig.TurninBronze)
+                                {
+                                    ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Bronze Enabled");
+                                }
+                            }
+
+                            ImGui.Text("Right click to only enable silver");
+
+                            ImGui.EndTooltip();
+                        }
+
+                        ImGui.SameLine();
+
+                        // Bronze
+                        ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninBronze || missionConfig.AutoTurnin ? BronzeColor : DisabledColor);
+                        if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze", buttonSize))
+                        {
+                            // If AutoTurnin is on, we're enabling individual controls
+                            if (missionConfig.AutoTurnin)
+                            {
+                                missionConfig.AutoTurnin = false;
+                                missionConfig.TurninGold = true;
+                                missionConfig.TurninSilver = true;
+                                missionConfig.TurninBronze = false;  // Turn off bronze
+                            }
+                            else
+                            {
+                                // Toggle the button
+                                missionConfig.TurninBronze = !missionConfig.TurninBronze;
+
+                                // Check the new state
+                                if (missionConfig.TurninGold && missionConfig.TurninSilver && missionConfig.TurninBronze)
+                                {
+                                    // All three enabled -> AutoTurnin mode
+                                    missionConfig.AutoTurnin = true;
+                                    missionConfig.TurninGold = false;
+                                    missionConfig.TurninSilver = false;
+                                    missionConfig.TurninBronze = false;
+                                }
+                                else if (!missionConfig.TurninGold && !missionConfig.TurninSilver && !missionConfig.TurninBronze)
+                                {
+                                    // All three disabled -> AutoTurnin mode (don't disable any)
+                                    missionConfig.AutoTurnin = true;
+                                }
+                            }
+
+                            C.SaveDebounced();
+                        }
+                        // Right-click to enable only this one
+                        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+                        {
+                            missionConfig.AutoTurnin = false;
+                            missionConfig.TurninGold = false;
+                            missionConfig.TurninSilver = false;
+                            missionConfig.TurninBronze = true;
+                            C.SaveDebounced();
+                        }
+                        ImGui.PopStyleColor();
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.BeginTooltip();
+
+                            if (missionConfig.AutoTurnin)
+                            {
+                                ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Gold Enabled");
+
+                                ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Silver Enabled");
+
+                                ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
+                                ImGui.SameLine();
+                                ImGui.Text("Bronze Enabled");
+                            }
+                            else
+                            {
+                                if (missionConfig.TurninGold)
+                                {
+                                    ImGuiEx.Icon(GoldColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Gold Enabled");
+                                }
+                                if (missionConfig.TurninSilver)
+                                {
+                                    ImGuiEx.Icon(SilverColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Silver Enabled");
+                                }
+                                if (missionConfig.TurninBronze)
+                                {
+                                    ImGuiEx.Icon(BronzeColor, FontAwesomeIcon.Trophy);
+                                    ImGui.SameLine();
+                                    ImGui.Text("Bronze Enabled");
+                                }
+                            }
+
+                            ImGui.Text("Right click to only enable bronze");
+
+                            ImGui.EndTooltip();
+                        }
+
+                        /*
+                        if (Table_CenterEnabled(goldEnabled, silverEnabled, bronzeEnabled))
+                        {
+                            ImGui.OpenPopup("Mission Turnin Settings");
                         }
 
                         if (ImGui.BeginPopup("Mission Turnin Settings"))
@@ -816,7 +1097,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                                     missionConfig.AutoTurnin = false;
 
                                 missionConfig.TurninGold = goldTurnin;
-                                C.Save();
+                                C.SaveDebounced();
                             }
                             if (ImGui.Checkbox("Silver", ref silverTurnin))
                             {
@@ -824,7 +1105,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                                     missionConfig.AutoTurnin = false;
 
                                 missionConfig.TurninSilver = silverTurnin;
-                                C.Save();
+                                C.SaveDebounced();
                             }
                             if (ImGui.Checkbox("Bronze", ref bronzeTurnin))
                             {
@@ -832,11 +1113,18 @@ namespace ICE.Ui.MainUi.ModeSelect
                                     missionConfig.AutoTurnin = false;
 
                                 missionConfig.TurninBronze = bronzeTurnin;
-                                C.Save();
+                                C.SaveDebounced();
+                            }
+
+                            if (!bronzeTurnin && !silverTurnin && !goldTurnin && !anyTurnin)
+                            {
+                                missionConfig.AutoTurnin = true;
+                                C.SaveDebounced();
                             }
 
                             ImGui.EndPopup();
                         }
+                        */
                     }
 
                     #endregion
@@ -1135,45 +1423,6 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.TableNextColumn();
                     CompletionStatus_Normal(selectedMission);
 
-                    ImGui.TableNextRow();
-                    ImGui.TableSetColumnIndex(0);
-                    ImGui.Text($"Relic XP Kind");
-
-                    ImGui.TableNextColumn();
-                    ImGui.Text("Amounts");
-
-                    foreach (var xp in mission.RelicXpInfo.OrderByDescending(x => x.Key))
-                    {
-                        ImGui.TableNextRow();
-                        ImGui.TableSetColumnIndex(0);
-                        string type = "";
-                        switch (xp.Key)
-                        {
-                            case 1:
-                                type = "I";
-                                break;
-                            case 2:
-                                type = "II";
-                                break;
-                            case 3:
-                                type = "III";
-                                break;
-                            case 4:
-                                type = "IV";
-                                break;
-                            case 5:
-                                type = "V";
-                                break;
-                            default:
-                                type = "???";
-                                break;
-                        }
-
-                        ImGui.Text($"Lv. {type}");
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{xp.Value}");
-                    }
-
                     if (mission.BronzeScore != 0)
                     {
                         ImGui.TableNextRow();
@@ -1236,6 +1485,91 @@ namespace ICE.Ui.MainUi.ModeSelect
                     }
 
                     ImGui.EndTable();
+                }
+
+                if (ImGui.BeginTable("Relic Exp Info Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
+                {
+                    ImGui.TableSetupColumn("Relix Exp Kind");
+                    ImGui.TableSetupColumn("Amount");
+
+                    ImGui.TableHeadersRow();
+
+                    foreach (var xp in mission.RelicXpInfo.OrderByDescending(x => x.Key))
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        string type = "";
+                        switch (xp.Key)
+                        {
+                            case 1:
+                                type = "I";
+                                break;
+                            case 2:
+                                type = "II";
+                                break;
+                            case 3:
+                                type = "III";
+                                break;
+                            case 4:
+                                type = "IV";
+                                break;
+                            case 5:
+                                type = "V";
+                                break;
+                            default:
+                                type = "???";
+                                break;
+                        }
+
+                        ImGui.Text($"Lv. {type}");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{xp.Value}");
+                    }
+
+                    ImGui.EndTable();
+                }
+
+                if (mission.ExpModifier_3 != 0)
+                {
+                    if (ImGui.BeginTable("Exp Rewards", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+                    {
+                        ImGui.TableSetupColumn("Class Exp");
+                        ImGui.TableSetupColumn("% of Level");
+
+                        ImGui.TableHeadersRow();
+
+                        if (mission.ExpModifier_1 != 0)
+                        {
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text("Lv. 10-49");
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{mission.ExpModifier_1}%");
+                        }
+
+                        if (mission.ExpModifier_2 != 0)
+                        {
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text("Lv. 50-89");
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{mission.ExpModifier_2}%");
+                        }
+
+                        if (mission.ExpModifier_3 != 0)
+                        {
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text("Lv. 90-99");
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{mission.ExpModifier_3}%");
+                        }
+
+                        ImGui.EndTable();
+                    }
                 }
 
                 if (mission.Crafts_Main.Count > 0)
@@ -1663,6 +1997,7 @@ namespace ICE.Ui.MainUi.ModeSelect
             ImGui.SetCursorPosX(cursorPosX + (availWidth - actualButtonSize.X) * 0.5f);
             return ImGui.Button(label, actualButtonSize);
         }
+
         private static void Table_FontCenter(FontAwesomeIcon icon)
         {
             ImGui.AlignTextToFramePadding();

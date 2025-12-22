@@ -154,6 +154,7 @@ namespace ICE.Scheduler.Tasks
 
                     IceLogging.Info($"Gathering window is now visible, continuing onto GatheringInteraction Task", "[Gathering: OpenGatheringMenu]");
                     P.TaskManager.Insert(() => GatheringInteraction(), "Gathering at the node", Utils.TaskConfig);
+                    Mission_Settings.nodeTotal += 1;
                     return true;
                 }
                 else
@@ -173,6 +174,7 @@ namespace ICE.Scheduler.Tasks
                         {
                             // Node doesn't exist/isn't targetable. 
                             IceLogging.Info($"The current node doesn't exist, continuing onto the next", "[Gathering: OpenGatheringMenu]");
+                            Mission_Settings.nodeTotal += 1;
                             return true;
                         }
                     }

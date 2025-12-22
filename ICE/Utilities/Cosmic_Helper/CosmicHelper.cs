@@ -80,6 +80,12 @@ public static unsafe partial class CosmicHelper
         public uint TerritoryId { get; set; }
         public uint MarkerId { get; set; }
 
+        // - - - Exp Modifier Section - - - // 
+
+        public uint ExpModifier_1 { get; set; } = 0;
+        public uint ExpModifier_2 { get; set; } = 0;
+        public uint ExpModifier_3 { get; set; } = 0;
+
         // - - - Universal Info - - - //
         public string Name { get; set; }
         public HashSet<uint> Jobs { get; set; }

@@ -65,10 +65,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 if (C.StopOnceHitLunarCredits)
                 {
-                    uint[] currencies = [45691, 48146, 48147, 48148];
-                    var manager = WKSManager.Instance();
-                    var zoneId = *((byte*)manager + 0x5D);
-                    var itemId = currencies[zoneId];
+                    var territory = Player.Territory.RowId;
+                    var itemId = CosmicHelper.PlanetCreditInfo[territory];
 
                     PlayerHelper.GetItemCount(itemId, out var credits);
                     if (credits >= C.LunarCreditsCap)
@@ -237,10 +235,8 @@ namespace ICE.Scheduler.Tasks
                     bool canBuyItems = C.BuyItems && Task_BuyCosmoItems.CanPurchaseAnyItem() && cosmoCreditAmount >= C.CosmoBuyAtAmount;
                     bool canGamba = false;
 
-                    uint[] currencies = [45691, 48146, 48147, 48148];
-                    var manager = WKSManager.Instance();
-                    var zoneId = *((byte*)manager + 0x5D);
-                    var itemId = currencies[zoneId];
+                    var territory = Player.Territory.RowId;
+                    var itemId = CosmicHelper.PlanetCreditInfo[territory];
 
                     if (C.GambaBetweenRuns)
                     {

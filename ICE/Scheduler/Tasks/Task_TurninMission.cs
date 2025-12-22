@@ -1,4 +1,5 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons.Automation;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
@@ -202,7 +203,7 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Debug("Waiting for player to not be in a busy state");
                     }
                 }
-                else if (GenericHelpers.TryGetAddonMaster<WKSMissionInfomation>("WKSMissionInfomation", out var missionInfo) && missionInfo.IsAddonReady)
+                else
                 {
                     if ((uint)Player.Job == 18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
                     {
@@ -212,20 +213,43 @@ namespace ICE.Scheduler.Tasks
                         return false;
                     }
 
-                    if (EzThrottler.Throttle("Turning in mission"))
-                        missionInfo.Report();
-                }
-                else if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud))
-                {
-                    if (EzThrottler.Throttle("Opening the moon hud", 1000))
+                    if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady)
                     {
-                        moonHud.Mission();
-                        IceLogging.Info("Hud wasn't visible. Opening it", "[Score Check]");
+                        if (EzThrottler.Throttle("Closing the gathering window"))
+                            GenericHandlers.FireCallback("Gathering", true, -1);
+
+                        return false;
                     }
+                    else if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var gathMasterpiece) && gathMasterpiece.IsAddonReady)
+                    {
+                        if (EzThrottler.Throttle("Closing the collectable menu"))
+                            GenericHandlers.FireCallback("GatheringMasterpiece", true, -1);
+
+                        return false;
+                    }
+                    else if (GenericHelpers.TryGetAddonMaster<WKSRecipeNotebook>("WKSRecipeNotebook", out var WksRecipe) && WksRecipe.IsAddonReady)
+                    {
+                        if (EzThrottler.Throttle("Closing the crafting menu"))
+                            GenericHandlers.FireCallback("WKSRecipeNotebook", true, -1);
+
+                        return false;
+                    }
+
+                    if (Player.IsBusy)
+                        return false;
+
+                    if (EzThrottler.Throttle("Turning in mission", 250))
+                        ReportMission();
                 }
             }
 
             return false;
+        }
+
+        private static unsafe void ReportMission()
+        {
+            var WKSInstance = WKSManager.Instance();
+            WKSInstance->MissionModule->ReportMission();
         }
 
         public static bool? JobSwapCheck()

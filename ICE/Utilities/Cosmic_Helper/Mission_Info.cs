@@ -49,6 +49,14 @@ public static partial class CosmicHelper
         { 5, "V" }
     };
 
+    public static readonly Dictionary<uint, uint> PlanetCreditInfo = new()
+    {
+        [1237] = 45691, // sinus
+        [1291] = 48146, // phaenna
+        // [] = 48147, // moon 3
+        // [] = 48148, // moon 4
+    };
+
     // General use functions used across the codebase, specifically tied to cosmic related functions
     public static void OpenStellarMission()
     {

@@ -223,10 +223,8 @@ namespace ICE.Scheduler.Tasks
 
             if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var gamba) && gamba.IsAddonReady)
             {
-                uint[] currencies = [45691, 48146, 48147, 48148];
-                var manager = WKSManager.Instance();
-                var zoneId = *((byte*)manager + 0x5D);
-                var itemId = currencies[zoneId];
+                var territory = Player.Territory.RowId;
+                var itemId = CosmicHelper.PlanetCreditInfo[territory];
                 PlayerHelper.GetItemCount(itemId, out var credits);
 
                 bool confirmEnabled, leftWheelEnabled, rightWheelEnabled;
@@ -303,10 +301,8 @@ namespace ICE.Scheduler.Tasks
         }
         private static unsafe bool HasEnoughCredits()
         {
-            uint[] currencies = [45691, 48146, 48147, 48148];
-            var manager = WKSManager.Instance();
-            var zoneId = *((byte*)manager + 0x5D);
-            var itemId = currencies[zoneId];
+            var territory = Player.Territory.RowId;
+            var itemId = CosmicHelper.PlanetCreditInfo[territory];
 
             PlayerHelper.GetItemCount(itemId, out var credits);
             return credits >= 1000;
