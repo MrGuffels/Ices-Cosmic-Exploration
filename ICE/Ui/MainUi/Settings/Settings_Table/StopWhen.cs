@@ -9,6 +9,12 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
     internal class StopWhen
     {
+        public static bool AnyStop => C.StopOnceHitCosmicScore
+                                   || C.StopWhenLevel
+                                   || C.StopOnceHitCosmoCredits
+                                   || C.StopOnceHitLunarCredits
+                                   || C.StopOnceRelicFinished;
+
         public static void Draw()
         {
             ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);

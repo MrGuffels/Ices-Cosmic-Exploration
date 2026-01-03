@@ -142,6 +142,8 @@ public sealed partial class ICE : IDalamudPlugin
         {
             if (SchedulerMain.State != IceState.Idle)
                 PlayerHandlers.DisablePlugin();
+            if (PlayerHandlers.PlayerFirstCosmicZone)
+                PlayerHandlers.PlayerFirstCosmicZone = false;
         }
         GenericManager.Tick();
         TextAdvancedManager.Tick();

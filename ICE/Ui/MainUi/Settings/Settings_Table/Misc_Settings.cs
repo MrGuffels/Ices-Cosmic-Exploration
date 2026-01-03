@@ -13,36 +13,43 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
     {
         public static void Draw()
         {
-            OverlaySettings();
-            Separator();
+            if (ImGui.BeginTable("Misc Columns Stuff", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
+            {
+                ImGui.TableNextRow();
 
-            AutoUse();
-            Separator();
+                ImGui.TableSetColumnIndex(0);
+                OverlaySettings();
 
-            RepairSettings();
-            Separator();
+                ImGui.TableNextColumn();
+                AutoUse();
 
-            TimeRecords();
-            Separator();
+                ImGui.TableNextColumn();
+                RepairSettings();
 
-            MountSelection();
-            Separator();
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+                SafetySettings.Draw();
 
-            ShowSystemButtons();
-            Separator();
+                ImGui.TableNextColumn();
+                MountSelection();
+
+                ImGui.TableNextColumn();
+                ShowSystemButtons();
+
+                ImGui.Dummy(new Vector2(0, 5));
+
+                TimeRecords();
+
+#if DEBUG
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+                DebugTab.Draw();
+#endif
+                ImGui.EndTable();
+            }
 
             PostMissionCommands();
             Separator();
-
-            ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, "Safety Settings");
-            ImGui.Dummy(new Vector2(0, 5));
-            SafetySettings.Draw();
-
-#if DEBUG
-            ImGui.Separator();
-            ImGui.Dummy(new Vector2(0, 5));
-            DebugTab.Draw();
-#endif
         }
 
         private static void OverlaySettings()
@@ -116,6 +123,20 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.DisablePathfindingToRedAlert = DisableRedAlertPathing;
                 C.Save();
             }
+
+            bool autoStartOnMoonEnter = C.StartUponEnterMoon;
+            if (ImGui.Checkbox("Auto start upon enter moon", ref autoStartOnMoonEnter))
+            {
+                C.StartUponEnterMoon = autoStartOnMoonEnter;
+                C.Save();
+            }
+            ImGui.SameLine();
+            ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                                   "This will check to see if you're on a gathering/crafting class upon first entering the moon.\n" +
+                                   "If you are, it will automatically start as if you had pressed the start button yourself\n" +
+                                   "Really useful if you have a tool to auto-log you in/if you just want to enter the moon and go\n" +
+                                   "This will ONLY run upon first entry.");
+            ImGui.Dummy(Vector2.Zero);
         }
 
         private static void RepairSettings()
@@ -295,7 +316,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.MountRadius = minMountRange;
                 C.Save();
             }
-            ImGui.SameLine();
             ImGui.Checkbox("Visualize radius", ref visualizeRadius);
             ImGui.SetNextItemWidth(100);
             if (ImGui.DragFloat("Dismount Target Range", ref dismountRange, 1))
@@ -303,7 +323,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.DismountRadius = dismountRange;
                 C.Save();
             }
-            ImGui.SameLine();
             ImGui.Checkbox("Visualize Dismount Radius", ref visualizeDismountRadius);
 
             using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))

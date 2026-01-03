@@ -373,23 +373,30 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
                 }
 
-                ImGui.BeginChild("GatherProfileChild", new Vector2(300, ImGui.GetTextLineHeightWithSpacing() * 5 + 10), true);
-                foreach (var profile in C.GatherProfiles)
+                if (ImGui.BeginChild("GatherProfileChild", new Vector2(300, ImGui.GetTextLineHeightWithSpacing() * 5 + 10), true))
                 {
-                    var id = profile.Key;
-                    bool isSelected = C.SelectedGatherIndex == id;
-                    if (ImGui.Selectable($"{profile.Value.Name}##{profile.Value.Name}_{id}", isSelected))
+                    foreach (var profile in C.GatherProfiles)
                     {
-                        C.SelectedGatherIndex = id;
-                        C.Save();
-                    }
+                        var id = profile.Key;
+                        bool isSelected = C.SelectedGatherIndex == id;
+                        if (ImGui.Selectable($"{profile.Value.Name}##{profile.Value.Name}_{id}", isSelected))
+                        {
+                            C.SelectedGatherIndex = id;
+                            C.Save();
+                        }
 
-                    if (isSelected)
-                        ImGui.SetItemDefaultFocus();
+                        if (isSelected)
+                            ImGui.SetItemDefaultFocus();
+                    }
                 }
                 ImGui.EndChild();
 
-                GatherProfile entry = C.GatherProfiles[C.SelectedGatherIndex];
+                if (!C.GatherProfiles.TryGetValue(C.SelectedGatherIndex, out var entry))
+                {
+                    // We've somehow gotten a variable that is outside the normal index, so going to just reset it back to 0
+                    C.SelectedGatherIndex = 0;
+                    C.SaveDebounced();
+                }
 
                 ImGui.Combo("Mission Type", ref MissionIndex, MissionTypes, MissionTypes.Length);
                 if (ImGui.Button("Apply to Mission Types"))

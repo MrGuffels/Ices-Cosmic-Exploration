@@ -60,6 +60,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.ShowDebugGatherInfo = gatherDebug;
                 C.Save();
             }
+
+            bool highlightTable = C.HighlightVisibleMissions;
+            if (ImGui.Checkbox("Highlight Visible Missions", ref highlightTable))
+            {
+                C.HighlightVisibleMissions = highlightTable;
+                C.Save();
+            }
         }
     }
 }

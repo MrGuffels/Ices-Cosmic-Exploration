@@ -452,7 +452,7 @@ namespace ICE.Scheduler.Tasks
                             uint jobId = (uint)Player.Job;
 
                             IceLogging.Debug($"Using the following action: {ActionName} to gain some collectability from the node", debugOnly: true);
-                            var actionId = GatheringUtil.GathActionDict[ActionName].ClassAction[jobId].ActionId;
+                            var actionId = GatheringUtil.GathActionDict[ActionName].ClassAction[jobId];
                             ActionManager.Instance()->UseAction(ActionType.Action, actionId);
                             Mission_Settings.SkillUseAmount[ActionName] += 1;
                         }
@@ -475,7 +475,7 @@ namespace ICE.Scheduler.Tasks
                         uint jobId = (uint)Player.Job;
 
                         IceLogging.Debug($"Using the following action: {"FieldMasteryTemp"} to gain some collectability from the node", debugOnly: true);
-                        var actionId = GatheringUtil.GathActionDict["FieldMasteryTemp"].ClassAction[jobId].ActionId;
+                        var actionId = GatheringUtil.GathActionDict["FieldMasteryTemp"].ClassAction[jobId];
                         ActionManager.Instance()->UseAction(ActionType.Action, actionId);
                         Mission_Settings.SkillUseAmount["FieldMasteryTemp"] += 1;
                     }
@@ -495,7 +495,7 @@ namespace ICE.Scheduler.Tasks
                         uint jobId = (uint)Player.Job;
 
                         IceLogging.Debug($"Using the following action: {action} on the node", debugOnly: true);
-                        var actionId = GatheringUtil.GathActionDict[action].ClassAction[jobId].ActionId;
+                        var actionId = GatheringUtil.GathActionDict[action].ClassAction[jobId];
                         ActionManager.Instance()->UseAction(ActionType.Action, actionId);
                         Mission_Settings.SkillUseAmount[action] += 1;
                     }
@@ -727,7 +727,7 @@ namespace ICE.Scheduler.Tasks
             var collectorBuffs = GatheringUtil.GathCollectableBuffs;
             var jobId = (uint)Player.Job;
 
-            var actionId = collectorBuffs[action].ClassAction[jobId].ActionId;
+            var actionId = collectorBuffs[action].ClassAction[jobId];
             if (EzThrottler.Throttle("Using Action Buff", 100))
             {
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
@@ -738,7 +738,7 @@ namespace ICE.Scheduler.Tasks
             var collectorAction = GatheringUtil.GathCollectableActions;
             var jobId = (uint)Player.Job;
 
-            var actionId = collectorAction[action].ClassAction[jobId].ActionId;
+            var actionId = collectorAction[action].ClassAction[jobId];
             if (EzThrottler.Throttle("using Action Action for collectables", 100))
             {
                 ActionManager.Instance()->UseAction(ActionType.Action, actionId);
@@ -775,6 +775,10 @@ namespace ICE.Scheduler.Tasks
                     {
                         // 
                     }
+                }
+                if (Player.Mounted)
+                {
+                    Utils.Dismount();
                 }
 
                 // We have items to desynth! Time to check and see which window we need to interact with... or just wait. 

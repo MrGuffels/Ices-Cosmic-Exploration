@@ -104,6 +104,12 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             ImGui.Text($"{x.GoldScore.Value}");
                         }
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text("Is Mission Timed out");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{CosmicHandler.IsMissionTimedOut()}");
                     }
                     else if (mission.Attributes.HasFlag(MissionAttributes.Critical))
                     {

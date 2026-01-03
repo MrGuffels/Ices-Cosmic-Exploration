@@ -7,8 +7,10 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
+using Lumina.Excel.Sheets;
 using SharpDX.DirectWrite;
 using System.Collections.Generic;
+using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static FFXIVClientStructs.FFXIV.Client.Graphics.Render.Skeleton;
 using static MissionTimer;
 
@@ -640,6 +642,18 @@ namespace ICE.Ui.MainUi.ModeSelect
                     #region Mission Id
 
                     ImGui.TableNextColumn();
+
+                    if (C.HighlightVisibleMissions)
+                    {
+                        if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var wksMission) && wksMission.IsAddonReady)
+                        {
+                            if (wksMission.StellerMissions.Any(x => x.MissionId == Id))
+                            {
+                                ImGui.TableSetBgColor(ImGuiTableBgTarget.CellBg, ImGui.GetColorU32(new Vector4(1.0f, 0.0f, 0.0f, 0.3f))); // Red with 30% alpha
+                            }
+                        }
+                    }
+
                     Table_FullCenterText(Id.ToString());
 
                     #endregion

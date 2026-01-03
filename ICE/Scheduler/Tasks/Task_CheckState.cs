@@ -142,6 +142,47 @@ namespace ICE.Scheduler.Tasks
                         }
                     }
                 }
+                if (C.FarmAllRelics) // checking for all class completions here
+                {
+                    foreach (var jobId in C.RelicJobs)
+                    {
+                        var enabled = jobId.Value;
+                        var job = (Job)jobId.Key;
+
+                        if (Player.GetLevel(job) < 10 && enabled)
+                        {
+                            IceLogging.Debug($"Skipping job: {jobId}");
+                            continue;
+                        }
+
+                        RelicInfo(out var jobComplete, out var jobStage, out var jobXpTable);
+                        if (!jobComplete)
+                        {
+                            IceLogging.Debug($"We found a job that still needs to be completed! {jobId} Current stage: {jobStage}.");
+                            if (Player.Job != job)
+                            {
+                                if (EzThrottler.Throttle("Swapping jobs"))
+                                    GearsetHandler.TaskClassChange(job);
+
+                                return false;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    if (C.Stop_AllRelicsComplete) // If we've gotten this far, and we're telling us to stop when all relics that are enabled are completed
+                    {
+                        IceLogging.Info("All relics that you have selected have been completed for this planet! And you've said to stop once we're done.");
+                        SchedulerMain.State = IceState.Idle;
+                        if (C.PlaySoundAlert)
+                        {
+                            _ = SoundPlayer.PlaySoundAsync();
+                        }
+                        return true;
+                    }
+                }
                 if (currentMissionId != 0)
                 {
                     IceLogging.Debug($"Current mission id is not 0, which means we're in the middle of a mission");
@@ -296,7 +337,7 @@ namespace ICE.Scheduler.Tasks
             SchedulerMain.MissionState = missionDictInfo.Attributes;
         }
 
-        private static unsafe bool RelicInfo(out bool isComplete, out int currentStage, out Dictionary<int, XPType> XPTable)
+        private static unsafe bool RelicInfo(out bool isComplete, out int currentStage, out Dictionary<int, XPType> XPTable, uint jobId = 0)
         {
             var maxStage = CosmicHelper.MaxRelicLevel;
 
@@ -311,7 +352,13 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
 
-            var job = (uint)Player.Job;
+            uint job = 8;
+
+            if (jobId == 0)
+                job = (uint)Player.Job;
+            else
+                job = jobId;
+
             var toolClassId = (byte)(job - 7);
             var stage = wksManager->ResearchModule->CurrentStages[toolClassId - 1];
             var nextstate = wksManager->ResearchModule->UnlockedStages[toolClassId - 1];

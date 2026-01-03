@@ -129,7 +129,37 @@ namespace ICE.Ui.DebugWindowTabs
                                 Utils.SetGatheringRing(mission.TerritoryId, (int)mission.MapPosition.X, (int)mission.MapPosition.Y, mission.Radius, mission.Name);
                             }
                         }
-                        ImGui.SameLine();
+                        if (ImGui.CollapsingHeader("All Missions for this hole"))
+                        {
+                            if (ImGui.BeginTable("Mission Viewer", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+                            {
+                                foreach (var mission in CosmicHelper.SheetMissionDict)
+                                {
+                                    if (!mission.Value.Jobs.Contains(18))
+                                        continue;
+
+                                    if (mission.Value.MapPosition != selectedFlag)
+                                        continue;
+
+                                    var key = mission.Key;
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.Text($"{key}");
+
+                                    ImGui.TableNextColumn();
+                                    var enabled = C.MissionConfig[key].Enabled;
+                                    if (ImGui.Checkbox($"##{key}_mission{mission.Value.Name}", ref enabled))
+                                    {
+                                        C.MissionConfig[key].Enabled = enabled;
+                                        C.SaveDebounced();
+                                    }
+                                }
+
+                                ImGui.EndTable();
+                            }
+                        }
+
                         if (ImGui.Button("Move to Flag"))
                         {
                             Chat.SendMessage("/vnav moveflag");
@@ -270,8 +300,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                             if (ImGui.Button("Test Naving to [New]"))
                             {
-                                P.TaskManager.Enqueue(() => StartNavmesh(spot.FishingSpot));
-                                P.TaskManager.Enqueue(() => TestPathV2());
+                                P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(spot.FishingSpot));
                                 P.TaskManager.EnqueueDelay(200);
                                 if (_fishingDebug.FindFishableLocation(out var fisablePosition, searchSteps: 128))
                                 {
@@ -291,7 +320,7 @@ namespace ICE.Ui.DebugWindowTabs
                                     PictoService.VfxRenderer.AddCircle($"Location: {location.FishingSpot.X}", location.FishingSpot, 1f, Utils.FromUintABGR(C.PictoColor_Circle));
 
                                     var floatPos = new Vector3(location.FishingSpot.X, location.FishingSpot.Y + 3.5f, location.FishingSpot.Z);
-                                    drawList.AddText(floatPos, 2667577343, $"Spot #: {holeNumber}", 5);
+                                    drawList.AddText(floatPos, 2667577343, $"Spot #: {holeNumber}", 1);
                                     holeNumber+= 1;
                                 }
                             }

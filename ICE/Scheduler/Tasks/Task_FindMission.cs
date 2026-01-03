@@ -46,9 +46,12 @@ namespace ICE.Scheduler.Tasks
         private static int timeoutAmount = 0;
         private static int maxTimeout = 10;
 
+        private static Vector3 fishingHoleLoc = Vector3.Zero;
+
         public static void Enqueue()
         {
             IceLogging.Info("Starting the find mission queue", "[Task Find Mission]");
+            fishingHoleLoc = Vector3.Zero; // this is here to make sure when we're finding a mission, the queue for the random fishing hole gets reset
             P.TaskManager.Enqueue(RefreshMissionUi, "Refreshing Mission UI");
             P.TaskManager.Enqueue(OpenMissionUi, "Opening it on proper class");
             P.TaskManager.Enqueue(RefreshSelectedMissions, "Refreshing the list of viable missions");
@@ -1039,8 +1042,6 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
         }
-
-        private static Vector3 fishingHoleLoc = Vector3.Zero;
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
             ThrottleMessage("Currently in a navmesh movement");
@@ -1070,7 +1071,7 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Error("HEY. YOU DIDN'T READ THE INFO PAGE DID YOU HUH. Navmesh isn't installed.... sooo... yeah this is unfort. Read the info page on the main page. I ain't going to hold your hand on this one");
                 return true;
             }
-            else if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather)) // TODO: Fix critical thingy
+            else if (missionEntry.Attributes.HasFlag(MissionAttributes.Gather))
             {
                 // Mission was found to be a gathering or critical mission, seeing if you're within range of it
                 Vector2 PlayerPos = new Vector2(Player.Position.X, Player.Position.Z);
@@ -1103,63 +1104,6 @@ namespace ICE.Scheduler.Tasks
                 {
                     return false;
                 }
-
-                /*
-                if (!P.Navmesh.IsReady())
-                {
-                    Utils.VnavBuildInfo();
-                    return false;
-                }
-                else if (!P.Navmesh.IsRunning())
-                {
-                    if (!Svc.Condition[ConditionFlag.Unknown101])
-                    {
-                        foreach (var node in gatherInfo)
-                        {
-                            if (Player.DistanceTo(node.Position) < 5)
-                            {
-                                IceLogging.Debug("We're close to a gathering node. So continuing on.");
-                                return true;
-                            }
-                        }
-
-                        // We ideally don't want to be trying to try and pathfind while on this. Need to wait for us to get off the hoverboard
-                        if (EzThrottler.Throttle("Inializing movement for pathfinding"))
-                        {
-                            IceLogging.DestinationLogs.Log(closestNode);
-                            P.Navmesh.PathfindAndMoveTo(closestNode, false);
-                        }
-                    }
-                }
-                else if (P.Navmesh.IsRunning())
-                {
-                    if (Svc.Condition[ConditionFlag.Unknown101])
-                    {
-                        // We're currently using the cosmoliners, telling it to stop the current navmesh in the mean time
-                        if (EzThrottler.Throttle("Stopping navmesh temp"))
-                        {
-                            P.Navmesh.Stop();
-                        }
-                    }
-                    if (C.UseMountOutsideMission && !Svc.Condition[ConditionFlag.Mounted] && !Player.IsBusy)
-                    {
-                        if (Player.DistanceTo(closestNode) > C.MountRadius)
-                        {
-                            if (EzThrottler.Throttle("Attemping to mount up for btn/min"))
-                            {
-                                Utils.MountAction();
-                            }
-                        }
-                    }
-                    else if (Svc.Condition[ConditionFlag.Mounted] && Player.DistanceTo(closestNode) < C.DismountRadius)
-                    {
-                        if (EzThrottler.Throttle("Dismounting from mount"))
-                        {
-                            Utils.Dismount();
-                        }
-                    }
-                }
-                */
             }
             else if (missionEntry.Attributes.HasFlag(MissionAttributes.Fish))
             {
@@ -1176,13 +1120,11 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Info($"Mission ID: {missionId} | Map Position: {missionEntry.MapPosition} | Moon Territory: {missionEntry.TerritoryId}");
                 }
 
-                var navPos = Vector3.Zero;
-
                 if (!P.Navmesh.IsRunning())
                 {
                     foreach (var fishSpot in fishingHole)
                     {
-                        if (Player.DistanceTo(fishSpot.FishingSpot) < 2)
+                        if (Player.DistanceTo(fishSpot.FishingSpot) < 3)
                         {
                             IceLogging.Info("We're currently at a fishing spot! Continuing onto facing position -> grabbing the mission");
                             fishingHoleLoc = Vector3.Zero;
@@ -1207,76 +1149,17 @@ namespace ICE.Scheduler.Tasks
                     {
                         if (EzThrottler.Throttle("Waitin for nav to finish"))
                         {
-                            IceLogging.Debug($"Waiting for navmesh to get to: {fishingHoleLoc}");
+                            IceLogging.Debug($"Waiting for navmesh to get to: {fishingHoleLoc}\n" +
+                                             $"Current distance: {Player.DistanceTo(fishingHoleLoc)}\n" +
+                                             $"Currently at: {Player.Position:N2}");
                         }
                         return false;
                     }
-                }
-
-                /*
-                if (!P.Navmesh.IsReady())
-                {
-                    Utils.VnavBuildInfo();
-                }
-                if (!P.Navmesh.IsRunning())
-                {
-                    if (!Svc.Condition[ConditionFlag.Unknown101])
+                    else
                     {
-                        foreach (var fishSpot in fishingHole)
-                        {
-                            if (Player.DistanceTo(fishSpot.FishingSpot) < 2)
-                            {
-                                IceLogging.Info("We're currently at a fishing spot! Continuing onto facing position -> grabbing the mission");
-                                return true;
-                            }
-                        }
-                        if (EzThrottler.Throttle("Inializing movement for pathfinding"))
-                        {
-                            var _random = new Random();
-                            var randomIndex = _random.Next(fishingHole.Count);
-                            IceLogging.Debug($"Random number generator said we're going to the following fishing hole #: {randomIndex}");
-                            if (randomIndex < fishingHole.Count)
-                            {
-                                Vector3 navPos = fishingHole[randomIndex].FishingSpot;
-                                IceLogging.DestinationLogs.Log(navPos);
-                                P.Navmesh.PathfindAndMoveTo(navPos, false);
-                                fishingHoleLoc = navPos;
-                                IceLogging.Debug($"Told navmesh to move to the following spot: {fishingHoleLoc}");
-                            }
-                        }
+                        fishingHoleLoc = Vector3.Zero;
                     }
                 }
-                else if (P.Navmesh.IsRunning())
-                {
-                    if (Svc.Condition[ConditionFlag.Unknown101])
-                    {
-                        // We're currently using the cosmoliners, telling it to stop the current navmesh in the mean time
-                        if (EzThrottler.Throttle("Stopping navmesh temp"))
-                        {
-                            IceLogging.Debug("Telling navmesh to stop cause on a cosmoliner");
-                            P.Navmesh.Stop();
-                            fishingPath.Clear();
-                        }
-                    }
-                    if (C.UseMountOutsideMission && !Svc.Condition[ConditionFlag.Mounted] && !Player.IsBusy)
-                    {
-                        if (Player.DistanceTo(fishingHoleLoc) > C.MountRadius)
-                        {
-                            if (EzThrottler.Throttle("Attemping to mount up for btn/min"))
-                            {
-                                Utils.MountAction();
-                            }
-                        }
-                    }
-                    else if (Svc.Condition[ConditionFlag.Mounted] && Player.DistanceTo(fishingHoleLoc) < C.DismountRadius)
-                    {
-                        if (EzThrottler.Throttle("Dismounting from mount"))
-                        {
-                            Utils.Dismount();
-                        }
-                    }
-                }
-                */
             }
             else
             {

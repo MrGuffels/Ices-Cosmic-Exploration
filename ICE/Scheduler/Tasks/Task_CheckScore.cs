@@ -61,9 +61,6 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (fishingInfo.AmountRequired == 0 && !missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                        if (missionInfo.CurrentScore == null)
-                            return false;
-
                         IceLogging.Debug("We're in a mission where score is the only importants. Checking to see if we meet the minimum score thresh", tag);
                         var currentScore = missionInfo.CurrentScore;
                         if (currentScore >= missionEntry.BronzeScore)
@@ -168,15 +165,12 @@ namespace ICE.Scheduler.Tasks
                 var id = CosmicHelper.CurrentLunarMission;
                 if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionEntry))
                 {
-                    if (missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
+                    if (CosmicHandler.IsMissionTimedOut())
                     {
-                        if (missionInfo.CriticalScore == null)
-                            return false;
-                    }
-                    else
-                    {
-                        if (missionInfo.CurrentScore == null)
-                            return false;
+                        IceLogging.Debug("Mission is timed out, attempting to abandon");
+                        SchedulerMain.State = IceState.AbandonMission;
+                        P.TaskManager.Tasks.Clear();
+                        return true;
                     }
 
                     if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
@@ -198,6 +192,9 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
+                        if (missionInfo.CurrentScore == null)
+                            return false;
+
                         IceLogging.Debug("We're not in a mission where it's scored based off of time, so going to check to see if we meet the bronze threshold instead");
                         if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var mission))
                         {

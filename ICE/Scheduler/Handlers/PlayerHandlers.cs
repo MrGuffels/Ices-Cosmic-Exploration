@@ -175,6 +175,7 @@ internal static unsafe class PlayerHandlers
     {
         return AgentMap.Instance()->IsPlayerMoving;
     }
+    public static bool PlayerFirstCosmicZone = false;
 
     internal static unsafe void Tick()
     {
@@ -207,6 +208,29 @@ internal static unsafe class PlayerHandlers
             }
         }
 
+        if (C.StartUponEnterMoon)
+        {
+            if (PlayerHelper.IsInCosmicZone() && !PlayerFirstCosmicZone)
+            {
+                PlayerFirstCosmicZone = true;
+                P.TaskManager.EnqueueDelay(1000);
+                P.TaskManager.Enqueue(() => InitiateFirstCosmic(), "Waiting for player to be available");
+            }
+            if (PlayerFirstCosmicZone && !PlayerHelper.IsInCosmicZone())
+                PlayerFirstCosmicZone = false;
+        }
+
+    }
+
+    private static bool? InitiateFirstCosmic()
+    {
+        if (Player.Interactable)
+        {
+            SchedulerMain.State = IceState.Start;
+            return true;
+        }
+
+        return false;
     }
 
     internal static void DisablePlugin()
@@ -216,6 +240,7 @@ internal static unsafe class PlayerHandlers
             P.TaskManager.Abort();
             SchedulerMain.DisablePlugin();
         }
+        PlayerFirstCosmicZone = false;
     }
 
     private static void UseSprint()

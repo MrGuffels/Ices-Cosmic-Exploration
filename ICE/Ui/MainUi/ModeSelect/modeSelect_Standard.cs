@@ -120,6 +120,38 @@ namespace ICE.Ui.MainUi.ModeSelect
                 uint currentJobId = (uint)Player.Job;
                 bool usingSupportedJob = CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId);
 
+                bool AnyStop = C.StopOnceHitCosmicScore
+                             | C.StopWhenLevel
+                            || C.StopOnceHitCosmoCredits
+                            || C.StopOnceHitLunarCredits
+                            || C.StopOnceRelicFinished;
+                if (AnyStop)
+                {
+                    ImGui.SameLine(0, 10 * scale);
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
+                    ImGuiEx.Icon(FontAwesomeIcon.ExclamationTriangle);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+
+                        ImGui.Text("It appears that you have on of the following enabled");
+                        if (C.StopOnceHitCosmicScore)
+                            ImGui.BulletText($"Stop at Cosmic Score [{C.CosmicScoreCap:N0}]");
+                        if (C.StopWhenLevel)
+                            ImGui.BulletText($"Stop When Level [{C.TargetLevel:N0}]");
+                        if (C.StopOnceHitCosmoCredits)
+                            ImGui.BulletText($"Stop once cosmo credit hit [{C.CosmoCreditsCap:N0}]");
+                        if (C.StopOnceHitLunarCredits)
+                            ImGui.BulletText($"Stop once planetary credit hit [{C.LunarCreditsCap:N0}]");
+                        if (C.StopOnceRelicFinished)
+                            ImGui.BulletText($"Stop once relic completed");
+
+                        ImGui.Text("So if you stop and you're unsure why... this might be why");
+
+                        ImGui.EndTooltip();
+                    }
+                }
+
                 ImGui.SameLine(0, 10 * scale);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
 
@@ -133,6 +165,7 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                 ImGui.SameLine(0, 10 * scale);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
+
                 using (ImRaii.Disabled(SchedulerMain.State == IceState.Idle))
                 {
                     using (ImRaii.PushColor(ImGuiCol.Button, new Vector4(0.8f, 0.2f, 0.2f, 1.0f)))
@@ -383,15 +416,17 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                     if (C.GrindProvisionals)
                     {
-                        ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
                         ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
                         ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
                         ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
+                        if (allEnabled > 0)
+                        {
+                            ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
+                        }
                         ImGui_Tools.EndCategoryButtonRow();
                     }
                     else
                     {
-                        ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
                         ImGui_Tools.DrawCategoryButton($"Critical [{criticalEnabled}]", "main_Critical");
                         ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
                         ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
@@ -399,7 +434,15 @@ namespace ICE.Ui.MainUi.ModeSelect
                         ImGui_Tools.DrawCategoryButton($"A Rank [{aRankEnabled}]", "main_ARank");
                         ImGui_Tools.DrawCategoryButton($"B Rank [{bRankEnabled}]", "main_BRank");
                         ImGui_Tools.DrawCategoryButton($"C Rank [{cRankEnabled}]", "main_CRank");
-                        ImGui_Tools.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank", spacingAfter: 0);
+                        ImGui_Tools.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank");
+                        var selectedClass = C.SelectedJob;
+                        var jobIcon = CosmicHelper.JobIconDict[selectedClass];
+                        ImGui_Tools.DrawImageBox(jobIcon, "Selected", spacingAfter: 5);
+                        if (allEnabled > 0)
+                        {
+                            ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
+                        }
+
                         ImGui_Tools.EndCategoryButtonRow();
                     }
                 }
@@ -455,7 +498,15 @@ namespace ICE.Ui.MainUi.ModeSelect
                         .ToList();
 
                     if (enabledTabs["main_AllEnabled"])
-                        modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.missionList["All Enabled"]);
+                    {
+                        int allEnabled = modeSelect_TableInfo.missionList.ContainsKey("All Enabled") ? modeSelect_TableInfo.missionList["All Enabled"].Count(mission => mission.enabled) : 0;
+                        if (allEnabled == 0)
+                            enabledTabs["main_AllEnabled"] = false;
+                        else
+                        {
+                            modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.missionList["All Enabled"]);
+                        }
+                    }
                     if (enabledTabs["main_Sequence"])
                         modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.missionList["Sequence"]);
                     if (enabledTabs["main_Weather"])
@@ -467,6 +518,10 @@ namespace ICE.Ui.MainUi.ModeSelect
                 {
                     if (enabledTabs["main_AllEnabled"])
                     {
+                        int allEnabled = modeSelect_TableInfo.missionList.ContainsKey("All Enabled") ? modeSelect_TableInfo.missionList["All Enabled"].Count(mission => mission.enabled) : 0;
+                        if (allEnabled == 0)
+                            enabledTabs["main_AllEnabled"] = false;
+
                         if (modeSelect_TableInfo.missionList["All Enabled"].Count > 0)
                         {
                             modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["All Enabled"]));

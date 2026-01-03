@@ -319,7 +319,7 @@ namespace ICE.Scheduler.Tasks
                                     if (EzThrottler.Throttle($"Using Gathering Action: {key}"))
                                     {
                                         IceLogging.Debug($"Using the following action: {key} in full durability section", debugOnly: true);
-                                        var actionId = gathActions[key].ClassAction[jobId].ActionId;
+                                        var actionId = gathActions[key].ClassAction[jobId];
                                         ActionManager.Instance()->UseAction(ActionType.Action, actionId);
                                         Mission_Settings.SkillUseAmount[key] += 1;
                                     }

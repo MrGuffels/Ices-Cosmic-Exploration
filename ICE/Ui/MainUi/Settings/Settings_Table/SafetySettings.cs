@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dalamud.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         public static void Draw()
         {
+            ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, "Safety Settings");
+            ImGui.Dummy(new Vector2(0, 5));
+
             if (ImGui.Checkbox("Ignore non-Cosmic prompts", ref rejectUnknownYesNo))
             {
                 C.RejectUnknownYesno = rejectUnknownYesNo;

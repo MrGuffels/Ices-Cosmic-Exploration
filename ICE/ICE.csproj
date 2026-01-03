@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0">
 
 	<PropertyGroup>
-		<Version>0.0.74.1</Version>
+		<Version>0.0.74.4</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 		<Content Include="ICE.json" />
+		<Content Include="utilities\Z_RandomNotes.yaml" />
 		<EmbeddedResource Include="Resources\GreyscaleJobs\ALC.png" />
 		<EmbeddedResource Include="Resources\GreyscaleJobs\ARM.png" />
 		<EmbeddedResource Include="Resources\GreyscaleJobs\BSM.png" />

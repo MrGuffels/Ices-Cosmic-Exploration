@@ -23,7 +23,18 @@ public static partial class ImGui_Tools
     // Key: Category Name
     // Value: Is Expanded (true/false)
     // This is just a simple way of keeping track of all of them, so I can easily reference what state they're in
-    public static Dictionary<string, bool> CategoryStates = new();
+    public static Dictionary<string, bool> CategoryStates = new()
+    {
+        ["main_AllEnabled"] = false,
+        ["main_Critical"] = false,
+        ["main_Sequence"] = false,
+        ["main_Weather"] = false,
+        ["main_Timed"] = false,
+        ["main_ARank"] = true,
+        ["main_BRank"] = true,
+        ["main_CRank"] = true,
+        ["main_DRank"] = true,
+    };
 
     // My Custom Header, Uses FontAwesomeIcon and a 
     public static bool DrawCategoryHeader_AutoSize(string label, FontAwesomeIcon? icon = null, IDalamudTextureWrap? imageTexture = null)
@@ -287,6 +298,71 @@ public static partial class ImGui_Tools
         ImGui.SameLine(0, spacingAfter * scale);
 
         return isExpanded;
+    }
+    public static void DrawImageBox(ISharedImmediateTexture texture, string? label = null, float imageZoom = 1.5f, float spacingAfter = 5)
+    {
+        float scale = ImGuiHelpers.GlobalScale;
+
+        // Default coloring to match button style
+        var headerColor = ImGui.GetColorU32(ImGuiCol.Button);
+
+        // Setting the values of the content size (padding, spacing, ect)
+        float horizontalPadding = 8 * scale;
+        float verticalPadding = 4 * scale;
+        float iconTextSpacing = 4 * scale;
+
+        var drawList = ImGui.GetWindowDrawList();
+        var cursorPos = ImGui.GetCursorScreenPos();
+
+        // Calculate text size if label provided
+        Vector2 textSize = Vector2.Zero;
+        float textWidth = 0;
+        if (!string.IsNullOrEmpty(label))
+        {
+            textSize = ImGui.CalcTextSize(label);
+            textWidth = textSize.X + iconTextSpacing;
+        }
+
+        // Image size should match the text height from buttons to keep consistent height
+        float imageSize = textSize.Y > 0 ? textSize.Y : ImGui.CalcTextSize("A").Y;
+
+        // Calculating box dimensions - height should match button height
+        float contentWidth = horizontalPadding * 2 + imageSize + textWidth;
+        float contentHeight = verticalPadding * 2 + (textSize.Y > 0 ? textSize.Y : ImGui.CalcTextSize("A").Y);
+
+        // Draw background rectangle with rounded corners
+        drawList.AddRectFilled(cursorPos, new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight), headerColor, 5.0f * scale);
+
+        // Calculate vertical center
+        float contentVerticalCenter = cursorPos.Y + (contentHeight / 2);
+
+        // Draw image centered vertically with UV zoom
+        float imageYOffset = contentVerticalCenter - (imageSize / 2);
+        var imagePos = new Vector2(cursorPos.X + horizontalPadding, imageYOffset);
+
+        // Calculate UV coordinates for zoom effect (zooms into center)
+        float uvZoom = 1.0f / imageZoom;
+        float uvOffset = (1.0f - uvZoom) / 2.0f;
+        Vector2 uv0 = new Vector2(uvOffset, uvOffset);
+        Vector2 uv1 = new Vector2(uvOffset + uvZoom, uvOffset + uvZoom);
+
+        drawList.AddImage(texture.GetWrapOrEmpty().Handle, imagePos, new Vector2(imagePos.X + imageSize, imagePos.Y + imageSize), uv0, uv1);
+
+        // Draw text if provided, centered vertically
+        if (!string.IsNullOrEmpty(label))
+        {
+            float textYOffset = contentVerticalCenter - (textSize.Y / 2);
+            float textXPos = cursorPos.X + horizontalPadding + imageSize + iconTextSpacing;
+            ImGui.SetCursorScreenPos(new Vector2(textXPos, textYOffset));
+            ImGui.Text(label);
+        }
+
+        // Create an invisible button to properly reserve space and handle layout (matches DrawCategoryButton)
+        ImGui.SetCursorScreenPos(cursorPos);
+        ImGui.InvisibleButton($"##imagebox_{label}", new Vector2(contentWidth, contentHeight));
+
+        // Add spacing after the button (scaled) - matches DrawCategoryButton
+        ImGui.SameLine(0, spacingAfter * scale);
     }
 
     public static void EndCategoryButtonRow()
