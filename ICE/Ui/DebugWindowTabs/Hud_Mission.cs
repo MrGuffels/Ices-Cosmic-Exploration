@@ -65,6 +65,17 @@ namespace ICE.Ui.DebugWindowTabs
                     C.Save();
                 }
 
+                for (int i = 0; i < x.SelectClass.Length; i++)
+                {
+                    if (i != 0)
+                        ImGui.SameLine();
+                    
+                    if (ImGui.Button($"[{i}]"))
+                    {
+                        x.SelectClass[i].Select();
+                    }
+                }
+
                 bool EnableXpGrind = C.XPRelicGrind;
                 bool IgnoreManual = C.XPRelicIgnoreManual;
                 bool onlyEnabled = C.XPRelicOnlyEnabled;

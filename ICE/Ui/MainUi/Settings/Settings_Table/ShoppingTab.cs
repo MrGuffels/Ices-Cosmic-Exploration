@@ -21,6 +21,22 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.StopOnceHitCosmoCredits = false;
                 C.Save();
             }
+            ImGui.SameLine();
+            ImGuiEx.Icon(FontAwesomeIcon.QuestionCircle);
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("This is your personalized shopping list that you can create that it will run when you hit a certain amount of credits.");
+                ImGui.Text("Here's what each of the following does:");
+                ImGui.BulletText("Keep: Will buy up to that many items to make sure that you have in your inventory. This count doesn't go down between runs.\n" +
+                                 "Useful for things like cordials where you want to always have a certain amount on hand");
+                ImGui.BulletText("Buy: Will buy X amount of those items, as it buys it from the vendor, the number will decrease until it hits 0.\n" +
+                                 "Good for one off buys, or something that you only need a particular amount of");
+                ImGui.BulletText("Keep Buying: Once the other 2 have been met (Keep/Buy), it will constantly buy this item if it has the credits to do so.\n" +
+                                 "This can only be set to 1 item, and gererally used for things you want to just spend your credits on");
+                ImGui.EndTooltip();
+            }
+            ImGui.NewLine();
 
             int buyAtAmount = C.CosmoBuyAtAmount;
             ImGui.SetNextItemWidth(150);

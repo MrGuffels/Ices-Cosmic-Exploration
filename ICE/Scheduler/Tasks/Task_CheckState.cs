@@ -24,6 +24,8 @@ namespace ICE.Scheduler.Tasks
             var currentMissionId = CosmicHelper.CurrentLunarMission;
             int maxStage = 14;
 
+            IceLogging.Debug("Task: Check State, has commenced");
+
             if (AddonHelper.IsAddonActive("WKSLottery"))
             {
                 IceLogging.Info("Setting State to gambling");

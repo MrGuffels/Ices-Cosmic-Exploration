@@ -47,8 +47,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                 FontAwesomeIcon modeIcon = FontAwesomeIcon.List;
 
                 bool relicMode = C.XPRelicGrind;
-                bool provisionalMode = C.GrindProvisionals;
-                bool standard = (!relicMode && !provisionalMode);
+                bool standard = (!relicMode);
 
                 if (standard)
                     modeType = "Standard";
@@ -56,11 +55,6 @@ namespace ICE.Ui.MainUi.ModeSelect
                 {
                     modeType = "Relic Grind";
                     modeIcon = FontAwesomeIcon.ArrowUpRightDots;
-                }
-                else if (provisionalMode)
-                {
-                    modeType = "Provisional";
-                    modeIcon = FontAwesomeIcon.Cloud;
                 }
 
                 ImGuiEx.IconWithText(modeIcon, $"{modeType} Mode");
@@ -85,7 +79,6 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (ImGui.RadioButton("Standard", standard))
                     {
                         C.XPRelicGrind = false;
-                        C.GrindProvisionals = false;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Stand Mode \n" +
@@ -95,25 +88,12 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (ImGui.RadioButton("Relic Grind", relicMode))
                     {
                         C.XPRelicGrind = true;
-                        C.GrindProvisionals = false;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Relic Grind\n" +
                                        "-> Automatically select which missions that are best to finish up your relic\n" +
                                        "-> These are weighed based on what is needed to complete the tool to the next step\n" +
                                        "-> If you want to only do certain missions, enable the option and select which ones you want to do");
-                    if (ImGui.RadioButton("Provisional Grind", provisionalMode))
-                    {
-                        C.XPRelicGrind = false;
-                        C.GrindProvisionals = true;
-                        C.Save();
-                    }
-                    ImGuiEx.HelpMarker("Provisional Grind\n" +
-                                       "-> Grind provisional missions [Weather | Timed | Sequence] that you have enabled\n" +
-                                       "-> Use this to grind all classes. You can set the priority for which classes and " +
-                                       "types of missions that you want to do\n" +
-                                       "-> Useful if you're aiming to grind out score/tokens across all classes, or want to do specific missions at certain times");
-
                     ImGui.EndPopup();
                 }
 
@@ -231,9 +211,6 @@ namespace ICE.Ui.MainUi.ModeSelect
                         bool relicTurnin = C.TurninRelic;
                         if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_RelicGrind", ref relicTurnin))
                         {
-                            if (relicTurnin)
-                                C.GrindProvisionals = false;
-
                             C.TurninRelic = relicTurnin;
                             C.Save();
                         }
@@ -255,10 +232,6 @@ namespace ICE.Ui.MainUi.ModeSelect
                         bool EnableRelicXp = C.XPRelicGrind;
                         if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))
                         {
-                            if (EnableRelicXp)
-                            {
-                                C.GrindProvisionals = false;
-                            }
                             C.XPRelicGrind = EnableRelicXp;
                             C.Save();
                         }
@@ -338,13 +311,6 @@ namespace ICE.Ui.MainUi.ModeSelect
                                 continue;
                         }
                     }
-                    else if (C.GrindProvisionals)
-                    {
-                        // honestly do nothing here, this is just to catch and show all the jobs for this mode here. Kinda lazy I realize but *-shrugs-*
-                    }
-                    else if (!Jobs.Contains(selectedJob))
-                        continue;
-
 
                     if (!sinusEnabled && territoryId == 1237)
                         continue;
@@ -352,11 +318,17 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (!phaennaEnabled && territoryId == 1291)
                         continue;
 
-                    if (C.GrindProvisionals)
+                    bool provisional = mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
+                                    || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
+                                    || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential);
+
+                    if (provisional)
                     {
-                        bool provisional = mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
-                                        || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                                        || mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential);
+                        if (!C.GrindAllProvisionals)
+                        {
+                            if (!Jobs.Contains(selectedJob))
+                                continue;
+                        }
 
                         if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
                             modeSelect_TableInfo.missionList["Weather"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
@@ -365,21 +337,18 @@ namespace ICE.Ui.MainUi.ModeSelect
                         else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
                             modeSelect_TableInfo.missionList["Sequence"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
 
-                        if (C.MissionConfig.ContainsKey(mission.Key) && C.MissionConfig[mission.Key].Enabled && provisional)
+                        if (C.MissionConfig.ContainsKey(mission.Key) && C.MissionConfig[mission.Key].Enabled)
                         {
                             modeSelect_TableInfo.missionList["All Enabled"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
                         }
                     }
                     else
                     {
+                        if (!Jobs.Contains(selectedJob))
+                            continue;
+
                         if (mission.Value.Attributes.HasFlag(MissionAttributes.Critical))
                             modeSelect_TableInfo.missionList["Critical"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                            modeSelect_TableInfo.missionList["Weather"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                            modeSelect_TableInfo.missionList["Timed"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
-                        else if (mission.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                            modeSelect_TableInfo.missionList["Sequence"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
                         else if (mission.Value.Rank > 3)
                             modeSelect_TableInfo.missionList["ARank"].Add(new modeSelect_TableInfo.Mission { id = mission.Key, enabled = C.MissionConfig[mission.Key].Enabled });
                         else if (mission.Value.Rank == 3)
@@ -414,37 +383,23 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (!missionButtons.Success)
                         return;
 
-                    if (C.GrindProvisionals)
+                    ImGui_Tools.DrawCategoryButton($"Critical [{criticalEnabled}]", "main_Critical");
+                    ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
+                    ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
+                    ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
+                    ImGui_Tools.DrawCategoryButton($"A Rank [{aRankEnabled}]", "main_ARank");
+                    ImGui_Tools.DrawCategoryButton($"B Rank [{bRankEnabled}]", "main_BRank");
+                    ImGui_Tools.DrawCategoryButton($"C Rank [{cRankEnabled}]", "main_CRank");
+                    ImGui_Tools.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank");
+                    var selectedClass = C.SelectedJob;
+                    var jobIcon = CosmicHelper.JobIconDict[selectedClass];
+                    ImGui_Tools.DrawImageBox(jobIcon, "Selected", spacingAfter: 5);
+                    if (allEnabled > 0)
                     {
-                        ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
-                        ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
-                        ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
-                        if (allEnabled > 0)
-                        {
-                            ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
-                        }
-                        ImGui_Tools.EndCategoryButtonRow();
+                        ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
                     }
-                    else
-                    {
-                        ImGui_Tools.DrawCategoryButton($"Critical [{criticalEnabled}]", "main_Critical");
-                        ImGui_Tools.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
-                        ImGui_Tools.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
-                        ImGui_Tools.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
-                        ImGui_Tools.DrawCategoryButton($"A Rank [{aRankEnabled}]", "main_ARank");
-                        ImGui_Tools.DrawCategoryButton($"B Rank [{bRankEnabled}]", "main_BRank");
-                        ImGui_Tools.DrawCategoryButton($"C Rank [{cRankEnabled}]", "main_CRank");
-                        ImGui_Tools.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank");
-                        var selectedClass = C.SelectedJob;
-                        var jobIcon = CosmicHelper.JobIconDict[selectedClass];
-                        ImGui_Tools.DrawImageBox(jobIcon, "Selected", spacingAfter: 5);
-                        if (allEnabled > 0)
-                        {
-                            ImGui_Tools.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
-                        }
 
-                        ImGui_Tools.EndCategoryButtonRow();
-                    }
+                    ImGui_Tools.EndCategoryButtonRow();
                 }
 
                 if (C.ShowExtraMissionInfo)
@@ -479,75 +434,53 @@ namespace ICE.Ui.MainUi.ModeSelect
             using (var missionTableChild = ImRaii.Child("##modeSelect_MissionTables", new Vector2(0, 0), false))
             {
                 var enabledTabs = ImGui_Tools.CategoryStates;
-                if (C.GrindProvisionals)
+                modeSelect_TableInfo.missionList["All Enabled"] = modeSelect_TableInfo.missionList["All Enabled"]
+                                                                 .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                                                                 .ToList();
+
+                modeSelect_TableInfo.missionList["Sequence"] = modeSelect_TableInfo.missionList["Sequence"]
+                    .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                    .ToList();
+
+                modeSelect_TableInfo.missionList["Weather"] = modeSelect_TableInfo.missionList["Weather"]
+                    .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                    .ToList();
+
+                modeSelect_TableInfo.missionList["Timed"] = modeSelect_TableInfo.missionList["Timed"]
+                    .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
+                    .ToList();
+
+                if (enabledTabs["main_AllEnabled"])
                 {
-                    modeSelect_TableInfo.missionList["All Enabled"] = modeSelect_TableInfo.missionList["All Enabled"]
-                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                        .ToList(); // ToList() if you need a List<T>, otherwise the IOrderedEnumerable is fine
+                    int allEnabled = modeSelect_TableInfo.missionList.ContainsKey("All Enabled") ? modeSelect_TableInfo.missionList["All Enabled"].Count(mission => mission.enabled) : 0;
+                    if (allEnabled == 0)
+                        enabledTabs["main_AllEnabled"] = false;
 
-                    modeSelect_TableInfo.missionList["Sequence"] = modeSelect_TableInfo.missionList["Sequence"]
-                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                        .ToList();
-
-                    modeSelect_TableInfo.missionList["Weather"] = modeSelect_TableInfo.missionList["Weather"]
-                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                        .ToList();
-
-                    modeSelect_TableInfo.missionList["Timed"] = modeSelect_TableInfo.missionList["Timed"]
-                        .OrderBy(x => C.JobPrio.IndexOf(CosmicHelper.SheetMissionDict[x.id].Jobs.First()))
-                        .ToList();
-
-                    if (enabledTabs["main_AllEnabled"])
+                    if (modeSelect_TableInfo.missionList["All Enabled"].Count > 0)
                     {
-                        int allEnabled = modeSelect_TableInfo.missionList.ContainsKey("All Enabled") ? modeSelect_TableInfo.missionList["All Enabled"].Count(mission => mission.enabled) : 0;
-                        if (allEnabled == 0)
-                            enabledTabs["main_AllEnabled"] = false;
-                        else
-                        {
-                            modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.missionList["All Enabled"]);
-                        }
+                        modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["All Enabled"]));
                     }
-                    if (enabledTabs["main_Sequence"])
-                        modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.missionList["Sequence"]);
-                    if (enabledTabs["main_Weather"])
-                        modeSelect_TableInfo.DrawMissionTablev2("Weather", "Weather_Missions", modeSelect_TableInfo.missionList["Weather"]);
-                    if (enabledTabs["main_Timed"])
-                        modeSelect_TableInfo.DrawMissionTablev2("Timed", "Timed_Missions", modeSelect_TableInfo.missionList["Timed"]);
-                }
-                else
-                {
-                    if (enabledTabs["main_AllEnabled"])
+                    else
                     {
-                        int allEnabled = modeSelect_TableInfo.missionList.ContainsKey("All Enabled") ? modeSelect_TableInfo.missionList["All Enabled"].Count(mission => mission.enabled) : 0;
-                        if (allEnabled == 0)
-                            enabledTabs["main_AllEnabled"] = false;
-
-                        if (modeSelect_TableInfo.missionList["All Enabled"].Count > 0)
-                        {
-                            modeSelect_TableInfo.DrawMissionTablev2("All Enabled", "All_Enabled", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["All Enabled"]));
-                        }
-                        else
-                        {
-                            ImGui.Text("HEY. ENABLE SOME MISSIONS SO WE CAN DISPLAY SOMETHING HERE");
-                        }
+                        ImGui.Text("HEY. ENABLE SOME MISSIONS SO WE CAN DISPLAY SOMETHING HERE");
                     }
-                    if (enabledTabs["main_Critical"])
-                        modeSelect_TableInfo.DrawMissionTablev2("Critical", "Critical_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Critical"]));
-                    if (enabledTabs["main_Sequence"])
-                        modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Sequence"]));
-                    if (enabledTabs["main_Weather"])
-                        modeSelect_TableInfo.DrawMissionTablev2("Weather", "Weather_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Weather"]));
-                    if (enabledTabs["main_Timed"])
-                        modeSelect_TableInfo.DrawMissionTablev2("Timed", "Timed_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Timed"]));
-                    if (enabledTabs["main_ARank"])
-                        modeSelect_TableInfo.DrawMissionTablev2("A Rank", "A_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["ARank"]));
-                    if (enabledTabs["main_BRank"])
-                        modeSelect_TableInfo.DrawMissionTablev2("B Rank", "B_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["BRank"]));
-                    if (enabledTabs["main_CRank"])
-                        modeSelect_TableInfo.DrawMissionTablev2("C Rank", "C_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["CRank"]));
-                    if (enabledTabs["main_DRank"])
-                        modeSelect_TableInfo.DrawMissionTablev2("D Rank", "D_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["DRank"]));
                 }
+                if (enabledTabs["main_Critical"])
+                    modeSelect_TableInfo.DrawMissionTablev2("Critical", "Critical_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Critical"]));
+                if (enabledTabs["main_Sequence"])
+                    modeSelect_TableInfo.DrawMissionTablev2("Sequence", "Sequence_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Sequence"]));
+                if (enabledTabs["main_Weather"])
+                    modeSelect_TableInfo.DrawMissionTablev2("Weather", "Weather_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Weather"]));
+                if (enabledTabs["main_Timed"])
+                    modeSelect_TableInfo.DrawMissionTablev2("Timed", "Timed_Missions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["Timed"]));
+                if (enabledTabs["main_ARank"])
+                    modeSelect_TableInfo.DrawMissionTablev2("A Rank", "A_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["ARank"]));
+                if (enabledTabs["main_BRank"])
+                    modeSelect_TableInfo.DrawMissionTablev2("B Rank", "B_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["BRank"]));
+                if (enabledTabs["main_CRank"])
+                    modeSelect_TableInfo.DrawMissionTablev2("C Rank", "C_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["CRank"]));
+                if (enabledTabs["main_DRank"])
+                    modeSelect_TableInfo.DrawMissionTablev2("D Rank", "D_RankMissions", modeSelect_TableInfo.SortMissionList(modeSelect_TableInfo.missionList["DRank"]));
             }
         }
     }

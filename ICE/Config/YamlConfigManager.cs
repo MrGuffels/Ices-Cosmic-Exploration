@@ -15,13 +15,11 @@ public static class YamlConfig
         .IgnoreUnmatchedProperties()
         .Build();
 
-    // Keep synchronous Load since reading on startup is acceptable
     public static T Load<T>(string path) where T : new()
     {
         if (!File.Exists(path))
         {
             var defaultConfig = new T();
-            // Use synchronous save for initial creation
             SaveSync(defaultConfig, path);
             return defaultConfig;
         }
@@ -33,23 +31,39 @@ public static class YamlConfig
     public static async Task SaveAsync<T>(T config, string path)
     {
         var yaml = Serializer.Serialize(config);
+
+        // Ensure directory exists
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
         }
-        await File.WriteAllTextAsync(path, yaml).ConfigureAwait(false);
+
+        // Write to temp file first
+        var tempPath = path + ".tmp";
+        await File.WriteAllTextAsync(tempPath, yaml).ConfigureAwait(false);
+
+        // Atomic replace
+        File.Replace(tempPath, path, path + ".bak", true);
     }
 
     public static void SaveSync<T>(T config, string path)
     {
         var yaml = Serializer.Serialize(config);
+
+        // Ensure directory exists
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
         }
-        File.WriteAllText(path, yaml);
+
+        // Write to temp file first
+        var tempPath = path + ".tmp";
+        File.WriteAllText(tempPath, yaml);
+
+        // Atomic replace (creates .bak automatically)
+        File.Replace(tempPath, path, path + ".bak", true);
     }
 
     public static T LoadFromResource<T>(string resourceName) where T : new()

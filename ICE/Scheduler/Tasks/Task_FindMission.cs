@@ -52,31 +52,21 @@ namespace ICE.Scheduler.Tasks
         {
             IceLogging.Info("Starting the find mission queue", "[Task Find Mission]");
             fishingHoleLoc = Vector3.Zero; // this is here to make sure when we're finding a mission, the queue for the random fishing hole gets reset
-            P.TaskManager.Enqueue(RefreshMissionUi, "Refreshing Mission UI");
+            // P.TaskManager.Enqueue(RefreshMissionUi, "Refreshing Mission UI");
             P.TaskManager.Enqueue(OpenMissionUi, "Opening it on proper class");
             P.TaskManager.Enqueue(RefreshSelectedMissions, "Refreshing the list of viable missions");
             if (C.XPRelicGrind)
             {
                 P.TaskManager.Enqueue(() => OpenTab("ExpCheck"), "Opening Standard tab for relic grind");
             }
-            else if (C.GrindProvisionals)
-            {
-                P.TaskManager.Enqueue(() => OpenTab("ProvisionalGrind"), "Opening Provisional Grind Check");
-            }
             else
             {
                 P.TaskManager.Enqueue(TabTasksCheck, "Checking which tabs to check for missions");
             }
         }
+        /*
         public static bool? RefreshMissionUi()
         {
-            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talkUi) && talkUi.IsAddonReady)
-            {
-                if (EzThrottler.Throttle("Closing the talk"))
-                    talkUi.Click();
-
-                return false;
-            }
 
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && !hud.IsAddonReady)
             {
@@ -98,8 +88,17 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        */
         public static bool? OpenMissionUi()
         {
+            if (GenericHelpers.TryGetAddonMaster<Talk>("Talk", out var talkUi) && talkUi.IsAddonReady)
+            {
+                if (EzThrottler.Throttle("Closing the talk"))
+                    talkUi.Click();
+
+                return false;
+            }
+
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
             {
                 IceLogging.Info("Starting the find mission queue", "[Task: Find Mission | Open Mission Ui]");
@@ -133,7 +132,7 @@ namespace ICE.Scheduler.Tasks
             SpecialMissionCount = 0;
             BasicMissionCount = 0;
 
-            uint currentJobId = (uint)Player.Job;
+            uint currentJobId = (uint)Mission_Settings.StartJob;
 
             foreach (var mission in C.MissionConfig)
             {
@@ -151,58 +150,71 @@ namespace ICE.Scheduler.Tasks
                 HashSet<uint> missionJobs = new HashSet<uint>();
                 if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo))
                 {
-                    missionJobs = missionInfo.Jobs;
-                    if (!missionJobs.Contains(currentJobId))
-                        continue;
+                    var attribute = missionInfo.Attributes;
 
-                    // Territory Check, cause people seem to also be forgetting this
-                    if (missionInfo.TerritoryId != Player.Territory.RowId)
-                        continue;
+                    if (attribute.HasFlag(MissionAttributes.ProvisionalSequential)
+                       || attribute.HasFlag(MissionAttributes.ProvisionalTimed)
+                       || attribute.HasFlag(MissionAttributes.ProvisionalWeather))
+                    {
+                        if (missionInfo.TerritoryId != Player.Territory.RowId)
+                            continue;
 
-                    // Alright, mission was double checked to make sure it was enabled
-                    // And also checked to make sure that the current job is on the mission, time to actually add it to the mission info
+                        if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                        {
+                            SequenceMissions.Add(missionId);
+                            SpecialMissionCount += 1;
+                        }
+                        else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
+                        {
+                            TimedMissions.Add(missionId);
+                            SpecialMissionCount += 1;
+                        }
+                        else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
+                        {
+                            WeatherMissions.Add(missionId);
+                            SpecialMissionCount += 1;
+                        }
+                    }
+                    else
+                    {
+                        missionJobs = missionInfo.Jobs;
+                        if (!missionJobs.Contains(currentJobId))
+                            continue;
 
-                    if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
-                        CriticalMissions.Add(missionId);
-                    else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                    {
-                        SequenceMissions.Add(missionId);
-                        SpecialMissionCount += 1;
-                    }
-                    else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                    {
-                        TimedMissions.Add(missionId);
-                        SpecialMissionCount += 1;
-                    }
-                    else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                    {
-                        WeatherMissions.Add(missionId);
-                        SpecialMissionCount += 1;
-                    }
-                    else if (missionInfo.Rank == 5)
-                    {
-                        ExARankMissions.Add(missionId);
-                        BasicMissionCount += 1;
-                    }
-                    else if (missionInfo.Rank == 4)
-                    {
-                        ARankMissions.Add(missionId);
-                        BasicMissionCount += 1;
-                    }
-                    else if (missionInfo.Rank == 3)
-                    {
-                        BRankMissions.Add(missionId);
-                        BasicMissionCount += 1;
-                    }
-                    else if (missionInfo.Rank == 2)
-                    {
-                        CRankMissions.Add(missionId);
-                        BasicMissionCount += 1;
-                    }
-                    else if (missionInfo.Rank == 1)
-                    {
-                        DRankMissions.Add(missionId);
-                        BasicMissionCount += 1;
+                        // Territory Check, cause people seem to also be forgetting this
+                        if (missionInfo.TerritoryId != Player.Territory.RowId)
+                            continue;
+
+                        // Alright, mission was double checked to make sure it was enabled
+                        // And also checked to make sure that the current job is on the mission, time to actually add it to the mission info
+
+                        if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                            CriticalMissions.Add(missionId);
+                        else if (missionInfo.Rank == 5)
+                        {
+                            ExARankMissions.Add(missionId);
+                            BasicMissionCount += 1;
+                        }
+                        else if (missionInfo.Rank == 4)
+                        {
+                            ARankMissions.Add(missionId);
+                            BasicMissionCount += 1;
+                        }
+                        else if (missionInfo.Rank == 3)
+                        {
+                            BRankMissions.Add(missionId);
+                            BasicMissionCount += 1;
+                        }
+                        else if (missionInfo.Rank == 2)
+                        {
+                            CRankMissions.Add(missionId);
+                            BasicMissionCount += 1;
+                        }
+                        else if (missionInfo.Rank == 1)
+                        {
+                            DRankMissions.Add(missionId);
+                            BasicMissionCount += 1;
+                        }
                     }
                 }
                 else
@@ -281,7 +293,7 @@ namespace ICE.Scheduler.Tasks
                             P.TaskManager.InsertMulti
                             (
                                 new(() => FrameDelay(8), "Delaying 8 frames for tab"),
-                                new(CheckProvisional, "Checking to see if any provisional missions exist")
+                                new(CheckAllProvisional, "Checking to see if any provisional missions exist")
                             );
                             break;
                         }
@@ -301,17 +313,8 @@ namespace ICE.Scheduler.Tasks
                             P.TaskManager.InsertMulti
                             (
                                 new(() => FrameDelay(8), "Throwing a delay in to make sure you're on the right tab"),
+                                new(SelectProperClass, "Selecting the proper class"),
                                 new(() => FindReroll(), "Finding->Accepting next reroll")
-                            );
-                            break;
-                        }
-                    case "ProvisionalGrind":
-                        {
-                            x.ProvisionalMissions();
-                            P.TaskManager.InsertMulti
-                            (
-                                new(() => FrameDelay(8), "Delaying for 16 frames"),
-                                new(() => CheckAllProvisional(), "Checking all provisionals")
                             );
                             break;
                         }
@@ -321,6 +324,7 @@ namespace ICE.Scheduler.Tasks
                             P.TaskManager.InsertMulti
                             (
                                 new(() => FrameDelay(8), "Delaying 8 frames for tab"),
+                                new(SelectProperClass, "Selecting the proper class"),
                                 new(CheckStandard, "Checking the standard missions for any potentional missions")
                             );
                             break;
@@ -340,6 +344,60 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        public static bool? SelectProperClass()
+        {
+            var jobTab = (int)Mission_Settings.StartJob - 8;
+            IceLogging.Debug($"Should be going to job tab: {jobTab}");
+            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var missionInfo) && missionInfo.IsAddonReady)
+            {
+                foreach (var mission in missionInfo.StellerMissions)
+                {
+                    var missionSheet = CosmicHelper.SheetMissionDict[mission.MissionId];
+                    bool isCritical = missionSheet.Attributes.HasFlag(MissionAttributes.Critical);
+                    bool isProvisional = missionSheet.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
+                        || missionSheet.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
+                        || missionSheet.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
+
+                    if (isCritical || isProvisional)
+                    {
+                        if (EzThrottler.Throttle("We're on the wrong tab... changing"))
+                            missionInfo.BasicMissions();
+
+                        return false;
+                    }
+
+                    if (!missionSheet.Jobs.Contains((uint)Mission_Settings.StartJob))
+                    {
+                        // We're not in the correct tab, going to return false and make sure we select the proper one
+                        if (EzThrottler.Throttle("Selecting the right job tab", 1000))
+                        {
+                            string jobString = string.Join(", ", CosmicHelper.SheetMissionDict[mission.MissionId].Jobs);
+
+                            IceLogging.Debug($"Selecting proper job tab. Expecting: {jobTab} | Job: {(int)Mission_Settings.StartJob} | On job page: {jobString} | MissionID: {mission.MissionId}");
+                            missionInfo.SelectClass[jobTab].Select();
+                        }
+
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+
+                // if we've gotten this far, that means we're in the right area, returning true
+                return true;
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Opening the mission ui"))
+                {
+                    if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
+                        moonHud.Mission();
+                }
+            }
+            return false;
+        }
         public static bool? CheckCritical()
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
@@ -356,51 +414,6 @@ namespace ICE.Scheduler.Tasks
                 }
 
                 IceLogging.Info("No mission was found under the critical tab, continuing onto the next", "[Critical Mission Check]");
-                return true;
-            }
-
-            return false;
-        }
-        private static bool? CheckProvisional()
-        {
-            if (CosmicHelper.CurrentLunarMission != 0)
-            {
-                IceLogging.Info("Mission has already been accepted, skipping Provisional Missions check");
-                return true;
-            }
-            if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
-            {
-                foreach (var missionType in C.MissionPrio)
-                {
-                    HashSet<uint> missionIds = missionType switch
-                    {
-                        ProvisionalTypes.ProvisionalWeather => WeatherMissions,
-                        ProvisionalTypes.ProvisionalSequential => SequenceMissions,
-                        ProvisionalTypes.ProvisionalTimed => TimedMissions,
-                        _ => new HashSet<uint>()
-                    };
-
-                    if (missionIds.Count == 0)
-                        continue;
-
-                    foreach (var mission in x.StellerMissions)
-                    {
-                        if (missionIds.Contains(mission.MissionId))
-                        {
-                            mission.Select();
-                            // Insert the task for the following:
-                            // -> Check if mission is a gathering or critical
-                            //   -> If yes, insert a task to check if need to pathfind to area
-                            // -> Insert delay here (small one, like 500 ms)
-                            // -> Insert grab mission and switch states to whichever is necessary
-                            InsertGrabMission(mission.MissionId);
-
-                            return true;
-                        }
-                    }
-                }
-
-                IceLogging.Debug("No mission was found under the critical tab, continuing onto the next", "[Provisional Mission Check]");
                 return true;
             }
 
@@ -773,23 +786,11 @@ namespace ICE.Scheduler.Tasks
                         if (mission != null)
                         {
                             mission.Select();
-                            P.TaskManager.InsertMulti
-                            (
-                                new(() => ChangeJob(id), "Changing job if necessary"),
-                                new(() => Navmesh_MoveToMission(id), "Checking if movement is necessary", Utils.TaskConfig),
-                                new(() => FrameDelay(8), "Waiting 8 frames before next action"),
-                                new(() => GrabMission(id), "Selecting mission for grabbing"),
-                                new(() => FrameDelay(16), "Giving time before you kick in the mission")
-                            );
+                            InsertGrabMission(mission.MissionId);
                             return true;
                         }
                     }
                 }
-
-                IceLogging.ChatInfo("Provisional Grind has found no missions.", "[ICE: Provisional Grind]");
-                IceLogging.ChatInfo("Going to wait ~5s before checking again", "[ICE: Provisional Grind]");
-                P.TaskManager.EnqueueDelay(5000);
-                return true;
             }
 
             return true;
@@ -1001,30 +1002,21 @@ namespace ICE.Scheduler.Tasks
         public static void InsertGrabMission(uint missionId)
         {
             P.TaskManager.InsertMulti(
+                new(() => ChangeJob(missionId), "Changing jobs for standard mission"),
                 new(() => Navmesh_MoveToMission(missionId), "Checking if movement is necessary", Utils.TaskConfig),
                 new(() => GrabMission(missionId), "Selecting mission for grabbing")
             );
         }
-
         private static unsafe void InitiateMission(uint missionId)
         {
             var WKSInstance = WKSManager.Instance();
             WKSInstance->MissionModule->InitiateMission((ushort)missionId);
         }
-
         private static bool? GrabMission(uint missionId, bool reroll = false)
         {
             if (CosmicHelper.CurrentLunarMission != 0)
             {
                 Mission_Settings.ResetNodeCounter();
-                SchedulerMain.State = IceState.ExecutingMission;
-                timeoutAmount = 0;
-                return true;
-            }
-            else
-            {
-                IceLogging.Verbose($"Selecting the mission: {missionId}");
-                InitiateMission(missionId);
 
                 if (reroll)
                 {
@@ -1032,15 +1024,38 @@ namespace ICE.Scheduler.Tasks
                     Task_AbandonMission.ForceAbandon = true;
                 }
                 else
+                {
                     SchedulerMain.State = IceState.ExecutingMission;
-                IceLogging.Debug($"Current State upon  grabbing mission: {SchedulerMain.State}");
-                P.TaskManager.Tasks.Clear();
+                    Task_AbandonMission.ForceAbandon = false;
+                }
                 Mission_Settings.nodeTotal = 0;
-                P.TaskManager.Insert(() => CosmicHelper.CurrentLunarMission != 0);
-                IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
-
+                P.TaskManager.Tasks.Clear();
+                timeoutAmount = 0;
+                IceLogging.Debug($"State upon exiting: {SchedulerMain.State}");
                 return true;
             }
+            else
+            {
+                IceLogging.Verbose($"Selecting the mission: {missionId}");
+                if (EzThrottler.Throttle("Selecting said mission (or attempting to)", 500))
+                {
+                    InitiateMission(missionId);
+                    timeoutAmount += 1;
+                    IceLogging.Debug($"Are we expected to reroll? {reroll}", "[Grab Mission]");
+                }
+
+                if (timeoutAmount >= maxTimeout)
+                {
+                    IceLogging.Debug("We seem to have grabbed an invalid mission, so we just gonna reset it all");
+                    SchedulerMain.State = IceState.GrabMission;
+                    P.TaskManager.Tasks.Clear();
+                    timeoutAmount = 0;
+
+                    return true;
+                }
+            }
+
+            return false;
         }
         public static unsafe bool? Navmesh_MoveToMission(uint missionId)
         {
@@ -1197,17 +1212,21 @@ namespace ICE.Scheduler.Tasks
         }
         private static bool? ChangeJob(uint missionId)
         {
+            IceLogging.Debug($"Starting to change job");
+
             var jobId = CosmicHelper.SheetMissionDict[missionId].Jobs.First();
             if ((uint)Player.Job == jobId)
                 return true;
             else
             {
                 if (EzThrottler.Throttle("Swapping to job for mission"))
+                {
                     GearsetHandler.TaskClassChange((Job)jobId);
+                    IceLogging.Debug($"Swapping to job: {jobId}");
+                }
                 return false;
             }
         }
-
         private static string NormalizeWhitespace(string text)
         {
             return text.Trim()

@@ -67,55 +67,13 @@ namespace ICE.Scheduler
         {
             if (CosmicHelper.CrafterJobList.Contains((uint)Player.Job))
             {
-                if (craftingSpot != Vector3.Zero)
+                if (!Task_NavmeshMove.Task_NavTo(craftingSpot, true, 1, false).Value)
                 {
-                    if (Player.Mounted && Player.DistanceTo(craftingSpot) < C.MountRadius && Player.Mounted)
-                    {
-                        if (EzThrottler.Throttle("Dismount if need be"))
-                        {
-                            IceLogging.Debug("Dismounting cause... we be mounted back to our crafting spot");
-                            Utils.Dismount();
-                        }
-                        return false;
-                    }
-                    if (!P.Navmesh.IsReady())
-                    {
-                        Utils.VnavBuildInfo();
-                        return false;
-                    }
-                    else if (!P.Navmesh.IsRunning() && Player.DistanceTo(craftingSpot) < 1)
-                    {
-
-                        craftingSpot = Vector3.Zero;
-                        return true;
-                    }
-                    else
-                    {
-                        if (!P.Navmesh.IsRunning())
-                        {
-                            if (EzThrottler.Throttle("Telling navemesh to move to crafting spot"))
-                            {
-                                IceLogging.DestinationLogs.Log(craftingSpot);
-                                P.Navmesh.PathfindAndMoveTo(craftingSpot, false);
-                            }
-                        }
-                        else
-                        {
-                            if (C.UseMountOutsideMission && Player.DistanceTo(craftingSpot) >= C.MountRadius && !PlayerHelper.CustomIsBusy && !Player.Mounted)
-                            {
-                                if (EzThrottler.Throttle("Mounting the mount to head back to craft"))
-                                {
-                                    Utils.MountAction();
-                                }
-                            }
-                        }
-
-                        return false;
-                    }
+                    return true;
                 }
                 else
                 {
-                    return true;
+                    return false;
                 }
             }
             else

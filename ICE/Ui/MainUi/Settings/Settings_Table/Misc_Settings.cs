@@ -44,6 +44,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
                 DebugTab.Draw();
+
+                ImGui.TableNextColumn();
+                CraftingLocations();
 #endif
                 ImGui.EndTable();
             }
@@ -448,6 +451,44 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 }
 
                 ImGui.EndTable();
+            }
+        }
+
+        private static void CraftingLocations()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.MapPin, "Crafting Return Spot");
+            ImGui.Dummy(new Vector2(0, 5));
+
+            bool usePersonalLocations = C.PersonalReturnSpot;
+            if (ImGui.Checkbox("Use personal return spots", ref usePersonalLocations))
+            {
+                C.PersonalReturnSpot = usePersonalLocations;
+                C.Save();
+            }
+
+            if (usePersonalLocations)
+            {
+                var territory = Player.Territory.RowId;
+                var location = Player.Position;
+                if (C.CrafterLocations.TryGetValue(territory, out var moonLoc))
+                {
+                    ImGui.Text($"Territory: {territory} \n" +
+                               $"Position: {moonLoc:N2}");
+                    if (ImGui.Button("Set to current location"))
+                    {
+                        C.CrafterLocations[territory] = location;
+                        C.Save();
+                    }
+                }
+                else
+                {
+                    ImGui.Text("No location set currently");
+                    if (ImGui.Button("Add Location"))
+                    {
+                        C.CrafterLocations[territory] = Player.Position;
+                        C.Save();
+                    }
+                }
             }
         }
 

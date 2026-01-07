@@ -22,7 +22,6 @@ namespace ICE.Scheduler.Tasks
         public static void Enqueue()
         {
             P.TaskManager.Enqueue(() => TurninMission(), "Turning in the mission to the moon gods", Utils.TaskConfig);
-            P.TaskManager.Enqueue(() => JobSwapCheck(), "Checking to see if you need to swap jobs");
             P.TaskManager.Enqueue(() => GoldCheck(), "Checking if Gold Check Task needs to be completed");
             P.TaskManager.Enqueue(() => CommandCheck(), "Checking for post mission commands");
         }

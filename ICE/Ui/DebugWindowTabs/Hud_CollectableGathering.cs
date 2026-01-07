@@ -1,5 +1,6 @@
 ﻿using ECommons.GameHelpers;
 using ICE.Utilities.Cosmic_Helper;
+using ICE.Utilities.GatheringHelper;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -10,6 +11,16 @@ namespace ICE.Ui.DebugWindowTabs
         {
             if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var gatherCollect) && gatherCollect.IsAddonReady)
             {
+                if (ImGui.Button("TryGather"))
+                {
+                    Task_Gather.CollectableGather(gatherCollect);
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Reset Buff Check"))
+                {
+                    Mission_Settings.Collectable_BuffCount = GatheringUtil.CollectStandardCharges();
+                }
+
                 ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
                              ImGuiTableFlags.Borders |
                              ImGuiTableFlags.SizingFixedFit |
@@ -85,6 +96,27 @@ namespace ICE.Ui.DebugWindowTabs
 
                     ImGui.TableNextColumn();
                     ImGui.Text($"{gatherCollect.MaxCollectability}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Scour Amount");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{gatherCollect.ScourPower}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Brazen Power");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{gatherCollect.BrazenPowerMin} | {gatherCollect.BrazenPowerMax}");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Meticulous Power");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{gatherCollect.MeticulousPower}");
 
                     ImGui.EndTable();
                 }

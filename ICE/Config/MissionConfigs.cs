@@ -73,6 +73,7 @@ namespace ICE.Config
             ProvisionalTypes.ProvisionalTimed
         };
         public bool GrindProvisionals { get; set; } = false;
+        public bool GrindAllProvisionals { get; set; } = true;
         public List<uint> JobPrio { get; set; } = new()
         {
             8, 9, 10, 11, 12, 13, 14, 15,  // Crafters: CRP, BSM, ARM, GSM, LTW, WVR, ALC, CUL
@@ -171,6 +172,8 @@ namespace ICE.Config
         public bool RemoveStellarStatus { get; set; } = false;
         public bool ShowSPM { get; set; } = false;
         public bool StartUponEnterMoon { get; set; } = false;
+        public bool PersonalReturnSpot { get; set; } = false;
+        public Dictionary<uint, Vector3> CrafterLocations { get; set; } = new();
 
         #endregion
 

@@ -1,16 +1,12 @@
-﻿using Dalamud.Bindings.ImPlot;
-using Dalamud.Game.ClientState.Conditions;
+﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ICE.Config;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
-using Microsoft.VisualBasic.ApplicationServices;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
-using YamlDotNet.Core.Tokens;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -24,7 +20,7 @@ namespace ICE.Scheduler.Tasks
             {
                 IceLogging.Debug("Current in a gathering session");
                 Task_CheckScore.Enqueue();
-                P.TaskManager.Enqueue(() => GatheringInteraction(), Utils.TaskConfig);
+                P.TaskManager.Enqueue(() => GatherInteractV2(), "Interacting with gathering menu", Utils.TaskConfig);
             }
             else
             {
@@ -47,6 +43,174 @@ namespace ICE.Scheduler.Tasks
                 P.TaskManager.Enqueue(() => PathandCheckNode());
             }
         }
+
+        public static bool? GatherInteractV2()
+        {
+            var missionInfo = CosmicHelper.CurrentMissionInfo;
+            bool collectableItem = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
+            bool reduceItems = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
+
+            if (Svc.Condition[ConditionFlag.Gathering])
+            {
+                // We should always have this condition up while we're gathering. Even if a revisit happens
+                if (!Svc.Condition[ConditionFlag.ExecutingGatheringAction])
+                {
+                    // This should prevent us from actually attempting to do another gathering action, while we are currently doing one
+                    if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady)
+                    {
+                        if (reduceItems || collectableItem)
+                        {
+                            // We need to find an item where it's a collectable so we can just initiate the gathering window
+                            var item = gather.GatheredItems.Where(x => x.IsCollectable).FirstOrDefault();
+                            if (item != null)
+                            {
+                                if (EzThrottler.Throttle("Collectable item select"))
+                                {
+                                    item.Gather();
+                                    Mission_Settings.Collectable_BuffCount = GatheringUtil.CollectStandardCharges();
+                                    IceLogging.Debug($"Gathering {item.ItemName} for collectability");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var configId = C.MissionConfig[CosmicHelper.CurrentLunarMission].GProfileId;
+
+                            // just a normal item to gather. so we're just going to do our normal gathering process
+                            bool missingDur = gather.CurrentIntegrity != gather.TotalIntegrity;
+                            var testItem = gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault();
+                            int gatherChance = testItem.GatherChance;
+                            int boonChance = testItem.BoonChance;
+                            int playerGp = PlayerHelper.GetGp();
+
+                            if (UseGatherAction(configId, gatherChance, boonChance, missingDur, playerGp))
+                            {
+                                return false;
+                            }
+
+                            // Find the item with the largest deficit
+                            var itemToGather = CosmicHelper.CurrentMissionInfo.Gathering_Min
+                                .Select(x => new
+                                {
+                                    ItemId = x.Key,
+                                    Required = x.Value,
+                                    Current = PlayerHelper.GetItemCount(x.Key, out var count) ? count : 0,
+                                    Deficit = x.Value - (PlayerHelper.GetItemCount(x.Key, out count) ? count : 0)
+                                })
+                                .Where(x => x.Deficit > 0) // Only items we still need
+                                .OrderByDescending(x => x.Deficit) // Sort by largest deficit first
+                                .FirstOrDefault();
+
+                            if (itemToGather != null)
+                            {
+                                if (EzThrottler.Throttle("Gathering Item"))
+                                {
+                                    gather.GatheredItems
+                                        .FirstOrDefault(x => x.ItemID == itemToGather.ItemId)
+                                        ?.Gather();
+                                }
+                                return false;
+                            }
+                            else
+                            {
+                                // we must not need any of those items, so going to just do a first item gather
+                                gather.GatheredItems.Where(x => x.ItemID != 0).FirstOrDefault().Gather();
+                                return false;
+                            }
+                        }
+                    }
+                    else if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
+                    {
+                        // this is all nice and tidy in one little function. Well that is split across 3 other ones but reguardless the general gathering task will be completed via this.
+                        if (Mission_Settings.item_collectableId != collectable.ItemID)
+                        {
+                            IceLogging.Debug($"Setting Mission CollectableId to: {collectable.ItemID}", "[Gather: Collectable Interacting]");
+                            Mission_Settings.item_collectableId = collectable.ItemID;
+                        }
+
+                        CollectableGather(collectable);
+                    }
+                }
+            }
+            else
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static unsafe void CollectableGather(GatheringMasterpiece collectable)
+        {
+            var integrity = collectable.CurrentIntegrity;
+            var collect_Current = collectable.CurrentCollectability;
+            var collect_Max = collectable.MaxCollectability;
+            var collect_highGrade = collectable.HighCollectability;
+            var playerGp = PlayerHelper.GetGp();
+            bool missingDur = integrity != collectable.TotalIntegrity;
+
+            if (integrity > 1 && collect_Current < collect_highGrade)
+            {
+                // this is the rotation we should be aiming for in general...
+                // this should cover all baselines
+                if (!PlayerHelper.HasStatusId(3911))
+                {
+                    var currentCharge = GatheringUtil.CollectStandardCharges();
+
+                    if (currentCharge != 0 && currentCharge >= Mission_Settings.Collectable_BuffCount)
+                    {
+                        ActionManager.Instance()->UseAction(ActionType.GeneralAction, 27);
+                    }
+                    else if (CanUseCollectableAction("Scrutiny"))
+                    {
+                        UseCollectableBuff("Scrutiny");
+                    }
+                    else
+                    {
+                        UseCollectableAction("Meticulous");
+                    }
+                }
+                else
+                {
+                    // We currently have the buff. Time to math out which would be the best for what we need.
+                    var collect_Missing = collect_Max - collect_Current;
+                    var brazenPower = collectable.BrazenPowerMax;
+                    var meticulousPower = collectable.MeticulousPower;
+
+
+                    if (CanUseCollectableAction("Scrutiny"))
+                    {
+                        UseCollectableBuff("Scrutiny");
+                    }
+                    else if (collect_Missing <= meticulousPower)
+                    {
+                        UseCollectableAction("Meticulous");
+                    }
+                    else
+                    {
+                        UseCollectableAction("Brazen");
+                    }
+                }
+            }
+            else
+            {
+                // if we've gotten this far, that means we're in a state that we should just be collecting
+                if (CanUseCollectableAction("BonusIntegrityChance", missingDur))
+                {
+                    UseCollectableAction("BonusIntegrityChance");
+                }
+                else if (CanUseCollectableAction("BonusIntegrity", missingDur))
+                {
+                    UseCollectableAction("BonusIntegrity");
+                }
+                else
+                {
+                    UseCollectableAction("Collect");
+                }
+            }
+        }
+
+        // Old Gathering system here
 
         public static bool? CheckCurrentLocation()
         {
@@ -124,7 +288,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static bool? PathandCheckNode()
         {
             var zoneId = Player.Territory;
@@ -245,15 +408,7 @@ namespace ICE.Scheduler.Tasks
                                         {
                                             item.Gather();
                                             Mission_Settings.item_collectableId = item.ItemID;
-
-                                            if (PlayerHelper.GetGp() >= 400)
-                                            {
-                                                Mission_Settings.SelectedRotation = 1;
-                                            }
-                                            else
-                                            {
-                                                Mission_Settings.SelectedRotation = 0;
-                                            }
+                                            Mission_Settings.Collectable_BuffCount = GatheringUtil.CollectStandardCharges();
                                             break;
                                         }
                                     }
@@ -299,15 +454,6 @@ namespace ICE.Scheduler.Tasks
                     }
                     else if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
                     {
-                        // Specifically for gathering collectables at the nodes (this also includes the collectables -> reducables... ugh)
-                        var currentQuality = collectable.CurrentCollectability;
-                        var minQuality = collectable.MinCollectability;
-                        var midQuality = collectable.MidCollectability;
-                        var highQuality = collectable.HighCollectability;
-                        var currentDur = collectable.CurrentIntegrity;
-                        var maxDur = collectable.TotalIntegrity;
-                        bool missingDur = currentDur < maxDur;
-
                         if (Mission_Settings.item_collectableId != collectable.ItemID)
                         {
                             IceLogging.Debug($"Setting Mission CollectableId to: {collectable.ItemID}", "[Gather: Collectable Interacting]");
@@ -324,14 +470,7 @@ namespace ICE.Scheduler.Tasks
                         //   -> If missing durability, check to see if increaseInteg Skill is usable
                         //   -> If not missing durability, collect
 
-                        if (Mission_Settings.SelectedRotation == 1)
-                        {
-                            NormalGpRotation(currentQuality, missingDur);
-                        }
-                        else
-                        {
-                            NoGpRotation(currentDur, currentQuality, highQuality);
-                        }
+                        CollectableGather(collectable);
 
                     }
                 }
@@ -739,10 +878,7 @@ namespace ICE.Scheduler.Tasks
             var jobId = (uint)Player.Job;
 
             var actionId = collectorAction[action].ClassAction[jobId];
-            if (EzThrottler.Throttle("using Action Action for collectables", 100))
-            {
-                ActionManager.Instance()->UseAction(ActionType.Action, actionId);
-            }
+            ActionManager.Instance()->UseAction(ActionType.Action, actionId);
         }
         public static bool? CheckReduceMission()
         {

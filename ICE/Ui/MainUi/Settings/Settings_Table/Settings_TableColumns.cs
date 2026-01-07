@@ -47,6 +47,17 @@ public static class Settings_TableColumns
             C.Save();
         }
 
+        bool grindAllProvisionals = C.GrindAllProvisionals;
+        if (ImGui.Checkbox("Allow All Provisional Kinds", ref grindAllProvisionals))
+        {
+            C.GrindAllProvisionals = grindAllProvisionals;
+            C.Save();
+        }
+        ImGuiEx.HelpMarker("Enabling this will show you all weather/timed/sequence missions that you can grind, \n" +
+                           "ON TOP OF doing the normal missions for whichever class you start on.\n" +
+                           "If you just want to focus one specific class, set this to false\n" +
+                           "Do note: this replaced provisional grinding, due to just being built into the standard mode now (finally)");
+
         bool showExtraInfo = C.ShowExtraMissionInfo;
         if (ImGui.Checkbox("Show Extra Mission Info Side-Window", ref showExtraInfo))
         {
@@ -60,8 +71,6 @@ public static class Settings_TableColumns
             C.Auto_ShowTokens = autoShowToken;
             C.Save();
         }
-
-
 
         bool showManualMode = C.ShowManualMode;
         if (ImGui.Checkbox("Show Manual Mode Column", ref showManualMode))
@@ -140,9 +149,6 @@ public static class Settings_TableColumns
         bool relicTurnin = C.TurninRelic;
         if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_GeneralSetting", ref relicTurnin))
         {
-            if (relicTurnin)
-                C.GrindProvisionals = false;
-
             C.TurninRelic = relicTurnin;
             C.Save();
         }

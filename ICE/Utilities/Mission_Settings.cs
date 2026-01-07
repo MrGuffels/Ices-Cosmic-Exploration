@@ -22,6 +22,8 @@ namespace ICE.Utilities
         internal static int NextCollectableStep = 0;
         internal static int SelectedRotation = 0;
 
+        internal static uint Collectable_BuffCount = 0;
+
         internal static Dictionary<string, uint> SkillUseAmount { get; set; } = new()
         {
             ["BoonIncrease2"] = 0,

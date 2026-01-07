@@ -9,6 +9,7 @@ using TerraFX.Interop.Windows;
 using YamlDotNet.Core.Tokens;
 using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -173,7 +174,17 @@ namespace ICE.Scheduler.Tasks
                         return true;
                     }
 
-                    if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                    bool shouldTurnin = false;
+
+                    if (missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        if (MinRequirementsMet(id, missionInfo))
+                        {
+                            shouldTurnin = true;
+                            IceLogging.Debug("We've met the minimum requirements to turnin for a critical mission");
+                        }
+                    }
+                    else if (missionEntry.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                     {
                         if (MinRequirementsMet(id, missionInfo))
                         {
@@ -196,87 +207,84 @@ namespace ICE.Scheduler.Tasks
                             return false;
 
                         IceLogging.Debug("We're not in a mission where it's scored based off of time, so going to check to see if we meet the bronze threshold instead");
-                        if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var mission))
-                        {
-                            var bronzeTurnin = MinRequirementsMet(id, missionInfo);
-                            var shouldTurnin = false;
+                        var bronzeTurnin = MinRequirementsMet(id, missionInfo);
 
-                            if (bronzeTurnin)
+                        if (bronzeTurnin)
+                        {
+                            if (missionEntry.Attributes.HasFlag(MissionAttributes.Critical))
                             {
-                                if (mission.Attributes.HasFlag(MissionAttributes.Critical))
+                                IceLogging.Debug("We're in a critical mission, and we have met the minimul requirements for it. So going to continue on", handle);
+                                shouldTurnin = true;
+                            }
+                            else
+                            {
+                                IceLogging.Debug("We've met the minimum bronze threshold, so checking the rest now", handle);
+                                var currentScore = missionInfo.CurrentScore;
+                                var bronzeScore = missionEntry.BronzeScore;
+                                var silverScore = missionEntry.SilverScore;
+                                var goldScore = missionEntry.GoldScore;
+
+                                var config = C.MissionConfig[id];
+                                bool AnyTurnin = config.AutoTurnin;
+                                bool GoldGoal = goldScore <= currentScore;
+                                bool SilverGoal = silverScore <= currentScore;
+                                bool TurninBronze = config.TurninBronze;
+
+                                if (config.AutoTurnin)
                                 {
-                                    IceLogging.Debug("We're in a critical mission, and we have met the minimul requirements for it. So going to continue on", handle);
-                                    shouldTurnin = true;
+                                    // AutoTurnin enabled, going to check for gold only since we have materials/time still
+                                    if (GoldGoal)
+                                    {
+                                        IceLogging.Info("Auto turnin was enabled, and hit the max score.", handle);
+                                        shouldTurnin = true;
+                                    }
                                 }
                                 else
                                 {
-                                    IceLogging.Debug("We've met the minimum bronze threshold, so checking the rest now", handle);
-                                    var currentScore = missionInfo.CurrentScore;
-                                    var bronzeScore = mission.BronzeScore;
-                                    var silverScore = mission.SilverScore;
-                                    var goldScore = mission.GoldScore;
-
-                                    var config = C.MissionConfig[id];
-                                    bool AnyTurnin = config.AutoTurnin;
-                                    bool GoldGoal = goldScore <= currentScore;
-                                    bool SilverGoal = silverScore <= currentScore;
-                                    bool TurninBronze = config.TurninBronze;
-
-                                    if (config.AutoTurnin)
+                                    if (GoldGoal && config.TurninGold)
                                     {
-                                        // AutoTurnin enabled, going to check for gold only since we have materials/time still
-                                        if (GoldGoal)
+                                        IceLogging.Info("Gold Turnin was enabled, and hit the max score.", handle);
+                                        shouldTurnin = true;
+                                    }
+                                    else if (SilverGoal && config.TurninSilver)
+                                    {
+                                        if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
                                         {
-                                            IceLogging.Info("Auto turnin was enabled, and hit the max score.", handle);
+                                            IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", handle);
                                             shouldTurnin = true;
                                         }
                                     }
-                                    else
+                                    else if (config.TurninBronze)
                                     {
-                                        if (GoldGoal && config.TurninGold)
+                                        if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
                                         {
-                                            IceLogging.Info("Gold Turnin was enabled, and hit the max score.", handle);
+                                            IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", handle);
                                             shouldTurnin = true;
-                                        }
-                                        else if (SilverGoal && config.TurninSilver)
-                                        {
-                                            if (!config.TurninGold) // Check is here, just to make sure we shouldn't still be aiming for gold
-                                            {
-                                                IceLogging.Info("Silver Turnin was enabled, and you didn't have gold enabled.", handle);
-                                                shouldTurnin = true;
-                                            }
-                                        }
-                                        else if (config.TurninBronze)
-                                        {
-                                            if (!config.TurninSilver && !config.TurninGold) // Checking to make sure that silver and gold scores both aren't true
-                                            {
-                                                IceLogging.Info("Silver Turnin was enabled, and you didn't have gold or silver enabled.", handle);
-                                                shouldTurnin = true;
-                                            }
                                         }
                                     }
                                 }
                             }
-                            else
-                            {
-                                IceLogging.Info("We have not met the minimum requirements for turning in in general... so we shall continue");
-                                return true;
-                            }
-                            if (shouldTurnin)
-                            {
-                                CheckMedalStatus(id, missionInfo);
-                                IceLogging.Info("The threshold for scoring was met. Time to turnin", handle);
-                                SchedulerMain.State = IceState.TurninMission;
-                                P.TaskManager.Tasks.Clear();
-
-                                return true;
-                            }
-                            else
-                            {
-                                IceLogging.Info("Minimum scoring isn't met for your current preset. Continuing on", handle);
-                                return true;
-                            }
                         }
+                        else
+                        {
+                            IceLogging.Info("We have not met the minimum requirements for turning in in general... so we shall continue");
+                            return true;
+                        }
+                    }
+
+                    if (shouldTurnin)
+                    {
+                        CheckMedalStatus(id, missionInfo);
+                        IceLogging.Info("The threshold for scoring was met. Time to turnin", handle);
+                        SchedulerMain.State = IceState.TurninMission;
+                        P.TaskManager.Tasks.Clear();
+
+                        return true;
+                    }
+                    else
+                    {
+                        IceLogging.Info("Minimum scoring isn't met for your current preset. Continuing on", handle);
+                        return true;
                     }
                 }
                 else

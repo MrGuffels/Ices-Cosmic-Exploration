@@ -12,6 +12,7 @@ using SharpDX.DirectWrite;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static FFXIVClientStructs.FFXIV.Client.Graphics.Render.Skeleton;
+using static ICE.Utilities.CosmicHelper;
 using static MissionTimer;
 
 namespace ICE.Ui.MainUi.ModeSelect
@@ -272,7 +273,7 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                 #region Auto-Hiding Columns
 
-                ImGui.TableSetColumnEnabled(1, (C.ShowCompletionWindow || C.GrindProvisionals)); // Job Column (Useful for provisionals/Timed)
+                ImGui.TableSetColumnEnabled(1, (C.ShowCompletionWindow || C.GrindAllProvisionals)); // Job Column (Useful for provisionals/Timed)
                 ImGui.TableSetColumnEnabled(2, C.ShowManualMode);
 
                 if (C.Auto_ShowTokens)
@@ -1590,45 +1591,87 @@ namespace ICE.Ui.MainUi.ModeSelect
                 {
                     WindowSpacer();
 
-                    var craftCount = 0;
                     var job = mission.Jobs.First(x => CosmicHelper.CrafterJobList.Contains(x));
                     ImGui.Text("Recipe Detailed Info");
-                    foreach (var craft in mission.Crafts_Main)
+                    var headerFlags = ImGuiTreeNodeFlags.None;
+#if DEBUG
+                    headerFlags = ImGuiTreeNodeFlags.DefaultOpen;
+#endif
+
+                    if (ImGui.CollapsingHeader("Mission Crafts", headerFlags))
                     {
-                        craftCount++;
-                        if (Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Recipe>().TryGetRow(craft.Key, out var recipe))
+                        if (ImGui.BeginTable("Mission Craft Info", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
                         {
-                            string itemName = recipe.ItemResult.Value.Name.ToString();
-                            if (ImGui.CollapsingHeader($"{itemName} [{craftCount}]"))
+                            ImGui.TableSetupColumn("Item");
+                            ImGui.TableSetupColumn("Progress");
+                            ImGui.TableSetupColumn("Quality");
+                            ImGui.TableSetupColumn("Durability");
+                            ImGui.TableSetupColumn("Amount");
+
+                            ImGui.TableHeadersRow();
+
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text("Main Crafts");
+
+                            foreach (var craft in mission.Crafts_Main)
                             {
-                                if (ImGui.BeginTable($"Recipe Detailed Info: {itemName} {craftCount}", 2, ImGuiTableFlags.SizingFixedFit))
+                                if (Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Recipe>().TryGetRow(craft.Key, out var recipe))
                                 {
+                                    string itemName = recipe.ItemResult.Value.Name.ToString();
                                     var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
 
                                     ImGui.TableNextRow();
                                     ImGui.TableSetColumnIndex(0);
-                                    ImGui.Text("Durability");
-
-                                    ImGui.TableNextColumn();
-                                    ImGui.Text($"{recipeInfo.Durability}");
-
-                                    ImGui.TableNextRow();
-                                    ImGui.TableSetColumnIndex(0);
-                                    ImGui.Text("Progress");
+                                    ImGui.Text($"{itemName}");
 
                                     ImGui.TableNextColumn();
                                     ImGui.Text($"{recipeInfo.Progress}");
 
-                                    ImGui.TableNextRow();
-                                    ImGui.TableSetColumnIndex(0);
-                                    ImGui.Text("Max Quality");
-
                                     ImGui.TableNextColumn();
                                     ImGui.Text($"{recipeInfo.Quality}");
 
-                                    ImGui.EndTable();
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{recipeInfo.Durability}");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{craft.Value.RequiredAmount}");
                                 }
                             }
+
+                            if (mission.Crafts_Pre.Count > 0)
+                            {
+                                ImGui.TableNextRow();
+                                ImGui.TableSetColumnIndex(0);
+                                ImGui.Text("Pre-Crafts");
+
+                                foreach (var craft in mission.Crafts_Pre)
+                                {
+                                    if (Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Recipe>().TryGetRow(craft.Key, out var recipe))
+                                    {
+                                        string itemName = recipe.ItemResult.Value.Name.ToString();
+                                        var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
+
+                                        ImGui.TableNextRow();
+                                        ImGui.TableSetColumnIndex(0);
+                                        ImGui.Text($"{itemName}");
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.Text($"{recipeInfo.Progress}");
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.Text($"{recipeInfo.Quality}");
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.Text($"{recipeInfo.Durability}");
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.Text($"{craft.Value.RequiredAmount}");
+                                    }
+                                }
+                            }
+
+                            ImGui.EndTable();
                         }
                     }
                 }
