@@ -47,7 +47,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                 FontAwesomeIcon modeIcon = FontAwesomeIcon.List;
 
                 bool relicMode = C.XPRelicGrind;
-                bool xpLeveling = C.LevelGrind;
+                bool xpLeveling = C.XPLeveling_Mode;
                 bool standard = (!relicMode && !xpLeveling);
 
 
@@ -86,7 +86,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (ImGui.RadioButton("Standard", standard))
                     {
                         C.XPRelicGrind = false;
-                        C.LevelGrind = false;
+                        C.XPLeveling_Mode = false;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Stand Mode \n" +
@@ -96,7 +96,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (ImGui.RadioButton("Relic Grind", relicMode))
                     {
                         C.XPRelicGrind = true;
-                        C.LevelGrind = false;
+                        C.XPLeveling_Mode = false;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Relic Grind\n" +
@@ -107,7 +107,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     if (ImGui.RadioButton("Leveling Grind", xpLeveling))
                     {
                         C.XPRelicGrind = false;
-                        C.LevelGrind = true;
+                        C.XPLeveling_Mode = true;
                         C.Save();
                     }
                     ImGuiEx.HelpMarker("Leveling Grind\n" +
@@ -158,11 +158,27 @@ namespace ICE.Ui.MainUi.ModeSelect
                 ImGui.SameLine(0, 10 * scale);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
 
-                using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob))
+                bool unsupportedArtisan = xpLeveling && !P.Artisan.UpdatedArtisan() && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
+
+                using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob || unsupportedArtisan))
                 {
                     if (ImGui.Button("Start", new Vector2(150 * scale, 0)))
                     {
                         SchedulerMain.EnablePlugin();
+                    }
+                }
+
+                if (unsupportedArtisan)
+                {
+                    ImGui.SameLine(0, 10 * scale);
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
+                    ImGuiEx.Icon(EColor.Red, FontAwesomeIcon.ExclamationTriangle);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text("Hey! You need to update artisan to use this mode, please update to at minimum:");
+                        ImGui.Text("4.0.4.29");
+                        ImGui.EndTooltip();
                     }
                 }
 

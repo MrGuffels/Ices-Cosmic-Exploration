@@ -148,6 +148,48 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 P.Artisan.ChangeSolver(37084, "Raphael Recipe Solver", true);
             }
+            if (ImGui.Button("Set current mission to Raphael"))
+            {
+                if (CosmicHelper.CurrentLunarMission != 0)
+                {
+                    foreach (var craftItem in CosmicHelper.CurrentMissionInfo.Crafts_Main)
+                    {
+                        P.Artisan.ChangeSolver(craftItem.Value.RecipeId, "Raphael Recipe Solver", true);
+                    }
+                    foreach (var preCraft in CosmicHelper.CurrentMissionInfo.Crafts_Pre)
+                    {
+                        P.Artisan.ChangeSolver(preCraft.Value.RecipeId, "Raphael Recipe Solver", true);
+                    }
+                }
+            }
+            if (ImGui.Button("Set current mission to Progress"))
+            {
+                if (CosmicHelper.CurrentLunarMission != 0)
+                {
+                    foreach (var craftItem in CosmicHelper.CurrentMissionInfo.Crafts_Main)
+                    {
+                        P.Artisan.ChangeSolver(craftItem.Value.RecipeId, "Progress Only Solver", true);
+                    }
+                    foreach (var preCraft in CosmicHelper.CurrentMissionInfo.Crafts_Pre)
+                    {
+                        P.Artisan.ChangeSolver(preCraft.Value.RecipeId, "Progress Only Solver", true);
+                    }
+                }
+            }
+            if (ImGui.Button("Return back to normal"))
+            {
+                if (CosmicHelper.CurrentLunarMission != 0)
+                {
+                    foreach (var craftItem in CosmicHelper.CurrentMissionInfo.Crafts_Main)
+                    {
+                        P.Artisan.SetTempSolverBackToNormal(craftItem.Value.RecipeId);
+                    }
+                    foreach (var preCraft in CosmicHelper.CurrentMissionInfo.Crafts_Pre)
+                    {
+                        P.Artisan.SetTempSolverBackToNormal(preCraft.Value.RecipeId);
+                    }
+                }
+            }
         }
 
         private static void SwapBait(uint baitId)

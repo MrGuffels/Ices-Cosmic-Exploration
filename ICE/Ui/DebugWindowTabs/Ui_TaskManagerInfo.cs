@@ -47,7 +47,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             if (ImGui.Button("Path to repair NPC"))
             {
-                P.TaskManager.Enqueue(() => Task_Repair.PathToRepair(), "Pathing to repair NPC");
+                P.TaskManager.Enqueue(() => Task_Repair.Repair_PathTo(), "Pathing to repair NPC");
             }
             if (ImGui.Button("Test Repair Function"))
             {

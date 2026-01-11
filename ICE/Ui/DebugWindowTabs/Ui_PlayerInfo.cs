@@ -4,11 +4,15 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using System.Collections.Generic;
 using System.Reflection;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
 
 namespace ICE.Ui.DebugWindowTabs
 {
     internal class Ui_PlayerInfo
     {
+        private static uint best_LevelMission = 0;
+        private static uint playerLevel = 90;
+
         public static unsafe void Draw()
         {
             ImGui.Text("Need to actually put the player info here. It got lost");
@@ -74,7 +78,14 @@ namespace ICE.Ui.DebugWindowTabs
                 }
                 C.SaveDebounced();
             }
-            
+
+            ImGui.SliderUInt("Player Level", ref playerLevel, 10, 100);
+            if (ImGui.Button("Update best mission"))
+            {
+                best_LevelMission = LevelTest();
+            }
+            ImGui.Text($"Best Mission for leveling: [{best_LevelMission}]");
+
 
             ClassInfo();
         }
@@ -111,6 +122,37 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 ImGui.Text($"JobID: {job.Key} | HasUnlocked: {job.Value.HasUnlocked}");
             }
+        }
+
+        private static uint LevelTest()
+        {
+            uint bestMission = 0;
+
+            foreach (var mission in C.MissionConfig)
+            {
+                var id = mission.Key;
+
+                if (!CosmicHelper.QuickLevelList.Contains(id))
+                    continue;
+
+                if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionInfo))
+                {
+                    var attribute = missionInfo.Attributes;
+                    var missionLevel = missionInfo.Level;
+
+                    // if (!missionInfo.Jobs.Contains((uint)Player.Job))
+                        // continue;
+
+                    int playerTier = playerLevel >= 90 ? 90 : playerLevel >= 50 ? 50 : 10;
+
+                    if (missionLevel != playerTier)
+                        continue;
+
+                    bestMission = id;
+                }
+            }
+
+            return bestMission;
         }
     }
 }

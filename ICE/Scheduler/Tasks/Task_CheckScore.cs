@@ -230,7 +230,7 @@ namespace ICE.Scheduler.Tasks
                                 bool SilverGoal = silverScore <= currentScore;
                                 bool TurninBronze = config.TurninBronze;
 
-                                if (C.LevelGrind)
+                                if (C.XPLeveling_Mode)
                                 {
                                     IceLogging.Info("Minimum score has been met for leveling grinding, so turning in", handle);
                                     shouldTurnin = true;
@@ -391,7 +391,7 @@ namespace ICE.Scheduler.Tasks
                         bool SilverGoal = silverScore <= currentScore;
                         bool TurninBronze = config.TurninBronze;
 
-                        if (C.LevelGrind)
+                        if (C.XPLeveling_Mode)
                         {
                             IceLogging.Info("Leveling mode is enabled, and you met the brone threshold, turning in", tag);
                             shouldTurnin = true;
@@ -615,7 +615,7 @@ namespace ICE.Scheduler.Tasks
 
                         bool shouldTurnin = false;
 
-                        if (C.LevelGrind)
+                        if (C.XPLeveling_Mode)
                         {
                             IceLogging.Debug("Leveling mode is enabled, and we've hit the bronze threshold. So turning in", "[Gathering Score Check]");
                             shouldTurnin = true;

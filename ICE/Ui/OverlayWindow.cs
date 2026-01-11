@@ -197,7 +197,10 @@ namespace ICE.Ui
             ImGui.SameLine();
 
             // Start button (disabled while already ticking).
-            using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !PlayerHelper.UsingSupportedJob()))
+            bool xpLeveling = C.XPLeveling_Mode;
+            bool unsupportedArtisan = xpLeveling && !P.Artisan.UpdatedArtisan() && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
+
+            using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !PlayerHelper.UsingSupportedJob() || unsupportedArtisan))
             {
                 if (ImGui.Button("Start"))
                 {

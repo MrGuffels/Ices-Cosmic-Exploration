@@ -2,8 +2,10 @@
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
+using TerraFX.Interop.Windows;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -55,50 +57,37 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        public static unsafe bool? PathToRepair()
+        public static bool? Repair_PathTo()
         {
+            string handle = "[Task_Repair: PathTo]";
+
             var zoneId = Player.Territory;
             var npcEntry = NpcData.MoonNpcs[zoneId.RowId].Where(x => x.type == NpcData.NpcType.Repair).FirstOrDefault();
 
-            if (EzThrottler.Throttle("Log Throttle for repair", 2000))
+            if (npcEntry != null)
             {
-                IceLogging.Debug($"NPC: {npcEntry.Name} | {npcEntry.NpcId} | Zone: {zoneId}");
-            }
-
-            if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
-            {
-                if (P.Navmesh.IsRunning())
+                Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 1);
+                if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 6, npcLoc: npcEntry.Location_Npc).Value)
                 {
-                    if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
-                    {
-                        IceLogging.Info("Pathing to NPC has reached the distance thresh, stopping");
-                        P.Navmesh.Stop();
-                        return true;
-                    }
+                    if (EzThrottler.Throttle("Repair move message", 1000))
+                        IceLogging.Verbose($"Pathing to repair NPC. Current distance: {Player.DistanceTo(npcEntry.Location_Npc)}", handle);
                 }
                 else
                 {
-                    IceLogging.Debug($"Distance to the npc is correct, commending repair");
+                    IceLogging.Debug("We're close enough to the repair npc! Continuing on", handle);
                     return true;
                 }
             }
             else
             {
-                if (!P.Navmesh.IsRunning())
-                {
-                    if (EzThrottler.Throttle("Pathing to repair NPC"))
-                    {
-                        IceLogging.Debug($"Pathing to: {npcEntry.Name}");
-
-                        Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
-                        IceLogging.DestinationLogs.Log(randomPoint);
-                        P.Navmesh.PathfindAndMoveTo(randomPoint, false);
-                    }
-                }
+                if (EzThrottler.Throttle("Error message: NPC", 5000))
+                    IceLogging.Error("Hey! We don't have this npc coded yet, which means I forgot bout it, could you let me know\n" +
+                                     $"Planet Territory ID: {Player.Territory.RowId}", handle);
             }
 
             return false;
         }
+
         public static unsafe bool? RepairAtNpc()
         {
             var zoneId = Player.Territory;

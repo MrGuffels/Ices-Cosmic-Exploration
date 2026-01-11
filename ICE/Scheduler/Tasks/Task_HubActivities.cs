@@ -25,7 +25,7 @@ namespace ICE.Scheduler
                 P.TaskManager.EnqueueMulti
                 (
                     new(() => IceLogging.Info("Starting repair task at the npc", "Task_HubActivities")),
-                    new(Task_Repair.PathToRepair, "Pathing to the repair NPC"),
+                    new(Task_Repair.Repair_PathTo, "Pathing to the repair NPC"),
                     new(Task_Repair.RepairAtNpc, "Repairing at the NPC Vendor"),
                     new(Task_Repair.CloseRepair, "Closing the repair window")
                 );

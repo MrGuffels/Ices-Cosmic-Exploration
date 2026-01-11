@@ -136,7 +136,7 @@ namespace ICE.Scheduler.Tasks
                             {
                                 if (collectionPoint == null)
                                 {
-                                    if (!Task_NavmeshMove.NavToDestination(location.RawLocation, false, 3, false))
+                                    if (!Task_NavmeshMove.Task_NavTo(location.RawLocation, false, 3, false).Value)
                                     {
                                         IceLogging.Debug("Pathing to turnin point", "[Task_Turnin: Critical]");
                                     }
@@ -148,7 +148,7 @@ namespace ICE.Scheduler.Tasks
 
                                     if (Player.DistanceTo(location.RawLocation) >= 75)
                                     {
-                                        if (!Task_NavmeshMove.NavToDestination(location.RawLocation, false, 75, false))
+                                        if (!Task_NavmeshMove.Task_NavTo(location.RawLocation, false, 75, false).Value)
                                         {
                                             if (EzThrottler.Throttle("Critical null location", 2000))
                                                 IceLogging.Debug("Pathing to critical general location");
@@ -162,7 +162,7 @@ namespace ICE.Scheduler.Tasks
                                             PathfoundToRed = true;
                                         }
 
-                                        if (!Task_NavmeshMove.NavToDestination(collectionPoint.Position, false))
+                                        if (!Task_NavmeshMove.Task_NavTo(collectionPoint.Position, false).Value)
                                         {
                                             if (EzThrottler.Throttle("Critical null location", 2000))
                                                 IceLogging.Debug("Pathing to critical actual location");

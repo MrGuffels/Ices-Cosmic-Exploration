@@ -17,7 +17,7 @@ namespace ICE.Scheduler.Tasks
         {
             P.TaskManager.EnqueueMulti
                 (
-                    new(PathToCreditVendor, "Pathing to the credit vendor"),
+                    new(Credit_PathToVendor, "Pathing to the credit vendor"),
                     new(TalkToCreditNPC, "Talking to the credit NPC to start the buying process"),
                     new(SelectShop, "Selecting the shop entry we want to go to"),
                     new(BuyItems, "Buying items from the vendor", Utils.TaskConfig),
@@ -25,65 +25,36 @@ namespace ICE.Scheduler.Tasks
                 );
         }
 
-        private static bool? PathToCreditVendor()
+        private static bool? Credit_PathToVendor()
         {
+            string handle = "[Task_Credits: PathTo]";
             var zoneId = Player.Territory.RowId;
             var npcEntry = NpcData.MoonNpcs[zoneId].Where(x => x.type == NpcData.NpcType.Credit).FirstOrDefault();
 
-            if (Player.DistanceTo(npcEntry.NpcLocation) <= 6.75f)
+            if (npcEntry != null)
             {
-                if (P.Navmesh.Installed)
+                Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 1);
+                if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 6, npcLoc: npcEntry.Location_Npc).Value)
                 {
-                    if (P.Navmesh.IsReady())
-                    {
-                        if (P.Navmesh.IsRunning())
-                        {
-                            if (Player.DistanceTo(npcEntry.NpcLocation) < 5)
-                            {
-                                IceLogging.Debug("Pathing to NPC has reached the distance thresh, stopping");
-                                P.Navmesh.Stop();
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            IceLogging.Debug($"Distance to the npc is correct, commending repair");
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        Utils.VnavBuildInfo();
-                    }
+                    if (EzThrottler.Throttle("Repair move message", 1000))
+                        IceLogging.Verbose($"Pathing to repair NPC. Current distance: {Player.DistanceTo(npcEntry.Location_Npc)}", handle);
+                }
+                else
+                {
+                    IceLogging.Debug("We're close enough to the repair npc! Continuing on", handle);
+                    return true;
                 }
             }
             else
             {
-                if (P.Navmesh.Installed)
-                {
-                    if (P.Navmesh.IsReady())
-                    {
-                        if (!P.Navmesh.IsRunning())
-                        {
-                            if (EzThrottler.Throttle("Pathing to repair NPC"))
-                            {
-                                IceLogging.Debug($"Pathing to: {npcEntry.Name}");
-
-                                Vector3 randomPoint = RandomUtil.GetRandomPointInBounds(npcEntry.Corner1, npcEntry.Corner2, npcEntry.Corner3, npcEntry.Corner4, npcEntry.NpcLocation.Y);
-                                IceLogging.DestinationLogs.Log(randomPoint);
-                                P.Navmesh.PathfindAndMoveTo(randomPoint, false);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Utils.VnavBuildInfo();
-                    }
-                }
+                if (EzThrottler.Throttle("Error message: NPC", 5000))
+                    IceLogging.Error("Hey! We don't have this npc coded yet, which means I forgot bout it, could you let me know\n" +
+                                     $"Planet Territory ID: {Player.Territory.RowId}", handle);
             }
 
             return false;
         }
+
         private static bool? TalkToCreditNPC()
         {
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var iconString) && iconString.IsAddonReady)

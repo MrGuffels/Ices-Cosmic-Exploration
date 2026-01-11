@@ -61,15 +61,18 @@ namespace ICE.Scheduler.Tasks
         {
             int delay = C.DelayCraft ? C.DelayCraftIncrease : 25;
 
-            if (C.LevelGrind)
-            {
-                IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {craftId}");
-                P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
-            }
-
             if (EzThrottler.Throttle("Waiting X Amount of seconds for artisan", delay))
             {
                 throttleCounter += 1;
+                if (C.XPLeveling_Mode)
+                {
+                    IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {craftId}");
+                    P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
+                }
+                else
+                {
+                    P.Artisan.SetTempSolverBackToNormal(recipeId);
+                }
             }
             if (throttleCounter >= 3)
             {

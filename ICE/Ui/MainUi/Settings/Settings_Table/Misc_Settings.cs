@@ -40,13 +40,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                 TimeRecords();
 
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+                CraftingLocations();
+
 #if DEBUG
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
                 DebugTab.Draw();
-
-                ImGui.TableNextColumn();
-                CraftingLocations();
 #endif
                 ImGui.EndTable();
             }

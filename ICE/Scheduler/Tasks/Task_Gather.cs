@@ -295,7 +295,7 @@ namespace ICE.Scheduler.Tasks
             var gatherInfo = GatheringRouteLoader.GetRoute(zoneId.RowId, missionFlag);
 
             var location = gatherInfo[Mission_Settings.nodeCounter];
-            if (!Task_NavmeshMove.NavToDestination(location.LandZone, distance: 1))
+            if (!Task_NavmeshMove.Task_NavTo(location.LandZone, distance: 1).Value)
             {
                 UseCordial();
                 ThrottleMessage("Currently in the process of moving, so going to wait", "Task_Gather: NavmeshMovement");
@@ -349,7 +349,7 @@ namespace ICE.Scheduler.Tasks
         {
             C.GatherProfiles.TryGetValue(profileId, out var gatherProfile);
 
-            if (C.LevelGrind)
+            if (C.XPLeveling_Mode)
             {
                 if (EzThrottler.Throttle("Level grind message", 1000))
                     IceLogging.Debug("Leveling mode enabled, setting it to gatherProfile");

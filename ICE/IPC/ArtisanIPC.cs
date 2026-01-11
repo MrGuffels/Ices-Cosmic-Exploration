@@ -1,4 +1,5 @@
 ﻿using ECommons.EzIpcManager;
+using ECommons.Reflection;
 
 namespace ICE.IPC
 {
@@ -18,10 +19,24 @@ namespace ICE.IPC
         [EzIPC] public Action<ushort, int> CraftItem;
         [EzIPC] public Action<ushort, uint, uint, uint, uint> AssignRecipie;
         [EzIPC] public Action<uint, string, bool> ChangeSolver;
+        [EzIPC] public Action<uint> SetTempSolverBackToNormal;
 
         public void AssignArtisanRecipe(ushort recipeId, uint reqFood, uint reqPotion = 0, uint reqManual = 0, uint reqSquadronManual = 0)
         {
             P.Artisan.AssignRecipie(recipeId, reqFood, reqPotion, reqManual, reqSquadronManual);
+        }
+
+        public bool UpdatedArtisan()
+        {
+            if (DalamudReflector.TryGetDalamudPlugin($"Artisan", out var plogon, false, true))
+            {
+                if (plogon.GetType().Assembly.GetName().Version < new Version(4, 0, 4, 29))
+                    return false;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

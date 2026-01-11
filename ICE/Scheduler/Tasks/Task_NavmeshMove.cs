@@ -8,7 +8,7 @@ namespace ICE.Scheduler.Tasks
 {
     internal class Task_NavmeshMove
     {
-        public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false)
+        public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null)
         {
             bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
             bool mounted = Player.Mounted;
@@ -20,124 +20,7 @@ namespace ICE.Scheduler.Tasks
             bool useOutsideMission = C.UseMountOutsideMission && !inMission;
             bool useMount = useInMission || useOutsideMission;
 
-            if (!P.Navmesh.Installed)
-            {
-                IceLogging.Info("We seem to be missing navmesh... so we're just going to exit here");
-                return true;
-            }
-            else if (P.Navmesh.IsRunning())
-            {
-                if (C.JumpIfStuck)
-                {
-                    if (CheckAndHandleStuck())
-                    {
-                        return false; // Let the stuck handler take control
-                    }
-                }
-
-                if (!mounted && Player.DistanceTo(pos) > minMountDistance)
-                {
-                    if (useMount)
-                    {
-                        if (EzThrottler.Throttle("Using mount"))
-                            Utils.MountAction();
-                    }
-                }
-
-                if (Player.DistanceTo(pos) <= dismountDistance && !stayMounted)
-                {
-                    if (EzThrottler.Throttle("Dismounting the mount"))
-                    {
-                        Utils.Dismount();
-                    }
-                }
-
-                if (Player.IsMoving && waitForBusy)
-                {
-                    if (EzThrottler.Throttle("Throttle message tehe"))
-                        IceLogging.Verbose("We're currently moving, and we were told to wait for us to NOT be moving so... yeah, we waiting");
-
-                    return false;
-                }
-                else if (!waitForBusy && Player.DistanceTo(pos) <= distance)
-                {
-                    if (EzThrottler.Throttle("Telling navmesh to stop"))
-                    {
-                        IceLogging.Debug("We're within stopping distance, so stopping navmesh");
-                        P.Navmesh.Stop();
-                    }
-                }
-
-                if (usingCosmoliner)
-                {
-                    if (EzThrottler.Throttle("Telling navmesh to stop"))
-                        P.Navmesh.Stop();
-                }
-            }
-            else if (!P.Navmesh.IsReady())
-            {
-                if (EzThrottler.Throttle("Waiting on navmesh", 1000))
-                {
-                    var navProgress = P.Navmesh.BuildProgress();
-                    IceLogging.Debug($"Waiting for navmesh to finish building. Currently at: {navProgress:N2}");
-                }
-            }
-            else if (!P.Navmesh.IsRunning())
-            {
-                // We're here, which means it's time to start fresh for navmesh
-                if (usingCosmoliner)
-                {
-                    // We don't want navmesh/any checks to be running while using the cosmoliner, so just exiting out
-                    return false;
-                }
-
-                if (Player.DistanceTo(pos) < distance)
-                {
-                    if (mounted && !stayMounted)
-                    {
-                        if (EzThrottler.Throttle("Dismounting the mount"))
-                        {
-                            Utils.Dismount();
-                        }
-                        return false;
-                    }
-                    else if (Player.IsJumping)
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        IceLogging.Debug("We've met the distance threshold, continuing on");
-                        ResetInfo();
-                        return true;
-                    }
-                }
-                else
-                {
-                    if (EzThrottler.Throttle("Telling navmesh to start"))
-                    {
-                        P.Navmesh.SetTolerance(0.25f);
-                        IceLogging.Debug("We're setting the tolerance to 0.25f here");
-                        IceLogging.DestinationLogs.Log(pos);
-                        P.Navmesh.PathfindAndMoveTo(pos, false);
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public static bool NavToDestination(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false)
-        {
-            bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
-            bool mounted = Player.Mounted;
-            bool inMission = CosmicHelper.CurrentLunarMission != 0;
-            float minMountDistance = C.MountRadius;
-            float dismountDistance = C.DismountRadius;
-
-            bool useInMission = C.UseMountInMission && inMission;
-            bool useOutsideMission = C.UseMountOutsideMission && !inMission;
-            bool useMount = useInMission || useOutsideMission;
+            IceLogging.Debug("Starting navmesh", debugOnly: true);
 
             if (!P.Navmesh.Installed)
             {
@@ -146,6 +29,9 @@ namespace ICE.Scheduler.Tasks
             }
             else if (P.Navmesh.IsRunning())
             {
+                if (usingCosmoliner)
+                    P.Navmesh.Stop();
+
                 if (C.JumpIfStuck)
                 {
                     if (CheckAndHandleStuck())
@@ -178,19 +64,22 @@ namespace ICE.Scheduler.Tasks
 
                     return false;
                 }
-                else if (!waitForBusy && Player.DistanceTo(pos) <= distance)
+                else if (!waitForBusy)
                 {
-                    if (EzThrottler.Throttle("Telling navmesh to stop"))
+                    if (npcLoc != null && Player.DistanceTo(npcLoc.Value) <= distance)
                     {
-                        IceLogging.Debug("We're within stopping distance, so stopping navmesh");
+                        if (EzThrottler.Throttle("NPC Location Throttle"))
+                            IceLogging.Debug("We're close to the npc, and we're not busy anymore, so stopping");
+
                         P.Navmesh.Stop();
                     }
-                }
+                    else if (Player.DistanceTo(pos) <= distance)
+                    {
+                        if (EzThrottler.Throttle("Normal distance throttle"))
+                            IceLogging.Debug("We're within stopping distance, so stopping navmesh");
 
-                if (usingCosmoliner)
-                {
-                    if (EzThrottler.Throttle("Telling navmesh to stop"))
                         P.Navmesh.Stop();
+                    }
                 }
             }
             else if (!P.Navmesh.IsReady())
@@ -210,7 +99,24 @@ namespace ICE.Scheduler.Tasks
                     return false;
                 }
 
-                if (Player.DistanceTo(pos) < distance)
+                if (npcLoc != null && Player.DistanceTo(npcLoc.Value) < distance)
+                {
+                    if (mounted && !stayMounted)
+                    {
+                        if (EzThrottler.Throttle("Dismounting the mount"))
+                        {
+                            Utils.Dismount();
+                        }
+                        return false;
+                    }
+                    else
+                    {
+                        IceLogging.Debug("We've met the distance threshold, continuing on");
+                        ResetInfo();
+                        return true;
+                    }
+                }
+                else if (Player.DistanceTo(pos) < distance)
                 {
                     if (mounted && !stayMounted)
                     {
@@ -231,7 +137,9 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Telling navmesh to start"))
                     {
+                        IceLogging.Debug("Telling navmesh to start pathfinding");
                         IceLogging.DestinationLogs.Log(pos);
+                        P.Navmesh.SetTolerance(0.25f);
                         P.Navmesh.PathfindAndMoveTo(pos, false);
                     }
                 }
