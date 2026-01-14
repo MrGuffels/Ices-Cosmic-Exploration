@@ -122,7 +122,7 @@ public static partial class CosmicHelper
         671, 682, 687, // GSM
         713, 724, 729, // LTW
         755, 766, 771, // WVR
-        797, 813, 819, // ALC
+        797, 808, 813, // ALC
         839, 850, 855, // CUL
         883, 903, 886, // MIN
         925, 945, 928, // BTN

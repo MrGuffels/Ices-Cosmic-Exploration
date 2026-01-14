@@ -1,9 +1,8 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
-using ECommons;
-using ICE.Config;
 using Lumina.Excel.Sheets;
+using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {

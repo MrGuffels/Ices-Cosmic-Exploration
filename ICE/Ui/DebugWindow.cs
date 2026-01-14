@@ -58,7 +58,8 @@ internal class DebugWindow : Window
         "NPC Box Viewer",
 
         // Sheet Viewer Info
-        "Sheet: Mission Rewards"
+        "Sheet: Mission Rewards",
+        "Table: Leveling Missions"
     ];
 
     int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
@@ -125,6 +126,7 @@ internal class DebugWindow : Window
                 case 24: Ui_NpcViewer.Draw(); break;
 
                 case 25: Sheet_MissionRewards.Draw(); break;
+                case 26: Table_LevelingMissions.Draw(); break;
 
                 default: ImGui.Text("Unknown Debug View"); break;
             }

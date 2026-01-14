@@ -12,6 +12,7 @@ namespace ICE.Scheduler
             State = Start;
             IceLogging.Info($"Setting State to: {State} / Enabling Plugin");
             Mission_Settings.StartJob = Player.Job;
+            GenericManager.StorePandoraStates();
             return true;
         }
         internal static bool DisablePlugin()
@@ -19,6 +20,7 @@ namespace ICE.Scheduler
             IceLogging.Debug("Stopping the plugin state", "[Schedular - Disable Plugin]");
             P.TaskManager.Abort();
             State = IceState.Idle;
+            GenericManager.RestorePandoraStates();
             if (P.Navmesh.Installed)
             {
                 if (P.Navmesh.IsRunning())

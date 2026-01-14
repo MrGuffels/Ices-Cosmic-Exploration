@@ -1,13 +1,11 @@
 ﻿using Dalamud.Interface.Utility.Raii;
-using ICE.Config;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Text.Json;
+using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {

@@ -234,12 +234,6 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? JobSwapCheck()
         {
-            if (C.GrindProvisionals)
-            {
-                IceLogging.Info("We're currently grinding out provisionals, and that means swapping jobs constantly would be... hella bad LOL. So just continuing on like normal");
-                return true;
-            }
-
             if (Player.Job != Mission_Settings.StartJob && Mission_Settings.StartJob != 0)
             {
                 if (EzThrottler.Throttle("Swapping to crafter job", 1000))

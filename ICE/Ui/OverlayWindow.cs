@@ -3,14 +3,9 @@ using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using ICE.Config;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
 
 namespace ICE.Ui
 {

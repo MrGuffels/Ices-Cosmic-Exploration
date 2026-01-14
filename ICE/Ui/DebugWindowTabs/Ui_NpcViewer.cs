@@ -13,7 +13,7 @@ namespace ICE.Ui.DebugWindowTabs
 {
     internal class Ui_NpcViewer
     {
-        private static float radius = 1.0f;
+        private static float radius = 0.5f;
 
         public static void Draw()
         {
@@ -42,6 +42,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{npcEntry.Location_Npc:N2}");
+                        ImGui.Text($"Distance: {Player.DistanceTo(npcEntry.Location_Npc):N2}");
 
                         ImGui.TableNextColumn();
                         ImGui.Text($"{npcEntry.Location_Circle:N2}");

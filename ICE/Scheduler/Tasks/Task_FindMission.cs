@@ -1,14 +1,11 @@
-﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons.GameHelpers;
+﻿using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
 using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Scheduler.Tasks
@@ -18,21 +15,21 @@ namespace ICE.Scheduler.Tasks
         /// <summary>
         /// List of all available critical missions
         /// </summary>
-        private static HashSet<uint> CriticalMissions = new HashSet<uint>();
+        private static List<uint> CriticalMissions = new List<uint>();
         /// <summary>
         /// List of all the available<br></br>
         /// -> Timed <br></br>
         /// -> Weather <br></br>
         /// -> Sequence <br></br>
         /// </summary>
-        private static HashSet<uint> WeatherMissions = new HashSet<uint>();
-        private static HashSet<uint> TimedMissions = new HashSet<uint>();
-        private static HashSet<uint> SequenceMissions = new HashSet<uint>();
-        private static HashSet<uint> ExARankMissions = new HashSet<uint>();
-        private static HashSet<uint> ARankMissions = new HashSet<uint>();
-        private static HashSet<uint> BRankMissions = new HashSet<uint>();
-        private static HashSet<uint> CRankMissions = new HashSet<uint>();
-        private static HashSet<uint> DRankMissions = new HashSet<uint>();
+        private static List<uint> WeatherMissions = new List<uint>();
+        private static List<uint> TimedMissions = new List<uint>();
+        private static List<uint> SequenceMissions = new List<uint>();
+        private static List<uint> ExARankMissions = new List<uint>();
+        private static List<uint> ARankMissions = new List<uint>();
+        private static List<uint> BRankMissions = new List<uint>();
+        private static List<uint> CRankMissions = new List<uint>();
+        private static List<uint> DRankMissions = new List<uint>();
 
         private static int SpecialMissionCount = 0;
         private static int BasicMissionCount = 0;
@@ -108,6 +105,52 @@ namespace ICE.Scheduler.Tasks
             BasicMissionCount = 0;
 
             uint currentJobId = (uint)Mission_Settings.StartJob;
+            IceLogging.Debug($"Show all provisionals: {C.GrindAllProvisionals}");
+
+            bool specialMode = C.XPLeveling_Mode || C.XPRelicGrind;
+
+            if (!specialMode)
+            {
+                // Sorting out prosionals first
+                foreach (var jobId in C.JobPrio)
+                {
+                    if (!C.GrindAllProvisionals)
+                    {
+                        if (jobId != currentJobId)
+                            continue;
+                    }
+
+                    foreach (var m in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(jobId)))
+                    {
+                        bool provisional = m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
+                                        || m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
+                                        || m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
+
+                        if (!provisional)
+                            continue;
+
+                        if (C.MissionConfig.TryGetValue(m.Key, out var config) && config.Enabled)
+                        {
+                            if (m.Value.TerritoryId != Player.Territory.RowId)
+                            {
+                                IceLogging.Debug($"Skipping: [{m.Key}] due to being in a different zone");
+                                IceLogging.Debug($"Current Zone: {Player.Territory} | Mission Zone: {m.Value.TerritoryId}");
+                                continue;
+                            }
+
+                            IceLogging.Debug($"Found the provisional mission: [{m.Key}] [{m.Value.Name}].");
+                            if (m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential) && !SequenceMissions.Contains(m.Key))
+                                SequenceMissions.Add(m.Key);
+                            else if (m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed) && !TimedMissions.Contains(m.Key))
+                                TimedMissions.Add(m.Key);
+                            else if (m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather) && !WeatherMissions.Contains(m.Key))
+                                WeatherMissions.Add(m.Key);
+
+                            SpecialMissionCount += 1;
+                        }
+                    }
+                }
+            }
 
             foreach (var mission in C.MissionConfig)
             {
@@ -127,45 +170,23 @@ namespace ICE.Scheduler.Tasks
                     continue;
 
                 var missionId = mission.Key;
-                HashSet<uint> missionJobs = new HashSet<uint>();
                 if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo))
                 {
+                    HashSet<uint> missionJobs = new HashSet<uint>();
+                    missionJobs = missionInfo.Jobs;
+
+                    // Territory Check, cause people seem to also be forgetting this
+                    if (missionInfo.TerritoryId != Player.Territory.RowId)
+                        continue;
+
                     var attribute = missionInfo.Attributes;
+                    bool provisional = missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
+                                    || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
+                                    || missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
 
-                    if (attribute.HasFlag(MissionAttributes.ProvisionalSequential)
-                       || attribute.HasFlag(MissionAttributes.ProvisionalTimed)
-                       || attribute.HasFlag(MissionAttributes.ProvisionalWeather))
+                    if (!provisional)
                     {
-                        if (missionInfo.TerritoryId != Player.Territory.RowId)
-                            continue;
-
-                        if (!C.GrindAllProvisionals && !missionInfo.Jobs.Contains((uint)Player.Job))
-                            continue;
-
-                        if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
-                        {
-                            SequenceMissions.Add(missionId);
-                            SpecialMissionCount += 1;
-                        }
-                        else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalTimed))
-                        {
-                            TimedMissions.Add(missionId);
-                            SpecialMissionCount += 1;
-                        }
-                        else if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalWeather))
-                        {
-                            WeatherMissions.Add(missionId);
-                            SpecialMissionCount += 1;
-                        }
-                    }
-                    else
-                    {
-                        missionJobs = missionInfo.Jobs;
                         if (!missionJobs.Contains(currentJobId))
-                            continue;
-
-                        // Territory Check, cause people seem to also be forgetting this
-                        if (missionInfo.TerritoryId != Player.Territory.RowId)
                             continue;
 
                         // Alright, mission was double checked to make sure it was enabled
@@ -257,10 +278,7 @@ namespace ICE.Scheduler.Tasks
             if (hasSpecial)
                 P.TaskManager.Enqueue(() => OpenTab("Provisional"), "Opening the provisional tab for missions");
             if (hasBasic)
-            {
                 P.TaskManager.Enqueue(() => OpenTab("Standard"), "Opening the standard mission tab");
-                P.TaskManager.Enqueue(CheckStandard, "Checking the standard missions for any potentional missions");
-            }
 
             return true;
         }
@@ -428,14 +446,14 @@ namespace ICE.Scheduler.Tasks
                 foreach (var rankType in RankPriority)
                 {
                     // Get the appropriate HashSet for this rank
-                    HashSet<uint> missionHashSet = rankType switch
+                    List<uint> missionHashSet = rankType switch
                     {
                         "ExA" => ExARankMissions,
                         "A" => ARankMissions,
                         "B" => BRankMissions,
                         "C" => CRankMissions,
                         "D" => DRankMissions,
-                        _ => new HashSet<uint>()
+                        _ => new List<uint>()
                     };
 
                     // Skip if no missions configured for this rank
@@ -720,47 +738,6 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? CheckAllProvisional()
         {
-            List<uint> WeatherMissions = new();
-            List<uint> SequenceMissions = new();
-            List<uint> TimedMissions = new();
-
-            // Logic here to sort by the following
-            // -> Job Priorty
-            // -> If Enabled, throw into the proper list
-            // This should make it to where the higher priorty job should be chosen first based on the priorty for the provisional. 
-            foreach (var jobId in C.JobPrio)
-            {
-                foreach (var m in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(jobId)))
-                {
-                    bool provisional = m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
-                                    || m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed)
-                                    || m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather);
-
-                    if (!provisional)
-                    {
-                        continue;
-                    }
-
-                    if (C.MissionConfig.TryGetValue(m.Key, out var config) && config.Enabled)
-                    {
-                        if (m.Value.TerritoryId != Player.Territory.RowId)
-                        {
-                            IceLogging.Debug($"Skipping: [{m.Key}] due to being in a different zone");
-                            IceLogging.Debug($"Current Zone: {Player.Territory} | Mission Zone: {m.Value.TerritoryId}");
-                            continue;
-                        }
-
-                        IceLogging.Debug($"Found the provisional mission: [{m.Key}] [{m.Value.Name}].");
-                        if (m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalSequential) && !SequenceMissions.Contains(m.Key))
-                            SequenceMissions.Add(m.Key);
-                        else if (m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalTimed) && !TimedMissions.Contains(m.Key))
-                            TimedMissions.Add(m.Key);
-                        else if (m.Value.Attributes.HasFlag(MissionAttributes.ProvisionalWeather) && !WeatherMissions.Contains(m.Key))
-                            WeatherMissions.Add(m.Key);
-                    }
-                }
-            }
-
             IceLogging.Debug($"Weather Mission Count: {WeatherMissions.Count}");
             IceLogging.Debug($"Sequence Mission Count: {SequenceMissions.Count}");
             IceLogging.Debug($"Timed Mission Count: {TimedMissions.Count}");
@@ -1243,7 +1220,16 @@ namespace ICE.Scheduler.Tasks
         {
             IceLogging.Debug($"Starting to change job");
 
-            var jobId = CosmicHelper.SheetMissionDict[missionId].Jobs.First();
+            var mission = CosmicHelper.SheetMissionDict[missionId];
+            var jobId = mission.Jobs.First();
+            if (mission.Jobs.Count == 2)
+            {
+                // we need to adjust this to be the correct job. (Mainly for dual class reasons)
+                var startJob = (uint)Mission_Settings.StartJob;
+                if (mission.Jobs.Contains(startJob))
+                    jobId = startJob;
+            }
+
             if ((uint)Player.Job == jobId)
                 return true;
             else

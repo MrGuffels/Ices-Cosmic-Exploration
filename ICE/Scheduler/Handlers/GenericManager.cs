@@ -22,48 +22,42 @@ namespace ICE.Scheduler.Handlers
             return false;
         }
 
-        private static bool? PandoraGatherState = false;
-        private static bool? PandoraInteractState = false;
-        private static bool? PandoraCordialState = false;
-
         internal static void Tick()
         {
-            if (SchedulerMain.State == IceState.ManualMode)
-            {
-                // Ideally, we do nothing here. And this should catch it for people who are running manual mode to just return pandora back to normal
-            }
-            else if (SchedulerMain.State != IceState.Idle)
-            {
-                var timer = 30000; // 1 second = 1000
-
-                var pandoraGatherEnabled = (P.Pandora.GetFeatureEnabled("Pandora Quick Gather") ?? false);
-                if (pandoraGatherEnabled)
-                {
-                    if (EzThrottler.Throttle("Throttle Pandora Gathering", timer))
-                        P.Pandora.PauseFeature("Pandora Quick Gather", timer);
-                }
-
-                var autoInteract = (P.Pandora.GetFeatureEnabled("Auto-interact with Gathering Nodes") ?? false);
-                if (autoInteract)
-                {
-                    if (EzThrottler.Throttle("Throttle Pandora Auto-Interact w/ Nodes", timer))
-                        P.Pandora.PauseFeature("Auto-interact with Gathering Nodes", timer);
-                }
-
-                var pandoraCordial = (P.Pandora.GetFeatureEnabled("Auto-Cordial") ?? false);
-                if (C.AutoCordial && pandoraCordial && (SchedulerMain.State == IceState.Gather || SchedulerMain.State == IceState.DualClass))
-                {
-                    if (EzThrottler.Throttle("Throttling Pandora's Auto Cordial", timer))
-                        P.Pandora.PauseFeature("Auto-Cordial", timer);
-                }
-            }
-
-
             if (EzThrottler.Throttle("DelayedTick"))
             {
                 if (AddonHelper.IsAddonActive("WKSLottery") && C.GambaEnabled && SchedulerMain.State == IceState.Idle)
                     SchedulerMain.EnablePlugin();
             }
+        }
+
+        private static bool PandoraGatherState = false;
+        private static bool PandoraInteractState = false;
+        private static bool PandoraCordialState = false;
+
+        public static void StorePandoraStates()
+        {
+            // This is done this way becuase pandora tends to start locking up peoples machines after a long period of time
+            PandoraGatherState = P.Pandora.GetFeatureEnabled("Pandora Quick Gather") ?? false;
+            PandoraInteractState = P.Pandora.GetFeatureEnabled("Auto-interact with Gathering Nodes") ?? false;
+            PandoraCordialState = P.Pandora.GetFeatureEnabled("Auto-Cordial") ?? false;
+
+            if (PandoraGatherState)
+                P.Pandora.SetFeatureEnabled("Pandora Quick Gather", false);
+            if (PandoraInteractState)
+                P.Pandora.SetFeatureEnabled("Auto-interact with Gathering Nodes", false);
+            if (PandoraCordialState)
+                P.Pandora.SetFeatureEnabled("Auto-Cordial", false);
+        }
+
+        public static void RestorePandoraStates()
+        {
+            if (PandoraGatherState)
+                P.Pandora.SetFeatureEnabled("Pandora Quick Gather", true);
+            if (PandoraInteractState)
+                P.Pandora.SetFeatureEnabled("Auto-interact with Gathering Nodes", true);
+            if (PandoraCordialState)
+                P.Pandora.SetFeatureEnabled("Auto-Cordial", true);
         }
     }
 }

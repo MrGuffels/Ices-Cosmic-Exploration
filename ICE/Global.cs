@@ -16,5 +16,4 @@ global using ICE.Scheduler;
 global using ICE.Scheduler.Handlers;
 global using ICE.Scheduler.Tasks;
 global using static ICE.ICE;
-global using Dalamud.Plugin.Services;
 

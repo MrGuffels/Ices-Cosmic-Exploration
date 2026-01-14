@@ -3,8 +3,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
+using static ICE.ConfigFiles.Config;
 
-namespace ICE.Config
+namespace ICE.OldYamlConfig
 {
     public class MissionConfigs : IYamlConfig
     {
@@ -312,98 +313,5 @@ namespace ICE.Config
         public void SaveSync() => YamlConfig.SaveSync(this, ConfigPath);
 
         #endregion
-    }
-
-    public class MissionSettings
-    {
-        public bool Enabled { get; set; } = false;
-        public bool ManualMode { get; set; } = false;
-        public int GatherProfileId { get; set; } = 0;
-        public int GProfileId { get; set; } = 0;
-        public bool AutoTurnin { get; set; } = true;
-        public bool TurninGold { get; set; } = false;
-        public bool TurninSilver { get; set; } = false;
-        public bool TurninBronze { get; set; } = false;
-        public bool Use_BuildinPreset { get; set; } = false;
-        public string AutoHookPresetName { get; set; } = string.Empty;
-        public double BestTime { get; set; } = double.MaxValue;
-        public double AverageTime { get; set; } = 0;
-        public double AverageBronzeTime { get; set; } = 0;
-        public double AverageSilverTime { get; set; } = 0;
-        public double AverageGoldTime { get; set; } = 0;
-        public double AverageCriticalTime { get; set; } = 0;
-        public int TotalCompletions { get; set; } = 0;
-        public int BronzeCompletion { get; set; } = 0;
-        public int SilverCompletions { get; set; } = 0;
-        public int GoldCompletions { get; set; } = 0;
-        public int CriticalCompletions { get; set; } = 0;
-        public int FailedCounters { get; set; } = 0;
-        public List<TurninData> TurninRecords { get; set; } = new();
-        // Old References to time below for migration
-        [YamlIgnore]
-        public List<double> Times { get; set; } = new();
-    }
-
-    public class TurninData
-    {
-        public double Time { get; set; }
-        public TurninState State { get; set; }
-    }
-
-    public class GatherProfile
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public int MinimumGp { get; set; } = -1;
-        public int DualClassCraftAmount { get; set; } = 1;
-        public GatherBuffs GatherBuffs { get; set; } = new();
-    }
-
-    public class GatherBuff
-    {
-        public bool Enabled { get; set; } = false;
-        public int MinGp { get; set; }
-        public int MaxUse { get; set; } = -1;
-    }
-
-    public class GatherBuffs
-    {
-        public Dictionary<string, GatherBuff> Buffs { get; set; } = new()
-        {
-            ["BoonIncrease2"] = new() { MinGp = 100 },
-            ["BoonIncrease1"] = new() { MinGp = 50 },
-            ["Tidings"] = new() { MinGp = 200 },
-            ["YieldII"] = new() { MinGp = 500 },
-            ["YieldI"] = new() { MinGp = 400 },
-            ["BountifulYieldII"] = new() { MinGp = 100 },
-            ["BonusIntegrity"] = new() { MinGp = 300 },
-            ["BonusIntegrityChance"] = new() { Enabled = true, MinGp = 0 },
-            ["FieldMasteryIII"] = new() { MinGp = 250 },
-            ["FieldMasteryII"] = new() { MinGp = 100 },
-            ["FieldMasteryI"] = new() { MinGp = 50 },
-            ["FieldMasteryTemp"] = new() { MinGp = 50},
-        };
-
-        public int BountifulMinItem { get; set; } = 4;
-    }
-
-    public class Gamba
-    {
-        public uint ItemId { get; set; }
-        public int Weight { get; set; } = 0;
-        public GambaType Type { get; set; }
-    }
-
-    public class CosmoShoppingList
-    {
-        public int KeepAmount { get; set; } = 0;
-        public int BuyAmount { get; set; } = 0;
-        public bool KeepBuying { get; set; } = false;
-    }
-
-    public class MissionCommand
-    {
-        public required string command { get; set; }
-        public int Delay { get; set; } = 0;
     }
 }

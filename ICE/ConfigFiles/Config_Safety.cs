@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace ICE.ConfigFiles;
+
+public partial class Config
+{
+    public bool StopOnAbort { get; set; } = true;
+    public bool RejectUnknownYesno { get; set; } = true;
+    public bool DelayGrabMission { get; set; } = true;
+    public int DelayIncrease { get; set; } = 500;
+    public bool DelayCraft { get; set; } = true;
+    public int DelayCraftIncrease { get; set; } = 2500;
+    public bool AnimationLockAbandon { get; set; } = true;
+    public bool JumpIfStuck { get; set; } = false;
+}

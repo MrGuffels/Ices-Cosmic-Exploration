@@ -25,10 +25,6 @@ internal static class NpcData // Renamed the class to avoid conflict
         public string Name { get; set; }
         public Vector3 Location_Npc { get; set; }
         public Vector3 Location_Circle { get; set; }
-        public Vector3 Corner1 { get; set; }
-        public Vector3 Corner2 { get; set; }
-        public Vector3 Corner3 { get; set; }
-        public Vector3 Corner4 { get; set; }
     }
 
     public static Dictionary<uint, List<NPCInfo>> MoonNpcs = new() // Use NPCInfo instead of NpcInfo
@@ -41,7 +37,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 NpcId = 1052610,
                 Name = "Godgyth",
                 Location_Npc = new Vector3(19.46f, 1.69f, 18.11f),
-                Location_Circle = new Vector3(17.04f, 1.69f, 15.27f),
+                Location_Circle = new Vector3(16.97f, 1.69f, 15.16f),
             },
             new NPCInfo // Credit Exchange Vendor
             {
@@ -49,7 +45,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 NpcId = 1052608,
                 Name = "Mesouaidonque",
                 Location_Npc = new Vector3(18.23f, 1.69f, 19.42f),
-                Location_Circle = new Vector3(15.26f, 1.69f, 17.07f),
+                Location_Circle = new Vector3(15.08f, 1.69f, 16.89f),
             },
             new NPCInfo // Relic NPC
             {
@@ -57,7 +53,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 NpcId = 1052605,
                 Name = "Researchingway",
                 Location_Npc = new Vector3(-18.91f, 2.15f, 18.84f),
-                Location_Circle = new Vector3(-16.46f, 1.69f, 16.54f),
+                Location_Circle = new Vector3(-16.03f, 1.69f, 16.10f),
             },
             new NPCInfo // Cosmic Fortune aka Gamba Wheel
             {
@@ -65,7 +61,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 NpcId = 1052612,
                 Name = "Orbitingway",
                 Location_Npc = new Vector3(18.84f, 2.24f, -18.91f),
-                Location_Circle = new Vector3(15.99f, 1.69f, -16.30f),
+                Location_Circle = new Vector3(15.92f, 1.69f, -16.16f),
             }
         },
         [1291] = new List<NPCInfo>
@@ -84,7 +80,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 NpcId = 1052640,
                 Name = "Mesouaidonque",
                 Location_Npc = new Vector3(358.33f, 52.75f, -400.44f),
-                Location_Circle = new(355.17f, 52.69f, -402.80f),
+                Location_Circle = new(354.94f, 52.69f, -402.99f),
             },
             new NPCInfo // Relic NPC
             {
@@ -100,7 +96,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 NpcId = 1052642,
                 Name = "Orbitingway",
                 Location_Npc = new Vector3(358.82f, 53.19f, -438.86f),
-                Location_Circle = new Vector3(356.17f, 52.69f, -436.09f),
+                Location_Circle = new Vector3(355.97f, 52.69f, -436.08f),
 
             }
         },

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace ICE.Config;
+namespace ICE.OldYamlConfig;
 
 public interface IYamlConfig
 {

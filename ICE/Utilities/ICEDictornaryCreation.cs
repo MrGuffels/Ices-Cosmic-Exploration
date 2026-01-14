@@ -1,12 +1,13 @@
 ﻿using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using ICE.Config;
+using ICE.ConfigFiles;
 using ICE.Ui.MainUi.ModeSelect;
 using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
+using static ICE.ConfigFiles.Config;
 using static ICE.Enums.MissionAttributes;
 using static ICE.Utilities.CosmicHelper;
 using static ICE.Utilities.ExcelHelper;
@@ -171,7 +172,7 @@ public sealed partial class ICE
                     var itemId = missionRecipeRow.Value.ItemResult. RowId;
                     var itemName = ItemSheet.GetRow(itemId).Name.ToString();
                     var craftingType = missionRecipeRow.Value.CraftType.Value.RowId;
-                    IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.Value.RowId} | for item: {itemId} | {itemName}", debugOnly: true);
+                    // IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.Value.RowId} | for item: {itemId} | {itemName}", debugOnly: true);
                     var item1RecipeId = missionRecipeRow.Value.RowId;
 
                     crafts_Main[(ushort)item1RecipeId] = new CraftingInfo()
@@ -241,8 +242,8 @@ public sealed partial class ICE
                         }
 
                         isExpert |= recipeRow.IsExpert;
-                        if (isExpert)
-                            IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
+                        // if (isExpert)
+                            // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                     }
                     else if (recipeIds.Count == 2)
                     {
@@ -272,8 +273,8 @@ public sealed partial class ICE
                         };
 
                         isExpert |= recipeRow.IsExpert;
-                        if (isExpert)
-                            IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
+                        // if (isExpert)
+                            // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
 
                         // Second one is going to be the pre-crafting mat that you need
                         var preRecipeId = recipeIds[1];
@@ -324,8 +325,8 @@ public sealed partial class ICE
                                 }
                             };
                             isExpert |= recipeRow.IsExpert;
-                            if (isExpert)
-                                IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
+                            // if (isExpert)
+                                // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                         }
                     }
 
@@ -535,7 +536,7 @@ public sealed partial class ICE
             if (itemId == 0) continue;
             string itemName = ItemSheet.GetRow(itemId).Name.ToString();
             var type = item.WKSItemSubCategory.RowId;
-            IceLogging.Debug($"RowID: {item.RowId} | ID: {itemId} | Name: {itemName}", debugOnly: true);
+            // IceLogging.Debug($"RowID: {item.RowId} | ID: {itemId} | Name: {itemName}", debugOnly: true);
 
             if (CosmicHelper.GatheringItems.TryGetValue(itemName, out var itemEntry))
             {
@@ -543,7 +544,7 @@ public sealed partial class ICE
             }
             else
             {
-                IceLogging.Debug($"Adding a new entry: {itemName}", debugOnly: true);
+                // IceLogging.Debug($"Adding a new entry: {itemName}", debugOnly: true);
 
                 CosmicHelper.GatheringItems[itemName] = new()
                 {
@@ -569,7 +570,7 @@ public sealed partial class ICE
             var itemId = supply.Item.RowId;
             var kind = supply.WKSItemSubCategory.RowId;
             var name = Svc.Data.GetExcelSheet<Item>().GetRow(itemId).Name.ToString();
-            IceLogging.Info($"Name: {name} | ItemID: {itemId} | kind: {kind}");
+            // IceLogging.Info($"Name: {name} | ItemID: {itemId} | kind: {kind}");
 
             // Seafood/fish
             if (kind == 2)
@@ -603,8 +604,16 @@ public sealed partial class ICE
             }
         }
 
+        EnsureAllMission();
+
         foreach (var mission in C.MissionConfig)
         {
+            if (C.GatherProfiles == null)
+            {
+                C.GatherProfiles = new Dictionary<int, GatherProfile>();
+            }
+            IceLogging.Debug($"Checking: {mission.Key}");
+            IceLogging.Debug($"Profile ID: {mission.Value.GProfileId}");
             if (!C.GatherProfiles.ContainsKey(mission.Value.GProfileId))
             {
                 mission.Value.GProfileId = 0;
@@ -658,27 +667,34 @@ public sealed partial class ICE
             GatherSettings.SetupAllProfiles();
         }
 
-
-        C.SaveDebounced();
+        C.Save();
     }
-    private static string GetClassAcronym(uint jobId)
+
+    private static void MigrateConfigV1()
     {
-        // Map your job IDs to the acronyms used in the CSV
-        // You'll need to determine what these mappings are based on your game data
-        return jobId switch
+        if (!C.OldConfigMigrateV1)
         {
-            8 => "CRP",  // Carpenter
-            9 => "BSM",  // Blacksmith
-            10 => "ARM", // Armorer
-            11 => "GSM", // Goldsmith
-            12 => "LTW", // Leatherworker
-            13 => "WVR", // Weaver
-            14 => "ALC", // Alchemist
-            15 => "CUL", // Culinarian
-            16 => "MIN", // Miner
-            17 => "BTN", // Botanist
-            18 => "FSH", // Fisher
-            _ => ""
-        };
+            // That means we're still on the old config version. Time to migrate if it exist
+            ConfigMigration.MigrateFromOldYaml(C);
+        }
+    }
+
+    public static void EnsureAllMission()
+    {
+        IceLogging.Debug("Starting Mission Updater");
+        foreach (var mission in SheetMissionDict)
+        {
+            if (C.MissionConfig.TryGetValue(mission.Key, out var config) && config != null)
+            {
+                // Config exists and is not null, nothing to do
+            }
+            else
+            {
+                // Either key doesn't exist OR value is null
+                C.MissionConfig[mission.Key] = new MissionSettings();
+                IceLogging.Debug($"Added/Fixed Mission: {mission.Key}");
+            }
+        }
+        C.Save();
     }
 }

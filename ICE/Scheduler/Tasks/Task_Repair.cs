@@ -66,8 +66,8 @@ namespace ICE.Scheduler.Tasks
 
             if (npcEntry != null)
             {
-                Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 1);
-                if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 6, npcLoc: npcEntry.Location_Npc).Value)
+                Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 0.5f);
+                if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 5, npcLoc: npcEntry.Location_Npc).Value)
                 {
                     if (EzThrottler.Throttle("Repair move message", 1000))
                         IceLogging.Verbose($"Pathing to repair NPC. Current distance: {Player.DistanceTo(npcEntry.Location_Npc)}", handle);
@@ -87,7 +87,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         public static unsafe bool? RepairAtNpc()
         {
             var zoneId = Player.Territory;

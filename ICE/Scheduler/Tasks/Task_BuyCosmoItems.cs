@@ -1,13 +1,8 @@
 ﻿using ECommons.GameHelpers;
-using ICE.Config;
+using ICE.ConfigFiles;
 using ICE.Utilities.Cosmic_Helper;
-using Lumina.Excel.Sheets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.ConfigFiles.Config;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -33,7 +28,7 @@ namespace ICE.Scheduler.Tasks
 
             if (npcEntry != null)
             {
-                Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 1);
+                Vector3 randomPos = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, 0.5f);
                 if (!Task_NavmeshMove.Task_NavTo(randomPos, distance: 6, npcLoc: npcEntry.Location_Npc).Value)
                 {
                     if (EzThrottler.Throttle("Repair move message", 1000))

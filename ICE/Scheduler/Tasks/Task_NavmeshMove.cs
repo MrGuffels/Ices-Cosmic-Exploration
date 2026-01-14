@@ -10,6 +10,8 @@ namespace ICE.Scheduler.Tasks
     {
         public static bool? Task_NavTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null)
         {
+            string handle = "[Navmesh Task_NavTo]";
+
             bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
             bool mounted = Player.Mounted;
             bool inMission = CosmicHelper.CurrentLunarMission != 0;
@@ -20,11 +22,11 @@ namespace ICE.Scheduler.Tasks
             bool useOutsideMission = C.UseMountOutsideMission && !inMission;
             bool useMount = useInMission || useOutsideMission;
 
-            IceLogging.Debug("Starting navmesh", debugOnly: true);
+            IceLogging.Debug("Starting navmesh", handle, debugOnly: true);
 
             if (!P.Navmesh.Installed)
             {
-                IceLogging.Info("We seem to be missing navmesh... so we're just going to exit here");
+                IceLogging.Info("We seem to be missing navmesh... so we're just going to exit here", handle);
                 return true;
             }
             else if (P.Navmesh.IsRunning())
@@ -60,23 +62,26 @@ namespace ICE.Scheduler.Tasks
                 if (Player.IsMoving && waitForBusy)
                 {
                     if (EzThrottler.Throttle("Throttle message tehe", 2000))
-                        IceLogging.Verbose("We're currently moving, and we were told to wait for us to NOT be moving so... yeah, we waiting");
+                        IceLogging.Verbose("We're currently moving, and we were told to wait for us to NOT be moving so... yeah, we waiting", handle);
 
                     return false;
                 }
                 else if (!waitForBusy)
                 {
-                    if (npcLoc != null && Player.DistanceTo(npcLoc.Value) <= distance)
+                    if (npcLoc != null)
                     {
-                        if (EzThrottler.Throttle("NPC Location Throttle"))
-                            IceLogging.Debug("We're close to the npc, and we're not busy anymore, so stopping");
+                        if (Player.DistanceTo(npcLoc.Value) <= distance)
+                        {
+                            if (EzThrottler.Throttle("NPC Location Throttle"))
+                                IceLogging.Debug("We're close to the npc, and we're not busy anymore, so stopping", handle);
 
-                        P.Navmesh.Stop();
+                            P.Navmesh.Stop();
+                        }
                     }
                     else if (Player.DistanceTo(pos) <= distance)
                     {
                         if (EzThrottler.Throttle("Normal distance throttle"))
-                            IceLogging.Debug("We're within stopping distance, so stopping navmesh");
+                            IceLogging.Debug("We're within stopping distance, so stopping navmesh", handle);
 
                         P.Navmesh.Stop();
                     }
@@ -87,7 +92,7 @@ namespace ICE.Scheduler.Tasks
                 if (EzThrottler.Throttle("Waiting on navmesh", 1000))
                 {
                     var navProgress = P.Navmesh.BuildProgress();
-                    IceLogging.Debug($"Waiting for navmesh to finish building. Currently at: {navProgress:N2}");
+                    IceLogging.Debug($"Waiting for navmesh to finish building. Currently at: {navProgress:N2}", handle);
                 }
             }
             else if (!P.Navmesh.IsRunning())
@@ -99,21 +104,36 @@ namespace ICE.Scheduler.Tasks
                     return false;
                 }
 
-                if (npcLoc != null && Player.DistanceTo(npcLoc.Value) < distance)
+                if (npcLoc != null)
                 {
-                    if (mounted && !stayMounted)
+                    if (Player.DistanceTo(npcLoc.Value) < distance)
                     {
-                        if (EzThrottler.Throttle("Dismounting the mount"))
+                        if (mounted && !stayMounted)
                         {
-                            Utils.Dismount();
+                            if (EzThrottler.Throttle("Dismounting the mount"))
+                            {
+                                Utils.Dismount();
+                            }
+                            return false;
                         }
-                        return false;
+                        else
+                        {
+                            IceLogging.Debug("We've met the distance threshold for the npc", handle);
+                            IceLogging.Debug($"Player Distance: {Player.DistanceTo(npcLoc.Value)}");
+                            IceLogging.Debug($"Expected Distance: {distance}");
+                            ResetInfo();
+                            return true;
+                        }
                     }
                     else
                     {
-                        IceLogging.Debug("We've met the distance threshold, continuing on");
-                        ResetInfo();
-                        return true;
+                        if (EzThrottler.Throttle("Telling navmesh to start"))
+                        {
+                            IceLogging.Debug("Telling navmesh to start pathfinding");
+                            IceLogging.DestinationLogs.Log(pos);
+                            P.Navmesh.SetTolerance(0.25f);
+                            P.Navmesh.PathfindAndMoveTo(pos, false);
+                        }
                     }
                 }
                 else if (Player.DistanceTo(pos) < distance)
@@ -128,7 +148,9 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        IceLogging.Debug("We've met the distance threshold, continuing on");
+                        IceLogging.Debug("We've met the distance threshold for our destination", handle);
+                        IceLogging.Debug($"Player Distance: {Player.DistanceTo(pos)}");
+                        IceLogging.Debug($"Expected Distance: {distance}");
                         ResetInfo();
                         return true;
                     }

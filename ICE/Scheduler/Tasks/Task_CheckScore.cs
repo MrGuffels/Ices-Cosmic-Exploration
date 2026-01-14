@@ -1,15 +1,8 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.GameHelpers;
-using ICE.Config;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
-using Lumina.Excel.Sheets;
-using System.Reflection;
-using TerraFX.Interop.Windows;
-using YamlDotNet.Core.Tokens;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
 
 namespace ICE.Scheduler.Tasks
 {

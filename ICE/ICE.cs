@@ -1,8 +1,9 @@
 using ECommons.Automation.NeoTaskManager;
 using ECommons.Configuration;
 using ECommons.GameHelpers;
-using ICE.Config;
+using ICE.ConfigFiles;
 using ICE.IPC;
+using ICE.OldYamlConfig;
 using ICE.Ui;
 using ICE.Ui.MainUi;
 using ICE.Utilities.Cosmic_Helper;
@@ -18,12 +19,13 @@ public sealed partial class ICE : IDalamudPlugin
     public static string Name => "ICE";
 
     internal static ICE P = null!;
-    private readonly Configuration Config;
     private static MissionConfigs missionConfigs;
-    public MissionTimer MissionTimer { get; private set; }
+    private Config config;
+    public static Config C => P.config;
+    
 
-    public static Configuration OldConfig => P.Config;
-    public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
+    public MissionTimer MissionTimer { get; private set; }
+    // public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
 
     // Yaml Config Loaders. For both loading a yaml in the config folder, and for embedded
     private static T LoadConfig<T>() where T : IYamlConfig, new()
@@ -65,10 +67,13 @@ public sealed partial class ICE : IDalamudPlugin
     {
         P = this;
         ECommonsMain.Init(pi, P, Module.DalamudReflector, ECommons.Module.ObjectFunctions);
+        new ECommons.Schedulers.TickScheduler(Load);
         PictoService.Initialize(pi);
-
-        EzConfig.Migrate<Configuration>();
-        Config = EzConfig.Init<Configuration>();
+    }
+    public void Load()
+    {
+        EzConfig.Migrate<Config>();
+        config = EzConfig.Init<Config>();
 
         //IPC's that are used
         Lifestream = new();
@@ -85,9 +90,6 @@ public sealed partial class ICE : IDalamudPlugin
         overlayWindow = new();
         debugWindow = new();
         infoWindow = new();
-
-        // timer stuff
-        MissionTimer = new MissionTimer();
 
         EzCmd.Add("/icecosmic", OnCommand, """
             Open plugin interface
@@ -114,11 +116,14 @@ public sealed partial class ICE : IDalamudPlugin
             mainWindow.IsOpen = true;
             SelectableSidebar.currentSelection = "helpSelect_AllSettings";
         };
+
+        // timer stuff
+        MissionTimer = new MissionTimer();
+
+        MigrateConfigV1();
+
         DictionaryCreation();
         Task_Gamba.EnsureGambaWeightsInitialized();
-        ConfigMigrator.UpdateConfigMissionList();
-        ConfigMigrator.MigrateConfigv1();
-        ConfigMigrator.CheckMissions();
         GatheringUtil.UpdateCriticalWeather();
         TestLoadRoutes();
     }

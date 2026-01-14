@@ -2,10 +2,10 @@
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using ICE.Config;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
+using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
@@ -394,7 +394,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
             if (ImGui.Button("Add New Command"))
             {
-                C.PostMissionCommands.Add(new Config.MissionCommand 
+                C.PostMissionCommands.Add(new MissionCommand 
                 { 
                     command = "", 
                     Delay = 0,
