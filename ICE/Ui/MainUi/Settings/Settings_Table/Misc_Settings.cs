@@ -44,6 +44,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.TableSetColumnIndex(0);
                 CraftingLocations();
 
+                ImGui.TableNextColumn();
+                ArtisanSettings();
+
 #if DEBUG
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
@@ -490,6 +493,39 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                         C.Save();
                     }
                 }
+            }
+        }
+
+        private static void ArtisanSettings()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, "Artisan Settings");
+            ImGui.Dummy(new Vector2(0, 5));
+
+            bool force_Raphael = C.Artisan_RaphaelForce;
+            bool force_Expert = C.Artisan_RaphaelExpert;
+
+            if (ImGui.Checkbox("Enforce Raphael Solver", ref force_Raphael))
+            {
+                C.Artisan_RaphaelForce = force_Raphael;
+                C.Save();
+            }
+            ImGui.SameLine();
+            ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                                    "Will force all recipes while the plugin is running to use the raphael solver\n" +
+                                    "This by default doesn't include the expert crafts, due to their nature");
+            ImGui.NewLine();
+            if (force_Raphael)
+            {
+                if (ImGui.Checkbox("Enforce Raphael Solver on EX+ Experts", ref force_Expert))
+                {
+                    C.Artisan_RaphaelExpert = force_Expert;
+                    C.Save();
+                }
+                ImGui.SameLine();
+                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                                        "Will force expert crafts in the EX+ Missions to use the raphael solver.\n" +
+                                        "I personally do not recommend this on, but there are some you can get away with\n" +
+                                        "And when we get to overlevel the moon, the option is there");
             }
         }
 

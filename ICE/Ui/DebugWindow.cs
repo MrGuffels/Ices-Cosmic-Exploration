@@ -59,7 +59,8 @@ internal class DebugWindow : Window
 
         // Sheet Viewer Info
         "Sheet: Mission Rewards",
-        "Table: Leveling Missions"
+        "Table: Leveling Missions",
+        "Table: Mission Select"
     ];
 
     int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
@@ -127,6 +128,7 @@ internal class DebugWindow : Window
 
                 case 25: Sheet_MissionRewards.Draw(); break;
                 case 26: Table_LevelingMissions.Draw(); break;
+                case 27: Table_MissionSelect.Draw(); break;
 
                 default: ImGui.Text("Unknown Debug View"); break;
             }

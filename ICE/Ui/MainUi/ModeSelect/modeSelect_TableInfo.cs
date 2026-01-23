@@ -266,7 +266,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                 ImGui.TableSetupColumn("V"); // 14
 
                 ImGui.TableSetupColumn("Turnin Mode"); // 15
-                ImGui.TableSetupColumn("Gathering Profile");
+                ImGui.TableSetupColumn("Gathering Profile"); // 16
                 ImGui.TableSetupColumn("Mission Notes"); // 17
 
                 #endregion
@@ -719,6 +719,16 @@ namespace ICE.Ui.MainUi.ModeSelect
                         if (ImGui.IsItemClicked())
                         {
                             Utils.SetFlagForNPC(missionInfo.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
+                        }
+                    }
+                    if (!C.ShowExtraMissionInfo)
+                    {
+                        ImGui.SameLine();
+                        ImGuiEx.Icon(FontAwesomeIcon.ArrowUpRightFromSquare);
+                        if (ImGui.IsItemClicked())
+                        {
+                            selectedMission = Id;
+                            P.externalDetails.IsOpen = true;
                         }
                     }
 
@@ -1532,6 +1542,9 @@ namespace ICE.Ui.MainUi.ModeSelect
                             case 5:
                                 type = "V";
                                 break;
+                            case 6:
+                                type = "VI";
+                                break;
                             default:
                                 type = "???";
                                 break;
@@ -1625,6 +1638,15 @@ namespace ICE.Ui.MainUi.ModeSelect
                                     ImGui.TableNextRow();
                                     ImGui.TableSetColumnIndex(0);
                                     ImGui.Text($"{itemName}");
+                                    if (recipe.IsExpert)
+                                    {
+                                        ImGui.SameLine();
+                                        ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
+                                        if (ImGui.IsItemHovered())
+                                        {
+                                            ImGui.SetTooltip("Expert Craft");
+                                        }
+                                    }
 
                                     ImGui.TableNextColumn();
                                     ImGui.Text($"{recipeInfo.Progress}");
@@ -1656,6 +1678,15 @@ namespace ICE.Ui.MainUi.ModeSelect
                                         ImGui.TableNextRow();
                                         ImGui.TableSetColumnIndex(0);
                                         ImGui.Text($"{itemName}");
+                                        if (recipe.IsExpert)
+                                        {
+                                            ImGui.SameLine();
+                                            ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
+                                            if (ImGui.IsItemHovered())
+                                            {
+                                                ImGui.SetTooltip("Expert Craft");
+                                            }
+                                        }
 
                                         ImGui.TableNextColumn();
                                         ImGui.Text($"{recipeInfo.Progress}");
@@ -1691,7 +1722,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     {
                         if (flag != MissionAttributes.None && mission.Attributes.HasFlag(flag))
                         {
-                            ImGui.Text(flag.ToString());
+                            ImGui.Text($"{EnumNameConverter(flag)}");
                         }
                     }
                 }
@@ -1985,6 +2016,31 @@ namespace ICE.Ui.MainUi.ModeSelect
                 string joke = JokeList[jokeId];
                 ImGui.TextWrapped(joke);
             }
+        }
+
+        public static string EnumNameConverter(MissionAttributes attribute)
+        {
+            return attribute switch
+            {
+                MissionAttributes.Craft => "Crafting",
+                MissionAttributes.Gather => "Gathering",
+                MissionAttributes.Fish => "Fishing",
+                MissionAttributes.Limited => "Limited Supplies",
+                MissionAttributes.Collectables => "Collectable",
+                MissionAttributes.ReducedItems => "Reducable Items",
+                MissionAttributes.ExpertCraft => "Expert Crafts",
+                MissionAttributes.ScoreTimeRemaining => "Timed Scoring",
+                MissionAttributes.ScoreChains => "Chained Gather Scoring",
+                MissionAttributes.ScoreGatherersBoon => "Gatherer's Boons Scoring",
+                MissionAttributes.ScoreLargestSize => "Largest Fish Scored",
+                MissionAttributes.ScoreVariety => "Variety of Fish Required",
+                MissionAttributes.ScoreScore => "Mission Score Required",
+                MissionAttributes.Critical => "Critical Mission",
+                MissionAttributes.ProvisionalTimed => "Time Required",
+                MissionAttributes.ProvisionalWeather => "Weather Required",
+                MissionAttributes.ProvisionalSequential => "Sequential Missions Required",
+                _ => attribute.ToString()
+            };
         }
 
         #region Table Tools

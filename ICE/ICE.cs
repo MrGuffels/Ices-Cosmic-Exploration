@@ -50,6 +50,7 @@ public sealed partial class ICE : IDalamudPlugin
     internal OverlayWindow overlayWindow;
     internal DebugWindow debugWindow;
     internal InfoWindow infoWindow;
+    internal Window_ExternalDetails externalDetails;
 
     // Taskmanager from Ecommons
     internal TaskManager TaskManager;
@@ -90,6 +91,7 @@ public sealed partial class ICE : IDalamudPlugin
         overlayWindow = new();
         debugWindow = new();
         infoWindow = new();
+        externalDetails = new();
 
         EzCmd.Add("/icecosmic", OnCommand, """
             Open plugin interface

@@ -36,6 +36,8 @@ public partial class Config
     public bool ShowPhaennaMissions { get; set; } = true;
     public bool RemoveAfterGold { get; set; } = false;
     public bool ShowExtraMissionInfo { get; set; } = true;
+    public bool Artisan_RaphaelForce { get; set; } = true;
+    public bool Artisan_RaphaelExpert { get; set; } = false;
     public Dictionary<uint, uint> ScoreKeeper { get; set; } = new();
 
     public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();

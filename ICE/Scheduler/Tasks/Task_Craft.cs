@@ -50,24 +50,45 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
         private static uint throttleCounter = 0;
-        private static void InsertArtisanWait(ushort craftId, uint recipeId, int amount)
+        private static void InsertArtisanWait(ushort craftId, uint recipeId, int amount, bool expert)
         {
             P.TaskManager.InsertMulti(
-                new(() => ThrottleArtisanTask(craftId, recipeId, amount), "Telling artisan to craft"),
+                new(() => ThrottleArtisanTask(craftId, recipeId, amount, expert), "Telling artisan to craft"),
                 new(() => WaitingForArtisan(), "Waiting for artisan")
             );
         }
-        private static bool? ThrottleArtisanTask(ushort craftId, uint recipeId, int amount)
+        private static bool? ThrottleArtisanTask(ushort craftId, uint recipeId, int amount, bool expert)
         {
             int delay = C.DelayCraft ? C.DelayCraftIncrease : 25;
 
             if (EzThrottler.Throttle("Waiting X Amount of seconds for artisan", delay))
             {
+                if (EzThrottler.Throttle("Craft Information", 2000))
+                    IceLogging.Debug($"RecipeID: {recipeId} | Expert: {expert}");
+
                 throttleCounter += 1;
                 if (C.XPLeveling_Mode)
                 {
                     IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {craftId}");
                     P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
+                }
+                else if (C.Artisan_RaphaelForce)
+                {
+                    if (!expert)
+                    {
+                        P.Artisan.ChangeSolver(recipeId, "Raphael Recipe Solver", true);
+                    }
+                    else if (expert)
+                    {
+                        if (C.Artisan_RaphaelExpert)
+                        {
+                            P.Artisan.ChangeSolver(recipeId, "Raphael Recipe Solver", true);
+                        }
+                        else
+                        {
+                            P.Artisan.ChangeSolver(recipeId, "Expert Recipe Solver", true);
+                        }
+                    }
                 }
                 else
                 {
@@ -94,7 +115,11 @@ namespace ICE.Scheduler.Tasks
         private static bool? CheckMaterials()
         {
             var id = CosmicHelper.CurrentLunarMission;
-               var mission = CosmicHelper.SheetMissionDict[id];
+            var mission = CosmicHelper.SheetMissionDict[id];
+
+            bool provisional = mission.Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
+                            || mission.Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
+                            || mission.Attributes.HasFlag(MissionAttributes.ProvisionalTimed);
 
             if (!P.Artisan.IsBusy())
             {
@@ -121,15 +146,17 @@ namespace ICE.Scheduler.Tasks
                         {
                             // you don't have enough of the pre-crafts to craft the main item. 
                             // going to tell artisan to just kick it into gear
+                            bool SpecialExpert = mainCraft.Value.ExpertCraft && provisional;
                             var craftAmount = mainCraft.Value.RequiredAmount - mainItemCount;
-                            InsertArtisanWait(mainCraft.Key, mainCraft.Value.RecipeId, craftAmount);
+                            InsertArtisanWait(mainCraft.Key, mainCraft.Value.RecipeId, craftAmount, SpecialExpert);
                             IceLogging.Info($"Telling artisan to craft: {mainCraft.Value.ItemId} -> {craftAmount}", "[Task Craft: Check Materials]");
                             return true;
                         }
                         else
                         {
                             // you have enough of the main hand item. But you still are crafting. So time to just craft 1 more
-                            InsertArtisanWait(mainCraft.Key, mainCraft.Value.RecipeId, 1);
+                            bool SpecialExpert = mainCraft.Value.ExpertCraft && provisional;
+                            InsertArtisanWait(mainCraft.Key, mainCraft.Value.RecipeId, 1, SpecialExpert);
                             IceLogging.Info($"Current item count of: {mainCraft.Value.ItemId} | {mainItemCount}");
                             IceLogging.Info($"Telling artisan to craft: {mainCraft.Value.ItemId} -> 1", "[Task Craft: Check Materials]");
                             return true;
@@ -148,7 +175,8 @@ namespace ICE.Scheduler.Tasks
                         if (craftAmount < 1)
                             craftAmount = 1;
 
-                        InsertArtisanWait(preCraft.Key, preCraft.Value.RecipeId, craftAmount);
+                        bool SpecialExpert = preCraft.Value.ExpertCraft && provisional;
+                        InsertArtisanWait(preCraft.Key, preCraft.Value.RecipeId, craftAmount, SpecialExpert);
                         IceLogging.Info($"Found a material that still needed to be crafted", "[Task Craft: Check Materials]");
                         return true;
                     }
@@ -175,7 +203,8 @@ namespace ICE.Scheduler.Tasks
                             var craftMaterial = ExcelHelper.RecipeSheet.GetRow(craft.Key).Ingredient[0].RowId;
                             if (PlayerHelper.GetItemCount(craftMaterial, out var itemAmount) && itemAmount >= reqAmount)
                             {
-                                InsertArtisanWait(craft.Key, craft.Value.RecipeId, reqAmount);
+                                bool SpecialExpert = craft.Value.ExpertCraft && provisional;
+                                InsertArtisanWait(craft.Key, craft.Value.RecipeId, reqAmount, SpecialExpert);
                                 IceLogging.Info($"Telling artisan to craft: {craft.Value.ItemId} -> {reqAmount}", "[Craft: No Pre-Mats]");
                                 return true;
                             }
@@ -199,7 +228,8 @@ namespace ICE.Scheduler.Tasks
                     var moreCraftMaterial = ExcelHelper.RecipeSheet.GetRow(moreCraft.Key).Ingredient[0].RowId;
                     if (PlayerHelper.GetItemCount(moreCraftMaterial, out var moreItemAmount) && moreItemAmount >= AdditionalItem)
                     {
-                        InsertArtisanWait(moreCraft.Key, moreCraft.Value.RecipeId, AdditionalItem);
+                        bool SpecialExpert = moreCraft.Value.ExpertCraft && provisional;
+                        InsertArtisanWait(moreCraft.Key, moreCraft.Value.RecipeId, AdditionalItem, SpecialExpert);
                         IceLogging.Info($"Telling artisan to craft: {moreCraft.Value.ItemId} -> {AdditionalItem}", "[Craft: No Pre-Mats]");
                         return true;
                     }

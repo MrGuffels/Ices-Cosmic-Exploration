@@ -28,6 +28,7 @@ public sealed partial class ICE
             HashSet<uint> jobs = new();
             Dictionary<int, int> relicXp = new();
             bool isExpert = false;
+            bool isCollectable = false;
 
             uint keyId = entry.RowId;
             string missionName = entry.Name.ToString();
@@ -212,6 +213,7 @@ public sealed partial class ICE
                         var requiredAmount = recipeRow.AmountIngredient[0];
                         var requiredItem2 = recipeRow.Ingredient[1].RowId;
                         var requiredAmount2 = recipeRow.AmountIngredient[1];
+                        bool expertMat = recipeRow.IsExpert;
 
                         if (requiredItem2 != 0)
                         {
@@ -220,6 +222,7 @@ public sealed partial class ICE
                                 ItemId = itemId,
                                 RequiredAmount = amountNeeded,
                                 RecipeId = recipeId,
+                                ExpertCraft = expertMat,
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount,
@@ -234,6 +237,7 @@ public sealed partial class ICE
                                 ItemId = itemId,
                                 RequiredAmount = amountNeeded,
                                 RecipeId = recipeId,
+                                ExpertCraft = expertMat,
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount
@@ -241,7 +245,8 @@ public sealed partial class ICE
                             };
                         }
 
-                        isExpert |= recipeRow.IsExpert;
+                        isExpert |= expertMat;
+                        isCollectable |= recipeRow.CollectableMetadataKey == 1;
                         // if (isExpert)
                             // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                     }
@@ -261,26 +266,28 @@ public sealed partial class ICE
                         }
                         var requiredItem = recipeRow.Ingredient[0].RowId;
                         var requiredAmount = recipeRow.AmountIngredient[0];
+                        bool requiredItemExpert = recipeRow.IsExpert;
                         crafts_Main[recipeId] = new()
                         {
                             ItemId = itemId,
                             RequiredAmount = amountNeeded,
                             RecipeId = recipeId,
+                            ExpertCraft = requiredItemExpert,
                             RequiredItems = new()
                             {
                                 [requiredItem] = requiredAmount
                             }
                         };
 
-                        isExpert |= recipeRow.IsExpert;
                         // if (isExpert)
-                            // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
+                        // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
 
                         // Second one is going to be the pre-crafting mat that you need
                         var preRecipeId = recipeIds[1];
                         var preRecipeRow = RecipeSheet.GetRow(preRecipeId);
                         var preItemId = preRecipeRow.ItemResult.RowId;
                         var preAmountNeeded = requiredAmount;
+                        var preCraftExpert = preRecipeRow.IsExpert;
 
                         var crateId = preRecipeRow.Ingredient[0].RowId;
 
@@ -289,11 +296,15 @@ public sealed partial class ICE
                             ItemId = preItemId,
                             RequiredAmount = preAmountNeeded,
                             RecipeId = preRecipeId,
+                            ExpertCraft = preCraftExpert,
                             RequiredItems = new()
                             {
                                 [crateId] = preAmountNeeded
                             }
                         };
+
+                        isExpert |= requiredItemExpert || preCraftExpert;
+                        isCollectable |= recipeRow.CollectableMetadataKey == 1 || preRecipeRow.CollectableMetadataKey == 1;
 
                     }
                     else if (recipeIds.Count == 3)
@@ -314,19 +325,22 @@ public sealed partial class ICE
                             }
                             var requiredItem = recipeRow.Ingredient[0].RowId;
                             var requiredAmount = recipeRow.AmountIngredient[0];
+                            bool expertCraft = recipeRow.IsExpert;
                             crafts_Main[recipeId] = new()
                             {
                                 ItemId = itemId,
                                 RequiredAmount = amountNeeded,
                                 RecipeId = recipeId,
+                                ExpertCraft = expertCraft,
                                 RequiredItems = new()
                                 {
                                     [requiredItem] = requiredAmount
                                 }
                             };
-                            isExpert |= recipeRow.IsExpert;
+                            isExpert |= expertCraft;
+                            isCollectable |= recipeRow.CollectableMetadataKey == 1;
                             // if (isExpert)
-                                // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
+                            // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                         }
                     }
 
@@ -349,6 +363,8 @@ public sealed partial class ICE
             // - - - Attribute check for experts here cause needs to be done post crafting - - - - // 
             if (isExpert)
                 attributes |= ExpertCraft;
+            if (isCollectable)
+                attributes |= Collectables;
 
             if (GatheringJobList.Overlaps(jobs))
             {

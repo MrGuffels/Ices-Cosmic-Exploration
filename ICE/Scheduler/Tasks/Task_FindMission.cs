@@ -6,6 +6,7 @@ using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
+using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
 using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Scheduler.Tasks
@@ -441,12 +442,26 @@ namespace ICE.Scheduler.Tasks
         {
             if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var x) && x.IsAddonReady)
             {
+                Dictionary<uint, int> visibleCount = new()
+                {
+                    [100] = 0,
+                    [90] = 0,
+                    [50] = 0,
+                    [10] = 0,
+                };
+
+                foreach (var mission in x.StellerMissions)
+                {
+                    var level = CosmicHelper.SheetMissionDict[mission.MissionId].Level;
+                    visibleCount[level] += 1;
+                }
+
                 List<string> RankPriority = new() { "ExA", "A", "B", "C", "D" };
 
                 foreach (var rankType in RankPriority)
                 {
                     // Get the appropriate HashSet for this rank
-                    List<uint> missionHashSet = rankType switch
+                    List<uint> MissionList = rankType switch
                     {
                         "ExA" => ExARankMissions,
                         "A" => ARankMissions,
@@ -457,16 +472,86 @@ namespace ICE.Scheduler.Tasks
                     };
 
                     // Skip if no missions configured for this rank
-                    if (missionHashSet.Count == 0)
+                    if (MissionList.Count == 0)
                         continue;
 
                     // Look for missions of this rank type
-                    foreach (var mission in x.StellerMissions.Where(m => missionHashSet.Contains(m.MissionId)))
+                    foreach (var mission in x.StellerMissions.Where(m => MissionList.Contains(m.MissionId)))
                     {
                         mission.Select();
                         InsertGrabMission(mission.MissionId);
                         IceLogging.Debug($"Mission was found!: {mission.MissionId}. Activating it/inserting stack to queue up mission grab");
                         return true; // Found and processed a mission
+                    }
+                }
+
+                if (C.XPLeveling_Mode)
+                {
+
+
+                    if (BRankMissions.Count > 0 && visibleCount[90] == 0)
+                    {
+                        IceLogging.Debug("We're missing B Rank missions to farm");
+                        IceLogging.Debug("Searching for viable mission to level");
+                        // We're expectd to have B ranks for rankings, so going to do the standard check to see what we can do...
+                        if (visibleCount[50] > 0)
+                        {
+                            IceLogging.Debug("Searching viable C Rank Missions");
+                            // Good, we have visible C ranks missions. Going to aim to just complete one of these that we're missing
+                            var mission = x.StellerMissions
+                                .Where(m => CosmicHelper.Unlock_MissionList.Contains(m.MissionId))
+                                .Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 50)
+                                .Where(m => !MissionCompleted(m.MissionId))
+                                .FirstOrDefault();
+
+                            if (mission != null)
+                            {
+                                mission.Select();
+                                InsertGrabMission(mission.MissionId);
+                                IceLogging.Debug($"Mission was found that needs completed to unlock the lv. 90 missions");
+                                return true;
+                            }
+                        }
+                        else if (visibleCount[10] > 0)
+                        {
+                            IceLogging.Debug("Searching Viable D rank Missions");
+                            // This should always be true, but reguardless *-JUST-* in case
+                            // This is on the off chance this is their first time stepping foot in here.
+                            var mission = x.StellerMissions
+                                .Where(m => CosmicHelper.Unlock_MissionList.Contains(m.MissionId))
+                                .Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 10)
+                                .Where(m => !MissionCompleted(m.MissionId))
+                                .FirstOrDefault();
+
+                            if (mission != null)
+                            {
+                                mission.Select();
+                                InsertGrabMission(mission.MissionId);
+                                IceLogging.Debug($"Mission was found that needs completed to unlock the lv. 50 missions");
+                                return true;
+                            }
+                        }
+                    }
+                    else if (CRankMissions.Count > 0 && visibleCount[50] == 0)
+                    {
+                        if (visibleCount[10] > 0)
+                        {
+                            // This should always be true, but reguardless *-JUST-* in case
+                            // This is on the off chance this is their first time stepping foot in here.
+                            var mission = x.StellerMissions
+                                .Where(m => CosmicHelper.Unlock_MissionList.Contains(m.MissionId))
+                                .Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 10)
+                                .Where(m => !MissionCompleted(m.MissionId))
+                                .FirstOrDefault();
+
+                            if (mission != null)
+                            {
+                                mission.Select();
+                                InsertGrabMission(mission.MissionId);
+                                IceLogging.Debug($"Mission was found that needs completed to unlock the lv. 50 missions");
+                                return true;
+                            }
+                        }
                     }
                 }
 
@@ -956,6 +1041,33 @@ namespace ICE.Scheduler.Tasks
                     }
                     Mission_Settings.previouslyAbandoned = 1;
                 }
+                else if (C.XPLeveling_Mode)
+                {
+                    // If we've gotten this far, that means we need to find a mission to reroll for us to properly level
+                    if (BRankMissions.Count > 0)
+                    {
+                        IceLogging.Debug("Leveling mode is active. Need to find a valid C or D Rank mission");
+                        var mission = x.StellerMissions.Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 50).FirstOrDefault();
+
+                        if (mission != null)
+                        {
+                            missionToAbandon = mission.MissionId;
+                        }
+                        else
+                        {
+                            mission = x.StellerMissions.Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 10).FirstOrDefault();
+
+                            if (mission != null)
+                                missionToAbandon = mission.MissionId;
+                        }
+                    }
+                    else if (CRankMissions.Count > 0)
+                    {
+                        var mission = x.StellerMissions.Where(m => CosmicHelper.SheetMissionDict[m.MissionId].Level == 10).FirstOrDefault();
+                        if (mission != null)
+                            missionToAbandon = mission.MissionId;
+                    }
+                }
 
                 if (missionToAbandon != 0)
                 {
@@ -1222,13 +1334,6 @@ namespace ICE.Scheduler.Tasks
 
             var mission = CosmicHelper.SheetMissionDict[missionId];
             var jobId = mission.Jobs.First();
-            if (mission.Jobs.Count == 2)
-            {
-                // we need to adjust this to be the correct job. (Mainly for dual class reasons)
-                var startJob = (uint)Mission_Settings.StartJob;
-                if (mission.Jobs.Contains(startJob))
-                    jobId = startJob;
-            }
 
             if ((uint)Player.Job == jobId)
                 return true;
@@ -1255,6 +1360,16 @@ namespace ICE.Scheduler.Tasks
             // A Rank Requirements: Lv. 100 | 5 unique class D missions | 3 B missions with gold star
             // B Rank Requirements: Lv. 90 | 4 unique class D missions
             // C Rank Requirements: Lv. 50 | 3 unique class D missions
+        }
+        private static unsafe bool MissionCompleted(uint id)
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return true;
+
+            var manager = (WKSManagerCustom*)managerPtr;
+            var isCompleted = manager->IsMissionCompleted(id);
+
+            return isCompleted;
         }
     }
 }

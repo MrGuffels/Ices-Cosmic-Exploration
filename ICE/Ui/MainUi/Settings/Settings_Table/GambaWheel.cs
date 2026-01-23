@@ -1,6 +1,8 @@
-﻿using ECommons.GameHelpers;
+﻿using Dalamud.Interface.Utility;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace ICE.Ui.SettingTabs
         private static int gambaCreditsMinimum = C.GambaCreditsMinimum;
         private static bool gambaPreferSmallerWheel = C.GambaPreferSmallerWheel;
 
-        public static unsafe void Draw()
+        public static unsafe void Draw_Old()
         {
             if (ImGui.Checkbox("Enable Auto Gamba", ref gambaEnabled))
             {
@@ -90,6 +92,124 @@ namespace ICE.Ui.SettingTabs
             if (ImGui.Button("Reset Weights"))
             {
                 Task_Gamba.EnsureGambaWeightsInitialized(true);
+            }
+        }
+
+        public static unsafe void Draw()
+        {
+            bool gambaEnabled = C.GambaEnabled;
+            if (ImGui.Checkbox("Enable Auto Gamba Wheel", ref gambaEnabled))
+            {
+                C.GambaEnabled = gambaEnabled;
+                C.Save();
+            }
+            ImGuiEx.HelpMarker("If you want to let it auto select the wheels and gamba, enable this. If you want to not auto run when you're running the gamble wheel, disable this.");
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderInt("Mininum credits to keep", ref gambaCreditsMinimum, 0, 10000))
+            {
+                C.GambaCreditsMinimum = gambaCreditsMinimum;
+                C.SaveDebounced();
+            }
+            bool gambaBetween = C.GambaBetweenRuns;
+            if (ImGui.Checkbox("Gamble Between Runs", ref gambaBetween))
+            {
+                C.GambaBetweenRuns = gambaBetween;
+                C.Save();
+            }
+            GambaSlider();
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderInt("Gamba Delay", ref gambaDelay, 50, 2000))
+            {
+                C.GambaDelay = gambaDelay;
+                C.SaveDebounced();
+            }
+
+            if (ImGui.Checkbox("Prefer smaller wheel", ref gambaPreferSmallerWheel))
+            {
+                C.GambaPreferSmallerWheel = gambaPreferSmallerWheel;
+                C.Save();
+            }
+            ImGuiEx.HelpMarker("This will make the Gamba prefer wheels with less items.");
+
+            if (PlayerHelper.IsInCosmicZone())
+            {
+                var territory = Player.Territory.RowId;
+                var itemId = CosmicHelper.PlanetCreditInfo[territory];
+                PlayerHelper.GetItemCount(itemId, out var credits);
+
+                ImGui.Text($"Current location: {territory} | Currency Amount: {credits}");
+            }
+
+            ImGui.Separator();
+            ImGui.TextUnformatted("Configure the weights for each item in the Gamba. Higher weight = more desirable.");
+
+            if (ImGui.Button("Reset Weights"))
+            {
+                Task_Gamba.EnsureGambaWeightsInitialized(true);
+            }
+
+            if (ImGui.BeginTabBar("Gamba Item Tabs"))
+            {
+                foreach (GambaType type in Enum.GetValues(typeof(GambaType)))
+                {
+                    var itemsType = C.GambaItemWeights.Where(x => x.Type == type).OrderBy(x => x.ItemId).ToList();
+                    if (itemsType.Count == 0) continue;
+
+                    if (ImGui.BeginTabItem($"{type.ToString()} [{itemsType.Count}]"))
+                    {
+                        if (ImGui.BeginTable($"{type.ToString()}_GambaItems", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
+                        {
+                            ImGui.TableSetupColumn("Icon");
+                            ImGui.TableSetupColumn("Name");
+                            ImGui.TableSetupColumn("Weight");
+
+                            ImGui.TableHeadersRow();
+
+                            foreach (var item in itemsType)
+                            {
+                                if (Svc.Data.GetExcelSheet<Item>().TryGetRow(item.ItemId, out var itemInfo))
+                                {
+                                    var iconId = itemInfo.Icon;
+                                    var name = itemInfo.Name;
+                                    var weight = item.Weight;
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    if (Svc.Texture.TryGetFromGameIcon((int)iconId, out var iconImage) && iconImage != null)
+                                    {
+                                        var scale = ImGuiHelpers.GlobalScale;
+                                        Vector2 imageSize = new Vector2(25 * scale, 25 * scale);
+
+                                        ImGui.Image(iconImage.GetWrapOrEmpty().Handle, imageSize);
+                                        if (ImGui.IsItemHovered())
+                                        {
+                                            ImGui.BeginTooltip();
+                                            ImGui.Image(iconImage.GetWrapOrEmpty().Handle, new Vector2(50, 50));
+                                            ImGui.EndTooltip();
+                                        }
+                                    }
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{name}");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.SetNextItemWidth(200);
+                                    if (ImGui.InputInt($"##weight_{name}_{item.ItemId}", ref weight))
+                                    {
+                                        item.Weight = weight;
+                                        C.SaveDebounced();
+                                    }
+                                }
+                            }
+
+                            ImGui.EndTable();
+                        }
+
+                        ImGui.EndTabItem();
+                    }
+                }
+
+                ImGui.EndTabBar();
             }
         }
 

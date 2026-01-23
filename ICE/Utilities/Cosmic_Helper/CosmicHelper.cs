@@ -50,6 +50,7 @@ public static unsafe partial class CosmicHelper
         public uint Progress { get; set; }
         public int RequiredAmount { get; set; } 
         public uint RecipeId { get; set; }
+        public bool ExpertCraft { get; set; } = false;
         public Dictionary<uint, int> RequiredItems { get; set; } = new();
     }
 

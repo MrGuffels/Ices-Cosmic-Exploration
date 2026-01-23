@@ -30,6 +30,11 @@ namespace ICE.Ui.MainUi.HelpFolder
             ImGui.Separator();
             ImGuiEx.IconWithText(FontAwesomeIcon.Running, "Automating Hub Activities");
             HasPlugin("https://puni.sh/api/repository/veyn", "vnavmesh");
+
+            ImGui.Separator();
+            ImGui.TextWrapped("This isn't required, but highly recommended for leveling up characters. It will auto equip gear from your armory/inventory, and swap it out when running Leveling Grind Mode");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Leaf, "Stylist");
+            HasPlugin("https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json", "Stylist");
         }
 
         public static void HasPlugin(string repo, string pluginName)
