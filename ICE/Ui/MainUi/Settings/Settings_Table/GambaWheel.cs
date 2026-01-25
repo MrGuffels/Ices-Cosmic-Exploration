@@ -157,9 +157,10 @@ namespace ICE.Ui.SettingTabs
 
                     if (ImGui.BeginTabItem($"{type.ToString()} [{itemsType.Count}]"))
                     {
-                        if (ImGui.BeginTable($"{type.ToString()}_GambaItems", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
+                        if (ImGui.BeginTable($"{type.ToString()}_GambaItems", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
                         {
                             ImGui.TableSetupColumn("Icon");
+                            ImGui.TableSetupColumn("Unlocked");
                             ImGui.TableSetupColumn("Name");
                             ImGui.TableSetupColumn("Weight");
 
@@ -189,6 +190,9 @@ namespace ICE.Ui.SettingTabs
                                         }
                                     }
 
+                                    ImGui.TableNextColumn();
+                                    ImGui.TextUnformatted(UnlockState.IsItemUnlockable(itemInfo) ? UnlockState.IsItemUnlocked(itemInfo) ? "Yes" : "No" : "-");
+                                    
                                     ImGui.TableNextColumn();
                                     ImGui.Text($"{name}");
 

@@ -10,6 +10,8 @@ using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
+using Dalamud.IoC;
+using Dalamud.Plugin.Services;
 using static ICE.Utilities.CosmicHelper;
 
 namespace ICE;
@@ -23,7 +25,9 @@ public sealed partial class ICE : IDalamudPlugin
     private Config config;
     public static Config C => P.config;
     
-
+    // Missing ECommons PluginService. Update to Svc when ECommons get updated
+    [PluginService] public static IUnlockState UnlockState { get; set; } = null!;
+    
     public MissionTimer MissionTimer { get; private set; }
     // public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
 
