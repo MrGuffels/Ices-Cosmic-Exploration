@@ -15,18 +15,18 @@ namespace ICE.Scheduler.Tasks
 
             var jobs = mission.Jobs;
 
-            if (CosmicHelper.CrafterJobList.Overlaps(jobs) && CosmicHelper.GatheringJobList.Overlaps(jobs))
+            if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)) && CosmicHelper.GatheringJobList.Any(x => jobs.Contains(x)))
             {
                 P.TaskManager.Enqueue(() => DualClass(), "Checking dual class score");
                 P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.DualClass, "Setting state to dual class");
             }
-            else if (CosmicHelper.CrafterJobList.Overlaps(jobs))
+            else if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)))
             {
                 IceLogging.Info("Currently on a crafting job, checking for crafting scoring", "Task: Score Check");
                 P.TaskManager.Enqueue(() => SchedulerMain.State = IceState.Craft);
                 P.TaskManager.Enqueue(() => Crafts(), "Checking for crafting score mission");
             }
-            else if (CosmicHelper.GatheringJobList.Overlaps(jobs))
+            else if (CosmicHelper.GatheringJobList.Any(x => jobs.Contains(x)))
             {
                 var jobId = Player.Job;
 

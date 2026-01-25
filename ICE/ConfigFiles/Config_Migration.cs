@@ -113,7 +113,7 @@ public static class ConfigMigration
 
     private static void MigrateMissionSettings(MissionConfigs old)
     {
-        C.OnlyGrabMission = old.OnlyGrabMission;
+        C.OnlyGrabMission_Debug = old.OnlyGrabMission;
         C.TargetLevel = old.TargetLevel;
         C.StopWhenLevel = old.StopWhenLevel;
         C.StopOnceHitCosmoCredits = old.StopOnceHitCosmoCredits;

@@ -125,13 +125,6 @@ public static class Settings_TableColumns
 
     public static void GeneralMissionSettings()
     {
-        bool onlyGrabMission = C.OnlyGrabMission;
-        if (ImGui.Checkbox($"Only grab mission", ref onlyGrabMission))
-        {
-            C.OnlyGrabMission = onlyGrabMission;
-            C.Save();
-        }
-
         bool removeGold = C.RemoveAfterGold;
         if (ImGui.Checkbox("Remove Mission Upon Gold Completion", ref removeGold))
         {

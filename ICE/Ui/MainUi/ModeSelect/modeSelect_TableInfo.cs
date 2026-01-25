@@ -235,7 +235,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                 var id = mission.id;
                 var missionInfo = CosmicHelper.SheetMissionDict[id];
 
-                if (missionInfo.Jobs.Overlaps(CosmicHelper.GatheringJobList))
+                if (missionInfo.Jobs.Any(x => CosmicHelper.GatheringJobList.Contains(x)))
                     hasGathering = true;
                 if (missionInfo.RewardItemAmount > 0)
                     hasToken = true;

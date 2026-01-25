@@ -21,12 +21,12 @@ namespace ICE.Scheduler.Tasks
                 var mission = CosmicHelper.SheetMissionDict[missionId];
                 bool fishingMission = mission.Jobs.Contains(18);
                 bool gatherMission = mission.Jobs.Contains(16) || mission.Jobs.Contains(17);
-                bool craftMission = mission.Jobs.Overlaps(CosmicHelper.CrafterJobList);
+                bool craftMission = mission.Jobs.Any(x => CosmicHelper.CrafterJobList.Contains(x));
 
                 C.MissionConfig.TryGetValue(missionId, out var config);
                 bool dualClass = (gatherMission && craftMission) || (fishingMission && craftMission);
 
-                if (C.OnlyGrabMission || (config != null && config.ManualMode) || UnsupportedMissions.Ids.Contains(missionId))
+                if (C.OnlyGrabMission_Debug || (config != null && config.ManualMode) || UnsupportedMissions.Ids.Contains(missionId))
                 {
                     SchedulerMain.State = IceState.ManualMode;
                 }

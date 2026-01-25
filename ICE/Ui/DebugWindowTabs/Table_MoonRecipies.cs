@@ -44,7 +44,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                 foreach (var entry in CosmicHelper.SheetMissionDict)
                 {
-                    if (entry.Value.Jobs.Overlaps(CosmicHelper.CrafterJobList))
+                    if (entry.Value.Jobs.Any(x => CosmicHelper.CrafterJobList.Contains(x)))
                     {
                         if (!string.IsNullOrEmpty(RecipeTableSearchText) &&
                             !entry.Value.Name.ToLower().Contains(RecipeTableSearchText.ToLower()))

@@ -67,6 +67,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.HighlightVisibleMissions = highlightTable;
                 C.Save();
             }
+
+            bool onlyGrabMission = C.OnlyGrabMission_Debug;
+            if (ImGui.Checkbox($"Only grab mission", ref onlyGrabMission))
+            {
+                C.OnlyGrabMission_Debug = onlyGrabMission;
+                C.Save();
+            }
         }
     }
 }

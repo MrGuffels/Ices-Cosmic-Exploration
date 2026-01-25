@@ -110,7 +110,7 @@ public class IceCosmicExplorationIPC
         IceLogging.Info($"Setting: {config}, state: {state}");
         switch (config)
         {
-            case "OnlyGrabMission": C.OnlyGrabMission = state; break;
+            case "OnlyGrabMission": C.OnlyGrabMission_Debug = state; break;
             case "StopAfterCurrent": Mission_Settings.StopAfterCurrent = state; break;
             case "StopOnceHitCosmoCredits": C.StopOnceHitCosmoCredits = state; break;
             case "StopOnceHitLunarCredits": C.StopOnceHitLunarCredits = state; break;

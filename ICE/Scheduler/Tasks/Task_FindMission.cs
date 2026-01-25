@@ -173,7 +173,7 @@ namespace ICE.Scheduler.Tasks
                 var missionId = mission.Key;
                 if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo))
                 {
-                    HashSet<uint> missionJobs = new HashSet<uint>();
+                    List<uint> missionJobs = new();
                     missionJobs = missionInfo.Jobs;
 
                     // Territory Check, cause people seem to also be forgetting this
@@ -743,6 +743,12 @@ namespace ICE.Scheduler.Tasks
                         bool IgnoreManual = C.XPRelicIgnoreManual && missionConfig.ManualMode;
                         bool IgnoreNotEnabled = C.XPRelicOnlyEnabled && !missionConfig.Enabled;
                         bool unSupported = UnsupportedMissions.Ids.Contains(id);
+                        bool dualClass = mission.Jobs.Count == 2;
+                        bool skipDualClass = false;
+                        if (dualClass)
+                        {
+                            skipDualClass = !(Player.GetLevel((Job)mission.Jobs[0]) >= 100 && Player.GetLevel((Job)mission.Jobs[1]) >= 100);
+                        }
 
                         PlayerHelper.UpdateHasManip();
                         var jobId = mission.Jobs.Where(x => CosmicHelper.CrafterJobList.Contains(x)).FirstOrDefault();
@@ -763,6 +769,7 @@ namespace ICE.Scheduler.Tasks
                         if (IgnoreNotEnabled) continue;
                         if (unSupported) continue;
                         if (isManipReq && !manipUnlocked) continue;
+                        if (skipDualClass) continue;
 
                         Dictionary<int, float> rewardDict = new();
                         foreach (var reward in mission.RelicXpInfo.OrderBy(x => x.Key))
@@ -915,6 +922,15 @@ namespace ICE.Scheduler.Tasks
                 {
                     foreach (var missionId in missionList)
                     {
+                        if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var mission))
+                        {
+                            if (mission.Jobs.Count == 2)
+                            {
+                                if (!(Player.GetLevel((Job)mission.Jobs[0]) >= 100 && Player.GetLevel((Job)mission.Jobs[1]) >= 100))
+                                    continue;
+                            }
+                        }
+
                         if (Mission_Settings.missionAppearanceCounts.TryGetValue(missionId, out int count) && count >= threshold)
                         {
                             return missionId;

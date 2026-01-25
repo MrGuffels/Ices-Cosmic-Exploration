@@ -35,10 +35,9 @@ namespace ICE.Ui.DebugWindowTabs
                 ImGui.TableSetupColumn("Critical Location");
                 ImGui.TableHeadersRow();
 
-                foreach (var entry in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Overlaps(CosmicHelper.GatheringJobList)))
+                foreach (var entry in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Intersect(CosmicHelper.GatheringJobList).Any()))
                 {
-                    if (!string.IsNullOrEmpty(MissionSearchText) 
-                     && !entry.Value.Name.Replace(" ", "").Contains(MissionSearchText.Replace(" ", ""), StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrEmpty(MissionSearchText) && !entry.Value.Name.Replace(" ", "").Contains(MissionSearchText.Replace(" ", ""), StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

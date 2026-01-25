@@ -1,17 +1,21 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Utility;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
 using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace ICE.Ui.MainUi.ModeSelect
 {
     internal class modeSelect_Standard
     {
+        private static string newListName = "";
+
         public static void Draw()
         {
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, 10).Push(ImGuiStyleVar.ChildBorderSize, 1);
@@ -226,7 +230,15 @@ namespace ICE.Ui.MainUi.ModeSelect
                     completionExpanded = modeSelect_Tools.DrawCompactCategoryHeader("Completion Table Settings", FontAwesomeIcon.Trophy);
                 }
 
-                bool showNextColumn = tableSettingExpanded || missionSettingExpanded || (relicGrindExpanded && C.XPRelicGrind) || (completionExpanded && C.ShowCompletionWindow);
+                bool showPlaylistExpanded = false;
+                bool standard = !(C.XPRelicGrind && C.ShowCompletionWindow);
+                if (standard)
+                {
+                    ImGui.TableNextColumn();
+                    showPlaylistExpanded = modeSelect_Tools.DrawCompactCategoryHeader("Mission Presets", FontAwesomeIcon.PlayCircle);
+                }
+
+                bool showNextColumn = tableSettingExpanded || missionSettingExpanded || (relicGrindExpanded && C.XPRelicGrind) || (completionExpanded && C.ShowCompletionWindow) || showPlaylistExpanded;
 
                 if (showNextColumn)
                 {
@@ -318,6 +330,123 @@ namespace ICE.Ui.MainUi.ModeSelect
                         {
                             C.ShowCompletion_MissingGold = nonGold;
                             C.Save();
+                        }
+                    }
+
+                    if (standard && showPlaylistExpanded)
+                    {
+                        ImGui.TableNextColumn();
+                        if (ImGui.Button("Save Current Mission Preset"))
+                        {
+                            ImGui.OpenPopup("Preset Save Editor");
+                        }
+
+                        if (ImGui.BeginPopup("Preset Save Editor"))
+                        {
+                            ImGui.InputText($"Playlist Name", ref newListName);
+                            using (ImRaii.Disabled(string.IsNullOrEmpty(newListName)))
+                            {
+                                if (ImGui.Button("Save New List"))
+                                {
+                                    List<uint> new_Playlist = new();
+                                    foreach (var mission in C.MissionConfig.Where(x=> x.Value.Enabled))
+                                    {
+                                        new_Playlist.Add(mission.Key);
+                                    }
+                                    if (C.Mission_Playlist.ContainsKey(newListName))
+                                    {
+                                        C.Mission_Playlist[newListName] = new_Playlist;
+                                    }
+                                    else
+                                    {
+                                        C.Mission_Playlist.Add(newListName, new_Playlist);
+                                    }
+                                    C.Save();
+                                    ImGui.CloseCurrentPopup();
+                                }
+                            }
+
+                            ImGui.EndPopup();
+                        }
+
+                        if (C.Mission_Playlist.Count > 0)
+                        {
+                            if (ImGui.Button("View All Presets"))
+                            {
+                                ImGui.OpenPopup("Preset: List Viewer");
+                            }
+
+                            if (ImGui.BeginPopup("Preset: List Viewer"))
+                            {
+                                ImGui.Text($"Load Mission Preset");
+
+                                if (ImGui.BeginTable($"Preset: TableViewer", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+                                {
+                                    ImGui.TableSetupColumn("Name");
+                                    ImGui.TableSetupColumn("Amount Enabled");
+
+                                    ImGui.TableHeadersRow();
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.AlignTextToFramePadding();
+                                    ImGui.Text($"Clear All");
+                                    ImGui.SameLine();
+                                    if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"FreshPreset_Button"))
+                                    {
+                                        foreach (var mission in C.MissionConfig)
+                                        {
+                                            mission.Value.Enabled = false;
+                                        }
+                                        C.Save();
+                                        ImGui.CloseCurrentPopup();
+                                    }
+
+                                    foreach (var item in C.Mission_Playlist)
+                                    {
+                                        ImGui.TableNextRow();
+                                        ImGui.TableSetColumnIndex(0);
+                                        ImGui.AlignTextToFramePadding();
+                                        ImGui.Text($"{item.Key}");
+                                        ImGui.SameLine();
+                                        if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"{item.Key}_Button"))
+                                        {
+                                            foreach (var mission in C.MissionConfig)
+                                            {
+                                                if (item.Value.Contains(mission.Key))
+                                                    mission.Value.Enabled = true;
+                                                else
+                                                    mission.Value.Enabled = false;
+                                            }
+                                            C.Save();
+                                            ImGui.CloseCurrentPopup();
+                                        }
+                                        if (ImGui.IsItemHovered())
+                                        {
+                                            ImGui.SetTooltip("Import Missions");
+                                        }
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.AlignTextToFramePadding();
+                                        ImGui.Text($"{item.Value.Count}");
+
+                                        ImGui.TableNextColumn();
+                                        if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, $"{item.Key}_Remove"))
+                                        {
+                                            C.Mission_Playlist.Remove(item);
+                                            C.Save();
+                                        }
+                                        if (ImGui.IsItemHovered())
+                                        {
+                                            ImGui.SetTooltip("Remove from list");
+                                        }
+                                    }
+
+                                    ImGui.EndTable();
+                                }
+
+                                ImGui.EndPopup();
+                            }
                         }
                     }
                 }

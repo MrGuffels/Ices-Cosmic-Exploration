@@ -6,7 +6,7 @@ namespace ICE.ConfigFiles;
 
 public partial class Config
 {
-    public bool OnlyGrabMission { get; set; } = false;
+    public bool OnlyGrabMission_Debug { get; set; } = false;
     public int TargetLevel { get; set; } = 10;
     public bool StopWhenLevel { get; set; } = false;
     public bool StopOnceHitCosmoCredits { get; set; } = false;
@@ -41,6 +41,7 @@ public partial class Config
     public Dictionary<uint, uint> ScoreKeeper { get; set; } = new();
 
     public Dictionary<uint, MissionSettings> MissionConfig { get; set; } = new();
+    public Dictionary<string, List<uint>> Mission_Playlist { get; set; } = new();
 
     public class MissionSettings
     {

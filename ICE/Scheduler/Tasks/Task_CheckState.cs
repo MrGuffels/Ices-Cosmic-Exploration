@@ -209,7 +209,7 @@ namespace ICE.Scheduler.Tasks
                             bool dualMission = (s.HasFlag(MissionAttributes.Craft) && (s.HasFlag(MissionAttributes.Gather) || s.HasFlag(MissionAttributes.Fish)));
                             // In the middle of a dual mission. 
                             // First, checking to see if you're in the middle of a gathering or crafting action
-                            if (C.OnlyGrabMission || config.ManualMode || UnsupportedMissions.Ids.Contains(currentMissionId))
+                            if (C.OnlyGrabMission_Debug || config.ManualMode || UnsupportedMissions.Ids.Contains(currentMissionId))
                             {
                                 // TODO: Remove this once properly coded
                                 if (s.HasFlag(MissionAttributes.Fish))

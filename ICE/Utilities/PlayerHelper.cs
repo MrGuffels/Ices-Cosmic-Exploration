@@ -21,7 +21,7 @@ public class PlayerHelper
     public static bool UsingSupportedJob()
     {
         var jobId = (uint)Player.Job;
-        return jobId >= 8 || jobId <= 18;
+        return (CosmicHelper.CrafterJobList.Contains(jobId) || CosmicHelper.GatheringJobList.Contains(jobId));
     }
 
     public static bool IsInCosmicZone() => IsInSinusArdorum() || IsInPhaenna();

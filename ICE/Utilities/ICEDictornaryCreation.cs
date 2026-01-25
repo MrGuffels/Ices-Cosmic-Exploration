@@ -25,7 +25,7 @@ public sealed partial class ICE
             Dictionary<ushort, CosmicHelper.CraftingInfo> crafts_Main = new();
             Dictionary<ushort, CosmicHelper.CraftingInfo> crafts_Pre = new();
             Dictionary<uint, int> gathering_Min = new();
-            HashSet<uint> jobs = new();
+            List<uint> jobs = new();
             Dictionary<int, int> relicXp = new();
             bool isExpert = false;
             bool isCollectable = false;
@@ -102,20 +102,20 @@ public sealed partial class ICE
 
             MissionAttributes attributes = None;
 
-            if (CosmicHelper.CrafterJobList.Overlaps(jobs) && CosmicHelper.GatheringJobList.Overlaps(jobs))
+            if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)) && CosmicHelper.GatheringJobList.Any(x => jobs.Contains(x)))
             {
                 if (jobs.Contains(18))
                     attributes = Craft | Fish;
                 else
                     attributes = Craft | Gather;
             }
-            else if (CosmicHelper.CrafterJobList.Overlaps(jobs))
+            else if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)))
             {
                 // Just making this nice and simple. Making all crafter missions just check for crafting.
                 // Then going to add critical after
                 attributes = Craft;
             }
-            else if (CosmicHelper.GatheringJobList.Overlaps(jobs))
+            else if (CosmicHelper.GatheringJobList.Any(x => jobs.Contains(x)))
             {
                 if (jobs.Contains(18))
                     attributes |= Fish;
@@ -157,7 +157,7 @@ public sealed partial class ICE
             // - - - HEY. BRONZE SCORE IS KEPT HERE - - - //
             uint bronze = wksToDo.Unknown2; // Bronze score for Score missions
 
-            if (CrafterJobList.Overlaps(jobs))
+            if (CrafterJobList.Any(x => jobs.Contains(x)))
             {
                 var wksRecipeRow = wksMissionRecipe.GetRow(RecipeId);
 
@@ -366,7 +366,7 @@ public sealed partial class ICE
             if (isCollectable)
                 attributes |= Collectables;
 
-            if (GatheringJobList.Overlaps(jobs))
+            if (GatheringJobList.Any(x => jobs.Contains(x)))
             {
                 var todoRow = ToDoSheet.GetRow(toDoValue);
 

@@ -194,9 +194,16 @@ namespace ICE.Ui
             // Start button (disabled while already ticking).
             bool xpLeveling = C.XPLeveling_Mode;
             bool unsupportedArtisan = xpLeveling && !P.Artisan.UpdatedArtisan() && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
+            bool unsupportedClass = !PlayerHelper.UsingSupportedJob();
 
-            using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !PlayerHelper.UsingSupportedJob() || unsupportedArtisan))
+            bool unsupported = SchedulerMain.State != IceState.Idle || !PlayerHelper.UsingSupportedJob() || unsupportedArtisan;
+
+            using (ImRaii.Disabled(unsupported))
             {
+                var defaultButtonColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
+                var color = unsupported ? EColor.Red : defaultButtonColor;
+
+                using var tempButton = ImRaii.PushColor(ImGuiCol.Button, color);
                 if (ImGui.Button("Start"))
                 {
                     SchedulerMain.EnablePlugin();

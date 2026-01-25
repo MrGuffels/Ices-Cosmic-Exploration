@@ -13,11 +13,11 @@ namespace ICE.Utilities;
 public static unsafe partial class CosmicHelper
 {
 
-    public static readonly HashSet<uint> Ranks = [1, 2, 3, 4];
-    public static readonly HashSet<uint> ARankIds = [4, 5, 6];
+    public static readonly List<uint> Ranks = [1, 2, 3, 4];
+    public static readonly List<uint> ARankIds = [4, 5, 6];
 
-    public static readonly HashSet<uint> CrafterJobList = [8, 9, 10, 11, 12, 13, 14, 15];
-    public static readonly HashSet<uint> GatheringJobList = [16, 17, 18];
+    public static readonly List<uint> CrafterJobList = [8, 9, 10, 11, 12, 13, 14, 15];
+    public static readonly List<uint> GatheringJobList = [16, 17, 18];
 
 
     /// <summary>
@@ -90,7 +90,7 @@ public static unsafe partial class CosmicHelper
 
         // - - - Universal Info - - - //
         public string Name { get; set; }
-        public HashSet<uint> Jobs { get; set; }
+        public List<uint> Jobs { get; set; } = new();
         public uint ToDoId { get; set; } = 0;
         public uint Rank { get; set; } = 1;
         public uint Level { get; set; } = 0;
