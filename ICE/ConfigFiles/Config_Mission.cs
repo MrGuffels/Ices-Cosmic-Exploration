@@ -34,6 +34,7 @@ public partial class Config
     public bool AutoSelectMoon { get; set; } = true;
     public bool ShowSinusMissions { get; set; } = true;
     public bool ShowPhaennaMissions { get; set; } = true;
+    public bool ShowOizysMissions { get; set; } = true;
     public bool RemoveAfterGold { get; set; } = false;
     public bool ShowExtraMissionInfo { get; set; } = true;
     public bool Artisan_RaphaelForce { get; set; } = true;

@@ -37,6 +37,10 @@ namespace ICE.Scheduler.Tasks
             {
                 HubCenter = new Vector2(340.0f, -420.0f);
             }
+            else if (PlayerHelper.IsInOizys())
+            {
+                HubCenter = new(-180.0f, 138.0f);
+            }
 
             Vector2 PlayerPos = new Vector2(Player.Position.Z, Player.Position.Z);
 

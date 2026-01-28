@@ -32,7 +32,7 @@ namespace ICE.Ui
 
             Dictionary<uint, XPType> XPTable = new Dictionary<uint, XPType>();
 
-            for (byte type = 1; type < 6; type++)
+            for (byte type = 1; type < 7; type++)
             {
                 if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
                     break;
@@ -81,10 +81,12 @@ namespace ICE.Ui
                     xpType = "IV";
                 else if (type.Key == 5)
                     xpType = "V";
+                else if (type.Key == 6)
+                    xpType = "VI";
                 else
                     xpType = "???";
 
-                if (stage != 14)
+                if (stage != CosmicHelper.MaxRelicLevel)
                 {
                     DrawXPBar($"Type: {xpType}", current, needed, size, max);
                 }

@@ -12,7 +12,8 @@ namespace ICE.Scheduler.Tasks
         {
             // Mounts
             new Gamba { ItemId = 44505, Weight = 200, Type = GambaType.Mount }, // Vacuum Suit Identification Key
-            new Gamba { ItemId = 47973, Weight = 200, Type= GambaType.Mount }, // Warp Loader Identification Key
+            new Gamba { ItemId = 47973, Weight = 200, Type = GambaType.Mount }, // Warp Loader Identification Key
+            new Gamba { ItemId = 50441, Weight = 200, Type = GambaType.Mount},  // Volatile Gravity Vacuum Suit Identification Key
 
             // Emotes
             new Gamba { ItemId = 44509, Weight = 25, Type = GambaType.Emote }, // Ballroom Etiquette - Personal Perfection
@@ -21,21 +22,26 @@ namespace ICE.Scheduler.Tasks
             // Outfits
             new Gamba { ItemId = 47937, Weight = 50, Type = GambaType.Outfit }, // Cosmosuit Coffer
             new Gamba { ItemId = 47095, Weight = 50, Type = GambaType.Outfit }, // Star Pilot Attire Coffer
+            new Gamba { ItemId = 50828, Weight = 50, Type = GambaType.Outfit }, // Powersuit Coffer
 
             // Minions
             new Gamba { ItemId = 47966, Weight = 25, Type = GambaType.Minion }, // Micro Rover
             new Gamba { ItemId = 46782, Weight = 25, Type = GambaType.Minion }, // Model Suit
+            new Gamba { ItemId = 50323, Weight = 25, Type = GambaType.Minion }, // Droningway
 
             // Accessories
             new Gamba { ItemId = 48154, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Tinted Sunglasses
             new Gamba { ItemId = 48160, Weight = 5, Type = GambaType.Accessory }, // Loparasol
             new Gamba { ItemId = 46840, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Scaevan Headgear
+            new Gamba { ItemId = 50458, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holovisor
+            new Gamba { ItemId = 50455, Weight = 5, Type = GambaType.Accessory }, // The Faces We Wear - Holospecs
 
             // Orchestration
             new Gamba { ItemId = 48210, Weight = 0, Type = GambaType.Orchestrion }, // Stargazers Orchestrion Roll
             new Gamba { ItemId = 48220, Weight = 0, Type = GambaType.Orchestrion }, // Echoes in the Distance Orchestrion Roll
             new Gamba { ItemId = 48221, Weight = 0, Type = GambaType.Orchestrion }, // Close in the Distance (Instrumental) Orchestrion Roll
             new Gamba { ItemId = 46155, Weight = 0, Type = GambaType.Orchestrion }, // Kaleidoscope Orchestrion Roll
+            new Gamba { ItemId = 50803, Weight = 0, Type = GambaType.Orchestrion }, // The Uncharted Way Orchestrion Roll
 
             // Housing Items
             new Gamba { ItemId = 23892, Weight = 0, Type = GambaType.Housing }, // Verdant Partition
@@ -46,7 +52,8 @@ namespace ICE.Scheduler.Tasks
             new Gamba { ItemId = 46175, Weight = 0, Type = GambaType.Housing }, // Portable Exoterminal
             new Gamba { ItemId = 46174, Weight = 0, Type = GambaType.Housing }, // Cosmokitchen Partition
             new Gamba { ItemId = 46173, Weight = 0, Type = GambaType.Housing }, // Cosmoseat
-
+            new Gamba { ItemId = 49849, Weight = 0, Type = GambaType.Housing }, // Imitation Cosmoportal
+            new Gamba { ItemId = 49850, Weight = 0, Type = GambaType.Housing }, // Cosmomodule Floor Panel
 
             // Dyes
             new Gamba { ItemId = 48169, Weight = 0, Type = GambaType.Dye }, // Metallic Pink Dye
@@ -74,6 +81,7 @@ namespace ICE.Scheduler.Tasks
             new Gamba { ItemId = 28724, Weight = 0, Type = GambaType.Other }, // Crafter's Delineation
             new Gamba { ItemId = 6141,  Weight = 0, Type = GambaType.Other }, // Cordial HQ
             new Gamba { ItemId = 48158, Weight = 0, Type = GambaType.Other }, // Magicked Prism (Cosmic Exploration)
+            new Gamba { ItemId = 50450, Weight = 0, Type = GambaType.Other }, // Cosmic Barding
         };
         public static void EnsureGambaWeightsInitialized(bool force = false)
         {

@@ -402,43 +402,43 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     foreach (var mission in C.MissionConfig)
                     {
                         var id = mission.Key;
-
-                        var missionDict = CosmicHelper.SheetMissionDict[id];
-
-                        bool craftMission = missionDict.Attributes.HasFlag(MissionAttributes.Craft);
-                        bool gatherMission = missionDict.Attributes.HasFlag(MissionAttributes.Gather);
-
-                        bool LimitedQuant = missionDict.Attributes.HasFlag(MissionAttributes.Limited);
-                        // Gather X Amount is just "Gather" 
-                        bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
-                        bool ChainedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreChains);
-                        bool BoonMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreGatherersBoon);
-                        bool collectableMission = missionDict.Attributes.HasFlag(MissionAttributes.Collectables);
-                        bool stellerReductionMission = missionDict.Attributes.HasFlag(MissionAttributes.ReducedItems);
-
-                        bool GatherX = !stellerReductionMission && !collectableMission && !BoonMission && !ChainedMission && !TimedMission && !LimitedQuant;
-
-                        void UpdateMissions()
+                        if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var missionDict))
                         {
-                            mission.Value.GProfileId = entry.Id;
-                        }
+                            bool craftMission = missionDict.Attributes.HasFlag(MissionAttributes.Craft);
+                            bool gatherMission = missionDict.Attributes.HasFlag(MissionAttributes.Gather);
 
-                        if (gatherMission && (!collectableMission && !stellerReductionMission))
-                        {
-                            if (MissionIndex == 0 && LimitedQuant)
-                                UpdateMissions();
-                            else if (MissionIndex == 2 && TimedMission)
-                                UpdateMissions();
-                            else if (MissionIndex == 3 && ChainedMission && !BoonMission)
-                                UpdateMissions();
-                            else if (MissionIndex == 4 && BoonMission && !ChainedMission)
-                                UpdateMissions();
-                            else if (MissionIndex == 5 && ChainedMission && BoonMission)
-                                UpdateMissions();
-                            else if (MissionIndex == 6 && craftMission)
-                                UpdateMissions();
-                            else if (MissionIndex == 1 && GatherX)
-                                UpdateMissions();
+                            bool LimitedQuant = missionDict.Attributes.HasFlag(MissionAttributes.Limited);
+                            // Gather X Amount is just "Gather" 
+                            bool TimedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining);
+                            bool ChainedMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreChains);
+                            bool BoonMission = missionDict.Attributes.HasFlag(MissionAttributes.ScoreGatherersBoon);
+                            bool collectableMission = missionDict.Attributes.HasFlag(MissionAttributes.Collectables);
+                            bool stellerReductionMission = missionDict.Attributes.HasFlag(MissionAttributes.ReducedItems);
+
+                            bool GatherX = !stellerReductionMission && !collectableMission && !BoonMission && !ChainedMission && !TimedMission && !LimitedQuant;
+
+                            void UpdateMissions()
+                            {
+                                mission.Value.GProfileId = entry.Id;
+                            }
+
+                            if (gatherMission && (!collectableMission && !stellerReductionMission))
+                            {
+                                if (MissionIndex == 0 && LimitedQuant)
+                                    UpdateMissions();
+                                else if (MissionIndex == 2 && TimedMission)
+                                    UpdateMissions();
+                                else if (MissionIndex == 3 && ChainedMission && !BoonMission)
+                                    UpdateMissions();
+                                else if (MissionIndex == 4 && BoonMission && !ChainedMission)
+                                    UpdateMissions();
+                                else if (MissionIndex == 5 && ChainedMission && BoonMission)
+                                    UpdateMissions();
+                                else if (MissionIndex == 6 && craftMission)
+                                    UpdateMissions();
+                                else if (MissionIndex == 1 && GatherX)
+                                    UpdateMissions();
+                            }
                         }
                     }
 

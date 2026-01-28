@@ -53,7 +53,7 @@ public static partial class CosmicHelper
     {
         [1237] = 45691, // sinus
         [1291] = 48146, // phaenna
-        // [] = 48147, // moon 3
+        [1310] = 48147, // Oizys
         // [] = 48148, // moon 4
     };
 

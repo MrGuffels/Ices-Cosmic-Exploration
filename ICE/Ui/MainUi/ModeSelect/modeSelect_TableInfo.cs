@@ -224,7 +224,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                                 ImGuiTableFlags.Reorderable |
                                 ImGuiTableFlags.Hideable |
                                 ImGuiTableFlags.SizingFixedFit;
-            int tableTotalColumns = 18; // How many columns am I using. 
+            int tableTotalColumns = 19; // How many columns am I using. 
 
             // This is here to auto show/hide specific columns that might not be necessary (gathering profiles, and planetary tokens as Ex.)
             bool hasGathering = false;
@@ -263,11 +263,12 @@ namespace ICE.Ui.MainUi.ModeSelect
                 ImGui.TableSetupColumn("II");
                 ImGui.TableSetupColumn("III");
                 ImGui.TableSetupColumn("IV");
-                ImGui.TableSetupColumn("V"); // 14
+                ImGui.TableSetupColumn("V");
+                ImGui.TableSetupColumn("VI"); // 15
 
-                ImGui.TableSetupColumn("Turnin Mode"); // 15
-                ImGui.TableSetupColumn("Gathering Profile"); // 16
-                ImGui.TableSetupColumn("Mission Notes"); // 17
+                ImGui.TableSetupColumn("Turnin Mode"); // 16
+                ImGui.TableSetupColumn("Gathering Profile"); // 17
+                ImGui.TableSetupColumn("Mission Notes"); // 18
 
                 #endregion
 
@@ -282,7 +283,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                     ImGui.TableSetColumnEnabled(9, hasToken);
                 }
 
-                ImGui.TableSetColumnEnabled(16, hasGathering);
+                ImGui.TableSetColumnEnabled(17, hasGathering);
 
                 #endregion
 
@@ -481,8 +482,8 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                 #region Relic XP
 
-                string[] xpLabels = { "I", "II", "III", "IV", "V" };
-                for (int i = 0; i < 5; i++)
+                string[] xpLabels = { "I", "II", "III", "IV", "V", "VI", "VII" };
+                for (int i = 0; i < 6; i++)
                 {
                     ImGui.TableSetColumnIndex(columnIndexCount);
                     ImGui.TableHeader(xpLabels[i]);
@@ -753,7 +754,7 @@ namespace ICE.Ui.MainUi.ModeSelect
 
                     #region Relic Xp Info
 
-                    for (int i = 1; i < 6; i++)
+                    for (int i = 1; i < 7; i++)
                     {
                         ImGui.TableNextColumn();
                         var expReward = missionInfo.RelicXpInfo.Where(exp => exp.Key == i).FirstOrDefault();

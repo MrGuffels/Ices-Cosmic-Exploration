@@ -18,63 +18,65 @@ namespace ICE.Ui.DebugWindowTabs
         public static void Draw()
         {
             var territoryid = Player.Territory.RowId;
-            var moonNpcs = NpcData.MoonNpcs[territoryid];
-            ImGui.Text($"Territory Id: {territoryid}");
-            ImGui.Text($"Valid Moon NPC Info: {moonNpcs != null}");
-            if (moonNpcs != null)
+            if (NpcData.MoonNpcs.TryGetValue(territoryid, out var moonNpcs))
             {
-                List<Vector3> pictoCircles = new();
-
-
-                if (ImGui.BeginTable("NPC Info Debugger", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+                ImGui.Text($"Territory Id: {territoryid}");
+                ImGui.Text($"Valid Moon NPC Info: {moonNpcs != null}");
+                if (moonNpcs != null)
                 {
-                    ImGui.TableSetupColumn("Name");
-                    ImGui.TableSetupColumn("Position");
-                    ImGui.TableSetupColumn("MoveTo Spot");
-                    ImGui.TableSetupColumn("Move To");
-                    ImGui.TableSetupColumn("Set To Current");
+                    List<Vector3> pictoCircles = new();
 
-                    foreach (var npcEntry in moonNpcs)
+
+                    if (ImGui.BeginTable("NPC Info Debugger", 5, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
                     {
-                        ImGui.TableNextRow();
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.Text($"{npcEntry.Name} [{npcEntry.NpcId}]");
+                        ImGui.TableSetupColumn("Name");
+                        ImGui.TableSetupColumn("Position");
+                        ImGui.TableSetupColumn("MoveTo Spot");
+                        ImGui.TableSetupColumn("Move To");
+                        ImGui.TableSetupColumn("Set To Current");
 
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{npcEntry.Location_Npc:N2}");
-                        ImGui.Text($"Distance: {Player.DistanceTo(npcEntry.Location_Npc):N2}");
-
-                        ImGui.TableNextColumn();
-                        ImGui.Text($"{npcEntry.Location_Circle:N2}");
-                        pictoCircles.Add(npcEntry.Location_Circle);
-
-                        ImGui.TableNextColumn();
-                        if (ImGui.Button($"Move to##MoveTo_{npcEntry.NpcId}"))
+                        foreach (var npcEntry in moonNpcs)
                         {
-                            Vector3 moveLoc = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, radius);
-                            Task_NavmeshMove.Task_NavTo(moveLoc, distance: 5, npcLoc: npcEntry.Location_Npc);
+                            ImGui.TableNextRow();
+                            ImGui.TableSetColumnIndex(0);
+                            ImGui.Text($"{npcEntry.Name} [{npcEntry.NpcId}]");
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{npcEntry.Location_Npc:N2}");
+                            ImGui.Text($"Distance: {Player.DistanceTo(npcEntry.Location_Npc):N2}");
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{npcEntry.Location_Circle:N2}");
+                            pictoCircles.Add(npcEntry.Location_Circle);
+
+                            ImGui.TableNextColumn();
+                            if (ImGui.Button($"Move to##MoveTo_{npcEntry.NpcId}"))
+                            {
+                                Vector3 moveLoc = NpcData.GetRandomPointInCircle(npcEntry.Location_Circle, radius);
+                                Task_NavmeshMove.Task_NavTo(moveLoc, distance: 5, npcLoc: npcEntry.Location_Npc);
+                            }
+
+                            ImGui.TableNextColumn();
+                            if (ImGui.Button($"Set to Current##SetCurrent_{npcEntry.NpcId}"))
+                            {
+                                Vector3 currentPos = Player.Position;
+                                npcEntry.Location_Circle = currentPos;
+                            }
+                            if (ImGui.Button($"Copy current set##CopyCurrent_{npcEntry.NpcId}"))
+                            {
+                                ImGui.SetClipboardText($"{npcEntry.Location_Circle.X:N2}f, {npcEntry.Location_Circle.Y:N2}f, {npcEntry.Location_Circle.Z:N2}f");
+                            }
                         }
 
-                        ImGui.TableNextColumn();
-                        if (ImGui.Button($"Set to Current##SetCurrent_{npcEntry.NpcId}"))
-                        {
-                            Vector3 currentPos = Player.Position;
-                            npcEntry.Location_Circle = currentPos;
-                        }
-                        if (ImGui.Button($"Copy current set##CopyCurrent_{npcEntry.NpcId}"))
-                        {
-                            ImGui.SetClipboardText($"{npcEntry.Location_Circle.X:N2}f, {npcEntry.Location_Circle.Y:N2}f, {npcEntry.Location_Circle.Z:N2}f");
-                        }
+                        ImGui.EndTable();
                     }
 
-                    ImGui.EndTable();
-                }
-
-                using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
-                {
-                    foreach (var location in pictoCircles)
+                    using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
                     {
-                        drawList.AddCircleFilled(location, radius, C.PictoColor_Circle);
+                        foreach (var location in pictoCircles)
+                        {
+                            drawList.AddCircleFilled(location, radius, C.PictoColor_Circle);
+                        }
                     }
                 }
             }

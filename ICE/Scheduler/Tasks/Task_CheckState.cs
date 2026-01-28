@@ -22,7 +22,6 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "Task: Check State";
             var currentMissionId = CosmicHelper.CurrentLunarMission;
-            int maxStage = 14;
 
             IceLogging.Debug("Task: Check State, has commenced");
 
@@ -35,7 +34,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 RelicInfo(out var allComplete, out var currentStage, out var XPTable);
-                bool canTurnin = allComplete && currentStage != maxStage && C.TurninRelic;
+                bool canTurnin = allComplete && currentStage != CosmicHelper.MaxRelicLevel && C.TurninRelic;
 
                 if (C.StopWhenLevel && Player.Level >= C.TargetLevel)
                 {
@@ -128,11 +127,11 @@ namespace ICE.Scheduler.Tasks
                     if (allComplete)
                     {
 
-                        if (C.TurninRelic && currentStage != maxStage)
+                        if (C.TurninRelic && currentStage != CosmicHelper.MaxRelicLevel)
                         {
                             IceLogging.Info("We've hit a point where we can turnin the relic! Going to add a thing to check for that later");
                         }
-                        else if (C.TurninRelic && currentStage == maxStage && C.StopOnceRelicFinished)
+                        else if (C.TurninRelic && currentStage == CosmicHelper.MaxRelicLevel && C.StopOnceRelicFinished)
                         {
                             IceLogging.Info("You have met all necessary relic xp, and you have \"Stop on Relic Completion\" enabled, so stopping for now");
                             SchedulerMain.State = IceState.Idle;
@@ -369,7 +368,7 @@ namespace ICE.Scheduler.Tasks
 
             if (currentStage != maxStage)
             {
-                for (byte type = 1; type < 6; type++)
+                for (byte type = 1; type < 7; type++)
                 {
                     if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
                     {
@@ -392,7 +391,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 // We're checking to make sure the max stage is completed
-                for (byte type = 1; type < 6; type++)
+                for (byte type = 1; type < 7; type++)
                 {
                     if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
                     {

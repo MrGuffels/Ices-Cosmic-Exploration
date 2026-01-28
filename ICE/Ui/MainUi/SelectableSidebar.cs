@@ -85,6 +85,7 @@ namespace ICE.Ui.MainUi
                 {
                     string SinusAsset = "ICE.Resources.Sinus_Ardorum.png";
                     string PhaennaAsset = "ICE.Resources.Phaenna.png";
+                    string OizysAsset = "ICE.Resources.Oizys.png";
 
                     bool autoSelectMoon = C.AutoSelectMoon;
                     if (ImGui.Checkbox("Auto Select Moon", ref autoSelectMoon))
@@ -94,16 +95,25 @@ namespace ICE.Ui.MainUi
                     }
                     if (autoSelectMoon)
                     {
-                        if (PlayerHelper.IsInSinusArdorum() && (!C.ShowSinusMissions || C.ShowPhaennaMissions))
+                        if (PlayerHelper.IsInSinusArdorum() && (!C.ShowSinusMissions || C.ShowPhaennaMissions || C.ShowOizysMissions))
                         {
                             C.ShowSinusMissions = true;
                             C.ShowPhaennaMissions = false;
+                            C.ShowOizysMissions = false;
                             C.Save();
                         }
-                        else if (PlayerHelper.IsInPhaenna() && (C.ShowSinusMissions || !C.ShowPhaennaMissions))
+                        else if (PlayerHelper.IsInPhaenna() && (C.ShowSinusMissions || !C.ShowPhaennaMissions || C.ShowOizysMissions))
                         {
                             C.ShowSinusMissions = false;
                             C.ShowPhaennaMissions = true;
+                            C.ShowOizysMissions = false;
+                            C.Save();
+                        }
+                        else if (PlayerHelper.IsInOizys() && (C.ShowSinusMissions || C.ShowPhaennaMissions || !C.ShowOizysMissions))
+                        {
+                            C.ShowSinusMissions = false;
+                            C.ShowPhaennaMissions = false;
+                            C.ShowOizysMissions = true;
                             C.Save();
                         }
                     }
@@ -141,6 +151,17 @@ namespace ICE.Ui.MainUi
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.SetTooltip("Phaenna");
+                    }
+
+                    ImGui.SameLine();
+                    bool oizysEnabled = C.ShowOizysMissions;
+                    var OizysTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), OizysAsset).GetWrapOrEmpty();
+
+                    if (StyledImageButton.DrawStyledImageButton(OizysTexture, new Vector2(iconSize, iconSize), oizysEnabled))
+                    {
+                        C.ShowOizysMissions = !oizysEnabled;
+                        C.AutoSelectMoon = false;
+                        C.Save();
                     }
                 }
                 if (C.AutoPickCurrentJob && (CosmicHelper.CrafterJobList.Contains((uint)Player.Job) || CosmicHelper.GatheringJobList.Contains((uint)Player.Job)) && C.SelectedJob != (uint)Player.Job)

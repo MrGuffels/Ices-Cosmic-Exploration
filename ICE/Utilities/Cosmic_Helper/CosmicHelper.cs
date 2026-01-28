@@ -38,7 +38,7 @@ public static unsafe partial class CosmicHelper
     public static readonly int MinimumLevel = 10;
     public static readonly int MaximumLevel = Player.MaxLevel;
 
-    public static readonly int MaxRelicLevel = 14;
+    public static readonly int MaxRelicLevel = 17;
 
     #region Dictionaries
 

@@ -343,7 +343,7 @@ namespace ICE.Scheduler.Tasks
                 multiplier = 4;
 
             var scoreDifference = (ScoreCheck() - PreviousScore);
-            if (scoreDifference != 0)
+            if (scoreDifference > 0 && scoreDifference < 1000)
             {
                 scoreDifference = scoreDifference / multiplier;
                 IceLogging.Debug($"Base Mission score is: {scoreDifference}");
