@@ -1038,25 +1038,25 @@
 1037,FSH, Soup Broth Ingredients,158
 1038,FSH, Oil-extractable Aquatic Life,212
 1039,FSH, Elemental-esque Specimen Acquisition,150
-1040,CRP, Multi-purpose Fiber,0
-1041,CRP, Resilient Resource Processing I,0
-1042,CRP, Cushioned Packaging Materials,0
-1043,CRP, Stabilizing Materials I,0
-1044,CRP, Additional Multi-purpose Fiber,0
-1045,CRP, Resilient Resource Processing II,0
-1046,CRP, Improved Cushioning Materials I,0
-1047,CRP, Stabilizing Materials II,0
-1048,CRP, Enhanced Fiber,0
-1049,CRP, Resilient Resource Advanced Processing,0
-1050,CRP, Improved Cushioning Materials II,0
-1051,CRP, Stabilizing Materials III,0
-1052,CRP, Resilient Tents,0
+1040,CRP, Multi-purpose Fiber,2
+1041,CRP, Resilient Resource Processing I,2
+1042,CRP, Cushioned Packaging Materials,2
+1043,CRP, Stabilizing Materials I,2
+1044,CRP, Additional Multi-purpose Fiber,3
+1045,CRP, Resilient Resource Processing II,4
+1046,CRP, Improved Cushioning Materials I,4
+1047,CRP, Stabilizing Materials II,4
+1048,CRP, Enhanced Fiber,14
+1049,CRP, Resilient Resource Advanced Processing,15
+1050,CRP, Improved Cushioning Materials II,14
+1051,CRP, Stabilizing Materials III,13
+1052,CRP, Resilient Tents,16
 1053,CRP,Additional Enhanced Fiber,27
-1054,CRP,Fuel Processing and Storage,0
-1055,CRP,High-performance Cushioning Materials,0
+1054,CRP,Fuel Processing and Storage,24
+1055,CRP,High-performance Cushioning Materials,25
 1056,CRP,Stabilization Research,25
-1057,CRP,Resilient Resource Specialist Processing,0
-1058,CRP,Secure Tents,0
+1057,CRP,Resilient Resource Specialist Processing,20
+1058,CRP,Secure Tents,24
 1059,CRP,EX: Mass-produced Transportation Materials,60
 1060,CRP,EX: Excavation Necessities,60
 1061,CRP,EX: Excavation Equipment,60
@@ -1066,140 +1066,140 @@
 1065,CRP,EX+: Renewable Fuel I,0
 1066,CRP,EX+: Renewable Fuel II,0
 1067,CRP,EX+: Renewable Fuel III,0
-1068,BSM, Multi-purpose Alloy Components,0
-1069,BSM, Oizys-primed Metal Processing I,0
-1070,BSM, Gravitational Anomaly Gear I,0
-1071,BSM, Supplementary Excavation Equipment I,0
-1072,BSM, Multi-purpose Alloy Component Resupply,0
-1073,BSM, Oizys-primed Metal Processing II,0
-1074,BSM, Gravitational Anomaly Gear II,0
-1075,BSM, Supplementary Excavation Equipment II,0
-1076,BSM, Enhanced Alloy Components,0
-1077,BSM, Oizys-primed Containers I,0
-1078,BSM, Gravitational Anomaly Gear III,0
-1079,BSM, Advanced Excavation Equipment,0
-1080,BSM, Powersuit Components,0
-1081,BSM,Enhanced Alloy Component Resupply,0
-1082,BSM,Voyager Civilization Survey,0
-1083,BSM,Gravitational Anomaly Gear Advanced Processing,0
-1084,BSM,Oversized Drill Resupply,0
-1085,BSM,Coastal Installation Material Rust-proofing,0
-1086,BSM,Oizys-primed Containers II,0
-1087,BSM,EX: Oddweight Azurite Refining,0
-1088,BSM,EX: Gravity Generator Miniaturization I,0
-1089,BSM,EX: Powersuit Chest Component,0
+1068,BSM, Multi-purpose Alloy Components,2
+1069,BSM, Oizys-primed Metal Processing I,2
+1070,BSM, Gravitational Anomaly Gear I,2
+1071,BSM, Supplementary Excavation Equipment I,2
+1072,BSM, Multi-purpose Alloy Component Resupply,3
+1073,BSM, Oizys-primed Metal Processing II,4
+1074,BSM, Gravitational Anomaly Gear II,4
+1075,BSM, Supplementary Excavation Equipment II,4
+1076,BSM, Enhanced Alloy Components,14
+1077,BSM, Oizys-primed Containers I,15
+1078,BSM, Gravitational Anomaly Gear III,14
+1079,BSM, Advanced Excavation Equipment,13
+1080,BSM, Powersuit Components,16
+1081,BSM,Enhanced Alloy Component Resupply,27
+1082,BSM,Voyager Civilization Survey,24
+1083,BSM,Gravitational Anomaly Gear Advanced Processing,25
+1084,BSM,Oversized Drill Resupply,25
+1085,BSM,Coastal Installation Material Rust-proofing,20
+1086,BSM,Oizys-primed Containers II,24
+1087,BSM,EX: Oddweight Azurite Refining,60
+1088,BSM,EX: Gravity Generator Miniaturization I,60
+1089,BSM,EX: Powersuit Chest Component,60
 1090,BSM,EX: Maintenance Part Advanced Processing,0
 1091,BSM,EX+: Gravity Generator Miniaturization II,0
 1092,BSM,EX+: Voyager Artifact Restoration,0
 1093,BSM,EX+: Voyager Implement Reproduction I,0
 1094,BSM,EX+: Voyager Implement Reproduction II,0
 1095,BSM,EX+: Large Voyager Device Restoration,0
-1096,ARM, Multi-purpose Alloy Components,0
-1097,ARM, Oizys-primed Metal Processing I,0
-1098,ARM, Gravitational Anomaly Gear I,0
-1099,ARM, Supplementary Excavation Equipment I,0
-1100,ARM, Multi-purpose Alloy Component Resupply,0
-1101,ARM, Oizys-primed Metal Processing II,0
-1102,ARM, Gravitational Anomaly Gear II,0
-1103,ARM, Supplementary Excavation Equipment II,0
-1104,ARM, Enhanced Alloy Components,0
-1105,ARM, Oizys-primed Containers I,0
-1106,ARM, Gravitational Anomaly Gear III,0
-1107,ARM, Advanced Excavation Equipment,0
-1108,ARM, Powersuit Components,0
-1109,ARM,Enhanced Alloy Component Resupply,0
-1110,ARM,Voyager Civilization Survey,0
-1111,ARM,Gravitational Anomaly Gear Advanced Processing,0
-1112,ARM,Oversized Drill Resupply,0
-1113,ARM,Coastal Installation Material Rust-proofing,0
-1114,ARM,Oizys-primed Containers II,0
-1115,ARM,EX: Oddweight Azurite Refining,0
-1116,ARM,EX: Gravity Generator Miniaturization I,0
-1117,ARM,EX: Powersuit Chest Component,0
+1096,ARM, Multi-purpose Alloy Components,2
+1097,ARM, Oizys-primed Metal Processing I,2
+1098,ARM, Gravitational Anomaly Gear I,2
+1099,ARM, Supplementary Excavation Equipment I,2
+1100,ARM, Multi-purpose Alloy Component Resupply,3
+1101,ARM, Oizys-primed Metal Processing II,4
+1102,ARM, Gravitational Anomaly Gear II,4
+1103,ARM, Supplementary Excavation Equipment II,4
+1104,ARM, Enhanced Alloy Components,14
+1105,ARM, Oizys-primed Containers I,15
+1106,ARM, Gravitational Anomaly Gear III,14
+1107,ARM, Advanced Excavation Equipment,13
+1108,ARM, Powersuit Components,16
+1109,ARM,Enhanced Alloy Component Resupply,27
+1110,ARM,Voyager Civilization Survey,24
+1111,ARM,Gravitational Anomaly Gear Advanced Processing,25
+1112,ARM,Oversized Drill Resupply,25
+1113,ARM,Coastal Installation Material Rust-proofing,20
+1114,ARM,Oizys-primed Containers II,24
+1115,ARM,EX: Oddweight Azurite Refining,60
+1116,ARM,EX: Gravity Generator Miniaturization I,60
+1117,ARM,EX: Powersuit Chest Component,60
 1118,ARM,EX: Maintenance Part Advanced Processing,0
 1119,ARM,EX+: Gravity Generator Miniaturization II,0
 1120,ARM,EX+: Voyager Artifact Restoration,0
 1121,ARM,EX+: Voyager Implement Reproduction I,0
 1122,ARM,EX+: Voyager Implement Reproduction II,0
 1123,ARM,EX+: Production Precision Processing,0
-1124,GSM, Multi-purpose Alloy Components,0
-1125,GSM, Oizys-primed Metal Processing I,0
-1126,GSM, Gravitational Anomaly Gear I,0
-1127,GSM, Supplementary Excavation Equipment I,0
-1128,GSM, Multi-purpose Alloy Component Resupply,0
-1129,GSM, Oizys-primed Metal Processing II,0
-1130,GSM, Gravitational Anomaly Gear II,0
-1131,GSM, Supplementary Excavation Equipment II,0
-1132,GSM, Enhanced Alloy Components,0
-1133,GSM, Oizys-primed Containers I,0
-1134,GSM, Gravitational Anomaly Gear III,0
-1135,GSM, Advanced Excavation Equipment,0
-1136,GSM, Powersuit Components,0
-1137,GSM,Enhanced Alloy Component Resupply,0
-1138,GSM,Voyager Civilization Survey,0
-1139,GSM,Gravitational Anomaly Gear Advanced Processing,0
-1140,GSM,Oversized Drill Resupply,0
-1141,GSM,Coastal Installation Material Rust-proofing,0
-1142,GSM,Oizys-primed Containers II,0
-1143,GSM,EX: Oddweight Azurite Refining,0
-1144,GSM,EX: Gravity Generator Miniaturization I,0
-1145,GSM,EX: Powersuit Chest Component,0
+1124,GSM, Multi-purpose Alloy Components,2
+1125,GSM, Oizys-primed Metal Processing I,2
+1126,GSM, Gravitational Anomaly Gear I,2
+1127,GSM, Supplementary Excavation Equipment I,2
+1128,GSM, Multi-purpose Alloy Component Resupply,3
+1129,GSM, Oizys-primed Metal Processing II,4
+1130,GSM, Gravitational Anomaly Gear II,4
+1131,GSM, Supplementary Excavation Equipment II,4
+1132,GSM, Enhanced Alloy Components,14
+1133,GSM, Oizys-primed Containers I,15
+1134,GSM, Gravitational Anomaly Gear III,14
+1135,GSM, Advanced Excavation Equipment,13
+1136,GSM, Powersuit Components,16
+1137,GSM,Enhanced Alloy Component Resupply,27
+1138,GSM,Voyager Civilization Survey,24
+1139,GSM,Gravitational Anomaly Gear Advanced Processing,25
+1140,GSM,Oversized Drill Resupply,25
+1141,GSM,Coastal Installation Material Rust-proofing,20
+1142,GSM,Oizys-primed Containers II,24
+1143,GSM,EX: Oddweight Azurite Refining,60
+1144,GSM,EX: Gravity Generator Miniaturization I,60
+1145,GSM,EX: Powersuit Chest Component,60
 1146,GSM,EX: Maintenance Part Advanced Processing,0
 1147,GSM,EX+: Gravity Generator Miniaturization II,0
 1148,GSM,EX+: Voyager Artifact Restoration,0
 1149,GSM,EX+: Voyager Implement Reproduction I,0
 1150,GSM,EX+: Voyager Implement Reproduction II,0
 1151,GSM,EX+: Production Precision Processing,0
-1152,LTW, Multi-purpose Fiber,0
-1153,LTW, Resilient Resource Processing I,0
-1154,LTW, Cushioned Packaging Materials,0
-1155,LTW, Stabilizing Materials I,0
-1156,LTW, Additional Multi-purpose Fiber,0
-1157,LTW, Resilient Resource Processing II,0
-1158,LTW, Improved Cushioning Materials I,0
-1159,LTW, Stabilizing Materials II,0
-1160,LTW, Enhanced Fiber,0
-1161,LTW, Resilient Resource Advanced Processing,0
-1162,LTW, Improved Cushioning Materials II,0
-1163,LTW, Stabilizing Materials III,0
-1164,LTW, Resilient Tents,0
-1165,LTW,Additional Enhanced Fiber,0
-1166,LTW,Fuel Processing and Storage,0
-1167,LTW,High-performance Cushioning Materials,0
-1168,LTW,Stabilization Research,0
-1169,LTW,Resilient Resource Specialist Processing,0
-1170,LTW,Secure Tents,0
-1171,LTW,EX: Mass-produced Transportation Materials,0
-1172,LTW,EX: Excavation Necessities,0
-1173,LTW,EX: Excavation Equipment,0
+1152,LTW, Multi-purpose Fiber,2
+1153,LTW, Resilient Resource Processing I,2
+1154,LTW, Cushioned Packaging Materials,2
+1155,LTW, Stabilizing Materials I,2
+1156,LTW, Additional Multi-purpose Fiber,3
+1157,LTW, Resilient Resource Processing II,4
+1158,LTW, Improved Cushioning Materials I,4
+1159,LTW, Stabilizing Materials II,4
+1160,LTW, Enhanced Fiber,14
+1161,LTW, Resilient Resource Advanced Processing,15
+1162,LTW, Improved Cushioning Materials II,14
+1163,LTW, Stabilizing Materials III,13
+1164,LTW, Resilient Tents,16
+1165,LTW,Additional Enhanced Fiber,27
+1166,LTW,Fuel Processing and Storage,24
+1167,LTW,High-performance Cushioning Materials,25
+1168,LTW,Stabilization Research,25
+1169,LTW,Resilient Resource Specialist Processing,20
+1170,LTW,Secure Tents,24
+1171,LTW,EX: Mass-produced Transportation Materials,60
+1172,LTW,EX: Excavation Necessities,60
+1173,LTW,EX: Excavation Equipment,60
 1174,LTW,EX: Beach Break Supplies,0
 1175,LTW,EX+: Planetary Resource Utilization,0
 1176,LTW,EX+: Organic Material Advanced Processing,0
 1177,LTW,EX+: Star Admiral's Trouser Fabric I,0
 1178,LTW,EX+: Star Admiral's Trouser Fabric II,0
 1179,LTW,EX+: Star Admiral's Trouser Fabric III,0
-1180,WVR, Multi-purpose Fiber,0
-1181,WVR, Resilient Resource Processing I,0
-1182,WVR, Cushioned Packaging Materials,0
-1183,WVR, Stabilizing Materials I,0
-1184,WVR, Additional Multi-purpose Fiber,0
-1185,WVR, Resilient Resource Processing II,0
-1186,WVR, Improved Cushioning Materials,0
-1187,WVR, Stabilizing Materials II,0
-1188,WVR, Enhanced Fiber,0
-1189,WVR, Resilient Resource Advanced Processing,0
-1190,WVR, Improved Cushioning Materials II,0
-1191,WVR, Stabilizing Materials III,0
-1192,WVR, Resilient Tents,0
-1193,WVR,Additional Enhanced Fiber,0
-1194,WVR,Fuel Processing and Storage,0
-1195,WVR,High-performance Cushioning Materials,0
-1196,WVR,Stabilization Research,0
-1197,WVR,Resilient Resource Specialist Processing,0
-1198,WVR,Secure Tents,0
-1199,WVR,EX: Mass-produced Transportation Materials,0
-1200,WVR,EX: Excavation Necessities,0
-1201,WVR,EX: Excavation Equipment,0
+1180,WVR, Multi-purpose Fiber,2
+1181,WVR, Resilient Resource Processing I,2
+1182,WVR, Cushioned Packaging Materials,2
+1183,WVR, Stabilizing Materials I,2
+1184,WVR, Additional Multi-purpose Fiber,3
+1185,WVR, Resilient Resource Processing II,4
+1186,WVR, Improved Cushioning Materials,4
+1187,WVR, Stabilizing Materials II,4
+1188,WVR, Enhanced Fiber,14
+1189,WVR, Resilient Resource Advanced Processing,15
+1190,WVR, Improved Cushioning Materials II,14
+1191,WVR, Stabilizing Materials III,13
+1192,WVR, Resilient Tents,16
+1193,WVR,Additional Enhanced Fiber,27
+1194,WVR,Fuel Processing and Storage,24
+1195,WVR,High-performance Cushioning Materials,25
+1196,WVR,Stabilization Research,25
+1197,WVR,Resilient Resource Specialist Processing,20
+1198,WVR,Secure Tents,24
+1199,WVR,EX: Mass-produced Transportation Materials,60
+1200,WVR,EX: Excavation Necessities,60
+1201,WVR,EX: Excavation Equipment,60
 1202,WVR,EX: Beach Break Supplies,0
 1203,WVR,EX+: Planetary Resource Utilization,0
 1204,WVR,EX+: Organic Material Advanced Processing,0
@@ -1262,56 +1262,56 @@
 1261,CUL,EX+: Cosmic Tool Refinement I,0
 1262,CUL,EX+: Cosmic Tool Refinement II,0
 1263,CUL,EX+: Cosmic Tool Refinement III,0
-1264,MIN, Base Vicinity Survey,0
-1265,MIN, Gravity Distribution Survey,0
-1266,MIN, Fundamental Mineral Procurement,0
-1267,MIN, Oizys Agate Rush,0
-1268,MIN, Erg Eris Survey,0
-1269,MIN, Aetheric Mineral Survey,0
-1270,MIN, Antigravity Sample Procurement,0
-1271,MIN, Antigravity Distribution Survey,0
-1272,MIN, Cape Geras Survey,0
-1273,MIN, Equipment Repair Essentials,0
-1274,MIN, Forming Aetheric Waveforms,0
-1275,MIN, Aetheric Distribution Survey,0
-1276,MIN, Oizys Mining Analysis,0
-1277,MIN,Unmoored Anchor Survey,0
-1278,MIN,Unique Resource Procurement,0
-1279,MIN,Oizys Alumen Procurement,0
-1280,MIN,Mineral Gravitational Stabilizers,0
+1264,MIN, Base Vicinity Survey,3
+1265,MIN, Gravity Distribution Survey,2
+1266,MIN, Fundamental Mineral Procurement,3
+1267,MIN, Oizys Agate Rush,2
+1268,MIN, Erg Eris Survey,5
+1269,MIN, Aetheric Mineral Survey,4
+1270,MIN, Antigravity Sample Procurement,6
+1271,MIN, Antigravity Distribution Survey,4
+1272,MIN, Cape Geras Survey,10
+1273,MIN, Equipment Repair Essentials,8
+1274,MIN, Forming Aetheric Waveforms,13
+1275,MIN, Aetheric Distribution Survey,8
+1276,MIN, Oizys Mining Analysis,8
+1277,MIN,Unmoored Anchor Survey,20
+1278,MIN,Unique Resource Procurement,25
+1279,MIN,Oizys Alumen Procurement,15
+1280,MIN,Mineral Gravitational Stabilizers,50
 1281,MIN,Multipurpose Reductions,0
-1282,MIN,Oizys Historical Reductions,0
-1283,MIN,EX: Aether-rich Mineral Survey,0
-1284,MIN,EX: Indicolite Rush,0
-1285,MIN,EX: Bedrock Distribution Survey,0
-1286,MIN,EX: Extreme Mining Analysis,0
-1287,MIN,EX+: Crucial Initiative Reductions,0
+1282,MIN,Oizys Historical Reductions,30
+1283,MIN,EX: Aether-rich Mineral Survey,53
+1284,MIN,EX: Indicolite Rush,33
+1285,MIN,EX: Bedrock Distribution Survey,33
+1286,MIN,EX: Extreme Mining Analysis,40
+1287,MIN,EX+: Crucial Initiative Reductions,164
 1288,MIN,EX+: Survey of Rare Aetheric Minerals,0
 1289,MIN,EX+: Ruin Excavation Support,0
 1290,MIN,EX+: Voyager Ecological Research,0
 1291,MIN,EX+: Voyager Excavation Research,0
-1292,BTN, Base Vicinity Survey,0
-1293,BTN, Aetherial Current Survey,0
-1294,BTN, Fundamental Flora Procurement,0
-1295,BTN, Regolush Grass Harvest,0
-1296,BTN, Foregone Oasis Survey,0
-1297,BTN, Aquatic Aether Survey,0
-1298,BTN, Voyager Sample Procurement,0
-1299,BTN, Voyager Distribution Survey,0
-1300,BTN, Northwestern Regolift Survey,0
-1301,BTN, Specialized Fiber Survey,0
-1302,BTN, Geometric Flora Procurement,0
-1303,BTN, Geometric Flora Distribution Survey,0
-1304,BTN, Oizys Harvesting Analysis,0
-1305,BTN,Southeastern Regolith Survey,0
-1306,BTN,Suspended Flora Procurement,0
-1307,BTN,Crooked Cedar Root Procurement,0
-1308,BTN,Fibrous Gravitational Stabilizers,0
-1309,BTN,Multipurpose Reductions,0
-1310,BTN,Oizys Historical Reductions,0
-1311,BTN,EX: Aether-rich Flora Survey,0
-1312,BTN,EX: Terrestrianemone Tentacle Harvest,0
-1313,BTN,EX: Environmental Development Survey,0
+1292,BTN, Base Vicinity Survey,3
+1293,BTN, Aetherial Current Survey,2
+1294,BTN, Fundamental Flora Procurement,3
+1295,BTN, Regolush Grass Harvest,2
+1296,BTN, Foregone Oasis Survey,5
+1297,BTN, Aquatic Aether Survey,4
+1298,BTN, Voyager Sample Procurement,6
+1299,BTN, Voyager Distribution Survey,4
+1300,BTN, Northwestern Regolift Survey,10
+1301,BTN, Specialized Fiber Survey,8
+1302,BTN, Geometric Flora Procurement,13
+1303,BTN, Geometric Flora Distribution Survey,8
+1304,BTN, Oizys Harvesting Analysis,8
+1305,BTN,Southeastern Regolith Survey,20
+1306,BTN,Suspended Flora Procurement,25
+1307,BTN,Crooked Cedar Root Procurement,15
+1308,BTN,Fibrous Gravitational Stabilizers,50
+1309,BTN,Multipurpose Reductions,28
+1310,BTN,Oizys Historical Reductions,30
+1311,BTN,EX: Aether-rich Flora Survey,53
+1312,BTN,EX: Terrestrianemone Tentacle Harvest,33
+1313,BTN,EX: Environmental Development Survey,33
 1314,BTN,EX: Extreme Harvesting Analysis,0
 1315,BTN,EX+: Rare Alchemical Reductions,0
 1316,BTN,EX+: Survey of Rare Aetheric Flora,0
