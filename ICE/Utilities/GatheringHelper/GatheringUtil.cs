@@ -188,6 +188,14 @@ public static unsafe partial class GatheringUtil
                 RequiredGp = 50,
                 RequiredLv = 23,
             }},
+            { "GreaterReach", new GatheringActions
+            {
+                ActionName = "GreaterReach",
+                ClassAction = new()
+                {
+
+                }
+            }},
         };
 
     public static Dictionary<string, GatheringActions> GathCollectableBuffs = new()

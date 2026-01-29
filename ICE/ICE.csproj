@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0">
 
 	<PropertyGroup>
-		<Version>0.0.75.1</Version>
+		<Version>0.0.75.2</Version>
 		<Description>Who said we couldn't explore the moon!.</Description>
 		<PackageProjectUrl>https://github.com/goatcorp/ICE</PackageProjectUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -58,5 +58,9 @@
 	<ItemGroup>
 		<PackageReference Update="DalamudPackager" Version="14.0.1" />
 		<PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.39" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Resources\GatheringRoutes\1310_Oizys\" />
 	</ItemGroup>
 </Project>

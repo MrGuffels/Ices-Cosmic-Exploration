@@ -503,6 +503,8 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
             bool force_Raphael = C.Artisan_RaphaelForce;
             bool force_Expert = C.Artisan_RaphaelExpert;
+            bool force_MasterA = C.Artisan_Raphael_ARank;
+            bool force_MasterEx = C.Artisan_Raphael_ExRank;
 
             if (ImGui.Checkbox("Enforce Raphael Solver", ref force_Raphael))
             {
@@ -516,6 +518,28 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.NewLine();
             if (force_Raphael)
             {
+                if (ImGui.Checkbox("Enforce Raphael Solver on Master A Ranks", ref force_MasterA))
+                {
+                    C.Artisan_Raphael_ARank = force_MasterA;
+                    C.Save();
+                }
+                ImGui.SameLine();
+                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                    "Will force A ranks that have are considered \"Master Recipies\" to use the raph solver\n" +
+                    "Generally better for most A ranks since they're not true master recipies imo. (Saves more time)");
+                ImGui.Dummy(Vector2.Zero);
+
+                if (ImGui.Checkbox("Enforce Raphael Solver on Master Ex Ranks", ref force_MasterEx))
+                {
+                    C.Artisan_Raphael_ExRank = force_MasterEx;
+                    C.Save();
+                }
+                ImGui.SameLine();
+                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                    "Will force EX ranks that have are considered \"Master Recipies\" to use the raph solver\n" +
+                    "Generally better for most A ranks since they're not true master recipies imo. (Saves more time)");
+                ImGui.Dummy(Vector2.Zero);
+
                 if (ImGui.Checkbox("Enforce Raphael Solver on EX+ Experts", ref force_Expert))
                 {
                     C.Artisan_RaphaelExpert = force_Expert;
@@ -526,6 +550,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                                         "Will force expert crafts in the EX+ Missions to use the raphael solver.\n" +
                                         "I personally do not recommend this on, but there are some you can get away with\n" +
                                         "And when we get to overlevel the moon, the option is there");
+                ImGui.Dummy(Vector2.Zero);
             }
         }
 

@@ -38,15 +38,20 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.NewLine();
 
             int buyAtAmount = C.CosmoBuyAtAmount;
+            int CosmoKeepAmount = C.CosmoKeepAmount;
+
             ImGui.SetNextItemWidth(150);
-            if (ImGui.InputInt("Go buy items when you reach", ref buyAtAmount, 1))
+            if (ImGui.SliderInt("Go buy items when you reach", ref buyAtAmount, 0, 30000))
             {
-                if (buyAtAmount < 0)
-                    buyAtAmount = 0;
-                if (buyAtAmount > 30000)
-                    buyAtAmount = 30000;
                 C.CosmoBuyAtAmount = buyAtAmount;
-                C.Save();
+                C.SaveDebounced();
+            }
+
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderInt("Keep this much Cosmocredits", ref CosmoKeepAmount, 0, buyAtAmount))
+            {
+                C.CosmoKeepAmount = CosmoKeepAmount;
+                C.SaveDebounced();
             }
 
             CheckConfigState();

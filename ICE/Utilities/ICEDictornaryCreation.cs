@@ -52,7 +52,7 @@ public sealed partial class ICE
             uint timeAndWeather = entry.WKSMissionLotterySpecialCond.RowId;
             uint startTime = 0;
             uint endTime = 0;
-            CosmicWeather weather = CosmicWeather.FairSkies;
+            CosmicWeather weather = CosmicWeather.None;
             if (!CosmicHelper.WeatherSelection.Contains(timeAndWeather))
             {
                 var timeSheet = Svc.Data.GetExcelSheet<WKSMissionLotterySpecialCond>().GetRow(timeAndWeather);
@@ -61,8 +61,16 @@ public sealed partial class ICE
             }
             else
             {
-                weather = (CosmicWeather)(timeAndWeather - 12);
-                // TODO: Go back and assign enums based on the value instead... or just directly give it a flag. Unsure. Feels dirty
+                weather = timeAndWeather switch  // <-- Added 'timeAndWeather' here
+                {
+                    13 => CosmicWeather.UmbralWind,
+                    14 => CosmicWeather.MoonDust,
+                    15 => CosmicWeather.Clouds,
+                    16 => CosmicWeather.Rain,
+                    23 => CosmicWeather.ClearSkies,
+                    24 => CosmicWeather.FairSkies,
+                    _ => CosmicWeather.None,
+                };
             }
 
             uint rank = entry.LevelGroup;
@@ -102,6 +110,19 @@ public sealed partial class ICE
 
             int _x = marker.Unknown1 - 1024;
             int _y = marker.Unknown2 - 1024;
+
+            // This is really specific ONLY cause there are 2 rings that overlap... and this can't happen
+            if (keyId == 1272)
+            {
+                _x = -340;
+                _y = 870;
+            }
+            else if (keyId == 1264)
+            {
+                _x = -573;
+                _y = 3;
+            }
+
             int radius = marker.Unknown3;
 
             MissionAttributes attributes = None;
@@ -154,7 +175,7 @@ public sealed partial class ICE
             }
 
             attributes |= isCritical ? Critical : None;
-            attributes |= weather != CosmicWeather.FairSkies ? ProvisionalWeather : None;
+            attributes |= weather != CosmicWeather.None ? ProvisionalWeather : None;
             attributes |= (startTime != 0 || endTime != 0) ? ProvisionalTimed : None;
             attributes |= !previousMissionId.Contains(0) ? ProvisionalSequential : None;
 
@@ -364,7 +385,7 @@ public sealed partial class ICE
                 }
             }
 
-            // - - - Attribute check for experts here cause needs to be done post crafting - - - - // 
+            // - - - Attribute check for experts here cause needs to be done pd ost crafting - - - - // 
             if (isExpert)
                 attributes |= ExpertCraft;
             if (isCollectable)

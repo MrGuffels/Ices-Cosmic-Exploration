@@ -8,6 +8,7 @@ public partial class Config
     public List<uint> CosmoShoppingOrder { get; set; } = new();
     public bool BuyItems { get; set; } = false;
     public int CosmoBuyAtAmount { get; set; } = 10000;
+    public int CosmoKeepAmount { get; set; } = 0;
 
     public class CosmoShoppingList
     {

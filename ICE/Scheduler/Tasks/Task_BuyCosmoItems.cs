@@ -49,7 +49,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static bool? TalkToCreditNPC()
         {
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var iconString) && iconString.IsAddonReady)
@@ -130,8 +129,7 @@ namespace ICE.Scheduler.Tasks
             }
             else if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
             {
-                var currencyAmount = shopExchange.CurrencyAmount;
-
+                var currencyAmount = shopExchange.CurrencyAmount - (uint)C.CosmoKeepAmount;
 
                 // Try BuyAmount first
                 if (TryPurchaseItem(shopExchange, currencyAmount,
@@ -203,6 +201,7 @@ namespace ICE.Scheduler.Tasks
             // Get current currency amount (you'll need to determine how to get this without the shop window)
 
             PlayerHelper.GetItemCount(45690, out var currencyAmount);
+            currencyAmount -= C.CosmoKeepAmount;
 
             // Try BuyAmount first
             if (CanPurchaseItem(currencyAmount,

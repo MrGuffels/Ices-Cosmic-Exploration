@@ -88,6 +88,8 @@ namespace ICE.Ui.DebugWindowTabs
 
 
             ClassInfo();
+
+            DroidCheck();
         }
 
         private static unsafe void ClassInfo()
@@ -153,6 +155,19 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             return bestMission;
+        }
+
+        private static uint selectedId = 0;
+
+        private static void DroidCheck()
+        {
+            if (ImGui.CollapsingHeader("Object info"))
+            {
+                foreach (var obect in Svc.Objects.OrderBy(x => Player.DistanceTo(x.Position)))
+                {
+                    ImGui.Text($"Name: {obect.Name} : {obect.BaseId}");
+                }
+            }
         }
     }
 }

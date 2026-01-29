@@ -3,10 +3,12 @@ using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
+using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
 using System.IO;
+using static FFXIVClientStructs.FFXIV.Client.UI.AddonRelicNoteBook;
 using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
 
 namespace ICE.Ui.DebugWindowTabs
@@ -120,6 +122,36 @@ namespace ICE.Ui.DebugWindowTabs
                 if (selectedRoute != Vector2.Zero)
                 {
                     GatheringRouteExportUI.DrawExportSelectedButton(selectedZone, selectedRoute);
+                }
+
+                if (ImGui.Button("Add missing routes"))
+                {
+                    try
+                    {
+                        var createdRoutes = GatheringRouteLoader.CreateMissingRoutes();
+
+                        if (createdRoutes.Count > 0)
+                        {
+                            PluginLog.Information($"Successfully created {createdRoutes.Count} new route files:");
+                            foreach (var route in createdRoutes)
+                            {
+                                PluginLog.Information($"  - {route}");
+                            }
+                        }
+                        else
+                        {
+                            PluginLog.Information("No new routes needed - all routes already exist");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginLog.Error($"Failed to create missing routes: {ex.Message}");
+                    }
+                }
+
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Scan CosmicHelper missions and create YAML files for any missing gathering routes (MIN/BTN only)");
                 }
             }
 
@@ -305,6 +337,39 @@ namespace ICE.Ui.DebugWindowTabs
                             }
 
                             ImGui.PopID();
+                        }
+                    }
+
+                    ImGui.SameLine(0, 5);
+                    using (var nodeSelector = ImRaii.Child("Specific Node Viewer", new Vector2(200, 200), true))
+                    {
+                        if (nodeSelector.Success)
+                        {
+                            foreach (var x in Svc.Objects.Where(x => x.ObjectKind == ObjectKind.GatheringPoint && Player.DistanceTo(x.Position) <= maxDistance)
+                             .OrderBy(x => Player.DistanceTo(x.Position)))
+                            {
+                                var localPlayer = Svc.Objects.LocalPlayer;
+                                if (localPlayer != null && localPlayer.TargetObject != null)
+                                {
+                                    if (localPlayer.TargetObject.BaseId == x.BaseId && localPlayer.TargetObject.ObjectKind == ObjectKind.GatheringPoint)
+                                    {
+                                        ImGui.Text($"ID: {x.BaseId}");
+                                        ImGui.Text($"Position: {x.Position}");
+                                        if (ImGui.Button($"Add"))
+                                        {
+                                            routeList.Add(new Resources.GatheringRoutes.GathNodeInfo()
+                                            {
+                                                NodeId = x.BaseId,
+                                                Position = x.Position,
+                                                LandZone = Player.Position,
+                                            });
+
+                                            selectedNode = x.BaseId;
+                                            IceLogging.Info($"Added node {x.BaseId} to route");
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 

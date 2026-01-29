@@ -38,6 +38,8 @@ public partial class Config
     public bool RemoveAfterGold { get; set; } = false;
     public bool ShowExtraMissionInfo { get; set; } = true;
     public bool Artisan_RaphaelForce { get; set; } = true;
+    public bool Artisan_Raphael_ARank { get; set; } = true;
+    public bool Artisan_Raphael_ExRank { get; set; } = true;
     public bool Artisan_RaphaelExpert { get; set; } = false;
     public Dictionary<uint, uint> ScoreKeeper { get; set; } = new();
 

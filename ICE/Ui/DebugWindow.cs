@@ -1,5 +1,6 @@
 ﻿using ICE.Ui.DebugWindowTabs;
 using ICE.Ui.MainUi.HelpFolder;
+using System.Collections.Generic;
 
 namespace ICE.Ui;
 
@@ -22,48 +23,49 @@ internal class DebugWindow : Window
         P.windowSystem.RemoveWindow(this);
     }
 
-    private string[] DebugTypes = 
-    [
+    private readonly Dictionary<string, Action> DebugViews = new()
+    {
         // HUD Elements
-        "Hud: Moon Main",
-        "Hud: Mission",
-        "Hud: Mission Info",
-        "Hud: Wheel of fortune!",
-        "Hud: Moon Recipe",
-        "Hud: Gather Collectable",
-        "Hud: Item Exchange",
-    
+        ["Hud: Moon Main"] = () => Hud_MainMoon.Draw(),
+        ["Hud: Mission"] = () => Hud_Mission.Draw(),
+        ["Hud: Mission Info"] = () => Hud_MissionInfo.Draw(),
+        ["Hud: Wheel of fortune!"] = () => Hud_WheelofFortune.Draw(),
+        ["Hud: Moon Recipe"] = () => Hud_MoonRecipe.Draw(),
+        ["Hud: Gather Collectable"] = () => Hud_CollectableGathering.Draw(),
+        ["Hud: Item Exchange"] = () => Hud_ItemExchange.Draw(),
+
         // Table Elements
-        "Table: Mission Info",
-        "Table: Item List",
-        "Table: Gathering Missions",
-        "Table: Special Missions",
-        "Table: Mission Text",
-        "Table: Recipies",
-    
+        ["Table: Mission Info"] = () => Table_MissionInfo.Draw(),
+        ["Table: Item List"] = () => Table_CustomItems.Draw(),
+        ["Table: Gathering Missions"] = () => Table_GatheringInfo.Draw(),
+        ["Table: Special Missions"] = () => Table_TimeWeather.Draw(),
+        ["Table: Mission Text"] = () => Table_MissionText.Draw(),
+        ["Table: Recipies"] = () => Table_MoonRecipies.Draw(),
+
         // UI Elements
-        "Ui: Fishing Hole Editor",
-        "Ui: Fishing Preset Editor",
-        "Ui: Gather Editor",
-        "Ui: Log Viewer",
-    
+        ["Ui: Fishing Hole Editor"] = () => Ui_FishingEditor.Draw(),
+        ["Ui: Fishing Preset Editor"] = () => Ui_FishingMissionEditor.Draw(),
+        ["Ui: Gather Editor"] = () => Ui_GatherRoute_Editor.Draw(),
+        ["Ui: Log Viewer"] = () => helpSelect_Logs.Draw_Debug(),
+
         // Non-labeled Elements
-        "Player Info",
-        "Test Buttons",
-        "IPC Testing",
-        "Map Test",
-        "Navmesh Testing",
-        "Relic Info",
-        "TaskManager Testing",
-        "NPC Box Viewer",
+        ["Player Info"] = () => Ui_PlayerInfo.Draw(),
+        ["Test Buttons"] = () => Ui_TestButtons.Draw(),
+        ["IPC Testing"] = () => Ui_IPCTesting.Draw(),
+        ["Map Test"] = () => Ui_MapTesting.Draw(),
+        ["Navmesh Testing"] = () => Ui_NavmeshTesting.Draw(),
+        ["Relic Info"] = () => Ui_RelicInfo.Draw(),
+        ["TaskManager Testing"] = () => Ui_TaskManagerInfo.Draw(),
+        ["NPC Box Viewer"] = () => Ui_NpcViewer.Draw(),
 
         // Sheet Viewer Info
-        "Sheet: Mission Rewards",
-        "Table: Leveling Missions",
-        "Table: Mission Select"
-    ];
+        ["Sheet: Mission Rewards"] = () => Sheet_MissionRewards.Draw(),
+        ["Table: Leveling Missions"] = () => Table_LevelingMissions.Draw(),
+        ["Table: Mission Select"] = () => Table_MissionSelect.Draw(),
+        ["Oizyr Map Stuff"] = () => Ui_OyzinMap.Draw(),
+    };
 
-    int selectedDebugIndex = 0; // Keeping which tab I'm selecting here. Just persistant stuff.
+    private string selectedDebugView = "Hud: Moon Main"; // Store the name instead of index
 
     public override unsafe void Draw()
     {
@@ -72,16 +74,16 @@ internal class DebugWindow : Window
         float rightPanelWidth = ImGui.GetContentRegionAvail().X - leftPanelWidth - spacing;
         float childHeight = ImGui.GetContentRegionAvail().Y;
 
-        if (ImGui.BeginChild("DebugSelector", new System.Numerics.Vector2(leftPanelWidth, childHeight), true))
+        if (ImGui.BeginChild("DebugSelector", new Vector2(leftPanelWidth, childHeight), true))
         {
-            for (int i = 0; i < DebugTypes.Length; i++)
+            foreach (var viewName in DebugViews.Keys)
             {
-                bool isSelected = (selectedDebugIndex == i);
-                string label = isSelected ? $"→ {DebugTypes[i]}" : $"   {DebugTypes[i]}";
+                bool isSelected = (selectedDebugView == viewName);
+                string label = isSelected ? $"→ {viewName}" : $"   {viewName}";
 
                 if (ImGui.Selectable(label, isSelected))
                 {
-                    selectedDebugIndex = i;
+                    selectedDebugView = viewName;
                 }
             }
         }
@@ -91,46 +93,13 @@ internal class DebugWindow : Window
 
         if (ImGui.BeginChild("DebugContent", new System.Numerics.Vector2(rightPanelWidth, childHeight), true))
         {
-            switch (selectedDebugIndex)
+            if (DebugViews.TryGetValue(selectedDebugView, out var drawAction))
             {
-                // HUD Elements (0-5)
-                case 0: Hud_MainMoon.Draw(); break;
-                case 1: Hud_Mission.Draw(); break;
-                case 2: Hud_MissionInfo.Draw(); break;
-                case 3: Hud_WheelofFortune.Draw(); break;
-                case 4: Hud_MoonRecipe.Draw(); break;
-                case 5: Hud_CollectableGathering.Draw(); break;
-                case 6: Hud_ItemExchange.Draw(); break;
-
-                // Table Elements (6-11)
-                case 7: Table_MissionInfo.Draw(); break;
-                case 8: Table_CustomItems.Draw(); break;
-                case 9: Table_GatheringInfo.Draw(); break;
-                case 10: Table_TimeWeather.Draw(); break;
-                case 11: Table_MissionText.Draw(); break;
-                case 12: Table_MoonRecipies.Draw(); break;
-
-                // UI Elements (12-13)
-                case 13: Ui_FishingEditor.Draw(); break;
-                case 14: Ui_FishingMissionEditor.Draw(); break;
-                case 15: Ui_GatherRoute_Editor.Draw(); break;
-                case 16: helpSelect_Logs.Draw_Debug(); break;
-
-                // Non-labeled Elements (14-21)
-                case 17: Ui_PlayerInfo.Draw(); break;
-                case 18: Ui_TestButtons.Draw(); break;
-                case 19: Ui_IPCTesting.Draw(); break;
-                case 20: Ui_MapTesting.Draw(); break;
-                case 21: Ui_NavmeshTesting.Draw(); break;
-                case 22: Ui_RelicInfo.Draw(); break;
-                case 23: Ui_TaskManagerInfo.Draw(); break;
-                case 24: Ui_NpcViewer.Draw(); break;
-
-                case 25: Sheet_MissionRewards.Draw(); break;
-                case 26: Table_LevelingMissions.Draw(); break;
-                case 27: Table_MissionSelect.Draw(); break;
-
-                default: ImGui.Text("Unknown Debug View"); break;
+                drawAction();
+            }
+            else
+            {
+                ImGui.Text("Unknown Debug View");
             }
         }
         ImGui.EndChild();

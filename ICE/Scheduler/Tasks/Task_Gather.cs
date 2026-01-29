@@ -83,7 +83,7 @@ namespace ICE.Scheduler.Tasks
                             int boonChance = testItem.BoonChance;
                             int playerGp = PlayerHelper.GetGp();
 
-                            if (UseGatherAction(configId, gatherChance, boonChance, missingDur, playerGp))
+                            if (UseGatherAction(configId, gatherChance, boonChance, gather.CurrentIntegrity, gather.TotalIntegrity, playerGp))
                             {
                                 return false;
                             }
@@ -347,9 +347,11 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        public static unsafe bool UseGatherAction(int profileId, int gatherChance, int? boonChance, bool missingDur, int availableGp)
+        public static unsafe bool UseGatherAction(int profileId, int gatherChance, int? boonChance, int currentDur, int maxDur, int availableGp)
         {
             C.GatherProfiles.TryGetValue(profileId, out var gatherProfile);
+
+            bool missingDur = currentDur != maxDur;
 
             if (C.XPLeveling_Mode)
             {
@@ -490,6 +492,12 @@ namespace ICE.Scheduler.Tasks
 
                     return true;
                 }
+            }
+
+            if (PlayerHelper.HasStatusId(4437) && currentDur <= 2)
+            {
+                ActionManager.Instance()->UseAction(ActionType.GeneralAction, 27);
+                return true;
             }
 
             return false;

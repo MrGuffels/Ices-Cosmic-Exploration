@@ -130,7 +130,7 @@ namespace ICE.Ui.DebugWindowTabs
                         if (item.ItemID != 0)
                         {
                             bool missingDur = gather.CurrentIntegrity < gather.TotalIntegrity;
-                            bool useAction = Task_Gather.UseGatherAction(0, item.GatherChance, item.BoonChance, missingDur, PlayerHelper.GetGp());
+                            bool useAction = Task_Gather.UseGatherAction(0, item.GatherChance, item.BoonChance, gather.CurrentIntegrity, gather.TotalIntegrity, PlayerHelper.GetGp());
                             IceLogging.Debug($"Used action: {useAction}");
                             break;
                         }

@@ -712,6 +712,12 @@ namespace ICE.Ui.MainUi.ModeSelect
                             selectedMission = Id;
                             Utils.SetGatheringRing(missionInfo.TerritoryId, (int)missionInfo.MapPosition.X, (int)missionInfo.MapPosition.Y, missionInfo.Radius, missionInfo.Name);
                         }
+#if DEBUG
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.SetTooltip($"X: {missionInfo.MapPosition.X} Y: {missionInfo.MapPosition.Y}");
+                        }
+#endif
                     }
                     if (GatheringUtil.CriticalLocations.TryGetValue(Id, out var criticalLoc))
                     {

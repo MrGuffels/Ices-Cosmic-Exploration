@@ -231,4 +231,109 @@ public static class GatheringRouteLoader
 
         return ("Unknown", "BTN"); // Fallback
     }
+
+    public static List<string> CreateMissingRoutes(string? exportPath = null)
+    {
+        var routes = LoadAllRoutes();
+        var createdRoutes = new List<string>();
+
+        // Get base export path
+        string basePath = exportPath ?? C.CustomRoutePath ?? GetDefaultExportPath();
+
+        // Iterate through all missions in the sheet
+        foreach (var (missionId, missionInfo) in CosmicHelper.SheetMissionDict)
+        {
+            // Check if job is MIN (16) or BTN (17)
+            if (!missionInfo.Jobs.Contains(16) && !missionInfo.Jobs.Contains(17))
+                continue;
+
+            var territoryId = missionInfo.TerritoryId;
+            var mapFlag = missionInfo.MapPosition;
+
+            // Determine job type
+            string jobType = missionInfo.Jobs.Contains(17) ? "BTN" : "MIN";
+            uint jobId = missionInfo.Jobs.Contains(17) ? 17u : 16u;
+
+            // Check if this route already exists
+            bool routeExists = routes.ContainsKey(territoryId) &&
+                              routes[territoryId].ContainsKey(mapFlag);
+
+            if (routeExists)
+            {
+                PluginLog.Debug($"Route already exists: Zone {territoryId}, Flag ({mapFlag.X}, {mapFlag.Y}), Job {jobType}");
+                continue;
+            }
+
+            // Route doesn't exist, create it
+            try
+            {
+                // Get zone name from territory lookup or use fallback
+                string zoneName = GetZoneName(territoryId);
+
+                var newRoute = new GatheringRouteFile
+                {
+                    ZoneId = territoryId,
+                    ZoneName = zoneName,
+                    Job = jobType,
+                    Flag = mapFlag,
+                    Author = string.IsNullOrWhiteSpace(C.AuthorName) ? "Ice" : C.AuthorName,
+                    DateModified = DateTime.UtcNow,
+                    Nodes = new List<GathNodeInfo>() // Empty list to be populated later
+                };
+
+                // Create zone subdirectory
+                string zoneFolderName = SanitizeFolderName($"{territoryId}_{zoneName}");
+                string outputPath = Path.Combine(basePath, zoneFolderName);
+
+                string fileName = $"{jobType}_Flag_{(int)mapFlag.X}_{(int)mapFlag.Y}.yaml";
+                string fullPath = Path.Combine(outputPath, fileName);
+
+                // Create directory if it doesn't exist
+                Directory.CreateDirectory(outputPath);
+
+                // Serialize and write file
+                string yaml = Serializer.Serialize(newRoute);
+                File.WriteAllText(fullPath, yaml);
+
+                createdRoutes.Add(fullPath);
+                PluginLog.Information($"Created new route: {fullPath}");
+
+                // Add to cache so it's available immediately
+                if (!routes.ContainsKey(territoryId))
+                    routes[territoryId] = new Dictionary<Vector2, List<GathNodeInfo>>();
+
+                routes[territoryId][mapFlag] = newRoute.Nodes;
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error($"Failed to create route for Zone {territoryId}, Flag ({mapFlag.X}, {mapFlag.Y}): {ex.Message}");
+            }
+        }
+
+        // Clear cache to force reload with new files on next load
+        if (createdRoutes.Count > 0)
+        {
+            ClearCache();
+            PluginLog.Information($"Created {createdRoutes.Count} new gathering routes");
+        }
+        else
+        {
+            PluginLog.Information("No missing routes found - all routes already exist");
+        }
+
+        return createdRoutes;
+    }
+
+    private static string GetZoneName(uint territoryId)
+    {
+        // You can expand this with a proper territory lookup if you have access to game sheets
+        // For now, using your existing mappings
+        return territoryId switch
+        {
+            1237 => "Sinus Ardorum",
+            1291 => "Phaenna",
+            1310 => "Oizys",
+            _ => $"Zone_{territoryId}" // Fallback for unknown zones
+        };
+    }
 }

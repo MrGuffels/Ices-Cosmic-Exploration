@@ -1,0 +1,87 @@
+zone_id: 1310
+zone_name: Oizys
+job: BTN
+flag:
+  x: 24
+  y: 400
+author: Puni.sh Community
+date_modified: 2026-01-28T22:00:51.6573154Z
+nodes:
+- node_id: 35635
+  position:
+    x: -0.4051638
+    y: 116.6477
+    z: 447.175
+  land_zone:
+    x: 0.5238652
+    y: 116.12923
+    z: 445.7658
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35636
+  position:
+    x: -7.809174
+    y: 117.6188
+    z: 445.6705
+  land_zone:
+    x: -7.960225
+    y: 116.42583
+    z: 443.70258
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35634
+  position:
+    x: -22.62179
+    y: 111.7707
+    z: 396.3598
+  land_zone:
+    x: -21.944695
+    y: 111.210434
+    z: 397.79132
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35633
+  position:
+    x: -21.77573
+    y: 111.1589
+    z: 392.0537
+  land_zone:
+    x: -20.040752
+    y: 110.68348
+    z: 393.09576
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35631
+  position:
+    x: 56.96681
+    y: 98.73218
+    z: 389.9062
+  land_zone:
+    x: 55.15875
+    y: 98.06861
+    z: 390.19608
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35632
+  position:
+    x: 58.13115
+    y: 99.27303
+    z: 392.4551
+  land_zone:
+    x: 56.976215
+    y: 98.67184
+    z: 393.72647
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
