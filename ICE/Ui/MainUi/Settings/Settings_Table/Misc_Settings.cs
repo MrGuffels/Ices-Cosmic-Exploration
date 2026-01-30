@@ -502,9 +502,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.Dummy(new Vector2(0, 5));
 
             bool force_Raphael = C.Artisan_RaphaelForce;
-            bool force_Expert = C.Artisan_RaphaelExpert;
-            bool force_MasterA = C.Artisan_Raphael_ARank;
-            bool force_MasterEx = C.Artisan_Raphael_ExRank;
+            bool expertRaphael = C.Artisan_RaphaelMaster;
 
             if (ImGui.Checkbox("Enforce Raphael Solver", ref force_Raphael))
             {
@@ -512,45 +510,34 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
             ImGui.SameLine();
-            ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
-                                    "Will force all recipes while the plugin is running to use the raphael solver\n" +
-                                    "This by default doesn't include the expert crafts, due to their nature");
-            ImGui.NewLine();
+            ImGuiEx.Icon(FontAwesomeIcon.QuestionCircle);
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text($"Will force all crafts while the plugin is running to use the raphael solver.");
+                ImGui.Text($"This excludes the expert solver crafts due to their nature of how they function");
+                ImGui.EndTooltip();
+            }
+            ImGui.Dummy(Vector2.Zero);
             if (force_Raphael)
             {
-                if (ImGui.Checkbox("Enforce Raphael Solver on Master A Ranks", ref force_MasterA))
+                if (ImGui.Checkbox("Use Raphael Solver on Expert Recipe", ref expertRaphael))
                 {
-                    C.Artisan_Raphael_ARank = force_MasterA;
+                    C.Artisan_RaphaelMaster = expertRaphael;
                     C.Save();
                 }
                 ImGui.SameLine();
-                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
-                    "Will force A ranks that have are considered \"Master Recipies\" to use the raph solver\n" +
-                    "Generally better for most A ranks since they're not true master recipies imo. (Saves more time)");
-                ImGui.Dummy(Vector2.Zero);
-
-                if (ImGui.Checkbox("Enforce Raphael Solver on Master Ex Ranks", ref force_MasterEx))
+                ImGuiEx.Icon(FontAwesomeIcon.QuestionCircle);
+                if (ImGui.IsItemHovered())
                 {
-                    C.Artisan_Raphael_ExRank = force_MasterEx;
-                    C.Save();
+                    ImGui.BeginTooltip();
+                    ImGui.Text($"Will force crafts that would normally use the Expert Solver to instead use Raphael.");
+                    ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
+                    ImGui.SameLine();
+                    ImGui.Text($"This is the icon within the recipe details btw");
+                    ImGui.Text($"I would not recommend this on Oizys, it's not perfect and has been causing a lot of issues for peeps.");
+                    ImGui.EndTooltip();
                 }
-                ImGui.SameLine();
-                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
-                    "Will force EX ranks that have are considered \"Master Recipies\" to use the raph solver\n" +
-                    "Generally better for most A ranks since they're not true master recipies imo. (Saves more time)");
-                ImGui.Dummy(Vector2.Zero);
-
-                if (ImGui.Checkbox("Enforce Raphael Solver on EX+ Experts", ref force_Expert))
-                {
-                    C.Artisan_RaphaelExpert = force_Expert;
-                    C.Save();
-                }
-                ImGui.SameLine();
-                ImGuiEx.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
-                                        "Will force expert crafts in the EX+ Missions to use the raphael solver.\n" +
-                                        "I personally do not recommend this on, but there are some you can get away with\n" +
-                                        "And when we get to overlevel the moon, the option is there");
-                ImGui.Dummy(Vector2.Zero);
             }
         }
 

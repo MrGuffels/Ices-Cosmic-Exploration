@@ -3,11 +3,13 @@ using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
+using ICE.Resources.GatheringRoutes;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Pictomancy;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using static FFXIVClientStructs.FFXIV.Client.UI.AddonRelicNoteBook;
 using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
 
@@ -27,7 +29,7 @@ namespace ICE.Ui.DebugWindowTabs
 
         private static FileDialogManager fileDialogManager = new FileDialogManager();
 
-        public static unsafe void Draw()
+        public static unsafe async Task Draw()
         {
             var routes = GatheringRouteLoader.LoadAllRoutes();
 
@@ -379,6 +381,11 @@ namespace ICE.Ui.DebugWindowTabs
                         if (!nodeEditorUi.Success)
                             return;
 
+                        if (ImGui.Button("Generate Path Nodes"))
+                        {
+                            UpdateCache(routeList);
+                        }
+
                         var route = routeList.Where(x => x.NodeId == selectedNode).FirstOrDefault();
                         if (route != null)
                         {
@@ -461,42 +468,16 @@ namespace ICE.Ui.DebugWindowTabs
                             }
                         }
                     }
+
+                    if (showRouteBetween)
+                    {
+                        PictoManager.DrawGatherNodes(routeList);
+
+                    }
                 }
             }
 
             fileDialogManager.Draw();
-
-            using (var drawing = PictoService.Draw(hints: Utils.GetPictoHints()))
-            {
-                if (drawing == null)
-                    return;
-
-                if (showRouteBetween && AllNodes.Count > 1)
-                {
-                    for (int i = 0; i < AllNodes.Count; i++)
-                    {
-                        var lineColor = C.PictoColor_Circle;
-                        var currentNode = AllNodes[i];
-
-                        // Draw line from previous node to current (skip only the first node)
-                        if (i != 0)
-                        {
-                            var prevNode = AllNodes[i-1];
-                            drawing.AddLine(prevNode.position, currentNode.position, 0, lineColor);
-                        }
-
-                        // If this is the last node, draw closing line back to first
-                        if (i == AllNodes.Count - 1)
-                        {
-                            var firstNode = AllNodes[0];
-                            drawing.AddLine(currentNode.position, firstNode.position, 0, lineColor);
-                        }
-
-                        drawing.AddText(new Vector3(currentNode.position.X, currentNode.position.Y + 1, currentNode.position.Z), C.PictoColor_Dot, $"Node: {currentNode.nodeId}", 1);
-                        drawing.AddDot(currentNode.position, 5, C.PictoColor_Dot);
-                    }
-                }
-            }
         }
 
         private static uint GetJobIdForFlag(uint territoryId, Vector2 map)
@@ -664,6 +645,68 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 var configDir = Svc.PluginInterface.GetPluginConfigDirectory();
                 return Path.Combine(configDir, "ExportedRoutes");
+            }
+        }
+
+        private static List<Vector3>? cachedWaypointPath = null;
+        private static async void UpdateCache(List<GathNodeInfo> routeList)
+        {
+            cachedWaypointPath = await GenerateWaypointPathAsync(routeList);
+        }
+
+        public static async Task<List<Vector3>?> GenerateWaypointPathAsync(List<GathNodeInfo> routeItem)
+        {
+            try
+            {
+                var waypoints = new List<Vector3>();
+
+                // Add player position as starting point
+                if (Player.Available)
+                {
+                    waypoints.Add(Player.Position);
+                }
+                else
+                {
+                    IceLogging.Error("Player not available for path generation");
+                    return null;
+                }
+
+                // Generate path through all land zones
+                for (int i = 0; i < routeItem.Count; i++)
+                {
+                    var currentLandZone = routeItem[i].LandZone;
+
+                    IceLogging.Info($"Generating path to node {i + 1}/{routeItem.Count}");
+
+                    // Get path from previous position to current land zone
+                    Vector3 startPos = waypoints[^1];
+
+                    var pathToNode = await Task.Run(() => P.Navmesh.Pathfind(startPos, currentLandZone, false));
+
+                    if (pathToNode != null && pathToNode.Count > 0)
+                    {
+                        // Skip first point if it's too close to the last waypoint
+                        int startIndex = Vector3.Distance(waypoints[^1], pathToNode[0]) < 0.5f ? 1 : 0;
+
+                        for (int j = startIndex; j < pathToNode.Count; j++)
+                        {
+                            waypoints.Add(pathToNode[j]);
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Warning($"Pathfinding failed for node {i}, using direct line");
+                        waypoints.Add(currentLandZone);
+                    }
+                }
+
+                IceLogging.Info($"Path generation complete! Generated {waypoints.Count} waypoints");
+                return waypoints;
+            }
+            catch (Exception ex)
+            {
+                IceLogging.Error($"Error generating waypoint path: {ex.Message}");
+                return null;
             }
         }
     }

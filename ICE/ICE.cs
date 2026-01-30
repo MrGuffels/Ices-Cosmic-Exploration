@@ -110,6 +110,7 @@ public sealed partial class ICE : IDalamudPlugin
         EzCmd.Add("/IceCosmic", OnCommand);
         Init();
         Svc.Framework.Update += Tick;
+        Svc.PluginInterface.UiBuilder.Draw += OnDraw;
 
         TaskManager = new(new(showDebug: false));
         Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
@@ -161,9 +162,16 @@ public sealed partial class ICE : IDalamudPlugin
         YesAlreadyManager.Tick();
     }
 
+    private void OnDraw()
+    {
+        if (PlayerHelper.IsInCosmicZone())
+            PictoManager.DrawPicto();
+    }
+
     public void Dispose()
     {
         GenericHelpers.Safe(() => Svc.Framework.Update -= Tick);
+        GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= OnDraw);
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw);
         GenericHelpers.Safe(TextAdvancedManager.UnlockTA);
         GenericHelpers.Safe(YesAlreadyManager.Unlock);

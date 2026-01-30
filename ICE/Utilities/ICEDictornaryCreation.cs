@@ -122,6 +122,11 @@ public sealed partial class ICE
                 _x = -573;
                 _y = 3;
             }
+            else if (keyId == 1296)
+            {
+                _x = -514;
+                _y = 232;
+            }
 
             int radius = marker.Unknown3;
 

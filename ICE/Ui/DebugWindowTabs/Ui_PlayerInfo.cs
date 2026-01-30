@@ -90,6 +90,11 @@ namespace ICE.Ui.DebugWindowTabs
             ClassInfo();
 
             DroidCheck();
+
+            if (ImGui.CollapsingHeader("Test Picto"))
+            {
+                PictoManager.DrawPicto();
+            }
         }
 
         private static unsafe void ClassInfo()

@@ -70,13 +70,7 @@ namespace ICE.Scheduler.Tasks
             var recipeId = item.Value.RecipeId;
             var itemId = item.Value.ItemId;
             var expert = item.Value.ExpertCraft;
-            bool useRaphael = rank switch
-            {
-                6 => C.Artisan_RaphaelExpert,
-                5 => C.Artisan_Raphael_ExRank,
-                4 => C.Artisan_Raphael_ARank,
-                _ => false
-            };
+            var expertRaph = C.Artisan_RaphaelMaster;
 
 
             if (EzThrottler.Throttle("Waiting X Amount of seconds for artisan", delay))
@@ -98,7 +92,7 @@ namespace ICE.Scheduler.Tasks
                     }
                     else if (expert)
                     {
-                        if (useRaphael)
+                        if (expertRaph)
                         {
                             P.Artisan.ChangeSolver(recipeId, "Raphael Recipe Solver", true);
                         }

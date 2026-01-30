@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
+using Pictomancy;
 using SharpDX.Direct2D1.Effects;
 using System;
 using System.Collections.Generic;
@@ -78,6 +79,11 @@ namespace ICE.Ui.DebugWindowTabs
                     if (ImGui.Button("Move to"))
                     {
                         P.Navmesh.PathfindAndMoveTo(marker.Position, false);
+                    }
+
+                    if (marker.IconId == 63989)
+                    {
+                        PictoManager.DrawArrow(marker.Position, 0x80FF0000, 0xFFFFFFFF);
                     }
                 }
 
