@@ -108,24 +108,23 @@ public sealed partial class ICE
             }
             // TODO: Make this set the correct territoryId once new planets are added and we figure out where it is.
 
+            Vector2 mapFlag = new((int)marker.Unknown1 - 1024, (int)(marker.Unknown2 - 1024));
+
             int _x = marker.Unknown1 - 1024;
             int _y = marker.Unknown2 - 1024;
 
             // This is really specific ONLY cause there are 2 rings that overlap... and this can't happen
             if (keyId == 1272)
             {
-                _x = -340;
-                _y = 870;
+                mapFlag = new(-340, 870);
             }
             else if (keyId == 1264)
             {
-                _x = -573;
-                _y = 3;
+                mapFlag = new(-573, 3);
             }
             else if (keyId == 1296)
             {
-                _x = -514;
-                _y = 232;
+                mapFlag = new(-514, 232);
             }
 
             int radius = marker.Unknown3;
@@ -197,6 +196,8 @@ public sealed partial class ICE
                     if (keyId < 535)
                         itemAmount = 3;
                     else if (keyId < 1039)
+                        itemAmount = 2;
+                    else if (keyId < 1370)
                         itemAmount = 2;
 
                     var missionRecipeRow = RecipeSheet?.Where(e => e.RowId == wksRecipeRow.Recipe[0].RowId).FirstOrDefault();
@@ -501,7 +502,7 @@ public sealed partial class ICE
                     RewardItem = rewardItemId,
                     RewardItemAmount = rewardItemAmount,
 
-                    MapPosition = new Vector2(_x, _y),
+                    MapPosition = mapFlag,
                     Radius = radius,
                     TerritoryId = territoryId,
                     MarkerId = marker.RowId,

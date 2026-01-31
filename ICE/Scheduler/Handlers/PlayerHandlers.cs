@@ -273,7 +273,7 @@ internal static unsafe class PlayerHandlers
          && IsMoving())
             UseSprint();
 
-        if ((!PlayerHelper.IsInCosmicZone() || !PlayerHelper.UsingSupportedJob()) && SchedulerMain.State != IceState.Idle)
+        if ((!PlayerHelper.IsInCosmicZone()) && SchedulerMain.State != IceState.Idle)
         {
             DisablePlugin();
         }

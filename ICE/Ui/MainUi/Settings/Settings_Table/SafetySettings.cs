@@ -84,6 +84,15 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 "If you get stuck while navmesh moving, this will allow you to jump after a certain time has passed (3s currently)\n" +
                 "NOTE: THIS IS EXPERIMENTAL. IT WORKS, BUT IT STILL LOOKS SUS. IF YOU SEE A POINT AND YOUR STUCK, REPORT IT PLEASE\n" +
                 "through the logs function, and give info about it so we can fix it.");
+            ImGui.Dummy(Vector2.Zero);
+
+            int delayRelic = C.DelayPostRelic;
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderInt("Delay Post Relic Turnin", ref delayRelic, 0, 5000))
+            {
+                C.DelayPostRelic = delayRelic;
+                C.SaveDebounced();
+            }
         }
     }
 }

@@ -471,8 +471,7 @@ namespace ICE.Ui.DebugWindowTabs
 
                     if (showRouteBetween)
                     {
-                        PictoManager.DrawGatherNodes(routeList);
-
+                        PictoManager.DrawGatherNodes(routeList, cachedWaypointPath);
                     }
                 }
             }
@@ -697,6 +696,33 @@ namespace ICE.Ui.DebugWindowTabs
                     {
                         IceLogging.Warning($"Pathfinding failed for node {i}, using direct line");
                         waypoints.Add(currentLandZone);
+                    }
+                }
+
+                // Path back to the first node to complete the loop
+                if (routeItem.Count > 0)
+                {
+                    IceLogging.Info("Generating path back to first node to complete loop");
+
+                    Vector3 lastPos = waypoints[^1];
+                    Vector3 firstLandZone = routeItem[0].LandZone;
+
+                    var pathBackToStart = await Task.Run(() => P.Navmesh.Pathfind(lastPos, firstLandZone, false));
+
+                    if (pathBackToStart != null && pathBackToStart.Count > 0)
+                    {
+                        // Skip first point if it's too close to the last waypoint
+                        int startIndex = Vector3.Distance(waypoints[^1], pathBackToStart[0]) < 0.5f ? 1 : 0;
+
+                        for (int j = startIndex; j < pathBackToStart.Count; j++)
+                        {
+                            waypoints.Add(pathBackToStart[j]);
+                        }
+                    }
+                    else
+                    {
+                        IceLogging.Warning("Pathfinding failed for loop closure, using direct line");
+                        waypoints.Add(firstLandZone);
                     }
                 }
 

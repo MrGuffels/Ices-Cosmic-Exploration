@@ -14,6 +14,39 @@ namespace ICE.Ui.MainUi.ModeSelect
 {
     internal class modeSelect_Standard
     {
+        private static readonly Dictionary<string, uint> BattleJobs = new()
+        {
+            // Tanks
+            { "Paladin", 19 },
+            { "Warrior", 21 },
+            { "Dark Knight", 32 },
+            { "Gunbreaker", 37 },
+    
+            // Healers
+            { "White Mage", 24 },
+            { "Scholar", 28 },
+            { "Astrologian", 33 },
+            { "Sage", 40 },
+    
+            // Melee DPS
+            { "Monk", 20 },
+            { "Dragoon", 22 },
+            { "Ninja", 30 },
+            { "Samurai", 34 },
+            { "Reaper", 39 },
+            { "Viper", 41 },
+    
+            // Physical Ranged DPS
+            { "Bard", 23 },
+            { "Machinist", 31 },
+            { "Dancer", 38 },
+    
+            // Magical Ranged DPS
+            { "Black Mage", 25 },
+            { "Summoner", 27 },
+            { "Red Mage", 35 },
+            { "Pictomancer", 42 }
+        };
         private static string newListName = "";
 
         public static void Draw()
@@ -172,7 +205,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
 
                 bool unsupportedArtisan = xpLeveling && !P.Artisan.UpdatedArtisan() && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
-                bool unsupportedMoon = PlayerHelper.IsInOizys() && xpLeveling && !P.Artisan.UpdatedArtisan();
+                bool unsupportedMoon = PlayerHelper.IsInOizys() && xpLeveling;
 
                 using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob || unsupportedArtisan || unsupportedMoon))
                 {
@@ -254,14 +287,23 @@ namespace ICE.Ui.MainUi.ModeSelect
                 }
 
                 bool showPlaylistExpanded = false;
-                bool standard = !(C.XPRelicGrind && C.ShowCompletionWindow);
+                bool standard = !(C.XPRelicGrind || C.XPLeveling_Mode || C.ShowCompletionWindow);
                 if (standard)
                 {
                     ImGui.TableNextColumn();
                     showPlaylistExpanded = modeSelect_Tools.DrawCompactCategoryHeader("Mission Presets", FontAwesomeIcon.PlayCircle);
                 }
 
-                bool showNextColumn = tableSettingExpanded || missionSettingExpanded || (relicGrindExpanded && C.XPRelicGrind) || (completionExpanded && C.ShowCompletionWindow) || showPlaylistExpanded;
+                bool showJobSwapExpanded = false;
+                bool relicJobSwap = C.TurninRelic;
+
+                if (relicJobSwap)
+                {
+                    ImGui.TableNextColumn();
+                    showJobSwapExpanded = modeSelect_Tools.DrawCompactCategoryHeader("Relic Job Swap", FontAwesomeIcon.Hammer);
+                }
+
+                bool showNextColumn = tableSettingExpanded || missionSettingExpanded || (relicGrindExpanded && C.XPRelicGrind) || (completionExpanded && C.ShowCompletionWindow) || showPlaylistExpanded || showJobSwapExpanded;
 
                 if (showNextColumn)
                 {
@@ -278,197 +320,243 @@ namespace ICE.Ui.MainUi.ModeSelect
                         Settings_TableColumns.GeneralMissionSettings();
                     }
 
-                    if (C.XPRelicGrind && relicGrindExpanded)
+                    if (C.XPRelicGrind)
                     {
                         ImGui.TableNextColumn();
-
-                        bool relicTurnin = C.TurninRelic;
-                        if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_RelicGrind", ref relicTurnin))
+                        if (relicGrindExpanded)
                         {
-                            C.TurninRelic = relicTurnin;
-                            C.Save();
-                        }
-                        ImGui.SameLine();
-                        ImGui.TextDisabled("?");
-                        if (ImGui.IsItemHovered())
-                        {
-                            ImGui.SetTooltip("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
-                                             "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
-                                             "2: You must not have the tool eqipped for this to run full auto. \n" +
-                                             "\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n" +
-                                             "3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
-                                             "4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
-                                             "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
-                        }
-
-                        ImGui.Separator();
-
-                        bool EnableRelicXp = C.XPRelicGrind;
-                        if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))
-                        {
-                            C.XPRelicGrind = EnableRelicXp;
-                            C.Save();
-                        }
-                        ImGui.SameLine();
-                        ImGui.TextDisabled("?");
-                        if (ImGui.IsItemHovered())
-                        {
-                            ImGui.SetTooltip("Please note. This will ONLY grind for relic Exp under the basic mission tab. \n" +
-                                               "This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions");
-                        }
-                        if (EnableRelicXp)
-                        {
-                            bool OnlySelected = C.XPRelicOnlyEnabled;
-                            if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
+                            bool relicTurnin = C.TurninRelic;
+                            if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_RelicGrind", ref relicTurnin))
                             {
-                                C.XPRelicOnlyEnabled = OnlySelected;
+                                C.TurninRelic = relicTurnin;
                                 C.Save();
                             }
-                            if (C.ShowManualMode)
+                            ImGui.SameLine();
+                            ImGui.TextDisabled("?");
+                            if (ImGui.IsItemHovered())
                             {
-                                bool IgnoreManual = C.XPRelicIgnoreManual;
-                                if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
+                                ImGui.SetTooltip("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
+                                                 "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
+                                                 "2: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
+                                                 "3: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
+                                                 "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
+                            }
+
+                            ImGui.Separator();
+
+                            bool EnableRelicXp = C.XPRelicGrind;
+                            if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))
+                            {
+                                C.XPRelicGrind = EnableRelicXp;
+                                C.Save();
+                            }
+                            ImGui.SameLine();
+                            ImGui.TextDisabled("?");
+                            if (ImGui.IsItemHovered())
+                            {
+                                ImGui.SetTooltip("Please note. This will ONLY grind for relic Exp under the basic mission tab. \n" +
+                                                   "This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions");
+                            }
+                            if (EnableRelicXp)
+                            {
+                                bool OnlySelected = C.XPRelicOnlyEnabled;
+                                if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
                                 {
-                                    C.XPRelicIgnoreManual = IgnoreManual;
+                                    C.XPRelicOnlyEnabled = OnlySelected;
                                     C.Save();
+                                }
+                                if (C.ShowManualMode)
+                                {
+                                    bool IgnoreManual = C.XPRelicIgnoreManual;
+                                    if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
+                                    {
+                                        C.XPRelicIgnoreManual = IgnoreManual;
+                                        C.Save();
+                                    }
                                 }
                             }
                         }
                     }
 
-                    if (C.ShowCompletionWindow && completionExpanded)
+                    if (C.ShowCompletionWindow)
                     {
                         ImGui.TableNextColumn();
-                        bool showSelectedJobOnly = C.ShowSelectedJobOnly;
-                        if (ImGui.Checkbox("Show only selected job", ref showSelectedJobOnly))
+                        if (completionExpanded)
                         {
-                            C.ShowSelectedJobOnly = showSelectedJobOnly;
-                            if (showSelectedJobOnly)
-                                C.ShowCompletionOnlyJob = false;
-                            C.Save();
-                        }
+                            bool showSelectedJobOnly = C.ShowSelectedJobOnly;
+                            if (ImGui.Checkbox("Show only selected job", ref showSelectedJobOnly))
+                            {
+                                C.ShowSelectedJobOnly = showSelectedJobOnly;
+                                if (showSelectedJobOnly)
+                                    C.ShowCompletionOnlyJob = false;
+                                C.Save();
+                            }
 
-                        bool nonGold = C.ShowCompletion_MissingGold;
-                        if (ImGui.Checkbox("Show Only Non-Gold Missions", ref nonGold))
-                        {
-                            C.ShowCompletion_MissingGold = nonGold;
-                            C.Save();
+                            bool nonGold = C.ShowCompletion_MissingGold;
+                            if (ImGui.Checkbox("Show Only Non-Gold Missions", ref nonGold))
+                            {
+                                C.ShowCompletion_MissingGold = nonGold;
+                                C.Save();
+                            }
                         }
                     }
 
-                    if (standard && showPlaylistExpanded)
+                    if (standard)
                     {
                         ImGui.TableNextColumn();
-                        if (ImGui.Button("Save Current Mission Preset"))
-                        {
-                            ImGui.OpenPopup("Preset Save Editor");
-                        }
 
-                        if (ImGui.BeginPopup("Preset Save Editor"))
+                        if (showPlaylistExpanded)
                         {
-                            ImGui.InputText($"Playlist Name", ref newListName);
-                            using (ImRaii.Disabled(string.IsNullOrEmpty(newListName)))
+                            if (ImGui.Button("Save Current Mission Preset"))
                             {
-                                if (ImGui.Button("Save New List"))
-                                {
-                                    List<uint> new_Playlist = new();
-                                    foreach (var mission in C.MissionConfig.Where(x=> x.Value.Enabled))
-                                    {
-                                        new_Playlist.Add(mission.Key);
-                                    }
-                                    if (C.Mission_Playlist.ContainsKey(newListName))
-                                    {
-                                        C.Mission_Playlist[newListName] = new_Playlist;
-                                    }
-                                    else
-                                    {
-                                        C.Mission_Playlist.Add(newListName, new_Playlist);
-                                    }
-                                    C.Save();
-                                    ImGui.CloseCurrentPopup();
-                                }
+                                ImGui.OpenPopup("Preset Save Editor");
                             }
 
-                            ImGui.EndPopup();
-                        }
-
-                        if (C.Mission_Playlist.Count > 0)
-                        {
-                            if (ImGui.Button("View All Presets"))
+                            if (ImGui.BeginPopup("Preset Save Editor"))
                             {
-                                ImGui.OpenPopup("Preset: List Viewer");
-                            }
-
-                            if (ImGui.BeginPopup("Preset: List Viewer"))
-                            {
-                                ImGui.Text($"Load Mission Preset");
-
-                                if (ImGui.BeginTable($"Preset: TableViewer", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+                                ImGui.InputText($"Playlist Name", ref newListName);
+                                using (ImRaii.Disabled(string.IsNullOrEmpty(newListName)))
                                 {
-                                    ImGui.TableSetupColumn("Name");
-                                    ImGui.TableSetupColumn("Amount Enabled");
-
-                                    ImGui.TableHeadersRow();
-
-                                    ImGui.TableNextRow();
-                                    ImGui.TableSetColumnIndex(0);
-                                    ImGui.AlignTextToFramePadding();
-                                    ImGui.Text($"Clear All");
-                                    ImGui.SameLine();
-                                    if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"FreshPreset_Button"))
+                                    if (ImGui.Button("Save New List"))
                                     {
-                                        foreach (var mission in C.MissionConfig)
+                                        List<uint> new_Playlist = new();
+                                        foreach (var mission in C.MissionConfig.Where(x => x.Value.Enabled))
                                         {
-                                            mission.Value.Enabled = false;
+                                            new_Playlist.Add(mission.Key);
+                                        }
+                                        if (C.Mission_Playlist.ContainsKey(newListName))
+                                        {
+                                            C.Mission_Playlist[newListName] = new_Playlist;
+                                        }
+                                        else
+                                        {
+                                            C.Mission_Playlist.Add(newListName, new_Playlist);
                                         }
                                         C.Save();
                                         ImGui.CloseCurrentPopup();
                                     }
+                                }
 
-                                    foreach (var item in C.Mission_Playlist)
+                                ImGui.EndPopup();
+                            }
+
+                            if (C.Mission_Playlist.Count > 0)
+                            {
+                                if (ImGui.Button("View All Presets"))
+                                {
+                                    ImGui.OpenPopup("Preset: List Viewer");
+                                }
+
+                                if (ImGui.BeginPopup("Preset: List Viewer"))
+                                {
+                                    ImGui.Text($"Load Mission Preset");
+
+                                    if (ImGui.BeginTable($"Preset: TableViewer", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
                                     {
+                                        ImGui.TableSetupColumn("Name");
+                                        ImGui.TableSetupColumn("Amount Enabled");
+
+                                        ImGui.TableHeadersRow();
+
                                         ImGui.TableNextRow();
                                         ImGui.TableSetColumnIndex(0);
                                         ImGui.AlignTextToFramePadding();
-                                        ImGui.Text($"{item.Key}");
+                                        ImGui.Text($"Clear All");
                                         ImGui.SameLine();
-                                        if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"{item.Key}_Button"))
+                                        if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"FreshPreset_Button"))
                                         {
                                             foreach (var mission in C.MissionConfig)
                                             {
-                                                if (item.Value.Contains(mission.Key))
-                                                    mission.Value.Enabled = true;
-                                                else
-                                                    mission.Value.Enabled = false;
+                                                mission.Value.Enabled = false;
                                             }
                                             C.Save();
                                             ImGui.CloseCurrentPopup();
                                         }
-                                        if (ImGui.IsItemHovered())
+
+                                        foreach (var item in C.Mission_Playlist)
                                         {
-                                            ImGui.SetTooltip("Import Missions");
+                                            ImGui.TableNextRow();
+                                            ImGui.TableSetColumnIndex(0);
+                                            ImGui.AlignTextToFramePadding();
+                                            ImGui.Text($"{item.Key}");
+                                            ImGui.SameLine();
+                                            if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"{item.Key}_Button"))
+                                            {
+                                                foreach (var mission in C.MissionConfig)
+                                                {
+                                                    if (item.Value.Contains(mission.Key))
+                                                        mission.Value.Enabled = true;
+                                                    else
+                                                        mission.Value.Enabled = false;
+                                                }
+                                                C.Save();
+                                                ImGui.CloseCurrentPopup();
+                                            }
+                                            if (ImGui.IsItemHovered())
+                                            {
+                                                ImGui.SetTooltip("Import Missions");
+                                            }
+
+                                            ImGui.TableNextColumn();
+                                            ImGui.AlignTextToFramePadding();
+                                            ImGui.Text($"{item.Value.Count}");
+
+                                            ImGui.TableNextColumn();
+                                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, $"{item.Key}_Remove"))
+                                            {
+                                                C.Mission_Playlist.Remove(item);
+                                                C.Save();
+                                            }
+                                            if (ImGui.IsItemHovered())
+                                            {
+                                                ImGui.SetTooltip("Remove from list");
+                                            }
                                         }
 
-                                        ImGui.TableNextColumn();
-                                        ImGui.AlignTextToFramePadding();
-                                        ImGui.Text($"{item.Value.Count}");
-
-                                        ImGui.TableNextColumn();
-                                        if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, $"{item.Key}_Remove"))
-                                        {
-                                            C.Mission_Playlist.Remove(item);
-                                            C.Save();
-                                        }
-                                        if (ImGui.IsItemHovered())
-                                        {
-                                            ImGui.SetTooltip("Remove from list");
-                                        }
+                                        ImGui.EndTable();
                                     }
 
-                                    ImGui.EndTable();
+                                    ImGui.EndPopup();
                                 }
+                            }
+                        }
+                    }
 
-                                ImGui.EndPopup();
+                    if (C.TurninRelic)
+                    {
+                        ImGui.TableNextColumn();
+                        if (showJobSwapExpanded)
+                        {
+                            bool swapJobs = C.Relic_SwapJob;
+                            if (ImGui.Checkbox("Swap jobs when turning in relic", ref swapJobs))
+                            {
+                                C.Relic_SwapJob = swapJobs;
+                                C.Save();
+                            }
+
+                            string currentJobName = BattleJobs.FirstOrDefault(x => x.Value == C.Relic_BattleJob).Key ?? "None";
+
+                            if (ImGui.BeginCombo("Battle Job", currentJobName))
+                            {
+                                foreach (var job in BattleJobs)
+                                {
+                                    bool isSelected = C.Relic_BattleJob == job.Value;
+                                    if (ImGui.Selectable(job.Key, isSelected))
+                                    {
+                                        C.Relic_BattleJob = job.Value;
+                                        C.Save();
+                                    }
+                                    if (isSelected)
+                                        ImGui.SetItemDefaultFocus();
+                                }
+                                ImGui.EndCombo();
+                            }
+
+                            bool useStylist = C.Relic_Stylist;
+                            if (ImGui.Checkbox($"Use Stylist to re-equip tools", ref useStylist))
+                            {
+                                C.Relic_Stylist = useStylist;
+                                C.Save();
                             }
                         }
                     }

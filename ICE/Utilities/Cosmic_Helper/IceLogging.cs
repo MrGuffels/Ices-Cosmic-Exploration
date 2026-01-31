@@ -80,7 +80,7 @@ internal static class IceLogging
         LogSystem.Log(LogLevel.Info, s, prefix);
         if (prefix == null)
         {
-            if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
+            if (EzThrottler.Throttle($"Throttling chat message: {s}", 1000))
             {
                 Svc.Chat.Print(s);
                 PluginLog.Information(s);
@@ -88,7 +88,7 @@ internal static class IceLogging
         }
         else
         {
-            if (EzThrottler.Throttle($"Throttling chat message: {s}", 60000))
+            if (EzThrottler.Throttle($"Throttling chat message: {s}", 1000))
             {
                 Svc.Chat.Print($"{prefix} {s}");
                 PluginLog.Information($"{prefix} {s}");

@@ -7,6 +7,10 @@ namespace ICE.ConfigFiles;
 public partial class Config
 {
     public bool TurninRelic { get; set; } = false;
+    public bool Relic_SwapJob { get; set; } = false;
+    public uint Relic_BattleJob { get; set; } = 0;
+    public bool Relic_Stylist { get; set; } = true;
+
     public Dictionary<uint, bool> RelicJobs { get; set; } = new()
     {
         [8] = true,

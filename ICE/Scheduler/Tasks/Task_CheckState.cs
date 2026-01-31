@@ -25,6 +25,20 @@ namespace ICE.Scheduler.Tasks
 
             IceLogging.Debug("Task: Check State, has commenced");
 
+            if (!C.ShowManualMode)
+            {
+                if (C.MissionConfig.Any(x => x.Value.ManualMode))
+                {
+                    foreach (var mission in C.MissionConfig.Where(x => x.Value.ManualMode))
+                    {
+                        mission.Value.ManualMode = false;
+                    }
+                    C.Save();
+                    IceLogging.ChatInfo("You turned on manual mode, then turned it off. \n" +
+                                        "So we did you a favor and stopped yourself from asking questions", "Ice's Cosmic");
+                }
+            }
+
             if (AddonHelper.IsAddonActive("WKSLottery"))
             {
                 IceLogging.Info("Setting State to gambling");

@@ -506,6 +506,17 @@ public static unsafe partial class GatheringUtil
         MapInfo = new Vector2(11.8f, 22.3f)
     };
 
+    private static CriticalInfo GravitationAnom1 = new()
+    {
+        RawLocation = new Vector3(77.05f, -58.69f, -475.25f),
+        MapInfo = new Vector2(22.9f, 11.9f)
+    };
+    public static CriticalInfo GravitationAnom2 = new()
+    {
+        RawLocation = new Vector3(-189.71f, -0.07f, -61.36f),
+        MapInfo = new Vector2(17.6f, 20.1f)
+    };
+
     public class CriticalInfo
     {
         public Vector3 RawLocation { get; set; }
@@ -563,6 +574,9 @@ public static unsafe partial class GatheringUtil
         // Glass Rain 2/β
         AddKeys(GlassRain3, 1015, 1018, 1033);
         AddKeys(GlassRain4, 1012, 1024, 1027);
+
+        AddKeys(GravitationAnom1, 1350, 1356);
+        AddKeys(GravitationAnom2, 1352, 1354, 1358);
     }
 
     private static void AddKeys(CriticalInfo location, params uint[] keys)

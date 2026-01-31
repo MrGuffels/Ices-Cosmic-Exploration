@@ -5,7 +5,7 @@ flag:
   x: 108
   y: -35
 author: Puni.sh Community
-date_modified: 2026-01-30T05:12:17.7945710Z
+date_modified: 2026-01-30T15:59:25.3869368Z
 nodes:
 - node_id: 35569
   position:
@@ -52,9 +52,9 @@ nodes:
     y: 4.094325
     z: -39.77391
   land_zone:
-    x: 73.23858
-    y: 4.0886936
-    z: -39.74395
+    x: 73.7131
+    y: 3.7539217
+    z: -37.695015
   radius_start: 0
   radius_end: 360
   min_distance: 1

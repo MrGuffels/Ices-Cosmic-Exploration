@@ -11,16 +11,56 @@ namespace ICE.Scheduler.Tasks
 {
     internal class Task_RelicTurnin
     {
+        public static uint TurninJob = 0;
+
         public static void Enqueue()
         {
             P.TaskManager.EnqueueMulti
             (
+                new(RegisterJob, "Register Job Swap Class"),
+                new(CheckJobSwap, "Checking to see if we need to swap jobs", Utils.TaskConfig),
                 new(Relic_PathTo, "Heading to the relic NPC for turnin"),
                 new(TalkToResearchWay, "Talk to researchway"),
-                new(SelectReport, "Selecting Report"),
+                new(SelectReport, "Selecting Report", Utils.TaskConfig),
                 new(SelectRelicClass, "Selecting the class to turnin on", Utils.TaskConfig)
             );
         }
+        public static bool? RegisterJob()
+        {
+            IceLogging.Verbose("Registering what job to turn in on");
+            TurninJob = (uint)Player.Job;
+
+            return true;
+        }
+
+        public static bool? CheckJobSwap()
+        {
+            if (C.Relic_SwapJob && C.Relic_BattleJob != 0)
+            {
+                if (Player.Job != (Job)C.Relic_BattleJob)
+                {
+                    if (EzThrottler.Throttle("Swapping jobs", 1000))
+                    {
+                        IceLogging.Verbose($"Telling the game to swap you to jobID: {C.Relic_BattleJob}");
+                        GearsetHandler.TaskClassChange((Job)C.Relic_BattleJob);
+                    }
+
+                    return false;
+                }
+                else
+                {
+                    IceLogging.Verbose("Job swap is complete! Turning in the relic now");
+
+                    return true;
+                }
+            }
+            else
+            {
+                IceLogging.Debug("No swap is necessary/not configured properly. Continuing on");
+                return true;
+            }
+        }
+
         public static bool? Relic_PathTo()
         {
             string handle = "[Task_Relic: PathTo]";
@@ -121,7 +161,7 @@ namespace ICE.Scheduler.Tasks
             uint selectedEntry = 0;
             foreach (var jobId in jobUnlocked)
             {
-                if ((uint)Player.Job == jobId.Key)
+                if (TurninJob == jobId.Key)
                     break;
                 else
                 {
@@ -133,9 +173,9 @@ namespace ICE.Scheduler.Tasks
 
             if (GenericHelpers.TryGetAddonMaster<SelectIconString>("SelectIconString", out var selectIconString) && selectIconString.IsAddonReady)
             {
-                if (EzThrottler.Throttle($"Selecting jobId: {(uint)Player.Job}"))
+                if (EzThrottler.Throttle($"Selecting jobId: {TurninJob}"))
                 {
-                    IceLogging.Debug($"Selecting Entry: {selectedEntry} for job: {(uint)Player.Job} to turnin relic");
+                    IceLogging.Debug($"Selecting Entry: {selectedEntry} for job: {TurninJob} to turnin relic");
                     selectIconString.Entries[selectedEntry].Select();
                 }
             }
@@ -158,11 +198,73 @@ namespace ICE.Scheduler.Tasks
             else if (!Player.IsBusy)
             {
                 IceLogging.Info("No longer busy talking to researchingway, to we're done");
+                if (C.Relic_SwapJob)
+                {
+                    if (C.Relic_Stylist)
+                    {
+                        P.TaskManager.Enqueue(() => StylistCheck(), "Doing a stylist check", Utils.TaskConfig);
+                    }
+                    else
+                    {
+                        P.TaskManager.Enqueue(() => ReturnBackToJob(), "Returning back to the original job", Utils.TaskConfig);
+                    }
+                }
                 return true;
             }
 
             return false;
 
+        }
+        public static bool StylistCheck()
+        {
+            var jobId = TurninJob;
+
+            if (CosmicHelper.CrafterJobList.Contains(jobId))
+            {
+                Task_TurninMission.ExecuteCommand("/stylist crafter");
+            }
+            else if (CosmicHelper.GatheringJobList.Contains(jobId))
+            {
+                Task_TurninMission.ExecuteCommand("/stylist gatherer");
+            }
+            P.TaskManager.EnqueueDelay(1000);
+            P.TaskManager.Enqueue(() => ReturnBackToJob(), "Returning back to original job", Utils.TaskConfig);
+
+            return true;
+        }
+
+        private static int postRelicCounter = 0;
+
+        public static bool? ReturnBackToJob()
+        {
+            if ((uint)Player.Job == TurninJob)
+            {
+                IceLogging.Debug("We're back on the proper job, continuing on");
+
+                var delayAmount = C.DelayPostRelic == 0 ? 25 : C.DelayPostRelic;
+
+                if (EzThrottler.Throttle("Add to counter", delayAmount))
+                {
+                    postRelicCounter += 1;
+                }
+
+                if (postRelicCounter >= 2)
+                {
+                    postRelicCounter = 0;
+                    return true;
+                }
+                else
+                    return false;
+            }
+            else
+            {
+                if (EzThrottler.Throttle("Swapping jobs", 1000))
+                {
+                    IceLogging.Verbose($"Telling the game to swap you to jobID: {TurninJob}");
+                    GearsetHandler.TaskClassChange((Job)TurninJob);
+                }
+                return false;
+            }
         }
     }
 }

@@ -5,56 +5,17 @@ flag:
   x: 280
   y: 79
 author: Puni.sh Community
-date_modified: 2026-01-29T00:34:00.1010873Z
+date_modified: 2026-01-30T15:30:56.8584631Z
 nodes:
-- node_id: 35606
+- node_id: 35607
   position:
-    x: 233.2072
-    y: -0.03811434
-    z: 65.04824
+    x: 326.2091
+    y: -2.54924
+    z: 56.60454
   land_zone:
-    x: 235.77608
-    y: -0.92624664
-    z: 66.06154
-  radius_start: 0
-  radius_end: 360
-  min_distance: 1
-  max_distance: 5
-- node_id: 35605
-  position:
-    x: 225.3721
-    y: 0.2633396
-    z: 70.3378
-  land_zone:
-    x: 226.93465
-    y: -0.3239354
-    z: 72.15159
-  radius_start: 0
-  radius_end: 360
-  min_distance: 1
-  max_distance: 5
-- node_id: 35610
-  position:
-    x: 288.9068
-    y: 8.363421
-    z: 119.2066
-  land_zone:
-    x: 289.1541
-    y: 6.828541
-    z: 117.60286
-  radius_start: 0
-  radius_end: 360
-  min_distance: 1
-  max_distance: 5
-- node_id: 35609
-  position:
-    x: 292.9472
-    y: 8.994603
-    z: 124.6942
-  land_zone:
-    x: 294.7005
-    y: 7.8377256
-    z: 122.933395
+    x: 324.706
+    y: -3.10389
+    z: 56.96936
   radius_start: 0
   radius_end: 360
   min_distance: 1
@@ -65,22 +26,61 @@ nodes:
     y: -0.5924343
     z: 69.81211
   land_zone:
-    x: 334.24753
-    y: -1.1959513
-    z: 70.931435
+    x: 333.9267
+    y: -1.1966554
+    z: 70.861534
   radius_start: 0
   radius_end: 360
   min_distance: 1
   max_distance: 5
-- node_id: 35607
+- node_id: 35609
   position:
-    x: 326.2091
-    y: -2.54924
-    z: 56.60454
+    x: 292.9472
+    y: 8.994603
+    z: 124.6942
   land_zone:
-    x: 324.7591
-    y: -3.127845
-    z: 56.8283
+    x: 293.94196
+    y: 7.984357
+    z: 123.56187
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35610
+  position:
+    x: 288.9068
+    y: 8.363421
+    z: 119.2066
+  land_zone:
+    x: 289.6865
+    y: 6.984103
+    z: 118.39443
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35605
+  position:
+    x: 225.3721
+    y: 0.2633396
+    z: 70.3378
+  land_zone:
+    x: 227.05472
+    y: -0.30394018
+    z: 72.26364
+  radius_start: 0
+  radius_end: 360
+  min_distance: 1
+  max_distance: 5
+- node_id: 35606
+  position:
+    x: 233.2072
+    y: -0.03811434
+    z: 65.04824
+  land_zone:
+    x: 234.6515
+    y: -0.95311195
+    z: 65.77729
   radius_start: 0
   radius_end: 360
   min_distance: 1

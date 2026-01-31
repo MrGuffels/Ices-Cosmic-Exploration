@@ -5,30 +5,30 @@ flag:
   x: -514
   y: 231
 author: Puni.sh Community
-date_modified: 2026-01-28T22:00:51.5995387Z
+date_modified: 2026-01-30T22:48:57.9361793Z
 nodes:
-- node_id: 35589
+- node_id: 35579
   position:
     x: -474.6084
-    y: 18.79597
+    y: 18.80599
     z: 223.4503
   land_zone:
-    x: -476.26605
-    y: 17.960876
-    z: 223.61348
+    x: -476.4699
+    y: 17.951124
+    z: 223.76323
   radius_start: 0
   radius_end: 360
   min_distance: 1
   max_distance: 5
-- node_id: 35590
+- node_id: 35580
   position:
     x: -471.6821
     y: 18.80836
     z: 230.8247
   land_zone:
-    x: -472.85242
-    y: 18.165503
-    z: 231.5361
+    x: -473.36545
+    y: 18.144592
+    z: 231.90668
   radius_start: 0
   radius_end: 360
   min_distance: 1

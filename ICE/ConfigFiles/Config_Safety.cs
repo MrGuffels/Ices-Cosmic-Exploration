@@ -14,4 +14,5 @@ public partial class Config
     public int DelayCraftIncrease { get; set; } = 2500;
     public bool AnimationLockAbandon { get; set; } = true;
     public bool JumpIfStuck { get; set; } = false;
+    public int DelayPostRelic { get; set; } = 0;
 }
