@@ -81,6 +81,9 @@ namespace ICE.Ui.DebugWindowTabs
 
             if (ImGui.BeginTable("Fishing Editor Table", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.SizingFixedFit))
             {
+                ImGui.TableSetupColumn("Fishing Hole Selector", ImGuiTableColumnFlags.WidthFixed, 200);
+                ImGui.TableSetupColumn("Fishing Hole Editor", ImGuiTableColumnFlags.WidthStretch);
+
                 ImGui.TableNextRow();
 
                 // First Column, Viewer for all the routes

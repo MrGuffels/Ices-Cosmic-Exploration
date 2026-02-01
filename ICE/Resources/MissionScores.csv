@@ -1313,8 +1313,8 @@
 1312,BTN,EX: Terrestrianemone Tentacle Harvest,33
 1313,BTN,EX: Environmental Development Survey,33
 1314,BTN,EX: Extreme Harvesting Analysis,0
-1315,BTN,EX+: Rare Alchemical Reductions,0
-1316,BTN,EX+: Survey of Rare Aetheric Flora,0
+1315,BTN,EX+: Rare Alchemical Reductions,164
+1316,BTN,EX+: Survey of Rare Aetheric Flora,164
 1317,BTN,EX+: Subterranean Ruin Research,0
 1318,BTN,EX+: Subterranean Aetherial Research,0
 1319,BTN,EX+: Ruin Sample Procurement,0
@@ -1348,15 +1348,15 @@
 1347,FSH,EX+: Ruin Currents Environmental Survey,0
 1348,CRP, Hydrophytic Flora Biofuel,0
 1349,CRP, Relic Restoration Brushes,0
-1350,BSM, Compact Gravity Generator,0
+1350,BSM, Compact Gravity Generator,215
 1351,BSM, Astrodrill Replacement Bit,0
-1352,ARM, Rover Chain,0
+1352,ARM, Rover Chain,215
 1353,ARM, Overturned Rover Repair,0
-1354,GSM, Portable Beacon,0
+1354,GSM, Portable Beacon,215
 1355,GSM, Wrought Metallic Coral,0
-1356,LTW, Sturdy Leather Band,0
+1356,LTW, Sturdy Leather Band,215
 1357,LTW, Mechanic's Gloves,0
-1358,WVR, Rover Protective Covering,0
+1358,WVR, Rover Protective Covering,215
 1359,WVR, Emergency Bandaging,0
 1360,ALC, Ruin Remedy,0
 1361,ALC, Emergency Salves,0

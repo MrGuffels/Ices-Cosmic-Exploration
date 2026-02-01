@@ -22,7 +22,8 @@ namespace ICE.Scheduler.Tasks
             bool useOutsideMission = C.UseMountOutsideMission && !inMission;
             bool useMount = useInMission || useOutsideMission;
 
-            IceLogging.Debug("Starting navmesh", handle, debugOnly: true);
+            if (EzThrottler.Throttle("Navmesh message throttle", 3000))
+                IceLogging.Verbose("Executing Navmesh Task", handle, debugOnly: true);
 
             if (!P.Navmesh.Installed)
             {
@@ -159,7 +160,7 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Telling navmesh to start"))
                     {
-                        IceLogging.Debug("Telling navmesh to start pathfinding");
+                        IceLogging.Verbose("Telling navmesh to start pathfinding");
                         IceLogging.DestinationLogs.Log(pos);
                         P.Navmesh.SetTolerance(0.25f);
                         P.Navmesh.PathfindAndMoveTo(pos, false);

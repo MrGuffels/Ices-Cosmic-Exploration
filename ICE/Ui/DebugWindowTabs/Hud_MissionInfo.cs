@@ -54,6 +54,17 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Text("Current Score:");
                         ImGui.TableNextColumn();
 
+                        ImGui.Text($"{CurrentScore()}");
+
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui.Text($"Current State");
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{CurrentRank}");
+
+
+                        /*
                         if (x.CurrentScore == null)
                         {
                             if (EzThrottler.Throttle("Throwing error message"))
@@ -104,6 +115,7 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             ImGui.Text($"{x.GoldScore.Value}");
                         }
+                        */
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
                         ImGui.Text("Is Mission Timed out");
@@ -194,6 +206,24 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 ImGui.Text("Waiting for \"WKSMissionInfomation\" to be visible");
             }
+        }
+
+        private static unsafe uint CurrentScore()
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return 0;
+
+            var manager = (WKSManagerCustom*)managerPtr;
+            return manager->ReturnCurrentScore();
+        }
+
+        private static unsafe string CurrentRank()
+        {
+            var managerPtr = WKSManager.Instance();
+            if (managerPtr == null) return "???";
+
+            var manager = (WKSManagerCustom*)managerPtr;
+            return $"{manager->ReturnRank}";
         }
     }
 }

@@ -259,7 +259,7 @@ namespace ICE.Ui.MainUi.ModeSelect
                 }
             }
 
-            if (ImGui.BeginTable("modeSelect_TableHeader", 4, ImGuiTableFlags.SizingFixedFit, Vector2.Zero))
+            if (ImGui.BeginTable("modeSelect_TableHeader", 5, ImGuiTableFlags.SizingFixedFit, Vector2.Zero))
             {
                 ImGui.TableSetupColumn("Class Selector");
                 ImGui.TableSetupColumn("Other Settings");

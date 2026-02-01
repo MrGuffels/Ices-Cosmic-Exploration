@@ -15,7 +15,8 @@ internal static class NpcData // Renamed the class to avoid conflict
         Repair,
         Credit,
         Relic,
-        Gamba
+        Gamba,
+        Drone,
     }
 
     public class NPCInfo // Keep this class for the dictionary
@@ -133,6 +134,14 @@ internal static class NpcData // Renamed the class to avoid conflict
                 Name = "Orbitingway",
                 Location_Npc = new Vector3(-157.73f, 1.19f, 153.98f),
                 Location_Circle = new Vector3(-161.04f, 0.50f, 153.84f),
+            },
+            new NPCInfo
+            {
+                type = NpcType.Drone,
+                NpcId = 1052654,
+                Name = "Kaede",
+                Location_Npc = new Vector3(),
+                Location_Circle = new(-205.85f, 0.65f, 134.19f),
             }
         },
     };

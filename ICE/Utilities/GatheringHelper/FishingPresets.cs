@@ -19,7 +19,10 @@ public static partial class GatheringUtil
 
     public static Dictionary<uint, FishingTools> FishingPreset = new()
     {
-        // D Rank
+        #region Sinus 
+
+        #region D Rank
+
         // Export for Mission [451] -  Lunch Emergency
         [451] = new FishingTools()
         {
@@ -157,7 +160,9 @@ public static partial class GatheringUtil
             },
         },
 
-        // C Rank
+        #endregion
+
+        #region C Rank
 
         // Export for Mission [457] -  Big Fish
         [457] = new FishingTools()
@@ -324,7 +329,9 @@ public static partial class GatheringUtil
             },
         },
 
-        // B Rank
+        #endregion
+
+        #region B Rank
 
         // Export for Mission [464] -  Hollow Harbor Water Inspection
         [464] = new FishingTools()
@@ -542,6 +549,8 @@ public static partial class GatheringUtil
             {
             },
         },
+
+        #endregion
 
         #region A Rank | Sequence | Timed | Weather
 
@@ -925,13 +934,11 @@ public static partial class GatheringUtil
 
         #endregion
 
-        // - - - - - - - - - - 
-        // Phaenna
-        // - - - - - - - - - - 
+        #endregion
 
-        // - - - - - - - - - - 
-        // D Rank
-        // - - - - - - - - - - 
+        #region Phaenna
+
+        #region D Rank
 
         // Export for Mission [965] -  Aquatic Foodstuffs
         [965] = new FishingTools()
@@ -1078,9 +1085,9 @@ public static partial class GatheringUtil
             },
         },
 
-        // - - - - - - - - - - 
-        // C Rank
-        // - - - - - - - - - - 
+        #endregion
+
+        #region C Rank
 
         // Export for Mission [971] -  Efficient Aquatic Foodstuffs Procurement
         [971] = new FishingTools()
@@ -1232,9 +1239,9 @@ public static partial class GatheringUtil
             },
         },
 
-        // - - - - - - - - - - 
-        // B Rank
-        // - - - - - - - - - - 
+        #endregion
+
+        #region B Rank
 
         // Export for Mission [978] -  Upper Soda-lime Float Distribution Survey
         [978] = new FishingTools()
@@ -1422,9 +1429,9 @@ public static partial class GatheringUtil
             },
         },
 
-        // - - - - - - - - - - 
-        // A Rank
-        // - - - - - - - - - - 
+        #endregion
+
+        #region A Rank
 
         // Export for Mission [986] - Cultivated Specimen Survey
         [986] = new FishingTools()
@@ -1605,9 +1612,9 @@ public static partial class GatheringUtil
             },
         },
 
-        // - - - - - - - - - - 
-        // Weather-Restricted Rank
-        // - - - - - - - - - - 
+        #endregion
+
+        #region Weather-Restricted Rank
 
         // Export for Mission [993] - EX: Capsule Pools Distribution Survey [10/21]
         [993] = new FishingTools()
@@ -1643,9 +1650,9 @@ public static partial class GatheringUtil
             },
         },
 
-        // - - - - - - - - - - 
-        // Time-Restricted Rank
-        // - - - - - - - - - - 
+        #endregion
+
+        #region Time-Restricted Rank
 
         // Export for Mission [994] - EX+: Large Saltpeter Shore Resources
         [994] = new FishingTools()
@@ -1696,10 +1703,9 @@ public static partial class GatheringUtil
             },
         },
 
+        #endregion
 
-        // - - - - - - - - - - 
-        // Sequence Rank
-        // - - - - - - - - - - 
+        #region Sequence Rank
 
         // Export for Mission [997] - Hyper-aetheroconductive Materials
         [997] = new FishingTools()
@@ -1823,10 +1829,10 @@ public static partial class GatheringUtil
             },
         },
 
+        #endregion
 
-        // - - - - - - - - - - 
-        // Critical Rank
-        // - - - - - - - - - - 
+        #region Critical
+
         // Export for Mission [1037] -  Soup Broth Ingredients [10/23]
         [1037] = new FishingTools()
         {
@@ -1888,5 +1894,510 @@ public static partial class GatheringUtil
             },
         },
 
+        #endregion
+
+        #endregion
+
+        #region Oizyn
+
+        #region D Rank
+
+        // Export for Mission [1320] -  Anomaly Impact Aquaculture Survey
+        [1320] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACuVWyW7jOBD9FYNnCdC+3dzuJBPAnQRRgj4EfaClkkWYFhUu6fYE/vcBJTG2vCTdgwBzmJtcy6tX5eIjX9FUSTbDQopZtUTZK7po8ILClFKUSa7AQto5Jw3snKVxXZco85LUQnecME7kBmWuha7Fxa+CqhLKnVnHb3usb4wVtQbrPjz91eFEiYWu2oeag6gZLVHmOs4I+X3oDiONRxnOh2RmtVqfaSxwneADRgaEUQqFNJ0EruPuh3kfs2C8JJgagMgNRgDBEHZJRH2xAbFXKDxgGIYjhpGZOV5BXpNKfsGk46kNwhhyiYuVQFk4TDFKjnH3UdMB9Q5LAk0Be3yiw7xoPDHPpHLyN8yw7DfBVD3M9g7m7Q/ZDzWmBK/EJX5hXAOMDKYd3xrb76FgL8BR5uohmZrBqIIZ2BeyvMLrrrNps6TAhUHV/2aJMj92giO6I6hku7XQxS/J8XCy9KgfWP4Tt9eNVEQS1lxh0pgB2K6F5orDNxACLwFlCFnopiOBblgDyOoRNi2gTE/iBN6cCfmv8e44CDjNENnojL+v2Pl3fPIWCskxnSnOoZGf1OUB6qf1epLtUccnq3dR/YLkkrX6gJJmmUtoOyXccR+WaMo/h/I+3DHTn2S9wEReEkrFO/571YhbZRAeG/KsQDNDieN7fhyWtlf6pR3gGNu4KrDtVK7npHFSuNhDWwvNiZC3lWYpUPbUL7gegWkxdDzfOd/ljIk1k/XkTrVYw90wvsb0L8ZWGsCIy3fAq51Ca68AqdswWj2Y+kEFbqzVySTnkrNm+Sfpjr+XPoclNCXmmz9G+MrUgr5xH0V4UfoWsON3NmTE4UTUo4AHTtqemaHUW06Xj0NPM+xDzhEYBb1DYYjTyz+tJPAZVstazslaXzNu7zg8Fd2DQvH+HtMfe4LdS2uYHt+871yi+vY3emTW5x6eFeFQ5hJLpe82/bw43KnfW53f3pD/dhH+d/95PujYjKlG7udZ6Lahm0cB32toblj3zpy+YEL1ATZHZE/v4rCsoipObPCD2A7ChW8vFm5pQ+p5LiRlCn6Ktj+M4A0P2Kc3Q695+ncvs4O+Pbm+5/yYTBu2xnQzuV63uJCT6bPChaJScZjkir/AZvL6dTsWYCcoisWiiu2F70V24LjYTqLAsd0ocpIiqKrKi9H2H1Mcim68CwAA",
+            },
+            AmountRequired = 5,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Inverted Trout"] = new List<uint>()
+                {
+                    50091,
+                    50097,
+                    50103,
+                    50111,
+                },
+                ["Inverted Whitefish"] = new List<uint>()
+                {
+                    50092,
+                },
+                ["Voyaging Loach"] = new List<uint>()
+                {
+                    50090,
+                    50096,
+                    50102,
+                    50110,
+                },
+            },
+        },
+        // Export for Mission [1321] -  Megalithopolis Specimen Survey
+        [1321] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACuVWS2/bOBD+KwZPu4C0kChZr5vrJtkAzgORgx6CHihpbBGhRZek0rqF//uCkhhLfsRpkdve5Hl88814HvyFJrXiUyKVnC6WKPmFLiqSMZgwhhIlarCQVs5oBTtlYVTXBUpwFFvoXlAuqNqgxLXQtbz4kbO6gGIn1vbbFuuG87zUYM0H1l8NThBZ6Go9LwXIkrMCJa7jDJDfhm4w4nDg4ZwlMy3rlWHgu45/hoLx4oxBrnqObt8Mnw/LRUEJO1FSFwfBoKh+53ZJZXmxAdkLPN5jPB4PGAem6OQZ0pIu1CdCG95aII0gVSR/ligZd2UMokPcPmrcod4TRaHKoccn2PcLhhXExlXQnzAlqm0FE3XfG+/V3+u85yVhlDzLS/LChQYYCEw6njWUP0DOX0CgxNVFOtbLQaRboBfQ1O8TXV6RVZPopFoyENIE0X92gRIvdPwD9gOoaLu10MUPJUg3abryc55+J+vrStVUUV5dEVqZetiuhWa1gBuQkiwBJQhZ6LYhgW55BchqETZrQIkuzBG8GZfqj/HuBUg4zhDZ6IS+jdjod3zSNeRKEDathYBKfVCWe6gflutRtgcZH43eWLUNkiq+1vNKq2WqYN1sxh33rokm4mMo9+EOmX6nq4xQdUkZk2/oH+pK3tUG4bGi32rQzFCwyHNMANuFgwPbz2LXjrBD7IWfF04WBz5xIrS10IxKdbfQLCVKntoG1yUwKY4d7Dmns5xyueKqHN3Xa6LhbrlYEfYv588awOyaL0Ca31ouQb1O8YIwCWaqO6XOzsx3J2rr57uh3mEGM1WCV73rd8J9Tlcg9tbGDa1eVXpf/OMchHK8XqgZLKEqiNh8QA4N8KOEz7zu7I1hKzlTqgEaDnRBWr9dOd6ZdXSQdR/uPSkfcZ4Luj7IoTMIx9h7NRnSPWF0jMTQTg/sZKFATEm9LNWMrvSldFvF/iQ3j6JatKdYf/RuTnsOxvHhY+KNd4F+wZgdalr+Ab7VVECRKqJqfZ71E+nEHJzp699tyYHh0W461zbvboX/9X+edrt3yutK9f0sdFexzaOELyVUt7x5K09eCGV6bswY9nZ0GMI488LYxnlObD8KiZ05UWgXru97OM/iIMvQ9qtZ0t0j/OlV0O5p/bs9Dd1OfnI97H4d3cCSMKpKvuaMypG+fXQF1SitxQtsRn99/nt4MXDsOmEU+nY0zpqL4diZn+e2uwhCHGdZUOAQbf8DRL60630MAAA=",
+            },
+            AmountRequired = 2,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Lithic Megaloach"] = new List<uint>()
+                {
+                    50095,
+                },
+            },
+        },
+        // Export for Mission [1322] -  Foregone Oasis Environmental Survey
+        [1322] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1WS2/jNhD+KwZPLSABelvSzfE6aQBvEkRZ7CHYAy2NLCI06SUp77oL//eCkhhLfrZF0FNv0jy++WY4M+QvNKkVn2Kp5LRcovQXmjG8oDChFKVK1GAhrZwTBntlYVT3BUq9OLHQkyBcELVFqWuhezn7mdO6gGIv1va7Fusz53mlwZoPT381OFFsobv1SyVAVpwWKHUdZ4B8GbrBSMYDD+cqmWlVr84kFrhOcIWRAeGUQq5MJoHruH0z7zoLLgqC6RkirhdFgxoHndstkdVsC7IXODxgHIYDxpE5A/wGWUVKdYNJw1sLpBFkCudvEqVhV9UoPsbtoyYd6hNWBFh+rlMC14kOYaJhQT2DJMifMMWqbRRD4tDbOzgOv/N+qTAl+E3e4g0XGmAgMNn51lD+DDnfgECpq2t2qtOjWHdEL6Ap5w1Z3uFVk/eELSkIaYLosy9Q6o+d4Ij9ACre7Sw0+6kE7uZQH8QLz37g9T1TNVGEsztMmKmH7VpoXgv4DFLiJaAUIQs9NCTQA2eArBZhuwaU6sKcwJtzqf413pMACacZIhud0bcRG/2eT7aGXAlMp7UQwNQHZXmA+mG5nmR7lPHJ6I1V2yCZ4ms9voQtMwXrZm/uuXdNNBEfQ7kPd8z0B1ktMFG3hFJ5Qf9cM/lYG4QvjHyvQTNDrpeUGCeFnYSQ2EHugp3kXmAncRG4UVAmseugnYXmRKrHUrOUKH1tG1yXwKQYOp5/IcsplyuuiYxuMKUa8IGLFaZ/cP6mIczy+Qq4+ddyCep9jktMJZi57pQ6PzPhnaitYOCO9VIzmJkSnPVux+vujt9zn8MSWIHF9h8jfOL1gh6m1Fp4UfJusOd31mTA4YTViyDrc5HGoee/m5yLNTC6EK2z0wMwKRWIKa6XlZqTlb6I3FZxOBnNE6QW7U2nP3o7vF2vYXJ8V1+4dvV7wewk00DP8L0mAopMYVXr208/SM501ZUu+dvN8P+Z/6dnnnW7bMprpvp+FnpkdPtFwtcK2ANvXqaTDSZUz6oZ0N7Oi/LIG+eBb5dQjO0gcRN74YwXtp/7zjgsFkUcOWj3zSy97sn7+i5o957+b1dtt+NeXd/zvo1uuYAlZzB6xJLI0YxtiOBsBUxhOspqsYHt6LdPvw/X8DiKIy+PPNsJcWgHflja2HcCOywct3TjJM7LEO3+Apr+/eDwCwAA",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1323] -  Regular Base Resupply
+        [1323] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1Wy27bOhD9lYCrW0AC9KD12jlukgZwk8BO0UXQBS2NbMK0qPKR1rfwvxeUxNjyK20RdNUdxZk5c2Y0POQPNNSKj4hUclTOUfYDXVVkxmDIGMqU0OAgYxzTCrbGwppuC5QFSeqgB0G5oGqNMt9Bt/Lqe850AcV22/hvWqyPnOcLA9YsArNqcKLEQTf140KAXHBWoMz3vB7yeegGI417Ed6rZEYLvTpRGPY9/AojC8IZg1zZSrDv+btuwessuCgoYRYg8nEPAHdu11QurtYgdxIN9hgOBj2Gke05WcJ0QUt1SWjD02xIuzFVJF9KlA26LkbJIe4uatqhPhBFocphh0+0Hxf1OxbYUEH/hxFR7STYrPvRwV6/wy76cUEYJUt5TZ65MAC9DVtO6PT3J5DzZxAo802TbE7cy2AbdknnN2TVVDas5gyEtKjmbxYoC2MPH9DtQSWbjYOuvitBupNlWv3Ip99IfVspTRXl1Q2hlW2A6ztorAV8BCnJHFCGkIPuGhLojleAnBZhXQPKTCeO4I25VH+M9yBAwnGGyEUn7G3Gxr7lM60hV4KwkRYCKvVGVe6hvlmtR9keVHw0e+PVDshU8docUFrNpwrqRgm33LshGoq3obwLd8j0G13NCFXXlDF5xj7RlbzXFuFTRb9qMMwQmSVlGBLPTVNCXBzmpZsGSegmA0ggCsoCIEEbB42pVPelYSlR9tQOuGmBLXHgBeGZKkdcrrghcnFJGDOAd1ysCPvA+dJAWHn5DGS51WhjlaBMIVatu622VdiPjT7Z4KkSvJr/TrgX7oSPYQ5VQcT6txHecz1jL9x7HkGUvjhs+Z106XE44vUoaH0qUzwIwheXU7l6TmeydX5m0oelAjEier5QY7oyd4rfGvaPQPN60KK9tMxiR51bHR2kh9fsmRvTXPVWfOykTOCrpgKKqSJKm4vMvCX2x+fXpuSXh+HfP/+r/3zaidaI60rtxjnovmLrTxI+L6C6482jcvhMKDNn1R7QHXELIx/HBS7cKCWFi31curNZXLh+GRUYh2WS5DnafLHq1r1Wn142WoEz362mdmL25IdB+GUCc82IuLgkEi4mIHVds/XFf+/f7Qks9vx8FhA3xSRwMQBx09gr3SgGHMQh9gceQZufjjLrBpwLAAA=",
+            },
+            AmountRequired = 2,
+            UniqueFish = true,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Inverse-eye"] = new List<uint>()
+                {
+                    50101,
+                },
+                ["Inverted Skipper"] = new List<uint>()
+                {
+                    50093,
+                    50099,
+                    50106,
+                    50114,
+                    50228,
+                },
+                ["Site Sleeper"] = new List<uint>()
+                {
+                    50094,
+                    50100,
+                    50107,
+                    50115,
+                },
+            },
+        },
+
+        #endregion
+
+        #region C Rank
+
+        // Export for Mission [1324] -  Large Aquatic Life-form Distribution Survey
+        [1324] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1WTW/bOBD9KwZPW0ACRImWJd1cNckGcJMgTtFD0AMljWwitOiQVFpv4f9eUBJjyR/xbhH0tDdqZvjmzWj4yJ9oWmuRUqVVWi5Q8hNdVDTjMOUcJVrW4CDjnLEKds7Cuq4LlPhR7KA7yYRkeoMS7KBrdfEj53UBxc5s4rct1mch8qUBaxa+WTU4YeSgq/XDUoJaCl6gBHveAPlt6AYjngx2eGfJpMt6daIwgj1yhpEFEZxDrm0lBHu4H+afZyFkwSi3ACEmAwDShV0ytbzYgOolGu8xHI8HDEPbc/oE8yUr9UfKGp7GoKxhrmn+pFAy7roYRoe4fdS4Q72jmkGVQ49PuL8vHHbMt1sl+wdSqttJODZWYXQA5u+1P+jAHpaUM/qkLumLkAZvYLDVBc7Qfg+5eAGJEmx6ZnOSQQbbv49scUVXTaHTasFBKotqfm6BkmDikQO6A6hou3XQxQ8taXfQTOcfxPw7XV9XumaaieqKsso208UOmtUSPoNSdAEoQchBNw0JdCMqQE6LsFkDSkwnjuDNhNK/jXcnQcFxhshFJ/xtxsa/4zNfQ64l5WktJVT6narcQ323Wo+yPaj4aPYmqh2QuRZrc15ZtZhrWDfCuOPeDdFUvg/lPtwh0+9slVGmLxnn6g3/fV2p29oifKnYcw2GGcJhhAtSUDeceNQlJYncLIDMpVlBSI7xpCgytHXQjCl9WxqWCiWP7YCbFtgSx54f+KerTIVasXyUSlrB6JJvDOSNkCvK/xbiyYBYvfkKtPk2dgX6VT1KyhU4nZp0TlOh1ZXO1PaQ4InRMYs511JUvQvw/HYv6G2fwQKqgsrNf0b4JOqM75fURvhh/Bqw43cyZMDhSNSDZOtTmSZjP3gNOZVrEPRGti7OHIFpqUGmtF4s9YytzN2DW8f+2WheGbVsLzez6Ml2K7Dj+PA6fuNmNU8Cq0p2gO7huWYSirmmujYXnnlznJiqM1Pyr4fh/3/+R/+5VbNU1JXu73PQbcU3XxR8XUJ1I5rH5/SFMm7Oqj2gPdUrsef5hBA3zoC6BOPAjYMcXAjjvMRRkOGxj7bfrOx1r9rHV0OrfOa7FdtO5R5x4JNvoxmVCxhNn2uqWT6asRLcUsjV6BNTWrKsNlM7mtfyBTajv9IPQ0H2vZBGZBK6k8AbuyTycjcuvNgNQ+oRnOVBDARtfwEJjQiW2wsAAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1325] -  Oizys Bait Suitability Testing
+        [1325] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1WTW/bOBD9KwFPu4AESKJEfdxcb5IN4CZB7KKHIAdaHNlEZNElqaRu4f++oGTGkj+Spkj35JvEmXnzZjh85E80qLUYUqXVsJih7Cc6r+i0hEFZokzLGhxkjCNewdbIrOmKoSxIUgfdSi4k1yuU+Q66Uuff87JmwLbLxn/dYn0WIp8bsOYjMF8NDkkcdLmczCWouSgZynzP6yG/Dt1gpHEvwnuTzHBeL44UFvpe+AYjCyLKEnJtKwl9z++6BW+zEJJxWh4h4geE9HocbsIuuJqfr0B1Ekc7jKOox5jYPaCPMJ7zQn+ivOFtFpRdGGuaPyqURZuukmQft4uablBvqeZQ5dDhQ3bjSL+DgQ2V/AcMqW4nw2bdjQ52+o830ZM5LTl9VBf0SUgD0Fuw5WCnv34HuXgCiTLfNOnQaJPEjEAnoe3fJz67pIum0EE1K0Eqm8RsNkMZjr1wj30PKlmvHXT+XUu6OXim8xMxfqbLq0rXXHNRXVJe2X64voNGtYTPoBSdAcoQctB1QwJdiwqQ0yKsloAy05gDeCOh9G/j3UpQcJghctERe5uxsW/5jJeQa0nLYS0lVPqDqtxB/bBaD7Ldq/hg9sarHZCxFktzXnk1G2tYNkK55b4ZooH8GMpduH2mz3wxpVxf8LJUr9jv6krd1BbhS8W/1WCYoRTiNMGR5zLMmBtCHLtTD2O3SDBN45AQjAu0dtCIK31TGJYKZfftgJsW2BIjL8D4eJVDoRbiWciFwboWckHLf4V4NNFWaL4Cbf7bs2usCrSpwZ7izVLbpdCPjVLZ4LGWopq9J9zDnfARzKBiVK7ejfCPqKflC/eeR0DSF4ctv6MuPQ4HvCaSL49liqMAv7gcy9VzeiXbxs8M+aDQIIe0ns31iC/M7eK3ht3pb94VtWyvL/PR0elWQqN0/wJ+5S41jwCrO3ZS7uBbzSWwsaa6NleaeWXsjs+vTckvD8Npz//XPbd6NRR1pbtxDrqpytUXBV/nUF2L5rk5eKK8NGfVHtCOrgUpywkOmAsFI26YB+BOC/DdJCpCyFlMEpai9YMVts079oCwvVu7T+p2UreTup1uNPYH1S3BSQo5TtwkmZpXWxi7KSGJi4kHOcO5Fxeko26tnt0/2LfhRr7ufRxEDzf8x0qdGQ07G9dc0ykvuV6dTUBpXs3O/hr+3X8xFpixHEjqQuKDG4Y+uEkSBC4JoijPQ5xMaY7W/wGe0Zw2jBAAAA==",
+            },
+            AmountRequired = 2,
+            UniqueFish = true,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Inverted Aoide"] = new List<uint>()
+                {
+                    50108,
+                },
+                ["Inverted Skipper"] = new List<uint>()
+                {
+                    50093,
+                    50099,
+                    50106,
+                    50114,
+                    50228,
+                },
+                ["Megalith Axolotl"] = new List<uint>()
+                {
+                    50109,
+                },
+                ["Site Sleeper"] = new List<uint>()
+                {
+                    50094,
+                    50100,
+                    50107,
+                    50115,
+                },
+            },
+        },
+        // Export for Mission [1326] -  Large Aquatic Resource Emergency
+        [1326] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACtVWW2+jOBT+K5GfdiVYcSfwlsmm3UrpRSXVPFTzYOAErBI7tU072VH++8qAG8h1Z1RptW9wLp+/c3wu/oEmtWRTLKSYLgsU/0AzitMKJlWFYslrMJBSzgmFnTLXqpscxc44MtADJ4wTuUGxbaAbMfueVXUO+U6s7Lct1i1jWanAmg9HfTU4wdhA1+tFyUGUrMpRbFvWAPk8dIMRhQMP6yKZaVmvNAPPtrwLFLQXqyrIZM/R7ps5l49lPCe4OpFS2wmCQVK9zu2KiHK2AdE72N9j7PsDxoFOOn6BpCRL+QWThrcSCC1IJM5eBIr9Lo3B+BC3jxp1qA9YEqAZ9PgE+37BMIOOduXkb5hi2ZbCsboKxgdgzt51uB3YosQVwS/iCr8xrvAGAh2dawzlj5CxN+AotlXOTlDwBgfqdH4hxTVeNXFPaFEBF/oQdfc5it3Q8g7YD6DG262BZt8lx13jqYtYsOQdr2+orIkkjF5jQnVuTdtA85rDLQiBC0AxQga6a0igO0YBGS3CZg0oVok5gjdnQv4y3gMHAccZIhOd0LcnNvodn2QNmeS4mtacA5WfFOUe6qfFepTtQcRHT2+s2gJJJFur9iW0SCSsm0G5494V0YR/DuU+3CHTd7JKMZFXpKrEGf1jTcV9rRGeKHmtQTFDfpbBElu+uVx6tun5S8+MnDAzPRdwFDqpB5ChrYHmRMj7pWIpUPzcFrhKgQ7RtxzXPR3llIkVe2d8pbDuGF/h6i/GXpS3njtfATf/Si5AfrTwElcCdEt3ShWabu5O1CbPs0M1zzRmIjmjvU142d1ye+5zKIDmmG9+GuFPVqfVfkithRNEHwY7fidNBhyOWD0JWHCybplpSq3kQkaHYKHvKOKt55DXgqyA743UW0I/VCi2oz+ss4BnoujsVE9NlhL4FNdFKedkpXab3Sr2m615xtS8XZ7qo7cW2ontR4fr/8wmV28OPeZ0YT7Ca0045InEslYLVT1qTlTrher710X239bS0bK5XB//3ztPuvE4ZTWVfT8D3dNq8yTgawn0jjWv28kbJpVqAt0DvTEa4ch3bAdM7IW+6dluaKZ2FJhBbo0jyw/HqRug7Tc9R7tn8/OHoB2l6r+d3t3YfLZdJ/g2mmNewGjyWmNJstEjCFbzDEazFfACaLYZ/Tb9fTjWncB1rXGaml5kYdPDLphRFILpRGGO0zzwAado+w93jh5jMQwAAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1327] -  Valuable Plains Specimens
+        [1327] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1XWW/jNhD+KwGfWkAqRN3Sm+Mm2QDOgdjbfQj2gaJGFhFa8pJUNm7g/15Qhy35yjYIii2wbzJn+M03J8evaFSpckykkuNsjuJXdFGQhMOIcxQrUYGBtHDCCtgK0050naLYDiMD3QtWCqZWKMYGupYXL5RXKaTbY62/brBuypLmGqz+sPVXjeOHBrpaznIBMi95imJsWQPk09A1RhQMblhvkhnn1aJj4GLLfYNCd6vkHKg6EhEXW7h/y36bRSlSRvgRPGz7/iDGbnvtksn8YgWy54C344DnDRzwuxyQJ5jmLFPnhNVu6APZHUwVoU8SxV4bVT/cx+2jRi3qPVEMCgo9Pv7uPX8YULu7KtjfMCaqqYxDZeaHe2D2TnacFmyWE87Ik7wkz6XQeIODzjvHGJ4/AC2fQaAY65gdoeAODHbhPGfzK7Ko/R4Vcw5CdkZ07lMUO4Hl7rEfQIXrtYEuXpQgbR/qRMzK6XeyvC5UxRQriyvCii62JjbQpBJwA1KSOaAYIQPd1iTQbVkAMhqE1RJQrANzAG9SSvVuvHsBEg4zRCY6Im8s1vItn+kSqBKEjyshoFAf5OUO6of5epDtnscHrddaTYFMVbnU7cuK+VTBsp6bW+5tEY3Ex1Duw+0z/c4WCWHqknEuT8gfqkLeVR3C54J9q0AzQ5nvBpadhWYUOZbp+plvJl7mmEESRbaHHd/yXLQ20IRJdZdplhLFj02B6xC828XbUiwI/1SWTxqiGz5fgNS/mwbWUglKO9K1sj6asQWInRa/IS8bEYrDP6xGVQeiNuniQA+6zs5UibKYv88SK3qW8CFTltMzNYE5FCkRK22tVdxAZoRLME6T2AX+s6wSvonUQMP2o43C1sWjKoeo9bVmgi2PWQo829moHLM1UDphrdXTfTXKFIgxqea5mrCFft9wI9htuHqzqUTzgOqP3tPQTG0v2t8ITrzmeg3pRl1Xlw/wrWIC0qkiqtKPqt5zdov1xwrt39bIr5z/NznvRuS4rArVv2egu4KvPkv4kkNxW9YL7+iZMK57tWvQ3ii1nTDKiOWaYeJh040c3wwhjEyXJonl0cwhXorWX7tZ2m7Sj5uDZpw+vqL+XPUsjP3jo/UG5oQzlZ9NmMpLmQPng0mLT3XVdQqFYpRwHVZtsFEYLXQktmqHlmQv2l2InOGuGmrDlcgIhSnX86xdKr3Ie2MP9NYG+mn+ZUyXREBW8U+kSDsWeh30DvEYVFIbP8eo03mdzspxDvRpk9HePwxrsPq8+0XVl88783Xm+ptA+/Trz+Z4q3Zouvbq2g9whrPMNj07cE2XBolJXDcws8D2g4wSz9F1bezXbfADdXvOaM7Er5r9yWr2/1Odke0CDWhigmVbpuu6tkn8xDNxEmIrxGFmA62nboPbUnzEjh18/YvwSs+2s3tOWCHP9N7PFlDIs9/Gvw/35AScKPUtx6Q0tU3XsnwzxJSaNKQuTTCxARy0/ge5iZRdkREAAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+
+
+        #endregion
+
+        #region B Rank
+
+        // Export for Mission [1328] -  Magnetic Horizon Environmental Survey
+        [1328] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1XyW7jOBD9FYOnGUACtG83x5MNcBZECfoQ9IGWyjIRmXSTVNLuwP/eoCTGki3bjSCYmRtdrHp8VXoslt/RuJJsgoUUk3mBknd0TvGshHFZokTyCgykNqeEwnYz11vXOUqcKDbQPSeME7lGiW2ga3H+MyurHPKtWflvGqwbxrKFAqsXjlrVOEFkoMvV44KDWLAyR4ltWT3k49A1Rhz2IqyTZCaLaqkZeLblnaCgo1hZQiY7gXbXzTl9LOM5weWBktpOEPSK6rVhF0QsztcgOgf7O4x9v8c40EXHL5AuyFyeYVLzVgahDanE2YtAid+WMYj2cbuocYt6jyUBmkGHT7AbF/Qr6OhQTn7BBMtGCkO6CqI9MGfnc7gt2OMClwS/iAv8yrjC6xl0dq7Rtz9Axl6Bo8RWNdNner0TdP3OSHGJl3WiY1qUwIVGVR87R4kbWt4e3R5UtNkY6Pyn5Li9aaryjyx9w6trKisiCaOXmFBdTNM20LTicANC4AJQgpCBbmsS6JZRQEaDsF4BSlQlBvCmTMhP491zEDDMEJnowH5zYr2/5ZOuIJMcl5OKc6Dyi7LcQf2yXAfZ7mU8eHrt1QgklWyl7iuhRSphVXfGLfdWRGP+NZS7cPtM38hyhom8IGUpjuw/VFTcVRrhiZIfFShmyJ9bQeDYvgkRtkzPs0IzCt25mTtBnvsQxz720cZAUyLk3VyxFCh5bgSuSqBT9C3HDQ5nOWFiSbLRtCreGF8qwFvGl7i8YuxFQehu8w1w/VvZBciP3jHHpQCj7SXtpspPd5XW1FTQs0PVxTRmKjmjxRegWm4HdQoF0Bzz9bbHnUZwwmhjoH9YNSt3U21cnCD+cNjjve/SIzHg9STgkZNVQ01zaiwnKt0HC31H5d5EnqznkdgjhFs/dbfGcwl8gqtiIadkqR41u9nYvXT1/FLx5tVUi857MPDuuKEf748BR150NXvo7qel+gA/KsIhTyWWlXpY1XBzQL9/psfT+hpy/PdUNCiYP1LGfyyBz35z3TUnrKKyG2egO1qunwR8WwC9ZfWUO37FpFRS00rrdNfAdl0fB9iMcgdML8xyM85CbEYQzkM79sIgxGjzXbfXdnx+/jA0Hfb5HfVbre04h1vtNWd0NGW0oEz0Xxb7WG2vc6CSZLhUBVVHNQ7jparB1m3gVnl+vDsduf1JVTW9tOJznEFaqubYjpR+7J+YAv2Ngf43fyrSFeYwr8orTHPNQs2G/hCPnoba+rm9fxJWb+L59KyQvuGVstQH1d+oOwC0L75aNuat29Bt6mjXcmJsObltRmB7poczMGM7zswZeDPLsyEDmNXabXBbis+260TfRze4oCBJNrpinPxidHROXwlndAlU4nKUVvwV1qO/zv7uTyNOFgTYd2LTszPX9GLXN3GOsel7lpOFfoZj20Gb30VT1tXZDgAA",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1329] -  Freshwater Arthrolure Testing
+        [1329] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1WyW7jOBD9lYCnGUAaaKHWm+NJMgGcBbEbfQj6QEsli4hMukkqaXfD/z6gJNqSl7gR5Ng3qZZXr4pVRf5Co1rxMZFKjosFSn+hK0bmFYyqCqVK1GAhrZxQBjtlblS3OUq9OLHQo6BcULVGqWuhW3n1I6vqHPKdWNtvWqw7zrNSgzUfnv5qcMLYQjerWSlAlrzKUeo6zgD5fegGI4kGHs5ZMuOyXhoG2HXwGQrGi1cVZOpERbDruH0v7zwLLnJKqhN4rheGgxrjzu2ayvJqDbKXQLCXQBAMEgjNGZAXmJa0UJeENmlogTSCqSLZi0Rp0FU1jA9x+6hJh/pIFAWWQY9PuO8XDgvqGVdBf8KYqLYzTNR9b2/vOPzOe1aSipIXeU1eudAAA4FJx7eG8ifI+CsIlLq6SMdaO4x1R/QCmvpd0sUNWTaJjtiiAiFNEH3YOUr9yMEH7AdQ8WZjoasfSpBu8HTlZ3z6Rla3TNVUUc5uCGWmHrZroUkt4A6kJAtAKUIWum9IoHvOAFktwnoFKNWFOYI34VJ9GO9RgITjDJGNTujbiI1+x2e6gkwJUo1rIYCpT8pyD/XTcj3K9iDjo9Ebq7ZBpoqv9LxStpgqWDWLcse9a6KR+BzKfbhDpm90OSdUXdOqku/on2omH2qD8IXR7zVoZmhexA725mA7ie/YOCGenQQxtgMfkzjxPTzHHtpYaEKleig0S4nS57bBdQlMioHj+cHpLK/14LwRBeJiJFQpeFUL0Lj3XCxJ9R/nLxrJLJ2vQJp/LZegtuNckEqCGe9OqdM0g96J2kJiN9LLzGBOleCsdyuecJ/RJYi9/XFH2Valp/0f5yCU4/dCTWABLCdifTbaPsK/vJ5X++m3Fl6YbA12uZw0GXA4YjUTdHUqUhR4/tbkVKyB0TvROjs9M6NCgRiTelGqCV3qy8ptFfvD1DxTatHehvqjt/aP7HY/CpLD2/6dm1o/McxWM733BN9rKiCfKqJqfWHqN8yJhjzTYL/dG39a4EMt8NEzn3bbcMxrpvp+Fnpg1fqLhK8lsHvePGZHr4RWutVMp/W2Zub6WRQRx/a9MLZx5oJNXBzZZE6yxAnzKPIAbb6Ztdm9kp+3gnZz6v92WXdb8tn1veTb0V15MQOpKFtc/HX593CDO4VfYNcvbIJzsLHngh27RWhnJHJxhMMgiudo8z8CjH/eHAwAAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1330] -  Oceanic Impesctor Research
+        [1330] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1Wy27bOhD9FYOrXkAC9H7tHN8kN4CbBFGKLoIuaGlkEaFElaSSuoH/vaAkxpIfSRFkeXfUzPDMmdHwkC9o3kq2wEKKRbFGyQs6r/GKwpxSlEjegoGUc0lq2Dlz7brKUeJEsYFuOWGcyA1KbANdifNfGW1zyHdmFb/tsb4ylpUKrFs4atXhBJGBLpv7koMoGc1RYlvWBPlt6A4jDic7rHfJLMq2OlGYZ1veO4w0CKMUMqkr8WzLHoc577NgPCeYaoDA9iYA3hB2QUR5vgExSuTvMfT9CcNA9xw/QlqSQp5h0vFUBqENqcTZo0CJP3QxiA5xx6jxgHqLJYE6gxGfYH9fMO2Yo7dy8hsWWPaTcGysgugAzNlrvzuA3ZeYEvwoLvAT4wpvYtDVucbUfgcZewKOElv1TOf0Jhl0/87I+hJXXaHzek2BC42qfm6OEje0vAO6E6houzXQ+S/J8XDQVOfvWfqMm6tatkQSVl9iUutmmraBli2HryAEXgNKEDLQdUcCXbMakNEjbBpAierEEbwlE/LDeLccBBxniEx0wt9n7Pw7PmkDmeSYLlrOoZafVOUe6qfVepTtQcVHs3dR/YCkkjXqvJJ6nUpoOmHccR+GaM4/h/IY7pDpM6lWmMgLQql4w3/X1uKm1QjfavKzBcUMYTf2vawITbsIfNNzs8xc4TwzvTgIQjcK7TCw0NZASyLkTaFYCpQ89AOuWqBL9C3HjU5XeUvbqpktmKjYM+OVQrxmvML0P8YeFYaWm++Au29lFyBfxaPAVIAxiMngVAVqWRlMfQs9O1QypjFTyVm9/gRUyx2hLmENdY75Zidyf4nwL2tXdL/SPsIJ4teAA9qHIRMOR6LuOWlOZQp9x30NOZVrEvRGtiFOHYx5IYEvcLsu5ZJU6kaye8f+ieneHi3vrzy1GIn5kUvDDf348M5+4/pV7wYtXXrM7uBnSzjkqcSyVbeiepicmL2/m6X3Z+P/EfjQCHz0n6eD5C1YW8vxPgPd1HTzTcD3Eupr1r1Q50+YUDVqetJG0mjlcbAKfWwGQYFNz7FWJraj3IxyCPxVZEGWR2j7Q2vj8PR9eDX08qi+e0UepPDBdl3rx+wmA1yTbHZVNSAyyfjsDgRgnpWzL2f/TEU6j23HsnPHdEMHTK9wsBlnYW5ath/4Wey5lpOj7R+5TOJp7wsAAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1331] -  Valuable Ruin Specimens
+        [1331] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1Wy27bOhD9lYCrXkACROqtneObpAHcJIjSdhF0QUljmzAtuiSV1i387wUlMbb8iC+KLO9OmhmeOTMcHvI3GjVajKnSajydoew3uqppwWHEOcq0bMBBxjlhNWydlXXdVigjSeqgB8mEZHqNMuygW3X1s+RNBdXWbOI3HdYnIcq5AWs/iPlqcaLEQTerp7kENRe8Qhn2vAHy29AtRhoPVnhnyYznzfJEYQH2gjOMLIjgHEptKwmwh3fDyHkWQlaM8hNEMImiQY+Dftk1U/OrNaidxOEe4zAcMI7sHtAF5HM21ZeUtbyNQVlDrmm5UCgL+65GySHuLmraoz5QzaAuYYdPtL8uGnaQ2KWS/YIx1d1kHBuzKDkAI3vb4fdgT3PKGV2oa/oipMEbGGx1vjO0P0IpXkCiDJue2ZzBIIPt3yWb3dBlW+ionnGQyqKaza5Q5sdecEB3AJVsNg66+qkl7Q+e6fyTyH/Q1W2tG6aZqG8oq20zXeygSSPhEyhFZ4AyhBx015JAd6IG5HQI6xWgzHTiCN5EKP3XeA8SFBxniFx0wt9lbP1bPvkKSi0pHzdSQq3fqco91Her9Sjbg4qPZm+jugHJtViZ88rqWa5h1Qrllns/RCP5PpR34Q6Z/mDLgjJ9zThXb/gfm1rdNxbhc82+N2CYoRjHJfGn1A0LL3KDKsVuEnqJG6deTLzABy/00MZBE6b0/dSwVCh77gbctMCWGHrED05XmWtWLtYXEypfqIG7E3JJ+UchFgbAas1XoO2/sSvQr8oxpVyB0ytJ7zTVWU3pTV3/AhwbDbOYuZainr0DqufvoE5gBnVF5XqrcOcRSJxsHPSvaAq+X2oXQqL0NeCA92HIgMSRqCfJVqcyxSHxX0NO5RoEvZGtjzPHYjTVIMe0mc31hC3NfYQ7x/55aV8ijewuPPOxI+VHrgw/DtPDG/yNy9i8Iqxw2Tl7hO8Nk1DlmurG3InmmXJi+P7bMJ0fjmOB/4/A2RH42z3Pe8Ebi6bWu+scdF/z9WcFX+dQ34n2vTp6oYybUbOTtiOMgIM4xGXo4ngau0GUgkuDInBxUYZVMY0DWmC0+WaVsX8IP78aOnE0/50e90L4jH0ff/tCeWPyXjw2rL4w1w1bQq0uPlz+M5TnKCBJVWLikiKkbhAmnptGQeICKbxpmgAhpESbP81Gw775CwAA",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1332] -  Anomaly Adaptation Aquaculture Survey
+        [1332] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1XS2/jOAz+K4FOu4AN+P3Izc22nQKZtqhTzKGYg2LTsRDFSmWpnWyR/76QbSV2kr4GBXZuBkV+/EhRJP2CEinYBNeinhQLNH5B5xWeU0goRWPBJRhIHU5JBfvDXB9d5WjsRLGBbjlhnIgNGtsGuqrPf2VU5pDvxUp/22J9ZywrFVjz4aivBieIDHS5npUc6pLRHI1tyxogvw3dYMThwMJ6l8yklKtXAvNsy3uHkQZhlEImdCSebdl9Ned9FoznBFMNENjeAMDr1C5IXZ5voO458g8Y+v6AYaBzjpeQlqQQZ5g0PJWg1oJU4GxZo7HfZTGIjnH7qHGHeosFgSqDHp/g0C4YZszRppz8CxMs2krQXg+tnYN8u531rMSU4GV9gZ8YVwADgQ7HNYbyO8jYE3A0tlWStE9v4EEn7IwsLvGqiSypFhR4rVHVbeZo7IaWd0R3ABVttwY6/yU47l6WSvWMpc94fVUJSQRh1SUmlU6AaRtoKjl8h7rGC0BjhAx03ZBA16wCZLQImzWgscrECbwpq8Vv491yqOE0Q2SiV85bj835nk+6hkxwTCeSc6jEF0V5gPplsZ5kexTxSe+NVlsgqWBr9UBJtUgFrJtOuOfeFVHCv4ZyH+6Y6TNZzTERF4TS+o3zO1nVN1Ij3FfkUYJihizHKTwIQ9OZ+7bpFV5oxr6Xm1YYF5blYteKY7Q10JTU4qZQLGs0fmgLXKVAh+hbjhu+HmWKqXjGAvgo4aLkjEoOCvaa8RWm3xhbKiDdZH4AXu47tTqtQahwdM/uRG3CPDtUXUobp4KzavEZc8vtmU9hAVWO+ebTCP8wOac77gMNJ4h3Cnt+r6oMOJzQuq9hxsm6ZaYptZID97tZV2BaH/J2Qt9RxFvLI16fsB0Qvqno5kcJVZIJ8gRXOVSCZGrinUidhlEvKikE8AmWi1JMyUrNLrs9OHxqzZYieTsc1UdvCrT92o+Px/kbk1mtFLrJ6Vq8g0dJOOSpwEKqgal2lsMC/Vgdfrjc/t+qOllAH6qUd0viz7xz3RwnTFaib2c0NXxfgyrja9Ysr8kTJlQ9CF3HvSaK51bgetgxXbBC04v9wMRWZJsxOL6dOyGOwhxtf+ou2m3FDztB20gfXtCwozar4Wsd9Y5ly80olVWhbPoDxH4rt7vnqBKqXLUKyUrlYK92akf248MlyB1uoJFyLHmBM0ip6pXdqujH/jvLnr810B/zr5CuMYdC0m+4yjULtQL6p3gMaqjLn2s0F3mVz9ikhGy5u8vef4I1WHd+e1FIn/FaSRr3zc31p3837tVnK96rnXpj/YoOwZ9H88iMAuyZno9zM87d0LT9PPI8K4hwEDYV3eJ2FB9s13V+jpKKrTDdjJIcrwVWTXWUPEqcSSokh1Eq+RNsRn+d/X2witiWH80hMIN5Nje9zA/NOIojM3BdcDLfCV0rRtv/AAvjYOjGDgAA",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+
+        #endregion
+
+        #region A Rank
+
+        // Export for Mission [1333] - Collapsed Tunnel Specimen Survey
+        [1333] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1XS2/jOAz+K4FOu4C9sGP5lVsm23YKpA/UKeZQzEGx6USII2UkuZ1Mkf++kG0lduI2g6KL3ZtMUR8/UhRJv6JxqfiESCUn+QKNXpFeTykDvb5gZF5AhkZKlGCh6wyNhlFsoXtBuaBqi0auha7lxc+0KDPIDmKtv7MqrBvO06UGqxZDvapwgshCV5vZUoBc8iJDI9dxOsjvQ1cYcdg54ZwlM1mWa8MAuw4+Q8Gc4kUBqWoddNtqw/NmucgoKQxA4OIOAG7ULqlcXmxBtgz5Rwx9v8MwMEEmK0iWNFdfCK14aoE0gkSRdCXRyG/CFkSnuG3UuEG9J4oCS6HFJzg+F3QjNjRHBf0FE6LqqzdWj08Pj+LtNadnS1JQspKX5JkLDdARGHc8qyt/gJQ/g0AjVwfJ2MQdCyZgX+jiiqwrz8ZsUYCQBlXfZoZGXujgE7odqGi3s9DFTyVI83J0qGc8eSGba6ZKqihnV4QyEwDbtdC0FHADUpIFoBFCFrqtSKBbzgBZNcJ2A2ikI9GDN+VSfRjvXoCEfobIRm/s1xar/QOfZAOpEqSYlEIAU5/k5RHqp/nay/bE417rlVadIIniG/1AKVskCjZV6Ttwb5JoLD6HchvulOkLXc8JVZe0KOQ7+w8lk3elQXhk9EcJmhkKIi9wUpzZqRPFNnYxtqPUB3uOfS/CwziGcI52FppSqe5yzVKi0VOd4DoExkXfGWLnbS8TBUVBxCAhxZqzwQMHDXrLxZoUXzlfaRhTYr4Bqb61XILaN56cFBKsphE1m9pH05IaUR1F7Ia6dBnMRAnOFp+A6ngt1CksgGVEbA8N8g2EGV2DOGqhN5Ttt3TB+8vpt/Y3L+fFcVRqjWEQ7xVOXDxV6fDt0XqUMBN0U3thaNaSM5fSBQv9oSZenzwb+nfOdgjfsWL7bQlsnCr6DNcZMEVT3Ul7LsrA6Jc6zhWICSkXSzWla90T3Xrj+AlX404p6qarF63u0jP+eKEfn04N7wwAelQxtdQk/QP8KKmALFFElbov61nojZfwe5l9PlP/2yTrzaffSpyzGfLvpsBH79zU4AkvmWqfs6qUfpSgs/qWV0Px+JnQQqeaybR2rQ6wFw+jwA7cOLBx5Od2lIFnO3N/njtRCNiN0O67KdbNtP20F9T1+ukVdQu3i8O3C7eed8lGQjZIynQFotOq3PfCu3+gOqb134RWGK91GA5qPQ8L+/HxuOV1Z91IGy5FTlJICl1pm6HUj/0zY6W/s9D/5jck2RABeVl8JSwzLPSw6ffx6KRREz/Pqu7yOpvxyRLS1f46W38kTmew+vBIkryQjZZU5quba88ZzWChl7X4oNb3zFpJDSHETuSHduw5uY3TIbZj7Ed24ARkngVhTABXSV3jNhSfXM/zvh+Sc1YyBsVAD250DWyQlOIZtoM/xn92x50ozefpHDzbxU5o49QPbeJHYPsxZNjHme+SHO3+AT8HEa8KDwAA",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1334] - Red Cosmomaggot Testing
+        [1334] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1W227jNhD9lYBPLSAVom6W9OZ1kzSAc0HsxT4EeaCkkUSEFr0kld104X8vKImO5FvablCgQN4kzvDMmeHMIX+gaaP4jEglZ0WJkh/ovCYpgyljKFGiAQtp45zW8GrMjekqR4kbxRa6E5QLql5Qgi10Jc+/Z6zJIX9d1v6bDuua86zSYO2Hq79anDCy0OV6WQmQFWc5SrDjjJBPQx+iFk9GAM6b3GZVszKEfOz4bzAyuzhjkKkjBfKxg4e73LdZcJFTwo7gYTcMRyX3+20XVFbnLyAHCQQ7CQTBKIHQHAl5gkVFC/WJ0DYNvSDNwkKR7EmiJOirGkb7uEPUuEe9I4pCnR1rHB874S5MOK6va5AE/RNmRHV9Y0js7nZ3Tsfrdy8rwih5khfkmQsNMFow2XnWeP0eMv4MAiVY1+xQd4WRbpBBQFPOT7S8JKs272ldMhDSBNFnn6PEmzj+HvsRVLTRLf1dCdKPpT6IJV98I+urWjVUUV5fElqbetjYQvNGwDVISUpACUIWumlJoBteA7I6hJc1oEQX5gDenEv1r/HuBEg4zBDZ6Ii9i9jaX/ks1pApQdisEQJq9U5Z7qC+W64H2e5lfDB669U1yELxtR5fWpcLBetWRl+59000Fe9DeQi3z/QbXaWEqgvKmDxhv29qedsYhM81/dqAZoYK34vDwCU2hL5j+3EU2ZEXB3YaEOx6cZHmTo42FppTqW4LzVKi5KFrcF0Ck2LguF58PMt7yM9mXK74ipQlV1JD3nCxIuwPzp80iJGfL0Da/26EtVWC0qmYYdZLS7oCsTPk17TemrQM/OZ0vroWbWF9PNFaZwItlOB1O6y91xavIEyCdZrBANXxBqhzKKHOiXh5L+DfeZOybVVGHm4Ybx32stl3OURt6LUUdH0s0iRwva3LsVgjpxPRej89RdNCgZiRpqzUnK70bYY7w+54tc+aRnTXpf4YXASdRgfx/v1/4u7eWGgrbKYH7+FrQwXkC0VUo69Q/cjZbcx/1FN/u0c+zvy/OXMjiDPe1Gq4z0K3NXv5LOFLBfUNb1+702dCmZ5VM6AD4Uz9tMBeEdhx5gS2PwmJTZw4tnEUBA4JMURxijaPRjn7Z/RB5WyfLMeU85qUNSianS0qYGx0U+A3RfQnBehIb/+8MH4o4IcCfijg/1wB/cyfeKEX2HkBE9vHoWtHWezaaeGGziTCvuNPBgrYad7Do3mg9vr2gD3Pf9x5H54tQSpal2e/TH8dv1cjNyUkCrHteBmx/cDJ7DSLc9sryMTxijhPCxdt/gK1QVPqKBEAAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1335] - Edible Marine Life Survey
+        [1335] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1XyW7jOBD9FYOnGUACRO3yzfEk6QDOgihBH4I+0GTJJiKLbpJKtzvwvzeoxZa8JOkgwGSAuclk1atXxcdi+RmNSi3GRGk1zmZo+IxOCzLNYZTnaKhlCRYymxNewHaTtVsXDA3dOLHQjeRCcr1CQ2yhC3X6k+YlA7ZdNvbrGutSCDo3YNWHa74qnDC20Pnybi5BzUXO0BA7Tg/5ZegKI4l6Hs6rZMbzcnEkMR87/iuMWhCR50B1m4mPHdw1c19nISTjJD9CBLth2Kux37idcTU/XYHqBA52GAdBj3HYngF5hHTOM31CeMXbLKh2IdWEPio0DJqqhvE+bhc1aVBviOZQUOjwCXf9wn4F3dZV8l8wJrpWRht119vdqb/XeN/NSc7JozojT0IagN5Cm45n9ddvgYonkGiITZEOSTuMjQQ6Adv6nfDZOVlUiY6KWQ5StUHMYTM09CLH32Pfg4rXawud/tSSNBfPVP5OpD/I8qLQJddcFOeEF209bGyhSSnhEpQiM0BDhCx0VZFAV6IAZNUIqyWgoSnMAbyJUPrdeDcSFBxmiGx0ZL+OWO1v+aRLoFqSfFxKCYX+oCx3UD8s14Ns9zI+GL2yqgWSarE095UXs1TDsmqUW+6NiEbyYyh34faZ/uCLKeH6jOe5emH/tizUddki3Bf8ewmGGZr6NPZin9k4oZntAzg2oZ5vZzHGGNOE4NBDawtNuNLXmWGp0PChFrgpQZti4Li+dzzLlOT6B9EgByOp51LkpQQDeyXkguRfhHg0QG3P+Qqk+l1fY7OrQJt02gvdLNUF83FkmlbrnGopitmfuDtex30CMygYkas/RvhHlNN8w71n4YbJxmDL76hJj8MBq3sFd5Iva2YtpXplJ/ymEWYkV7u83ShwDfHac8vrushXX+dQjKjmT3DBoNCcmhftQO59jB7x98CYmzXKNMgxKWdzPeEL86ThemP3ylXDTCnrN9N8dB6Hum8Hyf6r/8IDbiaPttm1mryF7yWXwFJNdGneUTPa7Ar1bXp8s+z+XXUdFNLLinmrJD7nmbdNcizKQnf9rErD9wqMjK9ENeOOngjPzaVqddxppgzAc5x4aoObxbYfe5k9JS61w2lAsswnpqWi9be2mzbD88NmoW6oD8+o31lxEB7vrDcKSiaoJNPeK4JfKuzmLppqmji1wWhhCrA1OzRHB8nuJOT1p9LYBC5lRiikuWmYzfgYJMErA2CwttCn+T+RLomErMy/kIK1LMwcGBzi0RNQUz/Pqk7xgt2J8Rzo4+YgO/8lnN7M8+5pwTiftOGrk+uOAM2bbz7r5a3ZoQvWkbNDsB8lU2xTJ3Bt3w2ZHVMX7DiLQ4pdEiRhiNbWvlyj4wmMCsqh0INr/mulBmdCKZ7/L9zPL9zovyTcyHcw8TLPZrHr2D5hiU0IZbaf0YR4jDJGnKoP17gNxQfsecG3wSnj0xwGl0TyAgYTnsEgLeUTrAZ/jf7uD8+MsYhQwuwoCRPbT2hkkyzBNoaEZRH2nGkSoPVv/0MOOpcRAAA=",
+            },
+            AmountRequired = 22,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Ancient Oizys Fossil"] = new List<uint>()
+                {
+                    50157,
+                },
+                ["Inverted Anchovy"] = new List<uint>()
+                {
+                    50118,
+                    50128,
+                    50138,
+                    50153,
+                    50163,
+                    50168,
+                    50202,
+                    50226,
+                },
+                ["Inverted Barracuda"] = new List<uint>()
+                {
+                    50119,
+                    50139,
+                    50154,
+                    50164,
+                    50169,
+                    50203,
+                },
+                ["Pseudocrab"] = new List<uint>()
+                {
+                    50156,
+                },
+                ["Vacuum Worm"] = new List<uint>()
+                {
+                    50155,
+                },
+            },
+        },
+        // Export for Mission [1336] - Moros Well Environmental Survey
+        [1336] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1XyW7jOBD9FYOnGUAaaKO2m9uTDXDSQeSeHII+UFLJJkKTbopK2hP43wfUYkteknQQoOcmk1WvHouviuUXNK6UmJBSlZNijuIXdMZJymDMGIqVrMBAenNKOew2827rKkexE0YGupVUSKrWKLYNdFWe/cxYlUO+W9b2mwbrWohsocHqD0d/1Th+aKCL1WwhoVwIlqPYtqwB8uvQNUYUDDysN8lMFtWyY+DZlvcGhc5LMAaZ6jnafTPn7bBC5pSwEym1Hd8fJNVr3c5puThbQ9kLjPcYYzxg7HdJJ4+QLGihvhBa89YLZbeQKJI9lijGbRr98BC3jxq1qLdEUeDZKWl4tuXvw/jDhDodkqT/woSoRhkdiX1vZ+863NZ7tiCMksfynDwJqQEGC93pXGO4fgeZeAKJYlvn7Ji0/VArohewS+cXOr8gy/rcYz5nIMsuiL77HMVuYHkH7AdQ4WZjoLOfSpK28PRFzETyTFZXXFVUUcEvCOVdPkzbQNNKwjWUJZkDihEy0E1NAt0IDshoENYrQLFOzBG8qSjVh/FuJZRwnCEy0Yn9JmK9v+OTrCBTkrBJJSVw9Umn3EP9tLMeZXtw4qPRa6tGIIkSK12+lM8TBau6Ue64tyIay8+h3Ic7ZPpMlymh6pwyVr6yf1fx8mvVIXzj9EcFmhnCRVHgPMtNyLzA9CJMzDALAjPwnCJ0ojSLohxtDDSlpfpaaJYlih8agesUdEfElqNr5NQpb0uocpFJgBVIjXcj5JKwSyEeNULXe+6B1L+b+tW7JSh9jq6S9dKMLkHuVfg15dstXdp/WY2tTkSdVc8OdKPrAiVKCj5/M1TP3XJ77lOYA8+JXP8KghOEGwP9LaqUbQ86MHH8aGuwI3jSZEDiiNVM0tVBpG3eCsLKfY5OgB1363lA4Rd8X+HW2ukaGhcK5IRU84Wa0qV+y+xmY7+46rGlks1jqT96z8CRXu8GODp8/V95yPXI0XW5TpN38KOiEvJEEVXp91TPNPtCfZ/G3i2lY4a/WTDvUsZvlsBH77zrjhNRcdX3M9BXztbfSrhfAL8R9XA7fiKUaal1Sut10RRHEATgmVaBselZrm9GRYrNAoMfOqnlpMRDm+9dG22n5oftQtNJH17QsKXavnO6pV4LKcrRpZAc8tE/VPfV/jNiv5bgqxy4ohlhOqs6XmMwXupE7MyOjYE42h+F3OGUqptcUsmCZJAw3Qzb8RZH+I0JEG8M9L/5Q5GsiISiYpeE5x0LPQjiYzwGQmrz5xr1bV7lMzFZQPa4vdDefwtrMPR8eFxInslKr9Th65vrzwDto68/m+Wd2bFC68kaUtv3Se6ZoeMR08MuNkOc5WbqO0Ga+vqfTVrLusFtKT7Yrut/HzX6vAfGRmf8iUrBl8AVYaOkkk+wHv0x/nM4iviQBhA4qWmRFEzP9gMzIiGYgCEkWR5mbuqjzX/IflJ35Q4AAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1337] - Valuable Marine Specimens
+        [1337] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1XS2/jOAz+K4FOu4C98FN+3DKZtlMg7RR1ZudQzEGx6USII6WS3McU+e8L+dHYiZMsih72sDeHpD5+pCiSeUPjUvEJkUpO8gWK39AFI/MCxkWBYiVKMJBWTimDnTJrVdcZip0wMtCdoFxQ9Ypi20DX8uIlLcoMsp1Y229rrBvO06UGqz4c/VXh4NBAV5vZUoBc8iJDsW1ZPeTT0BVGFPROWGfJTJblumXg2ZZ3hkJ7ihcFpOpIRjzbsrunnPMsuMgoKY7g2Q7GvRx7zbFLKpcXryA7Afh7Afh+LwDc3gFZQbKkufpCaBWGFshWkCiSriSK/SarODzE7aJGDeodURRYCh0+eP8c7ifUaY8K+hsmRNWVMVRmODwAc/Zux23AZktSULKSl+SJC43XE7TRuUZffg8pfwKBYlvn7AgFr+ewTecXurgi6yruMVsUIGTrRN99hmI3sLwD9j2ocLs10MWLEqR5h/oiZjx5JptrpkqqKGdXhLI2t6ZtoGkp4AakJAtAMUIGuq1IoFvOABk1wusGUKwTM4A35VJ9GO9OgIRhhshER/S1x0q/45NsIFWCFJNSCGDqk6LcQ/20WAfZHkQ86L2yqgskUXyjny9li0TBpuqbO+5NEY3F51Duwh0yfabrOaHqkhaFPKG/L5n8XrYIPxh9LEEzQwF250EU+iYhaWh6YOdmRHzPDMB3gsDBVubYaGugKZXqe65ZShQ/1AWuU9CG6FuO5x+P8isRq9HFy4YwCaPksaTZKFGCbjT0LRdrUnzjfKXB2jb0E0j1W8slqPcXnZNCQvvCG6WOtH3rjajOpWcHur21mIkSnHXm5MDxG8q0dEbXVTPBf1kHkJbbgZzCAlhGxOtJ1D0EJwi3BvrKy3mxH2dt4uDo3WBH+qhJj8SA1UzQzTFPge+47ybHfPWMTnhr7PT7GOcKxISUi6Wa0rWeU3at2H841YZSinoQ6o9Oix/o427gR4eD/sSQ1ttF28HaIruHx5IKyBJFVKlnpV5fjlTemUr618UxZPh/CZwtgY/eedv5JrxkqnvOQN9Z8fpDws8lsFte7bHjJ0ILXWptpXU6ZOgRnLmAzXkWRqbnZMSMItcys3A+x2DZ2MGAtr/aFtksyA/vgrpLPryhfru0cXC8XSYKoBhNOVswLvvjwT71vq4zYIqmpNAZ1b5qg/FaJ2FnNrT2+tH+iuP2t0/dspJS5CSFpNCtrVkT/cg/s9n5WwP9Z/43JBsiIC+Lb4RlLQu94PlDPHpF1OTPNaqbvM5mfLKEdPV+mZ3/DFZvmfnwGpA8k42WVO6rm+vO9maY689avDMb6rOdks4t7PtBiE17HqWmF+aBOceYmBYOs7kV+ZbvO1VJ17gNxQfbdYNfo79JUeryGd0QQRmM9LJE18Dk6I/xn/3lIidB5gB2zdTLQtPDQW7OfchNG6zMs8PQ90IHbf8BfS9sb8YOAAA=",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1338] - Marine Distribution Survey
+        [1338] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1WS2/jOAz+K4VOu4C98NuRb2mm7RZIH6hTzKEYLGSbiYUqVkaSO80O8t8Xsq3EzqPFDoI97c0mqY8fKYrkTzSuFZ8QqeRkvkDJT3RVkYzBmDGUKFGDhbRySivYKQujui1Q4o2whR4F5YKqNUpcC93Kq/ec1QUUO7G237RYd5znpQZrPjz91eBEIwvdrGalAFlyVqDEdZwB8sfQDQaOByecT8lMynqpGfzFK7Z+lvCVqvK2UjVVlFcmzCNRB64TfELXeOCMQa5MmIHruH0z73OKXBSUsBPpd70oGlxA0B27prK8WoPsOQ73GIfhgHFkLoi8QlrSuboktOGtBdIIUkXyV4mSsEt5NDrE7aPiDvWRKApVDj0+0f65aJhBzxwV9G+YENWWzbEajEYHYN7edfgd2KwkjJJXeU3euNB4A4GJzreG8ifI+RsIlLg6Z8ZnMPBg8ndJFzdk2QQ6rhYMhDSo+rILlPixExzQHUCNNhsLXb0rQbpXqTM/4+kPstpW5w2hlUmm7VpoWgu4AynJAlCCkIXuGxLonleArBZhvQKU6EwcwZtyqX4Z71GAhOMMkY1O6FuPjX7HJ11BrgRhk1oIqNSZotxDPVusR9keRHzUe2PVFkiq+Eq/V1otUgWrpovuuHdFNBbnodyHO2T6gy4zQtU1ZUx+oH+qK/lQG4Tnin6vQTND8zD3XdeNbYwxsYPCG9mjuQs2xMSJMXEiP8NoY6EplephrllKlLy0Ba5TYEIMHS/wTkd5yTgvoLjQxzLCmIa852JJ2J+cv2oQ02++Amn+tVyC2naPOWFy29s7pY7Q9JVO1OYwcGPdxwxmqgSvetPyxPEZXYLYa1d35H2rQgn+wznw5Pg9T1NYQFUQsT5DCA3wF15nbD8prYUX4a3BLsKTJseo9a1mgq5OeYpDz9+anPI1MPrAW2enH9F4rkBMSL0o1ZQu9fRyW8X+62qWmlq041F/9Bp/26JDfDjgP5jVegMxfc2U4BN8r6mAIlVE1Xpk6hXnv6nLc5TK0Rr8v9j+fbE9S5jUUvFlWwhtefSW6xN1eGTR+ZWyTLuWPeF1pfrnLPTQLb0lVPe8WcfHb4Qy7dZ47bX2widRFDuFHRPXtYOMhDbG4NsQFtjPcB7GYYw230xv7/b8l62gbe/6v50oXSt/cX1/9O3ijghawcUXKpWgWa3f0UVaizdYX/w2/n04ZEYkz2Mnc20MxLWDPPNsEkSZ7UQYx16GfScM0OYfbmFHItwMAAA=",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1339] - EX: Large Mutant Distribution Survey
+        [1339] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1W227bOBD9FYPP0kJ3S3pz3SQbwLkgdtEFgj5Q0sgiQpMuSSX1Fv73gpJoS75lEeRx36iZ4Zkzo+Ehf6NJrfgUSyWn5RKlv9EVwxmFCaUoVaIGC2nnjDDYOwvjui1Q6sWJhR4F4YKoDUpdC93Kq185rQso9mYdv22x7jjPKw3WLDy9anCi2EI360UlQFacFih1HWeAfBm6wUjGgx3Ou2SmVb0yDALXCd6hYHZxSiFXvY1uP8x7Py0XBcH0TEtdL4oGTQ26bddEVlcbkL3E4QHjMBwwjkzT8QvMK1KqL5g0vLVBGsNc4fxFojTs2hjFx7h91KRDfcSKAMuhxyc63BcNO+iZrYL8C1Os2lE4NVdRfATmHfwOvwNbVJgS/CKv8SsXGm9gMNX51tD+BDl/BYFSV/fM5AwGGUz/vpDlDV41hU7YkoKQBlX/7AKl/tgJjugOoOLt1kJXv5TA3UnTnV/w+Rte3zJVE0U4u8GEmWbaroVmtYA7kBIvAaUIWei+IYHuOQNktQibNaBUd+IE3oxL9WG8RwESTjNENjrjbzM2/j2f+RpyJTCd1kIAU59U5QHqp9V6ku1RxSezN1HtgMwVX+vzSthyrmDdKOOeezdEE/E5lPtwx0zfyCrDRF0TSuUF/1PN5ENtEL4x8rMGzQyFEOWO55R2VGaFHfhxZuPMiexynLlhGARFGWdoa6EZkeqh1CwlSp/bAdctMCWGjhdcqPJaH5w3rECMJkJVgtNagMa952KF6d+cv2gkIzrfATff2i5B7SSkxFSC1UlK59RlGnHpTG0jA3esxcxgzpXgbPkJqI7fQ53BEliBxWYvdWcQFmQF4kAM7wjbubQE/uWczvaV1xk97Eob4UXJLuCoxOOQAd8TUQtB1ucyjUPP34WcyzUIupCti9NHaVIqEFNcLys1Iyt9h7mt4/CMNc+VWrSXpF705H+KWQ50ohSs1sr0V8cssFhCi3niKvLHYXL8MrhwyevniBFEM7ZP8LMmAoq5wqrWd61+75yZ5f82m+/P2v9j8qEx+eg/n3dCOuU1U/19FnpgdPNNwvcK2D1vHr6TV0yoHjUzaX3BxcUYfMe3vQRiOxi7uR1nXmkHXpLFWeY5MQRo+8Mobveift4ZWtHV363OdwL77Pp+8mN09U86mumBH93VCjM1+kqkEiSr9biO5rV4hc3wAijjyE9KL7ODRF8AWQZ2AoVrx05SFDgIk6R00PYPGhl6LEwMAAA=",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+        // Export for Mission [1340] - EX: Dune Resource Emergency I
+        [1340] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACu1Y227bOBD9FYNPu4C4kERKlvzmumlrwE2COEUXKPpAkSObiEy5FJU2LfzvBXWxJd+yabsLdJE3iRyeOTOcORT1DY1Lk09YYYpJukCjb+hCsSSDcZahkdElOMhOzqSC3aRop6YCjfwodtC1lrmW5gGNPAdNi4svPCsFiN2wtd/UWG/znC8tWPXg26cKJ4wc9Hp9u9RQLPNMoJHnuj3k89DHqMXDHoD7KLfJsly1hKjn0kcYtavyLANuOgu9rpn/uNtcC8myExn2/DDs5Zg2y17JYnnxAEXHcbDHOAh6jMN2D9gdzJcyNS+YrHjbgaIdmBvG7wo0Cpo0htEhbhc1blCvmZGg+KlKoZ4b7sOE/YT6LZKWX2HCTF0oLYn91f7edpBm9e2SZZLdFa/Yfa4tQG+gjY44/fEb4Pk9aDTybM6OlVMY2YroOGzT+UIuXrNVFfdYLTLQRevE7r1AIzJ06QH7HlS0sTX8xWjW9KHdiNt8/pmtp8qU0shcvWZStfnAnoNmpYa3UBRsAWiEkIMuKxLoMleAnBrhYQ1oZBNzBG+WF+aH8a41FHCcIcLoxHztsZrf8ZmvgRvNskmpNSjzi6LcQ/1lsR5lexDxUe+VVV0gc5OvbftKtZgbWFe6uePeFNFY/xrKXbhDpp/lKmHSvJJZVpyZvylVcVW2CO+U/FSCZYZCnqYpEwJTDwimHqGYeUMfD4eU+CyMgIQJ2jhoJgtzlVqWBRp9qAvcpmAbYhyfjnGcZYN66X6gl7lesexNnt9ZoFaC3gOr3us2trMFGBtO29B26FauQO81+luptlO2w/9ya1ubj8on9YZW71pHc6NztXjUVWe5SzrLZ7AAJZh+sAiN4ZZRyrICnKcBv8zLJNuG37Pww3hrsKN90uQYta7VrZbrU56GgU+2Jqd89YzOeGvsbMuMUwN6wsrF0szkyh5dXj2x30vVR0up67PRPnRUvxbkID483c8c1BsHbVWsLbYb+FRKDWJumCnteWk/YfYr8J8Vz1Nr5HnP/5s9b9VvkpfKdNc56EplD+8KeL8EdZlX37LjeyYz26ttg3ZUkoSCEz4MccLcCNMwCHASUR/7XpIEUexTEcdo87GVyeYj+YhMBq4XnTkMpuoetAExeJNrtYRs1RNM71HB/EkNOl/eP6VsR9vhd9LG/eifIplPWPuspM9K+n9W0piIxPXdADMRcExZxDHzU4bdFBKXuEBIFHSUtNbOD9/QvoiSMyKqc1UwJQYz+ZVpcSChJ5M5FaCM5CyzGbTOaoPxyga9Mzt2OQ7i/Qsi6d/dI+u41CnjMM+s0DWX/iAOHrkXBxsH/Ut/XZ7+m2W+ZhrSMnvDlGhZ2OtxcIxHr2ia/BGn2sqpuM0nS+B3293s/HFxe1fBH75E2cUvWvfVznVvRs1VyD7WwzuzY03V/RggJPVSj2HhU4JpzDiOhnSIGfGImwS+5wofbZzDmqWnA7gS4jPIxdIMnqv3t6te+jtVbxJxnqQ+YN+lgCkVMY45G+Ik4kAC4NwNokqAa9yG4gePUPfj4GWpYHADRV5qDoOLFegFKP4wmA7+uPj7z/6fBT8iNA1igocsJJimaYwjwTgOAy/gYRi6Qgi0+Q5pjZowwxYAAA==",
+            },
+            AmountRequired = 0,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+            },
+        },
+
+        #endregion
+
+        #region Red Alert
+
+        // Export for Mission [1368] -  Iron Coral Collection
+        [1368] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACs1W227bOBD9lYLPEiDJur+53iQN4CZBlKAPxT6MpLFFhBZdkkrrFv73BSUxlnyJdxcG2jdqLodnRsND/iLTRvEZSCVniyVJf5GrGnKGU8ZIqkSDFtHOOa1x5yyN67YkqRcnFnkQlAuqNiR1LXIrr34UrCmx3Jl1/LbD+sx5UWmwduHpVYsTxha5WT9VAmXFWUlS13FGyO9DtxhJNMpwzpKZVc3qRGG+6/hnGBkQzhgWylTiu447DPPOs+CipMAMQOj6IwC/D7umsrraoBxsFOwxDIIRw9D0HF4wq+hCfQTa8tQGaQyZguJFkjTouxjGh7hD1KRHfQBFsS5wwCfczwvHHfNMqqA/cQaqmwSz6362t9fvSZ/9VAGj8CKv4ZULDTAymHIm1tj+iAV/RUFSVzfJ7OmPdjAN+0iXN7BqK5vWS4ZCGlT9N0uSTiLHP6A7goq3W4tc/VAC+pOlW/3Es++wvq1VQxXl9Q3Q2jTAdi0ybwR+RilhiSQlxCJ3LQlyx2skVoewWSNJdSeO4M25VP8b70GgxOMMiU1O+LsdW/+OT7bGQglgs0YIrNWFqtxDvVitR9keVHx09zaqG5BM8bU+oLReZgrXrRLuuPdDNBWXoTyEO2T6na5yoOqaMibf8T82tbxvDMJzTb81qJkRL8wTwDK0PQdy28/zxAYnyO3QxShBz4fcWZCtReZUqvuFZilJ+rUbcN2CtxKT5HSNU8Y+dKn7hd5xsQL2ifMXDWRE5gtC+63tEtWbYC+ASbR6Ae+dukoj5b2pg/fdSIuXwcyU4PXg1juf7kwG6XNcYl2C2FyAVwv8F29ytl9pF+GFyVvAjvbJkGPUhlHPEp8EXXfMDKXOcqbRY7Ao8DTxLvMUr1HQv2na0XR9wKYLhWIGzbJSc7rSV5nbOfZPXvtoaUR3V+rF4FLo5DtIDm/3dy5q/cIwmmdG8xG/NVRgmSlQjb4/9RPmxLyemb//Oma/aWyOTshFR+EP++dZr5Uz3tRqmGeR+5ptniV+qbC+4+1bdvoKlOlJNgdqoKlO5EeR54d2WbqB7WNc2LCII9sJ8yQq8txFSMj2byOq/SP565uh01X93Ul5r6KPWH6YMhRqrOA5Jl4SBpEdx6Vn++jENkBR2h5AEKM7SQJ3Qrb/AF6zC639CwAA",
+            },
+            AmountRequired = 4,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Iron Coral"] = new List<uint>()
+                {
+                    50227,
+                },
+            },
+        },
+        // Export for Mission [1369] -  Sunken Relic Salvage
+        [1369] = new FishingTools()
+        {
+            FishingPreset = new List<string>()
+            {
+                "AH4_H4sIAAAAAAAACt1Wy27bOhD9lYBrCRBlSba0c90kN4CbBHGCLIouaHFkEaZJl6SS+hb+94KSGEt+xG2Ru7k7ah6HZ0bz4E80roycEG30pFig7Ce6FGTOYcw5yoyqwENWOWUCdkrqVDcUZeEo9dC9YlIxs0EZ9tCNvvyR84oC3Ymt/bbB+iJlXlqw+hDaU42TjDx0vX4sFehScooyHAQ95Peha4x02PMIzpKZlNXKMYhwEJ2h4Lwk55CbjiPumoXnr5WKMsIdQIKjHkDUml0xXV5uQHcuivcYxnGPYeKSTJYwK1lhPhFW87QC7QQzQ/KlRlncpi0ZHeJ2UdMW9Z4YBiKHDp9k3y/pZyx0ror9CxNiml/vbt33DvfyPWi9H0vCGVnqK/IilQXoCVw4A68vf4BcvoBCGbZJcndGvRtcwj6xxTVZ1ZGNxYKD0g7V/k2KssEwiA7o9qBG262HLn8YRdpWsql+lLNXsr4RpmKGSXFNmHAJ8LGHppWCL6A1WQDKEPLQbU0C3UoByGsQNmtAmc3EEbyp1Oav8e4VaDjOEPnohL65sdbv+MzWkBtF+KRSCoT5oCj3UD8s1qNsDyI+entt1RTIzMi1bVAmFjMD63r07bi3RTRWH0O5C3fI9JWt5oSZK8a5fkf/UAl9VzmEJ8G+V2CZITwckiFN536IcepHQxr4oxDAH4YkwukgDwtK0dZDU6bNXWFZapR9bQrcpsCFGAeh7bRTUV7ZxnklBtTFWJlSSV4psLi3Uq0I/0fKpUVyU+YZSP1t5RrM2+4pCNfgtbuoVdow3VZqRU0iIzy008thzoySorPnzrsHg477FBYgKFGbP0b4LKs5PxdSzzFM0je/He2TJj1qR6yeNDwqtm4IO6aN5I9YDePQxtN4nuLVM3qHWWtnW2lcGFATUi1KM2Uru7Rwo9jvsfo9UqlmK9pDZ/w3gzpOD/f4OyvZPh7cdHM1+ADfK6aAzgwxld2U9nVyojDPFNpv19Nvl81/Uh9HS+H//M9n7VScyEqYrp+H7gTfPGl4LkHcyvqZOn4hjNu2cJ3TmZ4jSvIoDFJ/NAfqR0U+91M6wD5O4pjQ0YAOEoK239z4bN+/X98EzQS1383QbqelrsQSxIUCzvILTfiLHae9iyHNMU0K7M9pgP0oLnI/DULwcZJQOg/piGCCtr8ASHFGgeMLAAA=",
+            },
+            AmountRequired = 4,
+            UniqueFish = false,
+            Baits = new Dictionary<string, List<uint>>()
+            {
+            },
+            RequiredFish = new Dictionary<string, List<uint>>()
+            {
+                ["Oizys Rock"] = new List<uint>()
+                {
+                    50229,
+                },
+            },
+        },
+
+        #endregion
+
+        #endregion
     };
 }

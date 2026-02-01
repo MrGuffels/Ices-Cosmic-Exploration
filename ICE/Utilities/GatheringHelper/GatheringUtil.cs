@@ -511,11 +511,45 @@ public static unsafe partial class GatheringUtil
         RawLocation = new Vector3(77.05f, -58.69f, -475.25f),
         MapInfo = new Vector2(22.9f, 11.9f)
     };
-    public static CriticalInfo GravitationAnom2 = new()
+    private static CriticalInfo GravitationAnom2 = new()
     {
         RawLocation = new Vector3(-189.71f, -0.07f, -61.36f),
         MapInfo = new Vector2(17.6f, 20.1f)
     };
+
+    private static CriticalInfo GaleForce1 = new()
+    {
+        MapInfo = new(33.2f, 12.9f),
+        RawLocation = new(584.29f, -60.42f, -429.47f),
+    };
+    private static CriticalInfo GaleForce2 = new()
+    {
+        MapInfo = new(24.1f, 20.2f),
+        RawLocation = new(125.37f, 0.64f, -68.72f),
+    };
+    private static CriticalInfo GaleForce3 = new()
+    {
+        MapInfo = new(8.2f, 12.3f),
+        RawLocation = new(-669.31f, -88.50f, -453.18f),
+    };
+    private static CriticalInfo GaleForce4 = new()
+    {
+        MapInfo = new(19.0f, 20.5f),
+        RawLocation = new(-127.96f, 0.27f, -50.00f)
+    };
+
+    private static CriticalInfo BubbleBloom1 = new()
+    {
+        MapInfo = new(10.1f, 24.6f),
+        RawLocation = new(-572.10f, 22.70f, 156.11f),
+    };
+    private static CriticalInfo BubbleBloom2 = new()
+    {
+        MapInfo = new(14.1f, 39),
+        RawLocation = new(-369.71f, 104.98f, 876.68f),
+    };
+
+
 
     public class CriticalInfo
     {
@@ -577,6 +611,14 @@ public static unsafe partial class GatheringUtil
 
         AddKeys(GravitationAnom1, 1350, 1356);
         AddKeys(GravitationAnom2, 1352, 1354, 1358);
+
+        AddKeys(GaleForce1, 1353, 1357, 1363);
+        AddKeys(GaleForce2, 1349, 1360, 1369);
+        AddKeys(GaleForce3, 1351, 1365);
+        AddKeys(GaleForce4, 1359, 1361, 1367);
+
+        AddKeys(BubbleBloom1, 1348, 1362, 1366);
+        AddKeys(BubbleBloom2, 1355, 1364, 1368);
     }
 
     private static void AddKeys(CriticalInfo location, params uint[] keys)
@@ -1559,6 +1601,254 @@ public static unsafe partial class GatheringUtil
                 },
             },
         },
+        [1310] = new()
+        {
+            // Export for Fishing Zone 1310, Flag (-511, 230)
+            [new Vector2(-511f, 230f)] = new()
+            {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-512.13f, 15.40f, 227.57f),
+                    FishingSpot = new Vector3(-510.37f, 15.40f, 226.63f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-516.50f, 15.40f, 223.56f),
+                    FishingSpot = new Vector3(-515.30f, 15.40f, 221.96f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-504.38f, 15.41f, 218.23f),
+                    FishingSpot = new Vector3(-503.29f, 15.41f, 216.55f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-491.18f, 15.40f, 225.17f),
+                    FishingSpot = new Vector3(-492.53f, 15.40f, 223.69f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-497.89f, 15.40f, 232.71f),
+                    FishingSpot = new Vector3(-497.09f, 15.40f, 230.88f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-493.26f, 15.40f, 238.30f),
+                    FishingSpot = new Vector3(-493.36f, 15.40f, 236.30f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-502.69f, 15.40f, 238.92f),
+                    FishingSpot = new Vector3(-500.73f, 15.40f, 238.50f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-519.05f, 15.40f, 236.67f),
+                    FishingSpot = new Vector3(-517.06f, 15.40f, 236.84f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-526.60f, 15.41f, 240.59f),
+                    FishingSpot = new Vector3(-524.95f, 15.41f, 239.47f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-531.07f, 15.40f, 234.91f),
+                    FishingSpot = new Vector3(-529.07f, 15.40f, 235.08f),
+                },
+            },
+            // Export for Fishing Zone 1310, Flag (-334, 898)
+            [new Vector2(-334f, 898f)] = new()
+            {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-380.18f, 102.58f, 922.58f),
+                    FishingSpot = new Vector3(-380.26f, 102.58f, 920.58f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-373.28f, 102.58f, 922.31f),
+                    FishingSpot = new Vector3(-373.36f, 102.58f, 920.31f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-355.99f, 102.61f, 920.24f),
+                    FishingSpot = new Vector3(-356.47f, 102.61f, 918.30f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-350.54f, 102.62f, 919.65f),
+                    FishingSpot = new Vector3(-351.03f, 102.62f, 917.71f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-347.62f, 102.61f, 919.36f),
+                    FishingSpot = new Vector3(-347.14f, 102.61f, 917.42f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-376.59f, 102.60f, 922.05f),
+                    FishingSpot = new Vector3(-376.57f, 102.60f, 920.05f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-384.27f, 102.56f, 923.24f),
+                    FishingSpot = new Vector3(-384.64f, 102.56f, 921.27f),
+                },
+            },
+            // Export for Fishing Zone 1310, Flag (-51, -519)
+            [new Vector2(-51f, -519f)] = new()
+            {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-55.38f, -66.96f, -527.45f),
+                    FishingSpot = new Vector3(-56.40f, -66.96f, -529.18f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-40.73f, -65.77f, -539.43f),
+                    FishingSpot = new Vector3(-42.53f, -65.77f, -540.29f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-31.08f, -68.54f, -537.84f),
+                    FishingSpot = new Vector3(-29.12f, -68.54f, -538.27f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-26.15f, -66.13f, -526.53f),
+                    FishingSpot = new Vector3(-24.63f, -66.13f, -527.83f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-31.74f, -62.66f, -518.68f),
+                    FishingSpot = new Vector3(-30.55f, -62.66f, -517.07f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-45.90f, -66.10f, -509.32f),
+                    FishingSpot = new Vector3(-44.59f, -66.10f, -507.82f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-63.94f, -69.19f, -495.79f),
+                    FishingSpot = new Vector3(-62.40f, -69.19f, -494.51f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-71.87f, -71.46f, -502.63f),
+                    FishingSpot = new Vector3(-73.84f, -71.46f, -502.98f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(-68.20f, -71.81f, -513.47f),
+                    FishingSpot = new Vector3(-70.20f, -71.81f, -513.42f),
+                },
+            },
+            // Export for Fishing Zone 1310, Flag (106, -39)
+            [new Vector2(106f, -39f)] = new()
+            {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(96.64f, -1.22f, -30.78f),
+                    FishingSpot = new Vector3(94.65f, -1.22f, -30.54f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(103.03f, -1.22f, -26.30f),
+                    FishingSpot = new Vector3(101.46f, -1.22f, -27.54f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(112.07f, -1.22f, -27.00f),
+                    FishingSpot = new Vector3(110.08f, -1.22f, -26.77f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(113.49f, -1.22f, -33.72f),
+                    FishingSpot = new Vector3(115.48f, -1.22f, -33.96f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(108.45f, -1.22f, -39.52f),
+                    FishingSpot = new Vector3(110.01f, -1.22f, -38.27f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(119.13f, -1.22f, -43.91f),
+                    FishingSpot = new Vector3(117.15f, -1.22f, -43.66f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(119.70f, -1.22f, -48.81f),
+                    FishingSpot = new Vector3(120.94f, -1.22f, -50.38f),
+                },
+            },
+            // Export for Fishing Zone 1310, Flag (241, 430)
+            [new Vector2(241f, 430f)] = new()
+            {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(449.80f, 94.63f, 404.88f),
+                    FishingSpot = new Vector3(447.92f, 94.63f, 405.54f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(446.51f, 91.86f, 393.92f),
+                    FishingSpot = new Vector3(444.81f, 91.86f, 394.98f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(401.28f, 82.40f, 268.95f),
+                    FishingSpot = new Vector3(399.84f, 82.40f, 270.34f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(383.58f, 78.66f, 248.24f),
+                    FishingSpot = new Vector3(382.80f, 78.66f, 250.09f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(338.36f, 76.28f, 254.76f),
+                    FishingSpot = new Vector3(339.02f, 76.28f, 256.65f),
+                },
+            },
+            // Export for Fishing Zone 1310, Flag (429, -736)
+            [new Vector2(429f, -736f)] = new()
+            {
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(410.80f, -144.58f, -636.60f),
+                    FishingSpot = new Vector3(410.24f, -144.58f, -634.68f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(393.89f, -146.83f, -638.76f),
+                    FishingSpot = new Vector3(393.74f, -146.83f, -636.77f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(373.38f, -150.69f, -648.75f),
+                    FishingSpot = new Vector3(372.75f, -150.69f, -646.85f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(347.03f, -154.54f, -655.43f),
+                    FishingSpot = new Vector3(346.45f, -154.54f, -653.52f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(341.52f, -154.55f, -656.59f),
+                    FishingSpot = new Vector3(341.03f, -154.55f, -654.65f),
+                },
+                new FisherSpotInfo()
+                {
+                    FacePosition = new Vector3(332.83f, -154.56f, -660.02f),
+                    FishingSpot = new Vector3(332.34f, -154.56f, -658.08f),
+                },
+            },
+
+        }
     };
 
     public static Dictionary<string, List<uint>> MoonBaits = new();
