@@ -140,7 +140,7 @@ internal static class NpcData // Renamed the class to avoid conflict
                 type = NpcType.Drone,
                 NpcId = 1052654,
                 Name = "Kaede",
-                Location_Npc = new Vector3(),
+                Location_Npc = new Vector3(-206.38f, 0.50f, 131.09f),
                 Location_Circle = new(-205.85f, 0.65f, 134.19f),
             }
         },

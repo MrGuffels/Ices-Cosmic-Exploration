@@ -110,7 +110,7 @@ namespace ICE.Ui
                 ? $"{label}: {currentXP:N0} / {maxXP:N0}"
                 : $"{label}: {currentXP:N0} / {neededXP:N0}";
 
-            ImGui.Text(displayText);
+            ImGui.TextWrapped(displayText);
 
             // Draw bar
             var pos = ImGui.GetCursorScreenPos();
