@@ -44,8 +44,6 @@ public static partial class ImGui_Tools
         // Default Colors for Theming. This is really here to make sure it's formatted as I want it to be
         var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
         var textColor = ImGui.GetColorU32(ImGuiCol.Text);
-        // var textColor = ImGui.GetColorU32(ImGuiCol.TextDisabled);
-
 
         // This is here to make sure that
         // A: If it doesn't already exist, add it and just make it false (This makes it to where it's not expanded by default)
