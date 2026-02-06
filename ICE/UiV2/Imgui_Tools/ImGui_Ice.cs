@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace ICE.Ui_V2.Imgui_Tools;
+namespace ICE.UiV2.Imgui_Tools;
 
 public static partial class ImGui_Ice
 {

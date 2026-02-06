@@ -1,12 +1,11 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using ICE.Ui;
 using ICE.Ui.MainUi.ModeSelect;
-using ICE.Ui_V2.Imgui_Tools;
+using ICE.UiV2.Imgui_Tools;
 using ICE.Utilities.ImGuiTools;
 using System.Reflection;
-namespace ICE.Ui_V2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
+namespace ICE.UiV2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
 {
     internal class Child_Selectable
     {
@@ -29,7 +28,7 @@ namespace ICE.Ui_V2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, "Standard", "modeSelect_Standard");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Completion", "modeSelect_Completion");
                 }
-                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Settings", icon: FontAwesomeIcon.Cog))
+                if (ImGui_Ice.Sidebar_CollaspableHeader("Settings", icon: FontAwesomeIcon.Cog))
                 {
                     if (C.Show_StopWhen)
                         ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Stop, "Stop When...", "setting_StopWhen");
@@ -44,14 +43,14 @@ namespace ICE.Ui_V2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
                 }
                 if (C.Show_HubActivities)
                 {
-                    if (ImGui_Tools.DrawCategoryHeader_AutoSize("Hub Activities", icon: FontAwesomeIcon.Home))
+                    if (ImGui_Ice.Sidebar_CollaspableHeader("Hub Activities", icon: FontAwesomeIcon.Home))
                     {
                         ImGui_Ice.DrawSelectable_Image(65112, "Credit Shopping", "hubActivities_CreditShopping");
                         ImGui_Ice.DrawSelectable_Image(65127, "Gambling Settings", "hubActivites_GambaSetting");
                         ImGui_Ice.DrawSelectable_Image(65138, "Dronebit Settings", "hubActivies_DroneSetting");
                     }
                 }
-                if (ImGui_Tools.DrawCategoryHeader_AutoSize("Planet Selection", FontAwesomeIcon.Moon))
+                if (ImGui_Ice.Sidebar_CollaspableHeader("Planet Selection", FontAwesomeIcon.Moon))
                 {
                     if (ImGui.Checkbox("Auto Select Moon", ref autoSelectMoon))
                     {
@@ -95,6 +94,10 @@ namespace ICE.Ui_V2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
                         }
                     }
                 }
+
+
+                var classIcon = ImGui_Ice.GetGreyscaleJob()
+                if (ImGui_Ice.Sidebar_CollaspableHeader("View Class", ))
             }
         }
 
