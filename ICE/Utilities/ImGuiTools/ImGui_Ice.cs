@@ -3,12 +3,16 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using ICE.Ui.MainUi;
+using System.Collections.Generic;
 using System.Reflection;
 
-namespace ICE.UiV2.Imgui_Tools;
+namespace ICE.Utilities.ImGuiTools;
 
 public static partial class ImGui_Ice
 {
+    private static Dictionary<string, bool> categoryStates = new();
+
     // General Functions that are used everywhere across the plugin
     /// <summary>
     /// Greyscale icon that I have saved for general ease of use. Looks better than the GC icons
@@ -336,6 +340,78 @@ public static partial class ImGui_Ice
 
         return clicked;
     }
+    public static bool DrawCompactCategoryHeader(string label, FontAwesomeIcon? icon = null)
+    {
+        var drawList = ImGui.GetWindowDrawList();
+        var cursorPos = ImGui.GetCursorScreenPos();
+
+        // Get colors from current theme
+        var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
+        var textColor = ImGui.GetColorU32(ImGuiCol.Text);
+
+        // Calculate content size
+        float horizontalPadding = 8;
+        float verticalPadding = 4;
+        float iconTextSpacing = 4;
+
+        var textSize = ImGui.CalcTextSize(label);
+        float contentWidth = ImGui.GetContentRegionAvail().X;
+        float contentHeight = verticalPadding * 2 + textSize.Y;
+
+        // Check if this category is expanded (default to false)
+        string categoryId = label;
+        if (!categoryStates.ContainsKey(categoryId))
+            categoryStates[categoryId] = false;
+
+        bool isExpanded = categoryStates[categoryId];
+
+        // Check for click
+        bool isHovered = ImGui.IsMouseHoveringRect(cursorPos, new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight))
+                      && ImGui.IsWindowHovered(ImGuiHoveredFlags.AllowWhenBlockedByPopup | ImGuiHoveredFlags.ChildWindows);
+        bool isClicked = isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+
+        if (isClicked)
+        {
+            categoryStates[categoryId] = !categoryStates[categoryId];
+            isExpanded = categoryStates[categoryId];
+        }
+
+        // Change header color slightly on hover
+        if (isHovered)
+            headerColor = ImGui.GetColorU32(ImGuiCol.HeaderHovered);
+
+        // Draw background rectangle with rounded corners
+        drawList.AddRectFilled(cursorPos,
+            new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight),
+            headerColor,
+            5.0f);
+
+        // Position cursor with padding
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + horizontalPadding);
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + verticalPadding);
+
+        // Draw icon if provided
+        if (icon.HasValue)
+        {
+            ImGuiEx.Icon(icon.Value);
+            ImGui.SameLine(0, iconTextSpacing);
+        }
+
+        ImGui.Text(label);
+        ImGui.SameLine(0, 8);
+
+        // Draw caret icon based on expanded state
+        ImGuiEx.Icon(isExpanded ? FontAwesomeIcon.CaretDown : FontAwesomeIcon.CaretRight);
+
+        ImGui.SameLine(0, 8);
+        ImGui.Dummy(Vector2.Zero);
+
+        // Advance cursor past the header
+        ImGui.SetCursorScreenPos(new Vector2(cursorPos.X, cursorPos.Y + contentHeight));
+        ImGui.Spacing();
+
+        return isExpanded;
+    }
     public static void DrawJobButtons(uint jobId, string tooltip)
     {
         float scale = ImGuiHelpers.GlobalScale;
@@ -472,6 +548,172 @@ public static partial class ImGui_Ice
         }
 
         ImGui.Dummy(actualSize);
+    }
+    public static bool DrawCategoryButton(string label, string categoryId, FontAwesomeIcon? icon = null, float spacingAfter = 5, bool disabled = false)
+    {
+        float scale = ImGuiHelpers.GlobalScale;
+
+        // Setting the values of the content size (padding, spacing, etc) that way it's used across the board
+        float horizontalPadding = 8 * scale;
+        float verticalPadding = 4 * scale;
+        float iconTextSpacing = 4 * scale;
+
+        // These are to make sure that they're drawn in place
+        var drawList = ImGui.GetWindowDrawList();
+        var cursorPos = ImGui.GetCursorScreenPos();
+
+        // Calculate text size
+        var textSize = ImGui.CalcTextSize(label);
+
+        // Calculate icon width if present
+        float iconWidth = icon.HasValue ? textSize.Y + iconTextSpacing : 0;
+
+        // Calculate button dimensions based on content
+        float contentWidth = horizontalPadding * 2 + iconWidth + textSize.X;
+        float contentHeight = verticalPadding * 2 + textSize.Y;
+
+        // Initialize category state if needed
+        if (!C.Mission_Tabs.ContainsKey(categoryId))
+        {
+            C.Mission_Tabs[categoryId] = false;
+            C.Save();
+        }
+
+        bool isExpanded = C.Mission_Tabs[categoryId];
+
+        // Calculate interaction state
+        var buttonRect = new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight);
+        bool isHovered = !disabled && ImGui.IsMouseHoveringRect(cursorPos, buttonRect)
+                      && ImGui.IsWindowHovered(ImGuiHoveredFlags.AllowWhenBlockedByPopup | ImGuiHoveredFlags.ChildWindows);
+        bool isClicked = isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+
+        if (isClicked)
+        {
+            C.Mission_Tabs[categoryId] = !isExpanded;
+            isExpanded = !isExpanded;
+            C.Save();
+        }
+
+        // Determine colors based on state
+        var headerColor = GetButtonColor(isExpanded, isHovered, disabled);
+        var textColor = disabled
+            ? ImGui.GetColorU32(ImGuiCol.TextDisabled)
+            : ImGui.GetColorU32(ImGuiCol.Text);
+
+        // Draw background rectangle with rounded corners (scaled)
+        drawList.AddRectFilled(cursorPos, buttonRect, headerColor, 5.0f * scale);
+
+        // Draw content with disabled color if needed
+        ImGui.SetCursorScreenPos(new Vector2(cursorPos.X + horizontalPadding, cursorPos.Y + verticalPadding));
+
+        ImGui.PushStyleColor(ImGuiCol.Text, textColor);
+
+        // Draw icon if provided
+        if (icon.HasValue)
+        {
+            ImGuiEx.Icon(icon.Value);
+            ImGui.SameLine(0, iconTextSpacing);
+        }
+
+        ImGui.Text(label);
+        ImGui.PopStyleColor();
+
+        // Create an invisible button to properly reserve space and handle layout
+        ImGui.SetCursorScreenPos(cursorPos);
+        ImGui.InvisibleButton($"##{categoryId}_btn", new Vector2(contentWidth, contentHeight));
+
+        // Add spacing after the button (scaled)
+        ImGui.SameLine(0, spacingAfter * scale);
+
+        return isExpanded;
+    }
+    private static uint GetButtonColor(bool isExpanded, bool isHovered, bool disabled)
+    {
+        if (disabled)
+        {
+            // Use a dimmed version of the button color for disabled state
+            var baseColor = ImGui.GetColorU32(ImGuiCol.Button);
+            var disabledAlpha = 0.5f; // 50% opacity
+            return ImGui.ColorConvertFloat4ToU32(ImGui.ColorConvertU32ToFloat4(baseColor) with { W = disabledAlpha });
+        }
+
+        if (isHovered)
+            return ImGui.GetColorU32(ImGuiCol.TabHovered);
+
+        if (isExpanded)
+            return ImGui.GetColorU32(ImGuiCol.TabActive);
+
+        return ImGui.GetColorU32(ImGuiCol.Button);
+    }
+    public static void DrawImageBox(ISharedImmediateTexture texture, string? label = null, float imageZoom = 1.5f, float spacingAfter = 5)
+    {
+        float scale = ImGuiHelpers.GlobalScale;
+
+        // Default coloring to match button style
+        var headerColor = ImGui.GetColorU32(ImGuiCol.Button);
+
+        // Setting the values of the content size (padding, spacing, ect)
+        float horizontalPadding = 8 * scale;
+        float verticalPadding = 4 * scale;
+        float iconTextSpacing = 4 * scale;
+
+        var drawList = ImGui.GetWindowDrawList();
+        var cursorPos = ImGui.GetCursorScreenPos();
+
+        // Calculate text size if label provided
+        Vector2 textSize = Vector2.Zero;
+        float textWidth = 0;
+        if (!string.IsNullOrEmpty(label))
+        {
+            textSize = ImGui.CalcTextSize(label);
+            textWidth = textSize.X + iconTextSpacing;
+        }
+
+        // Image size should match the text height from buttons to keep consistent height
+        float imageSize = textSize.Y > 0 ? textSize.Y : ImGui.CalcTextSize("A").Y;
+
+        // Calculating box dimensions - height should match button height
+        float contentWidth = horizontalPadding * 2 + imageSize + textWidth;
+        float contentHeight = verticalPadding * 2 + (textSize.Y > 0 ? textSize.Y : ImGui.CalcTextSize("A").Y);
+
+        // Draw background rectangle with rounded corners
+        drawList.AddRectFilled(cursorPos, new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight), headerColor, 5.0f * scale);
+
+        // Calculate vertical center
+        float contentVerticalCenter = cursorPos.Y + (contentHeight / 2);
+
+        // Draw image centered vertically with UV zoom
+        float imageYOffset = contentVerticalCenter - (imageSize / 2);
+        var imagePos = new Vector2(cursorPos.X + horizontalPadding, imageYOffset);
+
+        // Calculate UV coordinates for zoom effect (zooms into center)
+        float uvZoom = 1.0f / imageZoom;
+        float uvOffset = (1.0f - uvZoom) / 2.0f;
+        Vector2 uv0 = new Vector2(uvOffset, uvOffset);
+        Vector2 uv1 = new Vector2(uvOffset + uvZoom, uvOffset + uvZoom);
+
+        drawList.AddImage(texture.GetWrapOrEmpty().Handle, imagePos, new Vector2(imagePos.X + imageSize, imagePos.Y + imageSize), uv0, uv1);
+
+        // Draw text if provided, centered vertically
+        if (!string.IsNullOrEmpty(label))
+        {
+            float textYOffset = contentVerticalCenter - (textSize.Y / 2);
+            float textXPos = cursorPos.X + horizontalPadding + imageSize + iconTextSpacing;
+            ImGui.SetCursorScreenPos(new Vector2(textXPos, textYOffset));
+            ImGui.Text(label);
+        }
+
+        // Create an invisible button to properly reserve space and handle layout (matches DrawCategoryButton)
+        ImGui.SetCursorScreenPos(cursorPos);
+        ImGui.InvisibleButton($"##imagebox_{label}", new Vector2(contentWidth, contentHeight));
+
+        // Add spacing after the button (scaled) - matches DrawCategoryButton
+        ImGui.SameLine(0, spacingAfter * scale);
+    }
+    public static void EndCategoryButtonRow()
+    {
+        ImGui.NewLine();
+        ImGui.Separator();
     }
     public static void IconWithTooltip(Vector4 col, FontAwesomeIcon icon, string? tooltip = null)
     {

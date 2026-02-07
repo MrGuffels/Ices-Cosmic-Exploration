@@ -3,9 +3,7 @@ using ECommons.Configuration;
 using ECommons.GameHelpers;
 using ICE.ConfigFiles;
 using ICE.IPC;
-using ICE.OldYamlConfig;
 using ICE.Ui;
-using ICE.Ui.MainUi;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using Pictomancy;
@@ -13,7 +11,6 @@ using System.Collections.Generic;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
 using static ICE.Utilities.CosmicHelper;
-using ICE.UiV2.Ui_Main;
 
 namespace ICE;
 
@@ -22,27 +19,8 @@ public sealed partial class ICE : IDalamudPlugin
     public static string Name => "ICE";
 
     internal static ICE P = null!;
-    private static MissionConfigs missionConfigs;
     private Config config;
     public static Config C => P.config;
-    // public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
-
-    // Yaml Config Loaders. For both loading a yaml in the config folder, and for embedded
-    private static T LoadConfig<T>() where T : IYamlConfig, new()
-    {
-        var path = typeof(T).GetProperty("ConfigPath")!.GetValue(null)!.ToString()!;
-        var config = YamlConfig.Load<T>(path);
-
-        if (config == null)
-        {
-            PluginLog.Warning($"[{typeof(T).Name}] Config was null. Creating new default.");
-            config = new T();
-            YamlConfig.SaveSync(config, path); // Use synchronous save for initialization
-        }
-
-        PluginLog.Information($"[{typeof(T).Name}] Loaded from {path}");
-        return config;
-    }
 
     // Missing ECommons PluginService. Update to Svc when ECommons get updated
     [PluginService] public static IUnlockState UnlockState { get; set; } = null!;
@@ -56,7 +34,6 @@ public sealed partial class ICE : IDalamudPlugin
     internal DebugWindow debugWindow;
     internal InfoWindow infoWindow;
     internal Window_ExternalDetails externalDetails;
-    internal Window_Main window_Main;
 
     // Taskmanager from Ecommons
     internal TaskManager TaskManager;
@@ -98,7 +75,6 @@ public sealed partial class ICE : IDalamudPlugin
         debugWindow = new();
         infoWindow = new();
         externalDetails = new();
-        window_Main = new();
 
         EzCmd.Add("/icecosmic", OnCommand, """
             Open plugin interface
@@ -124,7 +100,7 @@ public sealed partial class ICE : IDalamudPlugin
         Svc.PluginInterface.UiBuilder.OpenConfigUi += () =>
         {
             mainWindow.IsOpen = true;
-            SelectableSidebar.currentSelection = "helpSelect_AllSettings";
+            C.MainUi_SelectedWindow = "helpSelect_AllSettings";
         };
 
         // timer stuff
@@ -199,11 +175,6 @@ public sealed partial class ICE : IDalamudPlugin
             debugWindow.IsOpen = true;
             return;
         }
-        else if (firstArg.ToLower() == "t")
-        {
-            window_Main.IsOpen = true;
-            return;
-        }
         else if (firstArg.ToLower() == "i")
         {
             infoWindow.IsOpen = true;
@@ -212,7 +183,7 @@ public sealed partial class ICE : IDalamudPlugin
         else if (firstArg.ToLower() == "s" || firstArg.ToLower() == "settings")
         {
             mainWindow.IsOpen = true;
-            SelectableSidebar.currentSelection = "helpSelect_AllSettings";
+            C.MainUi_SelectedWindow = "helpSelect_AllSettings";
             return;
         }
         else if (firstArg.ToLower() == "clear")

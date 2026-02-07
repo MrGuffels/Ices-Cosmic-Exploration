@@ -22,7 +22,8 @@ namespace ICE.ConfigFiles
                 }
                 catch (Exception ex)
                 {
-                    PluginLog.Error("Failed to save EzConfig");
+                    PluginLog.Error($"Failed to save EzConfig \n" +
+                        $"{ex}");
                     throw;
                 }
             }).ConfigureAwait(false);

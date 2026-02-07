@@ -62,6 +62,5 @@
 
 	<ItemGroup>
 	  <Folder Include="Resources\GatheringRoutes\1310_Oizys\" />
-	  <Folder Include="UiV2\Ui_Debug\" />
 	</ItemGroup>
 </Project>
