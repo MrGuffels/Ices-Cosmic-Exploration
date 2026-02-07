@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
 using static ICE.Utilities.CosmicHelper;
+using ICE.UiV2.Ui_Main;
 
 namespace ICE;
 
@@ -24,11 +25,6 @@ public sealed partial class ICE : IDalamudPlugin
     private static MissionConfigs missionConfigs;
     private Config config;
     public static Config C => P.config;
-    
-    // Missing ECommons PluginService. Update to Svc when ECommons get updated
-    [PluginService] public static IUnlockState UnlockState { get; set; } = null!;
-    
-    public MissionTimer MissionTimer { get; private set; }
     // public static MissionConfigs C => missionConfigs ??= LoadConfig<MissionConfigs>();
 
     // Yaml Config Loaders. For both loading a yaml in the config folder, and for embedded
@@ -48,6 +44,11 @@ public sealed partial class ICE : IDalamudPlugin
         return config;
     }
 
+    // Missing ECommons PluginService. Update to Svc when ECommons get updated
+    [PluginService] public static IUnlockState UnlockState { get; set; } = null!;
+    
+    public MissionTimer MissionTimer { get; private set; }
+
     // Window's that I use, base window to the settings... need these to actually show shit 
     internal WindowSystem windowSystem;
     internal MainWindow mainWindow;
@@ -55,6 +56,7 @@ public sealed partial class ICE : IDalamudPlugin
     internal DebugWindow debugWindow;
     internal InfoWindow infoWindow;
     internal Window_ExternalDetails externalDetails;
+    internal Window_Main window_Main;
 
     // Taskmanager from Ecommons
     internal TaskManager TaskManager;
@@ -96,6 +98,7 @@ public sealed partial class ICE : IDalamudPlugin
         debugWindow = new();
         infoWindow = new();
         externalDetails = new();
+        window_Main = new();
 
         EzCmd.Add("/icecosmic", OnCommand, """
             Open plugin interface
@@ -194,6 +197,11 @@ public sealed partial class ICE : IDalamudPlugin
         if (firstArg.ToLower() == "d" || firstArg.ToLower() == "debug")
         {
             debugWindow.IsOpen = true;
+            return;
+        }
+        else if (firstArg.ToLower() == "t")
+        {
+            window_Main.IsOpen = true;
             return;
         }
         else if (firstArg.ToLower() == "i")

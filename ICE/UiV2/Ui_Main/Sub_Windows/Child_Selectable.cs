@@ -3,9 +3,9 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ICE.Ui.MainUi.ModeSelect;
 using ICE.UiV2.Imgui_Tools;
-using ICE.Utilities.ImGuiTools;
+using System.Collections.Generic;
 using System.Reflection;
-namespace ICE.UiV2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
+namespace ICE.UiV2.Ui_Main.Sub_Windows
 {
     internal class Child_Selectable
     {
@@ -14,8 +14,9 @@ namespace ICE.UiV2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
             var scale = ImGuiHelpers.GlobalScaleSafe;
             int baseSize = 200;
             var scaledWidth = baseSize * scale;
+            var height = ImGui.GetContentRegionAvail().Y;
 
-            using (var MainUi_Sidebar = ImRaii.Child("MainUi_Sidebar", new Vector2(scaledWidth, -1), true))
+            using (var MainUi_Sidebar = ImRaii.Child("MainUi_Sidebar", new Vector2(scaledWidth, height), true))
             {
                 PluginIcon();
 
@@ -25,8 +26,8 @@ namespace ICE.UiV2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
 
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Cosmic Helper", icon: FontAwesomeIcon.ListAlt))
                 {
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, "Standard", "modeSelect_Standard");
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Completion", "modeSelect_Completion");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, "Mission Setup", "modeSelect_MissionSetup");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Complete Overview", "modeSelect_Completion");
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Settings", icon: FontAwesomeIcon.Cog))
                 {
@@ -59,12 +60,11 @@ namespace ICE.UiV2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
                     }
                     ImGui.Dummy(new(0, 3));
 
-                    float iconSize = 23 * scale;
+                    float iconSize = 26 * scale;
                     float iconSpacing = 4;
-                    float availWidth = ImGui.GetContentRegionAvail().X;
-                    float startX = (availWidth - (iconSize + iconSpacing) * 3 + iconSpacing) * 0.5f;
+                    float leftOffset = 10f; // Simple offset from the current position
 
-                    ImGui.SetCursorPosX(startX);
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + leftOffset);
 
                     var moons = new (string Name, string Asset, Func<bool> GetEnabled, Action<bool> SetEnabled)[]
                     {
@@ -75,7 +75,7 @@ namespace ICE.UiV2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
 
                     for (int i = 0; i < moons.Length; i++)
                     {
-                        if (i > 0) ImGui.SameLine();
+                        if (i > 0) ImGui.SameLine(0, iconSpacing);
 
                         var moon = moons[i];
                         bool isEnabled = moon.GetEnabled();
@@ -95,9 +95,55 @@ namespace ICE.UiV2.Ui_Main.Sub_Windows.Ui_SelectableDisplay
                     }
                 }
 
+                var currentClass = C.SelectedJob;
+                var classIcon = ImGui_Ice.GetGreyscaleJob(currentClass);
+                if (ImGui_Ice.Sidebar_CollaspableHeader("Select Class", imageTexture: classIcon))
+                {
+                    Dictionary<uint, string> ClassDict = new()
+                    {
+                        [8] = "CRP",
+                        [9] = "BSM",
+                        [10] = "ARM",
+                        [11] = "GSM",
+                        [12] = "LTW",
+                        [13] = "WVR",
+                        [14] = "ALC",
+                        [15] = "CUL",
+                        [16] = "MIN",
+                        [17] = "BTN",
+                        [18] = "FSH",
+                    };
+                    int itemsPerRow = 4;
+                    int currentItem = 0;
 
-                var classIcon = ImGui_Ice.GetGreyscaleJob()
-                if (ImGui_Ice.Sidebar_CollaspableHeader("View Class", ))
+                    float iconSize = 26 * scale;
+                    float iconSpacing = 4;
+                    float leftOffset = 10f; // Simple offset from the current position
+
+                    for (uint i = 8; i < 19; ++i)
+                    {
+                        // Set cursor position at start of each new row
+                        if (currentItem % itemsPerRow == 0)
+                            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + leftOffset);
+
+                        ImGui_Ice.DrawJobButtons(i, ClassDict[i]);
+
+                        currentItem++;
+
+                        if (currentItem % itemsPerRow != 0 && i != 18)
+                            ImGui.SameLine(0, iconSpacing);
+                    }
+                }
+                if (ImGui_Ice.Sidebar_CollaspableHeader("Current Tool XP", FontAwesomeIcon.ArrowUpRightDots))
+                {
+                    var image = CosmicHelper.JobIconDict[currentClass];
+                    ImGui_Ice.Draw_ExpTable(currentClass);
+                }
+                if (ImGui_Ice.Sidebar_CollaspableHeader("Need Help?", FontAwesomeIcon.QuestionCircle))
+                {
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.QuestionCircle, "Plugin Requirements", "help_PluginInstall");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Book, "Plugin Logs", "help_PluginLogs");
+                }
             }
         }
 

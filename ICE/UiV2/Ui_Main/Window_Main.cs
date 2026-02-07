@@ -1,4 +1,7 @@
 ﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
+using ICE.UiV2.Ui_Main.Sub_Windows;
 
 namespace ICE.UiV2.Ui_Main
 {
@@ -11,7 +14,7 @@ namespace ICE.UiV2.Ui_Main
         base($"Ice's Cosmic Exploration {P.GetType().Assembly.GetName().Version} ###ICEMainWindow2")
 #endif
         {
-            Flags = ImGuiWindowFlags.NoScrollbar;
+            Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
             SizeConstraints = new()
             {
                 MinimumSize = new Vector2(100, 100),
@@ -29,7 +32,21 @@ namespace ICE.UiV2.Ui_Main
 
         public override void Draw()
         {
-            
+            var scale = ImGuiHelpers.GlobalScaleSafe;
+
+            using (var mainTable = ImRaii.Table("Main Window_Main Settings", 2, ImGuiTableFlags.SizingFixedFit))
+            {
+                ImGui.TableSetupColumn("Mission Control Panel", ImGuiTableColumnFlags.WidthFixed, 201 * scale);
+                ImGui.TableSetupColumn("Detailed Window View", ImGuiTableColumnFlags.WidthStretch);
+
+                ImGui.TableNextRow();
+
+                ImGui.TableSetColumnIndex(0);
+                Child_Selectable.Draw();
+
+                ImGui.TableNextColumn();
+                Child_SelectedView.Draw();
+            }
         }
     }
 }

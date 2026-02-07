@@ -40,13 +40,16 @@ public static partial class CosmicHelper
     public static unsafe uint? CurrentBait => WKSManager.Instance()->FishingBait;
     public static unsafe uint CurrentLunarDevelopment => ExcelHelper.DevGrade.GetRow(WKSManager.Instance()->DevGrade).Unknown6;
 
+    public static int MaxXpKind = 6;
+
     public static Dictionary<int, string> ExpDictionary = new()
     {
         { 1, "I" },
         { 2, "II" },
         { 3, "III" },
         { 4, "IV" },
-        { 5, "V" }
+        { 5, "V" },
+        { 6, "VI" }
     };
 
     public static readonly Dictionary<uint, uint> PlanetCreditInfo = new()
@@ -77,20 +80,73 @@ public static partial class CosmicHelper
         }
     }
 
-    public static void UpdateStateFlags()
+    public class ClassInfo
     {
-        // just a shorthand for me to be able to grab all of it, while also just snapshotting the mission we're currently running
-        var missionInfo = CurrentMissionInfo; 
-        if (missionInfo.Attributes.HasFlag(MissionAttributes.Critical))
-        {
-            // TODO:
-            // I really need to just add a collection point to the critical mission infomation
-            // From here, grab the mission info
-            // RedAlertCollectionPoint = infohere
-        }
-        if (missionInfo.Attributes.HasFlag(MissionAttributes.Craft))
-            SchedulerMain.State |= IceState.Craft;
+        public int Score { get; set; } = 0;
+        public int Stage_Current { get; set; } = 0;
+        public int Stage_Next { get; set; } = 0;
+        public Dictionary<int, ExpInfo> CurrentExp { get; set; } = new();
     }
+
+    public class ExpInfo
+    {
+        public string Name { get; set; } = "";
+        public int Current { get; set; } = 0;
+        public int Needed { get; set; } = 0;
+        public int Max { get; set; } = 0;
+    }
+
+    public unsafe static Dictionary<uint, ClassInfo> Cosmic_ClassInfo()
+    {
+        Dictionary<uint, ClassInfo> cosmicClassInfo = new();
+
+        var wksManager = WKSManager.Instance();
+        if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
+            return cosmicClassInfo;
+
+        for (int i = 0; i < 11; i++)
+        {
+            uint jobId = (uint)i + 8;
+            byte toolClassId = (byte)(jobId - 7);  // Match DrawRelicXP's calculation
+            byte arrayIndex = (byte)(toolClassId - 1);  // This gives us 0-10 for array access
+
+            var score = wksManager->Scores[arrayIndex];
+            ClassInfo entry = new()
+            {
+                Score = score,
+                Stage_Current = wksManager->ResearchModule->CurrentStages[arrayIndex],
+                Stage_Next = wksManager->ResearchModule->UnlockedStages[arrayIndex]
+            };
+
+            for (byte type = 1; type <= MaxXpKind; type++)
+            {
+                if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                    break;
+
+                var needed = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
+                var current = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
+                var max = wksManager->ResearchModule->GetMaxAnalysis(toolClassId, type);
+                var name = "???";
+                if (ExpDictionary.TryGetValue(type, out var ExpName))
+                {
+                    name = ExpName;
+                }
+
+                entry.CurrentExp[type] = new()
+                {
+                    Name = name,
+                    Needed = needed,
+                    Current = current,
+                    Max = max,
+                };
+            }
+
+            cosmicClassInfo[jobId] = entry;
+        }
+
+        return cosmicClassInfo;
+    }   
+
 
     public unsafe static (int classScore, int cappedClassScore, int totalScores, uint classId) GetCosmicClassScores(bool useSelectedJob = false, uint jobId = 0)
     {

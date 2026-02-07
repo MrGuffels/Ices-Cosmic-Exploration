@@ -2,17 +2,20 @@
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
-using ICE.Ui;
-using System;
-using System.Collections.Generic;
+using Dalamud.Interface.Utility.Raii;
 using System.Reflection;
-using System.Text;
 
 namespace ICE.UiV2.Imgui_Tools;
 
 public static partial class ImGui_Ice
 {
-    private static IDalamudTextureWrap? GetGreyscaleJob(uint jobId = 0)
+    // General Functions that are used everywhere across the plugin
+    /// <summary>
+    /// Greyscale icon that I have saved for general ease of use. Looks better than the GC icons
+    /// </summary>
+    /// <param name="jobId"></param>
+    /// <returns></returns>
+    public static IDalamudTextureWrap? GetGreyscaleJob(uint jobId = 0)
     {
         if (jobId == 0)
             jobId = C.SelectedJob;
@@ -227,30 +230,38 @@ public static partial class ImGui_Ice
         if (isSelected)
         {
             ImGui.PopStyleColor();
+
+            // Draw colored bar on the left side
+            var drawList = ImGui.GetWindowDrawList();
+            var rectMin = ImGui.GetItemRectMin();
+            var rectMax = ImGui.GetItemRectMax();
+
+            // Draw a 3-4 pixel wide bar on the left (scaled)
+            drawList.AddRectFilled(
+                rectMin,
+                new Vector2(rectMin.X + 3 * scale, rectMax.Y),
+                ImGui.GetColorU32(new Vector4(0.4f, 0.7f, 1.0f, 1.0f)) // Your accent color here
+            );
         }
 
         // Get the position of that selectable we just drew
         float itemY = ImGui.GetItemRectMin().Y;
 
         // Set cursor back to draw image and text on top (scaled offsets)
-        ImGui.SetCursorScreenPos(new Vector2(ImGui.GetItemRectMin().X + 8 * scale, itemY + 2 * scale));
+        // Match the Icon version's offset pattern
+        ImGui.SetCursorScreenPos(new Vector2(ImGui.GetItemRectMin().X + 8 * scale, itemY + 4 * scale));
 
         Svc.Texture.TryGetFromGameIcon(iconId, out var iconImage);
         if (iconImage != null)
         {
             var image = iconImage.GetWrapOrEmpty();
-            Vector2 imageSize = new Vector2(25 * scale, 25 * scale); // Scaled image
-                                                                     // Center image vertically in the scaled height
-            float imageYOffset = (25 * scale - imageSize.Y) / 2;
-            ImGui.SetCursorScreenPos(new Vector2(ImGui.GetCursorScreenPos().X, ImGui.GetCursorScreenPos().Y + imageYOffset));
+            Vector2 imageSize = new Vector2(25 * scale, 25 * scale);
+            // Remove the vertical centering - just draw at current position
             ImGui.Image(image.Handle, imageSize);
         }
 
         ImGui.SameLine();
         ImGui.Text(label);
-
-        // Add small spacing between items (scaled)
-        ImGui.Dummy(new Vector2(0, 2 * scale));
     }
     public static bool DrawStyledImageButton(IDalamudTextureWrap? icon, Vector2 size, bool enabled = true)
     {
@@ -336,22 +347,188 @@ public static partial class ImGui_Ice
         Vector2 size = new Vector2(26 * scale, 26 * scale);
         bool autoPickCurrentJob = C.AutoPickCurrentJob;
 
-        if (DrawStyledImageButton(, size, state))
+        if (state)
         {
-            if (autoPickCurrentJob)
+            if (DrawStyledImageButton(iconEnabled, size, state))
             {
-                autoPickCurrentJob = false;
-                C.AutoPickCurrentJob = autoPickCurrentJob;
-            }
+                if (autoPickCurrentJob)
+                {
+                    autoPickCurrentJob = false;
+                    C.AutoPickCurrentJob = autoPickCurrentJob;
+                }
 
-            C.SelectedJob = jobId;
-            C.Save();
+                C.SelectedJob = jobId;
+                C.Save();
+            }
+        }
+        else if (!state)
+        {
+            if (DrawStyledImageButton(iconDisabled, size, state))
+            {
+                if (autoPickCurrentJob)
+                {
+                    autoPickCurrentJob = false;
+                    C.AutoPickCurrentJob = autoPickCurrentJob;
+                }
+
+                C.SelectedJob = jobId;
+                C.Save();
+            }
         }
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
             ImGui.Text(tooltip);
             ImGui.EndTooltip();
+        }
+    }
+    public static void Draw_XPBar(int current, int needed, int max = 0, string label = null, Vector2? size = null)
+    {
+        // If we want it to have a standard label above the bar. Not required but for small things it's nice to just have the option
+        if (label != null)
+        {
+            ImGui.TextWrapped(label);
+        }
+
+        // Setting the dimensions of the custom bar/drawing it.
+        // Usual stuff of drawlist being OP
+        var pos = ImGui.GetCursorScreenPos();
+        var drawList = ImGui.GetWindowDrawList();
+
+        // Calculating the size of the bar and everything here.
+        // If size is null, then it just defaults to the norm. Otherwise it uses whatever size we set (nice in case I want to use this for other things besides XP/Modify it a bit easier)
+        var barStart = pos;
+        var actualSize = size ?? new Vector2(ImGui.GetContentRegionAvail().X, 10);
+        var barEnd = new Vector2(pos.X + actualSize.X, pos.Y + actualSize.Y);
+
+        // Draw background (dark gray)
+        drawList.AddRectFilled(barStart, barEnd, ImGui.GetColorU32(new Vector4(0.15f, 0.15f, 0.15f, 1f)));
+
+        // Now comes the fun part, actually creating the filling (that sounds bad)
+
+        // Defining the colors globaly here just cause they're used across the board
+        var blueColor = new Vector4(0.2f, 0.6f, 1f, 1f);      // Blue #3399ff  - Fill Bar Part #1 (Left Side) 
+        var greenColor = new Vector4(0.6f, 1f, 0.8f, 1f);     // Green #99ffcc - Fill Bar Part #2 (Right Side)
+        var goldColor = new Vector4(1f, 0.84f, 0f, 1f);       // Gold #ffd600  - Overcap color
+
+        // Case 1: At or above cap when needed == max (show full gold) [Really only used when at max stage for that planet when a new one comes out)
+        if (needed > 0 && needed == max && current >= needed)
+        {
+            drawList.AddRectFilled(barStart, barEnd, ImGui.GetColorU32(goldColor));
+        }
+        // Case 2: Normal progression (not overcapped)
+        else if (current <= needed && needed > 0)
+        {
+            float fraction = Math.Clamp((float)current / needed, 0f, 1f);
+            float filledWidth = actualSize.X * fraction;
+
+            if (filledWidth > 0f)
+            {
+                var filledEnd = new Vector2(pos.X + filledWidth, pos.Y + actualSize.Y);
+                drawList.AddRectFilledMultiColor(
+                    barStart, filledEnd,
+                    ImGui.GetColorU32(blueColor),  // top-left
+                    ImGui.GetColorU32(greenColor), // top-right
+                    ImGui.GetColorU32(greenColor), // bottom-right
+                    ImGui.GetColorU32(blueColor)   // bottom-left
+                );
+            }
+        }
+        // Case 3: Overcapped (show gradient + gold overlay)
+        else if (current > needed && max > 0 && needed > 0)
+        {
+            // Full blue-green gradient background
+            drawList.AddRectFilledMultiColor(
+                barStart, barEnd,
+                ImGui.GetColorU32(blueColor),
+                ImGui.GetColorU32(greenColor),
+                ImGui.GetColorU32(greenColor),
+                ImGui.GetColorU32(blueColor)
+            );
+
+            // Gold overlay for overcap amount
+            int overcapAmount = current - needed;
+            int overcapRange = max - needed;
+            float overcapFraction = Math.Clamp((float)overcapAmount / overcapRange, 0f, 1f);
+            float goldWidth = actualSize.X * overcapFraction;
+
+            if (goldWidth > 0f)
+            {
+                var goldEnd = new Vector2(pos.X + goldWidth, pos.Y + actualSize.Y);
+                drawList.AddRectFilled(barStart, goldEnd, ImGui.GetColorU32(goldColor));
+            }
+        }
+        // Case 4: No needed XP (cosmic score scenario - just show progress to max) [Nice for just pure gold bar to fill]
+        else if (needed == 0 && max > 0)
+        {
+            float fraction = Math.Clamp((float)current / max, 0f, 1f);
+            float filledWidth = actualSize.X * fraction;
+
+            if (filledWidth > 0f)
+            {
+                var filledEnd = new Vector2(pos.X + filledWidth, pos.Y + actualSize.Y);
+                drawList.AddRectFilled(barStart, filledEnd, ImGui.GetColorU32(goldColor));
+            }
+        }
+
+        ImGui.Dummy(actualSize);
+    }
+    public static void IconWithTooltip(Vector4 col, FontAwesomeIcon icon, string? tooltip = null)
+    {
+        ImGui.SameLine();
+        ImGui.PushStyleColor(ImGuiCol.Text, col);
+        ImGui.PushFont(UiBuilder.IconFont);
+        ImGui.TextUnformatted(icon.ToIconString());
+        ImGui.PopFont();
+        ImGui.PopStyleColor();
+
+        if (tooltip != null)
+        {
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip(tooltip);
+            }
+        }
+    }
+    public static void IconWithTooltip(FontAwesomeIcon icon, string? tooltip = null)
+    {
+        ImGui.SameLine();
+        ImGui.PushFont(UiBuilder.IconFont);
+        ImGui.TextUnformatted(icon.ToIconString());
+        ImGui.PopFont();
+
+        if (tooltip != null)
+        {
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip(tooltip);
+            }
+        }
+    }
+
+    // Quick access functions that are used in multiple places
+    public static void Draw_ExpTable(uint jobId)
+    {
+        var ExpInfo = CosmicHelper.Cosmic_ClassInfo();
+        if (ExpInfo.TryGetValue(jobId, out var jobInfo))
+        {
+            foreach (var exp in jobInfo.CurrentExp.Values)
+            {
+                ImGui.Text($"Exp {exp.Name}: {exp.Current} / {exp.Needed}");
+                Draw_XPBar(exp.Current, exp.Needed, exp.Max);
+                if (ImGui.IsItemHovered())
+                {
+                    using (var expTooltip = ImRaii.Tooltip())
+                    {
+                        ImGui.Text($"Type: {exp.Name}");
+                        ImGui.Separator();
+
+                        ImGui.Text($"Current: {exp.Current}");
+                        ImGui.Text($"Need: {exp.Needed}");
+                        ImGui.Text($"Max: {exp.Max}");
+                    }
+                }
+            }
         }
     }
 }
