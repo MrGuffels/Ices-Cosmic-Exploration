@@ -7,7 +7,7 @@ using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
+using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Scheduler.Tasks

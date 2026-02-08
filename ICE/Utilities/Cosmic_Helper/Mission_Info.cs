@@ -147,7 +147,6 @@ public static partial class CosmicHelper
         return cosmicClassInfo;
     }   
 
-
     public unsafe static (int classScore, int cappedClassScore, int totalScores, uint classId) GetCosmicClassScores(bool useSelectedJob = false, uint jobId = 0)
     {
         int classScore = 0;

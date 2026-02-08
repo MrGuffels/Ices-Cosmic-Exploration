@@ -5,7 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using ICE.Ui.MainUi;
 using ICE.Ui.MainUi.HelpFolder;
-using ICE.Ui.MainUi.ModeSelect;
+using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.Settings;
 using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Ui.SettingTabs;
@@ -79,6 +79,7 @@ namespace ICE.Ui
                 }
                 modeSelect_Standard.Draw();
             },
+            ["modeSelect_CosmicAgenda"] = () => modeSelect_Agenda.Draw(),
 
             // Settings
             ["setting_StopWhen"] = () => StopWhen.Draw(),

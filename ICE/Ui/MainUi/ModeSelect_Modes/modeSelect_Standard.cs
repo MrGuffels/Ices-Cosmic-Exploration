@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace ICE.Ui.MainUi.ModeSelect
+namespace ICE.Ui.MainUi.ModeSelect_Modes
 {
     internal class modeSelect_Standard
     {

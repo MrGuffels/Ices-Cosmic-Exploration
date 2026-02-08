@@ -471,5 +471,21 @@ namespace ICE.Scheduler.Tasks
             isComplete = true;
             return true;
         }
+
+        private static bool? CheckStateV2()
+        {
+            string tag = "[Task: Check State]";
+
+            if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var lottery) && lottery.IsAddonReady)
+            {
+                IceLogging.Info("We are currently gambling at the wheel, so going to continue on with that and wait for it to finish", tag);
+                SchedulerMain.State = IceState.Gambling;
+                return true;
+            }
+
+            var relicXpInfo = CosmicHelper.Cosmic_ClassInfo();
+
+            return true;
+        }
     }
 }

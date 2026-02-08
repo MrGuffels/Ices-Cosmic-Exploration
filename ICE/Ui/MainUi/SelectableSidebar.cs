@@ -3,7 +3,7 @@ using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
-using ICE.Ui.MainUi.ModeSelect;
+using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Utilities.ImGuiTools;
 using SharpDX.Direct2D1.Effects;
 using System.Collections.Generic;
@@ -32,6 +32,7 @@ namespace ICE.Ui.MainUi
                 {
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, "Mission Setup", "modeSelect_MissionSetup");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Complete Overview", "modeSelect_Completion");
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.ClipboardList, "Cosmic Agenda", "modeSelect_CosmicAgenda");
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Settings", icon: FontAwesomeIcon.Cog))
                 {

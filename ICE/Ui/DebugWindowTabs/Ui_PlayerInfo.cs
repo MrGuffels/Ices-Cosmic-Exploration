@@ -6,7 +6,7 @@ using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using System.Reflection;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
-using static ICE.Ui.MainUi.ModeSelect.modeSelect_TableInfo;
+using static ICE.Ui.MainUi.ModeSelect_Modes.modeSelect_TableInfo;
 
 namespace ICE.Ui.DebugWindowTabs
 {
