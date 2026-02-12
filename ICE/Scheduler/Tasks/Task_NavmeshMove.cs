@@ -32,16 +32,10 @@ namespace ICE.Scheduler.Tasks
             }
             else if (P.Navmesh.IsRunning())
             {
-                if (usingCosmoliner)
+                if (usingCosmoliner || Player.IsJumping)
                     P.Navmesh.Stop();
 
-                if (C.JumpIfStuck)
-                {
-                    if (CheckAndHandleStuck())
-                    {
-                        return false; // Let the stuck handler take control
-                    }
-                }
+                CheckifIsStuck();
 
                 if (!mounted && Player.DistanceTo(pos) > minMountDistance)
                 {
@@ -102,6 +96,7 @@ namespace ICE.Scheduler.Tasks
                 if (usingCosmoliner || Player.IsJumping)
                 {
                     // We don't want navmesh/any checks to be running while using the cosmoliner, so just exiting out
+                    ResetInfo();
                     return false;
                 }
 
@@ -131,6 +126,8 @@ namespace ICE.Scheduler.Tasks
                         if (EzThrottler.Throttle("Telling navmesh to start"))
                         {
                             IceLogging.Debug("Telling navmesh to start pathfinding");
+                            whenStarted = DateTime.Now;
+                            ResetInfo();
                             IceLogging.DestinationLogs.Log(pos);
                             P.Navmesh.SetTolerance(0.25f);
                             P.Navmesh.PathfindAndMoveTo(pos, false);
@@ -160,7 +157,9 @@ namespace ICE.Scheduler.Tasks
                 {
                     if (EzThrottler.Throttle("Telling navmesh to start"))
                     {
-                        IceLogging.Verbose("Telling navmesh to start pathfinding");
+                        IceLogging.Debug("Telling navmesh to start pathfinding");
+                        whenStarted = DateTime.Now;
+                        ResetInfo();
                         IceLogging.DestinationLogs.Log(pos);
                         P.Navmesh.SetTolerance(0.25f);
                         P.Navmesh.PathfindAndMoveTo(pos, false);
@@ -171,134 +170,35 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
-        public static bool? Task_NavMoveTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayOnMount = false, Vector3? npcLoc = null)
+        private static Vector3 lastPosition = Vector3.Zero;
+        private static DateTime whenStarted = DateTime.Now;
+        private static DateTime lastTimeTracked = DateTime.Now;
+        private static float distanceToBeStuck = 1.0f;
+        private static int stuckTimeThresh = 2000; // In ms (so 1 second esentially)
+
+        private static void ResetInfo()
         {
-            string tag = "[Task: Navmesh Moveto]";
-
-            bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
-            bool mounted = Player.Mounted;
-            bool inMission = CosmicHelper.CurrentLunarMission != 0;
-            float minMountDistance = C.MountRadius;
-            float dismountDistance = C.DismountRadius;
-
-            bool useInMission = C.UseMountInMission && inMission;
-            bool useOutsideMission = C.UseMountOutsideMission && !inMission;
-            bool useMount = useInMission || useOutsideMission;
-
-            if (P.Navmesh.Installed)
-            {
-                if (!P.Navmesh.IsReady())
-                {
-                    if (EzThrottler.Throttle("Navmesh progress", 1000))
-                    {
-                        IceLogging.Debug($"Waiting for navmesh to be ready. Progress: {P.Navmesh.BuildProgress():N2}");
-                    }
-                }
-                else
-                {
-                    if (P.Navmesh.IsRunning())
-                    {
-                        if (npcLoc != null)
-                        {
-                            var distanceToNpc = Player.DistanceTo(npcLoc.Value);
-
-                            if (distanceToNpc <= dismountDistance && !stayOnMount)
-                            {
-                                if (EzThrottler.Throttle("Dismounting the mount"))
-                                {
-                                    Utils.Dismount();
-                                }
-                            }
-                            else if (distanceToNpc > minMountDistance && !mounted && useMount)
-                            {
-                                if (EzThrottler.Throttle("Using mount"))
-                                    Utils.MountAction();
-                            }
-                            else if (usingCosmoliner)
-                            {
-                                if (EzThrottler.Throttle("On Cosmoliner Tehe"))
-                                {
-                                    IceLogging.Verbose($"We're currently on a cosmoliner, going to just stop and wait");
-                                    P.Navmesh.Stop();
-                                }
-                            }
-                            else if (Player.IsJumping)
-                            {
-                                if (EzThrottler.Throttle("Player is jumping"))
-                                {
-                                    IceLogging.Verbose($"We're currently jumping... just to be on the safe side we gonna just stop navmesh so we don't do some jank movement");
-                                    P.Navmesh.Stop();
-                                }
-                            }
-                            else if (distanceToNpc <= distance)
-                            {
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            return false;
+            lastPosition = Vector3.Zero;
+            lastTimeTracked = DateTime.Now;
         }
-
-        private static Vector3 _lastPosition = Vector3.Zero;
-        private static DateTime _lastPositionChange = DateTime.Now;
-        private static int _stuckAttempts = 0;
-        private const float STUCK_DISTANCE_THRESHOLD = 1.0f; // Consider stuck if moved less than this
-        private const int STUCK_TIME_THRESHOLD = 3000; // Time in ms before considering stuck
-
-        private static unsafe bool CheckAndHandleStuck()
+        
+        private static unsafe void CheckifIsStuck()
         {
             var currentPos = Player.Position;
-            var timeSinceLastChange = (DateTime.Now - _lastPositionChange).TotalMilliseconds;
+            var timeSinceLastChecked = (DateTime.Now - lastTimeTracked).TotalMilliseconds;
+            var navmeshStartTime = (DateTime.Now - whenStarted).TotalMilliseconds;
 
-            // Check if we've moved significantly
-            if (Vector3.Distance(currentPos, _lastPosition) > STUCK_DISTANCE_THRESHOLD)
+            if (Vector3.Distance(currentPos, lastPosition) > distanceToBeStuck)
             {
-                // We moved, reset tracking
                 ResetInfo();
-                return false;
             }
 
-            // We haven't moved much, check if we've been stuck long enough
-            if (timeSinceLastChange > STUCK_TIME_THRESHOLD)
+            if (timeSinceLastChecked >= stuckTimeThresh && navmeshStartTime >= stuckTimeThresh)
             {
-                _stuckAttempts++;
-
-                if (_stuckAttempts == 1)
-                {
-                    // First attempt: try jumping
-                    if (EzThrottler.Throttle("Stuck - attempting jump", 1000))
-                    {
-                        IceLogging.Warning("Player appears stuck, attempting to jump");
-                        ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
-                        _lastPositionChange = DateTime.Now; // Give it time to work
-                    }
-                    return true;
-                }
-                else if (_stuckAttempts >= 2)
-                {
-                    // Second attempt: stop navmesh after jump had time to execute
-                    if (EzThrottler.Throttle("Stuck - stopping navmesh", 1000))
-                    {
-                        IceLogging.Warning("Player still stuck after jump attempt, stopping navmesh");
-                        P.Navmesh.Stop();
-                        _stuckAttempts = 0; // Reset for next time
-                        _lastPositionChange = DateTime.Now;
-                    }
-                    return true;
-                }
+                if (EzThrottler.Throttle("Using jump action"))
+                    ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
+                ResetInfo();
             }
-
-            return false;
-        }
-
-        public static void ResetInfo()
-        {
-            _lastPosition = Vector3.Zero;
-            _lastPositionChange = DateTime.Now;
-            _stuckAttempts = 0;
         }
     }
 }
