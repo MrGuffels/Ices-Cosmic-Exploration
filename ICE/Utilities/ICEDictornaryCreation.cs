@@ -37,6 +37,8 @@ public sealed partial class ICE
 
             if (missionName == "")
                 continue;
+            if (entry.ClassJobCategory[0].RowId == 0)
+                continue;
 
             jobs.Add(entry.ClassJobCategory[0].RowId - 1);
             var Job2 = entry.ClassJobCategory[1].RowId;

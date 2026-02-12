@@ -557,6 +557,31 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        private static void Insert_GrabMissionTask()
+        {
+
+        }
+        private static bool? Mission_ChangeJob(uint missionId)
+        {
+            IceLogging.Verbose("Starting to change job");
+
+            var mission = CosmicHelper.SheetMissionDict[missionId];
+            var jobId = mission.Jobs.First();
+
+            if ((uint)Player.Job == jobId)
+                return true;
+            else
+            {
+                if (EzThrottler.Throttle("Swapping to job for mission"))
+                {
+                    GearsetHandler.TaskClassChange((Job)jobId);
+                    IceLogging.Debug($"Swapping to job: {jobId}");
+                }
+                return false;
+            }
+        }
+
+
         public static bool? FrameDelay(int amount)
         {
             P.TaskManager.InsertDelay(amount, true);

@@ -171,6 +171,77 @@ namespace ICE.Scheduler.Tasks
             return false;
         }
 
+        public static bool? Task_NavMoveTo(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayOnMount = false, Vector3? npcLoc = null)
+        {
+            string tag = "[Task: Navmesh Moveto]";
+
+            bool usingCosmoliner = Svc.Condition[ConditionFlag.Unknown101];
+            bool mounted = Player.Mounted;
+            bool inMission = CosmicHelper.CurrentLunarMission != 0;
+            float minMountDistance = C.MountRadius;
+            float dismountDistance = C.DismountRadius;
+
+            bool useInMission = C.UseMountInMission && inMission;
+            bool useOutsideMission = C.UseMountOutsideMission && !inMission;
+            bool useMount = useInMission || useOutsideMission;
+
+            if (P.Navmesh.Installed)
+            {
+                if (!P.Navmesh.IsReady())
+                {
+                    if (EzThrottler.Throttle("Navmesh progress", 1000))
+                    {
+                        IceLogging.Debug($"Waiting for navmesh to be ready. Progress: {P.Navmesh.BuildProgress():N2}");
+                    }
+                }
+                else
+                {
+                    if (P.Navmesh.IsRunning())
+                    {
+                        if (npcLoc != null)
+                        {
+                            var distanceToNpc = Player.DistanceTo(npcLoc.Value);
+
+                            if (distanceToNpc <= dismountDistance && !stayOnMount)
+                            {
+                                if (EzThrottler.Throttle("Dismounting the mount"))
+                                {
+                                    Utils.Dismount();
+                                }
+                            }
+                            else if (distanceToNpc > minMountDistance && !mounted && useMount)
+                            {
+                                if (EzThrottler.Throttle("Using mount"))
+                                    Utils.MountAction();
+                            }
+                            else if (usingCosmoliner)
+                            {
+                                if (EzThrottler.Throttle("On Cosmoliner Tehe"))
+                                {
+                                    IceLogging.Verbose($"We're currently on a cosmoliner, going to just stop and wait");
+                                    P.Navmesh.Stop();
+                                }
+                            }
+                            else if (Player.IsJumping)
+                            {
+                                if (EzThrottler.Throttle("Player is jumping"))
+                                {
+                                    IceLogging.Verbose($"We're currently jumping... just to be on the safe side we gonna just stop navmesh so we don't do some jank movement");
+                                    P.Navmesh.Stop();
+                                }
+                            }
+                            else if (distanceToNpc <= distance)
+                            {
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private static Vector3 _lastPosition = Vector3.Zero;
         private static DateTime _lastPositionChange = DateTime.Now;
         private static int _stuckAttempts = 0;
