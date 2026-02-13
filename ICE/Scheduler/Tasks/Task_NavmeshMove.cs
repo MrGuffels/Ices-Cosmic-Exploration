@@ -32,8 +32,19 @@ namespace ICE.Scheduler.Tasks
             }
             else if (P.Navmesh.IsRunning())
             {
-                if (usingCosmoliner || Player.IsJumping)
+                if (usingCosmoliner)
                     P.Navmesh.Stop();
+
+                if (!Player.IsJumping && hasJumped)
+                {
+                    P.Navmesh.Stop();
+                    hasJumped = false;
+                }
+
+                if (EzThrottler.Throttle("Logging last position", 500))
+                {
+                    lastPosition = Player.Position;
+                }
 
                 CheckifIsStuck();
 
@@ -93,10 +104,16 @@ namespace ICE.Scheduler.Tasks
             else if (!P.Navmesh.IsRunning())
             {
                 // We're here, which means it's time to start fresh for navmesh
-                if (usingCosmoliner || Player.IsJumping)
+                if (usingCosmoliner)
                 {
                     // We don't want navmesh/any checks to be running while using the cosmoliner, so just exiting out
                     ResetInfo();
+                    return false;
+                }
+
+                if (Player.IsJumping)
+                {
+                    // we ideally wanna wait to stop jumping. So gonna just return false here
                     return false;
                 }
 
@@ -174,7 +191,8 @@ namespace ICE.Scheduler.Tasks
         private static DateTime whenStarted = DateTime.Now;
         private static DateTime lastTimeTracked = DateTime.Now;
         private static float distanceToBeStuck = 1.0f;
-        private static int stuckTimeThresh = 2000; // In ms (so 1 second esentially)
+        private static int stuckTimeThresh = 1000; // In ms (so 1 second esentially = 1000)
+        private static bool hasJumped = false;
 
         private static void ResetInfo()
         {
@@ -185,8 +203,17 @@ namespace ICE.Scheduler.Tasks
         private static unsafe void CheckifIsStuck()
         {
             var currentPos = Player.Position;
+
             var timeSinceLastChecked = (DateTime.Now - lastTimeTracked).TotalMilliseconds;
             var navmeshStartTime = (DateTime.Now - whenStarted).TotalMilliseconds;
+
+            if (EzThrottler.Throttle("Log info", 500))
+            {
+                IceLogging.Verbose($"Last time checked: {timeSinceLastChecked}");
+                IceLogging.Verbose($"Navmesh Start time: {navmeshStartTime}");
+                IceLogging.Verbose($"Current Pos: {currentPos:N2} | Last position: {lastPosition:N2} | Distance: {Vector3.Distance(currentPos, lastPosition)}");
+
+            }
 
             if (Vector3.Distance(currentPos, lastPosition) > distanceToBeStuck)
             {
@@ -196,8 +223,14 @@ namespace ICE.Scheduler.Tasks
             if (timeSinceLastChecked >= stuckTimeThresh && navmeshStartTime >= stuckTimeThresh)
             {
                 if (EzThrottler.Throttle("Using jump action"))
+                {
                     ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
-                ResetInfo();
+                }
+            }
+
+            if (Player.IsJumping)
+            {
+                hasJumped = true;
             }
         }
     }
