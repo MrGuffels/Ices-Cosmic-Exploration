@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using SharpDX.Direct2D1.Effects;
@@ -79,6 +80,15 @@ namespace ICE.Ui.DebugWindowTabs
                 return;
             }
 
+            if (ImGui.Button("Stop Current Task"))
+            {
+                P.TaskManager.AbortCurrent();
+                P.Navmesh.Stop();
+            }
+
+            ImGui.SameLine();
+            ImGui.Text($"Player Moving: {Player.IsMoving}");
+
             if (ImGui.BeginTable("Event Markers", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
             {
                 ImGui.TableSetupColumn("Position");
@@ -102,10 +112,11 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.Image(texture.GetWrapOrEmpty().Handle, new Vector2(24, 24));
                     }
                     ImGui.TableNextColumn();
-                    if (ImGui.Button("Move to"))
+                    if (ImGui.Button($"Move to##{marker.Position:N2}"))
                     {
-                        P.Navmesh.PathfindAndMoveTo(marker.Position, false);
+                        P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(marker.Position), "Marker move task");
                     }
+
 
                     if (marker.IconId == 63989)
                     {

@@ -6,4 +6,12 @@
         ProvisionalWeather = 32768,          // Weather Mission
         ProvisionalSequential = 65536,       // Sequential Mission
     }
+
+    public enum MissionTypes
+    {
+        DroneSearch,
+        RedAlert,
+        Provisional,
+        Standard,
+    }
 }
