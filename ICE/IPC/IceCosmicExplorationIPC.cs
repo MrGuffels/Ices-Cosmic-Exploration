@@ -114,7 +114,7 @@ public class IceCosmicExplorationIPC
             case "StopAfterCurrent": Mission_Settings.StopAfterCurrent = state; break;
             case "StopOnceHitCosmoCredits": C.StopOnceHitCosmoCredits = state; break;
             case "StopOnceHitLunarCredits": C.StopOnceHitLunarCredits = state; break;
-            case "XPRelicGrind": C.XPRelicGrind = state; break;
+            case "XPRelicGrind": C.SelectedMode = ModeSelect.RelicMode; break;
             default: return;
         }
         C.Save();

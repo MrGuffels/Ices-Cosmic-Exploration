@@ -6,7 +6,7 @@ namespace ICE.Utilities
     {
         // States that get set in the main Ui
         internal static bool StopAfterCurrent = false;
-        internal static uint previouslyAbandoned = 0;
+        internal static uint previousAbandonRank = 0;
 
         internal static ModeSelect Mode = ModeSelect.Standard;
         internal static uint SelectedJob = 8;
@@ -16,9 +16,6 @@ namespace ICE.Utilities
         internal static int nodeCounter = 0;
         internal static int nodeTotal = 0;
         internal static uint item_collectableId = 0;
-        internal static int CollectableStep = 0;
-        internal static int NextCollectableStep = 0;
-        internal static int SelectedRotation = 0;
 
         internal static uint Collectable_BuffCount = 0;
 
@@ -53,12 +50,10 @@ namespace ICE.Utilities
         }
         internal static void ResetCollectableState()
         {
-            CollectableStep = 0;
-            NextCollectableStep = 0;
             item_collectableId = 0;
         }
 
-        public static Dictionary<uint, int> missionAppearanceCounts = new Dictionary<uint, int>();
+        public static Dictionary<uint, int> missionApperenceCount = new Dictionary<uint, int>();
         public static int rerollThreshold = 3;
     }
 }

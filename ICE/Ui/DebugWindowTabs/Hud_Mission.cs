@@ -83,15 +83,8 @@ namespace ICE.Ui.DebugWindowTabs
                     }
                 }
 
-                bool EnableXpGrind = C.XPRelicGrind;
                 bool IgnoreManual = C.XPRelicIgnoreManual;
                 bool onlyEnabled = C.XPRelicOnlyEnabled;
-
-                if (ImGui.Checkbox("Relic XP Grind", ref EnableDummyXp))
-                {
-                    C.XPRelicGrind = EnableDummyXp;
-                    C.Save();
-                }
                 if (ImGui.Checkbox("Ignore Manual Mode", ref IgnoreManual))
                 {
                     C.XPRelicIgnoreManual = IgnoreManual;

@@ -446,6 +446,11 @@ namespace ICE.Ui.DebugWindowTabs
                             {
                                 P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(route.LandZone, stayMounted: true), Utils.TaskConfig);
                             }
+                            ImGui.SameLine();
+                            if (ImGui.Button("Test Massive Pathfinding"))
+                            {
+                                Task_NavmeshMove.Enqueue_NavmeshTask(route.LandZone);
+                            }
 
                             if (ImGui.Button("Test Path to all Nodes"))
                             {

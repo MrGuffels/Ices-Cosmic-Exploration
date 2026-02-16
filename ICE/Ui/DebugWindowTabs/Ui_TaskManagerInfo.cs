@@ -32,15 +32,6 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.SetNextItemWidth(100);
             ImGui.InputUInt("Mission", ref mission);
 
-            if (ImGui.Button("Path to mission"))
-            {
-                P.TaskManager.Enqueue(() => Task_FindMission.Navmesh_MoveToMission(mission), "Testing Moveto Task", Utils.TaskConfig);
-            }
-            ImGui.InputInt("Frame Delay", ref frameDelay);
-            if (ImGui.Button("Running Mission Test"))
-            {
-                Task_FindMission.Enqueue();
-            }
             if (ImGui.Button("Abandon Mission"))
             {
                 Task_AbandonMission.Enqueue();
@@ -70,10 +61,6 @@ namespace ICE.Ui.DebugWindowTabs
                 {
                     pathTo = await FindTask(currentPos);
                 });
-            }
-            if (ImGui.Button("Test Fishing Moveto"))
-            {
-                P.TaskManager.Enqueue(() => Task_FindMission.Navmesh_MoveToMission(mission), "Testing fishing moveto",configuration: Utils.TaskConfig);
             }
             if (ImGui.Button("Test Crafting"))
             {

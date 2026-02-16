@@ -268,7 +268,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 #region Auto-Hiding Columns
 
-                ImGui.TableSetColumnEnabled(0, !((C.XPRelicGrind && !C.XPRelicOnlyEnabled) || C.XPLeveling_Mode));
+                ImGui.TableSetColumnEnabled(0, !((C.SelectedMode == ModeSelect.RelicMode && !C.XPRelicOnlyEnabled) || C.XPLeveling_Mode));
                 ImGui.TableSetColumnEnabled(1, (C.ShowCompletionWindow || C.GrindAllProvisionals)); // Job Column (Useful for provisionals/Timed)
                 ImGui.TableSetColumnEnabled(2, C.ShowManualMode);
 

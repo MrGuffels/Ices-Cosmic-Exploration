@@ -213,6 +213,12 @@ public static unsafe partial class CosmicHelper
         [510] = new() { 172, 487 },
         [511] = new() { 352, 487 }
     };
+    public static Dictionary<uint, Vector3> HubCenter = new()
+    {
+        [1237] = new(2.84f, 1.55f, -0.06f),
+        [1291] = new(339.90f, 52.60f, -412.10f),
+        [1310] = new(-180.02f, 0.50f, 129.25f)
+    };
 
     #endregion
 }

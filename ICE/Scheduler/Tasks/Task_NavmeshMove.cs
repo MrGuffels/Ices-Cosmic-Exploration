@@ -2,7 +2,12 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Gui.Toast;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using YamlDotNet.Core.Tokens;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -71,17 +76,11 @@ namespace ICE.Scheduler.Tasks
             // Handle starting navmesh
             return HandleStartNavmesh(pos, distance, stayMounted, npcLoc, usingCosmoliner, mounted, distanceToTarget, handle);
         }
-
         private static bool ShouldUseMount(bool inMission)
         {
             return (C.UseMountInMission && inMission) || (C.UseMountOutsideMission && !inMission);
         }
-
-        private static bool? HandleRunningNavmesh
-            (Vector3 pos, bool waitForBusy, float distance, 
-            bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, 
-            bool mounted, bool useMount, float minMountDistance, 
-            float dismountDistance, float distanceToTarget, string handle)
+        private static bool? HandleRunningNavmesh(Vector3 pos, bool waitForBusy, float distance, bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, bool mounted, bool useMount, float minMountDistance, float dismountDistance, float distanceToTarget, string handle)
         {
             // Stop navmesh if using cosmoliner
             if (usingCosmoliner)
@@ -140,11 +139,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
-        private static bool? HandleStartNavmesh(
-            Vector3 pos, float distance, bool stayMounted,
-            Vector3? npcLoc, bool usingCosmoliner, bool mounted,
-            float distanceToTarget, string handle)
+        private static bool? HandleStartNavmesh(Vector3 pos, float distance, bool stayMounted, Vector3? npcLoc, bool usingCosmoliner, bool mounted, float distanceToTarget, string handle)
         {
             // Don't start navmesh while using cosmoliner
             if (usingCosmoliner)
@@ -178,7 +173,6 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-
         private static bool? HandleArrival(bool mounted, bool stayMounted, float distanceToTarget, float requiredDistance, string handle)
         {
             if (mounted && !stayMounted)
@@ -196,14 +190,12 @@ namespace ICE.Scheduler.Tasks
             ResetInfo();
             return true;
         }
-
         private static void ResetInfo()
         {
             lastPosition = Vector3.Zero;
             lastTimeTracked = DateTime.Now;
             isJumpInProgress = false;
         }
-
         private static unsafe void CheckIfIsStuck()
         {
             var currentPos = Player.Position;
@@ -235,6 +227,582 @@ namespace ICE.Scheduler.Tasks
                     ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
                 }
             }
+        }
+
+        public class PathInfo
+        {
+            public Vector3 destination { get; set; } = Vector3.Zero;
+            public float distance { get; set; } = 0;
+            public List<Vector3> pathTo { get; set; } = null;
+            public List<Vector3> pathFrom { get; set; } = null;
+            public uint Aethernet_TravelTo { get; set; } = 0;
+            public uint Aethernet_TravelFrom { get; set; } = 0;
+        }
+        private static Dictionary<string, PathInfo> TravelMethods = new()
+        {
+            ["Direct"] = new(),
+            ["Aethernet"] = new(),
+            ["HubReturn"] = new(),
+            ["HubAethernet"] = new(),
+        };
+        public class AethernetSystem
+        {
+            public uint AethernetId { get; set; } = 0;
+            public Vector3 Location { get; set; } = Vector3.Zero;
+            public Vector3 LandZone { get; set; } = Vector3.Zero;
+            public int MapSelector { get; set; } = 0;
+        }
+        public static Dictionary<uint, List<AethernetSystem>> PlanetAethernet = new()
+        {
+            [1237] = new()
+            {
+                new()
+                {
+                    MapSelector = 0,
+                    AethernetId = 2015100,
+                    LandZone = new(-0.60f, 1.64f, -28.41f),
+                    Location = new(-3.80f, 1.64f, -32.15f),
+                },
+                new()
+                {
+                    MapSelector = 1,
+                    AethernetId = 2015053,
+                    LandZone = new(-540.94f, 59.55f, -529.95f),
+                    Location = new(-540.00f, 59.55f, -526.75f),
+                },
+                new()
+                {
+                    MapSelector = 2,
+                    AethernetId = 2015054,
+                    LandZone = new(429.26f, 45.55f, 499.95f),
+                    Location = new(427.23f, 45.55f, 497.46f),
+                },
+                new()
+                {
+                    MapSelector = 3,
+                    AethernetId = 2015055,
+                    LandZone = new(-621.24f, 50.55f, 396.78f),
+                    Location = new(-619.56f, 50.55f, 399.77f),
+                },
+                new()
+                {
+                    MapSelector = 4,
+                    AethernetId = 2015056,
+                    LandZone = new(632.05f, -73.95f, -575.25f),
+                    Location = new(629.80f, -73.95f, -572.78f),
+                }
+            },
+            [1291] = new()
+            {
+                new()
+                {
+                    MapSelector = 0,
+                    AethernetId = 2015057,
+                    Location = new(337.87f, 52.64f, -382.78f),
+                    LandZone = new(339.01f, 52.64f, -385.46f),
+                },
+                new()
+                {
+                    MapSelector = 1,
+                    AethernetId = 2015058,
+                    Location = new(-150.82f, 29.05f, 314.44f),
+                    LandZone = new(-152.70f, 29.05f, 313.55f),
+                },
+                new()
+                {
+                    MapSelector = 2,
+                    AethernetId = 2015059,
+                    Location = new(-640.11f, -1.45f, -627.05f),
+                    LandZone = new(-640.68f, -1.45f, -629.19f),
+                },
+                new()
+                {
+                    MapSelector = 3,
+                    AethernetId = 2015060,
+                    Location = new(672.88f, -241.50f, 422.65f),
+                    LandZone = new(673.69f, -241.86f, 424.29f),
+                },
+                new()
+                {
+                    MapSelector = 4,
+                    AethernetId = 2015061,
+                    Location = new(-590.90f, 28.50f, 722.25f),
+                    LandZone = new(-592.41f, 28.29f, 722.27f),
+                }
+            },
+            [1310] = new()
+            {
+                new()
+                {
+                    MapSelector = 0,
+                    AethernetId = 2015062,
+                    Location = new(-164.10f, 0.50f, 83.50f),
+                    LandZone = new(-165.44f, 0.38f, 84.41f),
+                },
+                new()
+                {
+                    MapSelector = 1,
+                    AethernetId = 2015063,
+                    Location = new(-141.20f, -74.95f, -591.17f),
+                    LandZone = new(-140.56f, -74.95f, -589.59f),
+                },
+                new()
+                {
+                    MapSelector = 2,
+                    AethernetId = 2015064,
+                    Location = new(-454.18f, 102.05f, 760.83f),
+                    LandZone = new(-453.34f, 102.05f, 761.97f),
+                },
+                new()
+                {
+                    MapSelector = 3,
+                    AethernetId = 2015065,
+                    Location = new(733.85f, 218.80f, -100.98f),
+                    LandZone = new(732.61f, 218.80f, -101.53f),
+                },
+            }
+        };
+        private static Task? _PathCalculations = null;
+
+        public static void Enqueue_NavmeshTask(Vector3 destination, bool waitForBusy = true, float distance = 2.0f)
+        {
+            P.TaskManager.InsertMulti
+                (
+                    new(() => Paths_Clear(), "Clearing all Navmesh Paths"),
+                    new(() => CalculateAethernet(destination), "Calculating Aethernet Path"),
+                    new(() => CalculateHub(destination), "Calculating Hub Path"),
+                    new(() => CalculateDirect(destination), "Calculating Direct Path"),
+                    new(() => CalculateHubAethernet(destination), "Calculate Hub Aetheryte Travel"),
+                    new(() => FindBestTravel(destination, waitForBusy, distance), "Finding best pathing method")
+                );
+        }
+
+        private static bool? Paths_Clear()
+        {
+            foreach (var path in TravelMethods)
+            {
+                path.Value.pathTo = null;
+                path.Value.pathFrom = null;
+                path.Value.destination = Vector3.Zero;
+                path.Value.distance = 0;
+                path.Value.Aethernet_TravelTo = 0;
+                path.Value.Aethernet_TravelFrom = 0;
+            }
+            return true;
+        }
+        private static bool? CalculateAethernet(Vector3 destination)
+        {
+            string tag = "Navmesh: Aethernet Calculation";
+
+            var territory = Player.Territory.RowId;
+            if (!PlanetAethernet.TryGetValue(territory, out var aetherList))
+            {
+                IceLogging.Info("No valid aethernets, returning", tag);
+                return true;
+            }
+
+            var closestAetheryte = aetherList.OrderBy(x => Player.DistanceTo(x.Location)).FirstOrDefault();
+            var destinationAetheryte = aetherList.OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
+
+            if (closestAetheryte == null || destinationAetheryte == null)
+            {
+                IceLogging.Info("Was not able to find a valid aetheryte for either going to or destination, continuing", tag);
+                return true;
+            }
+
+            if (closestAetheryte.Location == destinationAetheryte.Location)
+            {
+                IceLogging.Info("Both aetherytes were the same ID/Location, so we don't need to take one, continuing", tag);
+                return true;
+            }
+
+            var aethernet = TravelMethods["Aethernet"];
+
+            var playerPosition = Player.Position;
+
+            // Starting the distance calculations here
+            if (_PathCalculations == null)
+            {
+                _PathCalculations = Task.Run(async () =>
+                {
+                    aethernet.pathTo = await FindPath(playerPosition, closestAetheryte.LandZone);
+                    aethernet.pathFrom = await FindPath(destinationAetheryte.LandZone, destination);
+                });
+                if (EzThrottler.Throttle("Started task"))
+                    IceLogging.Verbose("Started to calculate path", tag);
+                return false; // Keep checking
+            }
+
+            // Wait for completion
+            if (!_PathCalculations.IsCompleted)
+            {
+                if (EzThrottler.Throttle("Calculating path message", 1000))
+                {
+                    IceLogging.Verbose("Still calculating path that would be between aetherytes (via navmesh)", tag);
+                }
+
+                return false; // Still calculating
+            }
+
+            // Done!
+            _PathCalculations = null; // Reset for next use
+            float distance = 0;
+            if (aethernet.pathTo != null)
+            {
+                for (int i = 0; i < aethernet.pathTo.Count - 1; i++)
+                {
+                    var start = aethernet.pathTo[i];
+                    var end = aethernet.pathTo[i + 1];
+
+                    distance += Vector3.Distance(start, end);
+                }
+            }
+
+            if (aethernet.pathFrom != null)
+            {
+                for (int i = 0; i < aethernet.pathFrom.Count - 1; i++)
+                {
+                    var start = aethernet.pathFrom[i];
+                    var end = aethernet.pathFrom[i + 1];
+
+                    distance += Vector3.Distance(start, end);
+                }
+            }
+
+            if (distance > 0)
+            {
+                aethernet.distance = distance;
+                aethernet.Aethernet_TravelTo = closestAetheryte.AethernetId;
+                aethernet.Aethernet_TravelFrom = destinationAetheryte.AethernetId;
+            }
+
+            return true;
+        }
+        private static bool? CalculateDirect(Vector3 destination)
+        {
+            string tag = "[Navmesh: Calculate Direct]";
+            var method = TravelMethods["Direct"];
+
+            var playerPosition = Player.Position;
+
+            if (_PathCalculations == null)
+            {
+                _PathCalculations = Task.Run(async () =>
+                {
+                    method.pathTo = await FindPath(playerPosition, destination);
+                });
+                if (EzThrottler.Throttle("Started task"))
+                    IceLogging.Verbose("Started to calculate path", tag);
+                return false; // Keep checking
+            }
+
+            // Wait for completion
+            if (!_PathCalculations.IsCompleted)
+            {
+                if (EzThrottler.Throttle("Calculating path message", 1000))
+                {
+                    IceLogging.Verbose("Still calculating path that would be direct (via navmesh)", tag);
+                }
+
+                return false; // Still calculating
+            }
+
+            // Done!
+            _PathCalculations = null; // Reset for next use
+            if (method.pathTo != null)
+            {
+                float distance = 0;
+
+                for (int i = 0; i < method.pathTo.Count - 1; i++)
+                {
+                    var start = method.pathTo[i];
+                    var end = method.pathTo[i + 1];
+
+                    distance += Vector3.Distance(start, end);
+                }
+
+                if (distance > 0)
+                {
+                    method.distance = distance;
+                }
+            }
+            IceLogging.Info($"Direct Pathing Complete", tag);
+            return true;
+        }
+        private static bool? CalculateHub(Vector3 destination)
+        {
+            string tag = "[Navmesh: Calculate Hub Path]";
+
+            if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
+            {
+                var method = TravelMethods["HubReturn"];
+                if (_PathCalculations == null)
+                {
+                    _PathCalculations = Task.Run(async () =>
+                    {
+                        TravelMethods["HubReturn"].pathTo = await FindPath(HubCenter, destination);
+                    });
+                    if (EzThrottler.Throttle("Started task"))
+                        IceLogging.Verbose("Started to calculate path", tag);
+                    return false; // Keep checking
+                }
+
+                // Wait for completion
+                if (!_PathCalculations.IsCompleted)
+                {
+                    if (EzThrottler.Throttle("Calculating path message", 1000))
+                    {
+                        IceLogging.Verbose("Still calculating path that would be direct (via navmesh)", tag);
+                    }
+
+                    return false; // Still calculating
+                }
+
+                // Done!
+                _PathCalculations = null; // Reset for next use
+                if (method.pathTo != null)
+                {
+                    float distance = 0;
+
+                    for (int i = 0; i < method.pathTo.Count - 1; i++)
+                    {
+                        var start = method.pathTo[i];
+                        var end = method.pathTo[i + 1];
+
+                        distance += Vector3.Distance(start, end);
+                    }
+
+                    if (distance > 0)
+                    {
+                        method.distance = distance;
+                    }
+                }
+                IceLogging.Info("HubPath Calculations Complete", tag);
+                return true;
+            }
+            else
+            {
+                IceLogging.Error("No hub center is currently recorded. So we're just gonna skip this", tag);
+                return true;
+            }
+        }
+        private static bool? CalculateHubAethernet(Vector3 destination)
+        {
+            string tag = "[Navmesh: Calculate Hub -> Aethernet]";
+            if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
+            {
+                var method = TravelMethods["HubAethernet"];
+
+                var territory = Player.Territory.RowId;
+                if (!PlanetAethernet.TryGetValue(territory, out var aetherList))
+                {
+                    IceLogging.Info("No valid aethernets, returning", tag);
+                    return true;
+                }
+
+                var closestAetheryte = aetherList.OrderBy(x => Vector3.Distance(HubCenter, x.Location)).FirstOrDefault();
+                var destinationAetheryte = aetherList.OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
+
+                if (closestAetheryte == null || destinationAetheryte == null)
+                {
+                    IceLogging.Info("Was not able to find a valid aetheryte for either going to or destination, continuing", tag);
+                    return true;
+                }
+
+                if (closestAetheryte.Location == destinationAetheryte.Location)
+                {
+                    IceLogging.Info("Both aetherytes were the same ID/Location, so we don't need to take one, continuing", tag);
+                    return true;
+                }
+
+                if (_PathCalculations == null)
+                {
+                    IceLogging.Verbose($"Hub Center: {HubCenter}\n" +
+                        $"Closest Aetheryte: {closestAetheryte.LandZone}\n" +
+                        $"Destination Aetheryte: {destinationAetheryte.LandZone}\n" +
+                        $"Destination: {destination}", tag);
+
+                    _PathCalculations = Task.Run(async () =>
+                    {
+                        method.pathTo = await FindPath(HubCenter, closestAetheryte.LandZone);
+                        method.pathFrom = await FindPath(destinationAetheryte.LandZone, destination);
+                    });
+                    if (EzThrottler.Throttle("Started task: Direct"))
+                        IceLogging.Verbose("Started to calculate path", tag);
+                    return false; // Keep checking
+                }
+
+                // Wait for completion
+                if (!_PathCalculations.IsCompleted)
+                {
+                    if (EzThrottler.Throttle("Calculating path message", 1000))
+                    {
+                        IceLogging.Verbose("Still calculating path that would be direct (via navmesh)", tag);
+                    }
+
+                    return false; // Still calculating
+                }
+
+                // Done!
+                _PathCalculations = null; // Reset for next use
+                float distance = 0;
+                if (method.pathTo != null && method.pathTo.Count > 1)
+                {
+                    for (int i = 0; i < method.pathTo.Count - 1; i++)
+                    {
+                        var start = method.pathTo[i];
+                        var end = method.pathTo[i + 1];
+                        distance += Vector3.Distance(start, end);
+                    }
+                }
+
+                if (method.pathFrom != null && method.pathFrom.Count > 1)
+                {
+                    for (int i = 0; i < method.pathFrom.Count - 1; i++)
+                    {
+                        var start = method.pathFrom[i];
+                        var end = method.pathFrom[i + 1];
+                        distance += Vector3.Distance(start, end);
+                    }
+                }
+
+                if (distance > 0 && method.pathTo != null && method.pathFrom != null)
+                {
+                    method.distance = distance;
+                    method.Aethernet_TravelTo = closestAetheryte.AethernetId;
+                    method.Aethernet_TravelFrom = destinationAetheryte.AethernetId;
+                }
+
+                IceLogging.Info($"Hub -> Aethernet Complete", tag);
+                return true;
+            }
+            else
+            {
+                IceLogging.Error("No hub center is currently recorded. So we're just gonna skip this", tag);
+                return true;
+            }
+        }
+        private static bool? FindBestTravel(Vector3 destination, bool waitForBusy, float distance)
+        {
+            var bestTravel = TravelMethods.Where(x => x.Value.distance != 0)
+                .OrderBy(x => x.Value.distance)
+                .FirstOrDefault();
+
+            foreach(var travelKind in TravelMethods)
+            {
+                IceLogging.Verbose($"[{travelKind.Key}] = {travelKind.Value.distance}");
+            }
+
+            if (bestTravel.Key == "Aethernet")
+            {
+                var targetAether = bestTravel.Value.Aethernet_TravelTo;
+                var AethernetLoc = PlanetAethernet[Player.Territory.RowId].Where(x => x.AethernetId == targetAether).FirstOrDefault();
+                P.TaskManager.InsertMulti
+                    (
+                        new(() => DestinationPathing(AethernetLoc.LandZone), "Traveling to Aetheryte"),
+                        new(() => TravelToAethershard(bestTravel.Value), "Traveling Via Aethernet"),
+                        new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Aethernet")
+                    );
+            }
+            else if (bestTravel.Key == "HubReturn")
+            {
+                P.TaskManager.InsertMulti
+                    (
+                        new(() => Task_Repair.HubCheck(), "Returning back to hub"),
+                        new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Hub Return")
+                    );
+            }
+            else if (bestTravel.Key == "HubAethernet")
+            {
+                var targetAether = bestTravel.Value.Aethernet_TravelTo;
+                var AethernetLoc = PlanetAethernet[Player.Territory.RowId].Where(x => x.AethernetId == targetAether).FirstOrDefault();
+                P.TaskManager.InsertMulti
+                    (
+                        new(() => Task_Repair.HubCheck(), "Returning back to hub"),
+                        new(() => DestinationPathing(AethernetLoc.LandZone), "Traveling to the hub aetheryte"),
+                        new(() => TravelToAethershard(bestTravel.Value), "Travel Via Aethernet"),
+                        new(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: HubAethernet")
+                    );
+            }
+            else
+            {
+                P.TaskManager.Insert(() => DestinationPathing(destination, waitForBusy, distance), "Pathing to our destination: Basic");
+            }
+
+            return true;
+        }
+        private static unsafe bool? TravelToAethershard(PathInfo shardInfo)
+        {
+            string tag = "[Navmesh: Aethershard movement]";
+
+            uint targetId = shardInfo.Aethernet_TravelTo;
+            uint destinationId = shardInfo.Aethernet_TravelFrom;
+
+            int menuId = 0; // TODO: Actually code this in, esentially grab the destationId -> grab the submenuID
+
+            var territoryId = Player.Territory.RowId;
+            var targetAether = PlanetAethernet[territoryId].Where(x => x.AethernetId == targetId).FirstOrDefault();
+            var destinationAether = PlanetAethernet[territoryId].Where(x => x.AethernetId == destinationId).FirstOrDefault();
+
+            menuId = destinationAether.MapSelector;
+
+            if (Player.DistanceTo(targetAether.Location) < 5)
+            {
+                if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("TelepotTown", out var TelepotTown) && TelepotTown->IsReady)
+                {
+                    if (EzThrottler.Throttle("Use Aethernet", 500))
+                    {
+                        GenericHandlers.FireCallback("TelepotTown", true, 11, menuId);
+                    }
+                }
+                else
+                {
+                    var aethernet = Svc.Objects.Where(x => x.BaseId == targetId).FirstOrDefault();
+                    if (aethernet != null)
+                    {
+                        Utils.TargetgameObject(aethernet);
+                        Utils.InteractWithObject(aethernet);
+                    }
+                }
+            }
+            else if (Player.DistanceTo(destinationAether.Location) < 10)
+            {
+                if (Player.IsBusy)
+                {
+                    return false;
+                }
+                else
+                {
+                    IceLogging.Info("We've reached our destination!", tag);
+                    return true;
+                }
+            }
+
+
+            // Need to put in the library that keeps the shard info here
+            // Interact -> Make sure window is open
+            // Moment it's open, directly send the command to teleport there
+            // Check to see if distance from destination shard is < 10, that should be more than enough
+
+            return false;
+        }
+        private static bool? DestinationPathing(Vector3 pos, bool waitForBusy = true, float distance = 2.0f, bool stayMounted = false, Vector3? npcLoc = null)
+        {
+            string tag = "Navmesh Move: Destination Pathing";
+
+            if (!Task_NavTo(pos, waitForBusy, distance, stayMounted, npcLoc).Value)
+            {
+                return false;
+            }
+            else
+            {
+                IceLogging.Info($"We've reached our destination: {pos}", tag);
+                return true;
+            }
+        }
+        private static async Task<List<Vector3>> FindPath(Vector3 position, Vector3 destination)
+        {
+            return await P.Navmesh.Pathfind(position, destination, false);
         }
     }
 }

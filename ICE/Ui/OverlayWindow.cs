@@ -79,7 +79,6 @@ namespace ICE.Ui
 #if DEBUG
             if (C.ShowDebugGatherInfo)
             {
-                ImGui.Text($"Current Collectable State: {Mission_Settings.CollectableStep}");
                 ImGui.Text($"Total Node: {Mission_Settings.nodeTotal}");
                 ImGui.Text($"Node Counter: {Mission_Settings.nodeCounter}");
             }

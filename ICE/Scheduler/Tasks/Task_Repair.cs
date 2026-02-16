@@ -32,34 +32,35 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? HubCheck()
         {
-            Vector2 HubCenter = Vector2.Zero;
-            if (PlayerHelper.IsInPhaenna())
+            if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
-                HubCenter = new Vector2(340.0f, -420.0f);
-            }
-            else if (PlayerHelper.IsInOizys())
-            {
-                HubCenter = new(-180.0f, 138.0f);
-            }
+                Vector3 PlayerPos = Player.Position;
 
-            Vector2 PlayerPos = new Vector2(Player.Position.Z, Player.Position.Z);
+                if (Player.DistanceTo(HubCenter) < 45)
+                {
+                    IceLogging.Info("Player is in the range of the main hub area right now", "[Vendor Repair Check]");
+                    return true;
+                }
+                else
+                {
+                    //Not within the vicinity of the hub area, time to return
+                    if (!Player.IsBusy)
+                    {
+                        if (EzThrottler.Throttle("Returning back to the moon base"))
+                            ActionManager.Instance()->UseAction(ActionType.GeneralAction, 26);
+                    }
+                }
 
-            if (Player.DistanceTo(HubCenter) < 45)
-            {
-                IceLogging.Info("Player is in the range of the main hub area right now", "[Vendor Repair Check]");
-                return true;
+                return false;
             }
             else
             {
-                //Not within the vicinity of the hub area, time to return
-                if (!Player.IsBusy)
-                {
-                    if (EzThrottler.Throttle("Returning back to the moon base"))
-                        ActionManager.Instance()->UseAction(ActionType.GeneralAction, 26);
-                }
+                IceLogging.Error($"HEY. WE'RE MISSING THE HUB. THIS ISN'T GOOD. PLEASE ICE FIX THIS <3\n" +
+                    $"From: Past Ice.");
+                SchedulerMain.State = IceState.Idle;
+                P.TaskManager.Tasks.Clear();
+                return true;
             }
-
-            return false;
         }
         public static bool? Repair_PathTo()
         {

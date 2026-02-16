@@ -314,8 +314,6 @@ namespace ICE.Scheduler.Tasks
                 }
                 else if (Svc.Condition[ConditionFlag.Gathering] && GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady || GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var collectable) && collectable.IsAddonReady)
                 {
-                    Mission_Settings.CollectableStep = 0;
-
                     IceLogging.Info($"Gathering window is now visible, continuing onto GatheringInteraction Task", "[Gathering: OpenGatheringMenu]");
                     P.TaskManager.Insert(() => GatherInteractV2(), "Gathering at the node", Utils.TaskConfig);
                     Mission_Settings.nodeTotal += 1;

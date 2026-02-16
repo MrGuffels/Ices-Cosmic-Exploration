@@ -89,18 +89,9 @@ public static class ConfigMigration
         C.ShowInfoButton = old.ShowInfoButton;
         C.MiddleColumnWidth = old.MiddleColumnWidth;
         C.SelectedJob = old.SelectedJob;
-        C.XPRelicGrind = old.XPRelicGrind;
         C.XPLeveling_Mode = old.XPLeveling_Mode;
         C.XPRelicIgnoreManual = old.XPRelicIgnoreManual;
         C.XPRelicOnlyEnabled = old.XPRelicOnlyEnabled;
-        C.ShowCritical = old.ShowCritical;
-        C.ShowSequential = old.ShowSequential;
-        C.ShowWeather = old.ShowWeather;
-        C.ShowTimeRestricted = old.ShowTimeRestricted;
-        C.ShowClassA = old.ShowClassA;
-        C.ShowClassB = old.ShowClassB;
-        C.ShowClassC = old.ShowClassC;
-        C.ShowClassD = old.ShowClassD;
     }
 
     private static void MigrateOverlay(MissionConfigs old)

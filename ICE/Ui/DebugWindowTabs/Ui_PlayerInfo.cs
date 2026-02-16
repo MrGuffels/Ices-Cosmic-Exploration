@@ -45,7 +45,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
             ImGui.Text($"Job: {Player.Job}");
             ImGui.Text($"JobId: {(uint)Player.Job}");
-            ImGui.Text($"Current Territory/ZoneId: {Player.Territory}");
+            ImGui.Text($"Current Territory/ZoneId: {Player.Territory.RowId}");
             if (PlayerHelper.IsInCosmicZone())
             {
                 var manager = (WKSManagerCustom*)WKSManager.Instance();

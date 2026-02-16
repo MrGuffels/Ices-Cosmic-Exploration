@@ -69,6 +69,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 bool standard = C.SelectedMode == ModeSelect.Standard;
                 bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
                 bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
+                bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
 
 
                 if (standard)
@@ -82,6 +83,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 {
                     modeType = "Leveling Grind";
                     modeIcon = FontAwesomeIcon.Leaf;
+                }
+                else if (agendaMode)
+                {
+                    modeType = "Cosmic Agenda";
+                    modeIcon = FontAwesomeIcon.ClipboardList;
                 }
 
                 ImGuiEx.IconWithText(modeIcon, $"{modeType} Mode");
@@ -133,6 +139,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                        "-> For crafters it's whatever missions take the least amount of progress" +
                                        "-> For gathering, it's whatever is the least pain to do w/ the minimum amount of skills\n" +
                                        "**These will automatically set settings for using these modes temporarily**");
+                    if (ImGui.RadioButton("Agenda Mode", agendaMode))
+                    {
+                        C.SelectedMode = ModeSelect.AgendaMode;
+                        C.Save();
+                    }
+                    ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
+                        "This mode is if you want to do a series of things in a particular order. So for example, if you wanted to grind out all the relics on all the classes back to back\n" +
+                        "Or if you wanted to do the relic on WVR -> Then farm score on BTN -> Farm credits on BSM\n" +
+                        "Really is the \"I want to do this order of things\" kind of thing.\n" +
+                        "Note. I'm not responsible if you leave this on and get banned for it. I'm not one for leaving things at their pc, but people are watching always. Keep this in mind");
 
                     ImGui.EndPopup();
                 }
@@ -315,12 +331,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                             ImGui.Separator();
 
-                            bool EnableRelicXp = C.XPRelicGrind;
-                            if (ImGui.Checkbox("Auto-Pick For Relic XP", ref EnableRelicXp))
-                            {
-                                C.XPRelicGrind = EnableRelicXp;
-                                C.Save();
-                            }
                             ImGui.SameLine();
                             ImGui.TextDisabled("?");
                             if (ImGui.IsItemHovered())
@@ -328,22 +338,19 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 ImGui.SetTooltip("Please note. This will ONLY grind for relic Exp under the basic mission tab. \n" +
                                                    "This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions");
                             }
-                            if (EnableRelicXp)
+                            bool OnlySelected = C.XPRelicOnlyEnabled;
+                            if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
                             {
-                                bool OnlySelected = C.XPRelicOnlyEnabled;
-                                if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
+                                C.XPRelicOnlyEnabled = OnlySelected;
+                                C.Save();
+                            }
+                            if (C.ShowManualMode)
+                            {
+                                bool IgnoreManual = C.XPRelicIgnoreManual;
+                                if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
                                 {
-                                    C.XPRelicOnlyEnabled = OnlySelected;
+                                    C.XPRelicIgnoreManual = IgnoreManual;
                                     C.Save();
-                                }
-                                if (C.ShowManualMode)
-                                {
-                                    bool IgnoreManual = C.XPRelicIgnoreManual;
-                                    if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
-                                    {
-                                        C.XPRelicIgnoreManual = IgnoreManual;
-                                        C.Save();
-                                    }
                                 }
                             }
                         }
@@ -648,10 +655,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     var selectedClass = C.SelectedJob;
                     var jobIcon = CosmicHelper.JobIconDict[selectedClass];
                     ImGui_Ice.DrawImageBox(jobIcon, "Selected", spacingAfter: 5);
-                    if (allEnabled > 0)
-                    {
-                        ImGui_Ice.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled");
-                    }
+                    ImGui_Ice.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled", disabled: allEnabled == 0);
 
                     ImGui_Ice.EndCategoryButtonRow();
                 }

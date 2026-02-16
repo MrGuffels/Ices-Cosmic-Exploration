@@ -31,7 +31,8 @@ namespace ICE.Scheduler.Tasks
 
             var currentMode = C.SelectedMode;
             var currentMissionId = CosmicHelper.CurrentLunarMission;
-            UpdateMissionState(currentMissionId);
+            if (CosmicHelper.CurrentLunarMission != 0)
+                UpdateMissionState(currentMissionId);
 
             if (GenericHelpers.TryGetAddonMaster<WKSLottery>("WKSLottery", out var lottery) && lottery.IsAddonReady)
             {
@@ -340,7 +341,7 @@ namespace ICE.Scheduler.Tasks
             }
             if (CosmicHelper.PlanetCreditInfo.TryGetValue(territoryId, out var gambaCredits))
             {
-                GambaWheel = C.GambaAtAmount <= gambaCredits;
+                GambaWheel = C.GambaAtAmount >= gambaCredits && C.GambaBetweenRuns;
             }
             if (C.RepairAtVendor)
             {

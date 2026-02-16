@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.SettingTabs
 {
@@ -11,202 +12,191 @@ namespace ICE.Ui.SettingTabs
     {
         public static void Draw()
         {
-            ImGui.Text("Mission Priority Organizer");
+            MissionTypeOrderUi();
 
-            ImGui.Text("Drag items to reorder mission priority (higher = processed first):");
-            ImGui.Separator();
+            TypePriorityUi();
 
-            // Create a copy for manipulation
-            var currentOrder = C.MissionPrio.ToList();
-            bool orderChanged = false;
-
-            for (int i = 0; i < currentOrder.Count; i++)
-            {
-                ImGui.PushID(i);
-
-                var missionType = currentOrder[i];
-
-                ImGui.PushFont(UiBuilder.IconFont);
-                ImGui.Text(GetMissionTypeIcon(missionType));
-                ImGui.PopFont();
-
-                ImGui.SameLine();
-
-                // Making the text the only selectable thing... trying to make it WITH the icon is messy
-                string displayText = GetMissionTypeName(missionType);
-                bool isSelected = false;
-                ImGui.Selectable(displayText, isSelected, ImGuiSelectableFlags.None);
-
-                // Handle drag and drop
-                if (ImGui.BeginDragDropSource())
-                {
-                    // Store the index being dragged
-                    unsafe
-                    {
-                        int draggedIndex = i;
-                        byte* data = (byte*)&draggedIndex;
-                        ImGui.SetDragDropPayload("MISSION_TYPE", new ReadOnlySpan<byte>(data, sizeof(int)));
-                    }
-                    ImGui.Text($"Moving: {GetMissionTypeName(missionType)}");
-                    ImGui.EndDragDropSource();
-                }
-
-                if (ImGui.BeginDragDropTarget())
-                {
-                    unsafe
-                    {
-                        var payload = ImGui.AcceptDragDropPayload("MISSION_TYPE");
-                        if (!payload.IsNull)
-                        {
-                            int draggedIndex = *(int*)payload.Data;
-
-                            // Perform the reorder
-                            if (draggedIndex != i && draggedIndex >= 0 && draggedIndex < currentOrder.Count)
-                            {
-                                var draggedItem = currentOrder[draggedIndex];
-                                currentOrder.RemoveAt(draggedIndex);
-                                currentOrder.Insert(i, draggedItem);
-                                orderChanged = true;
-                            }
-                        }
-                    }
-                    ImGui.EndDragDropTarget();
-                }
-
-                // Show priority number
-                ImGui.SameLine();
-                ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"(Priority: {i + 1})");
-
-                ImGui.PopID();
-            }
-
-            if (orderChanged)
-            {
-                // Priority has been changed. Updating the config now.
-                C.MissionPrio = currentOrder;
-                C.Save();
-            }
-
-            ImGui.Separator();
-
-            // Reset to default button
-            if (ImGui.Button("Reset to Default##Mission"))
-            {
-                C.MissionPrio = new List<ProvisionalTypes>
-                {
-                    ProvisionalTypes.ProvisionalWeather,
-                    ProvisionalTypes.ProvisionalSequential,
-                    ProvisionalTypes.ProvisionalTimed
-                };
-                C.Save();
-            }
-
-            // Add spacing between sections
-            ImGui.Spacing();
-            ImGui.Spacing();
-
-            // JOB PRIORITY SECTION
-            ImGui.Text("Job Priority Organizer");
-            ImGui.Text("Drag items to reorder job priority (higher = processed first):");
-            ImGui.Separator();
-
-            // Create a copy for manipulation
-            var currentJobOrder = C.JobPrio.ToList();
-            bool jobOrderChanged = false;
-
-            for (int i = 0; i < currentJobOrder.Count; i++)
-            {
-                ImGui.PushID($"job_{i}");
-
-                var jobId = currentJobOrder[i];
-
-                if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var icon))
-                {
-                    ImGui.Image(icon.GetWrapOrEmpty().Handle, new Vector2(24, 24));
-                }
-                else
-                {
-                    // Fallback to FontAwesome icon if texture not found
-                    ImGui.PushFont(UiBuilder.IconFont);
-                    ImGui.Text(GetJobIcon(jobId));
-                    ImGui.PopFont();
-                }
-
-                ImGui.SameLine();
-
-                ImGui.SameLine();
-
-                string displayText = GetJobName(jobId);
-                bool isSelected = false;
-                ImGui.Selectable(displayText, isSelected, ImGuiSelectableFlags.None);
-
-                // Handle drag and drop
-                if (ImGui.BeginDragDropSource())
-                {
-                    unsafe
-                    {
-                        int draggedIndex = i;
-                        byte* data = (byte*)&draggedIndex;
-                        ImGui.SetDragDropPayload("JOB_TYPE", new ReadOnlySpan<byte>(data, sizeof(int)));
-                    }
-                    ImGui.Text($"Moving: {GetJobName(jobId)}");
-                    ImGui.EndDragDropSource();
-                }
-
-                if (ImGui.BeginDragDropTarget())
-                {
-                    unsafe
-                    {
-                        var payload = ImGui.AcceptDragDropPayload("JOB_TYPE");
-                        if (!payload.IsNull)
-                        {
-                            int draggedIndex = *(int*)payload.Data;
-
-                            if (draggedIndex != i && draggedIndex >= 0 && draggedIndex < currentJobOrder.Count)
-                            {
-                                var draggedItem = currentJobOrder[draggedIndex];
-                                currentJobOrder.RemoveAt(draggedIndex);
-                                currentJobOrder.Insert(i, draggedItem);
-                                jobOrderChanged = true;
-                            }
-                        }
-                    }
-                    ImGui.EndDragDropTarget();
-                }
-
-                // Show priority number
-                ImGui.SameLine();
-                ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), $"(Priority: {i + 1})");
-
-                ImGui.PopID();
-            }
-
-            if (jobOrderChanged)
-            {
-                C.JobPrio = currentJobOrder;
-                C.Save();
-            }
-
-            ImGui.Separator();
-
-            // Reset to default button
-            if (ImGui.Button("Reset to Default##Job"))
-            {
-                C.JobPrio = new List<uint> { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
-                C.Save();
-            }
+            JobPriorityUi();
         }
 
-        // Quick way of assigning a name to the missions (useful for enums, saves me a lot of typing
-        private static string GetMissionTypeName(ProvisionalTypes type)
+        private static ImGuiEx.RealtimeDragDrop<ProvisionalTypes>? _dragDrop_ProvisionalType;
+
+        private static void TypePriorityUi()
         {
-            return type switch
+            _dragDrop_ProvisionalType ??= new ImGuiEx.RealtimeDragDrop<ProvisionalTypes>(
+                "ProvisionalTypeDragDrop",
+                (info) => $"{info}_{info.GetHashCode()}",
+                smallButton: false
+            );
+
+            _dragDrop_ProvisionalType.Begin();
+
+            if (ImGui.BeginTable("Type Priority Table", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
             {
-                ProvisionalTypes.ProvisionalWeather => "Weather Missions",
-                ProvisionalTypes.ProvisionalSequential => "Sequence Missions",
-                ProvisionalTypes.ProvisionalTimed => "Timed Missions",
-                _ => type.ToString()
-            };
+                ImGui.TableSetupColumn("ReOrder");
+                ImGui.TableSetupColumn("Icon");
+                ImGui.TableSetupColumn("Type");
+
+                ImGui.TableHeadersRow();
+
+                for (int i = 0; i < C.MissionPrio.Count; i++)
+                {
+                    ImGui.PushID(i);
+                    var entry = C.MissionPrio[i];
+
+                    ImGui.TableNextRow();
+                    _dragDrop_ProvisionalType.NextRow();
+                    _dragDrop_ProvisionalType.SetRowColor(entry);
+
+                    ImGui.TableSetColumnIndex(0);
+                    _dragDrop_ProvisionalType.DrawButtonDummy(entry, C.MissionPrio, i);
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    FontAwesomeIcon icon = entry switch
+                    {
+                        ProvisionalTypes.ProvisionalTimed => FontAwesomeIcon.Clock,
+                        ProvisionalTypes.ProvisionalSequential => FontAwesomeIcon.ListOl,
+                        ProvisionalTypes.ProvisionalWeather => FontAwesomeIcon.Cloud,
+                        _ => FontAwesomeIcon.Question,
+                    };
+
+                    ImGuiEx.Icon(icon);
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    string type = entry switch
+                    {
+                        ProvisionalTypes.ProvisionalTimed => "Timed",
+                        ProvisionalTypes.ProvisionalSequential => "Sequence",
+                        ProvisionalTypes.ProvisionalWeather => "Weather",
+                        _ => entry.ToString()
+                    };
+                    ImGui.Text($"{type}");
+
+                    ImGui.PopID();
+                }
+
+                ImGui.EndTable();
+            }
+
+            _dragDrop_ProvisionalType.End();
+        }
+
+        private static ImGuiEx.RealtimeDragDrop<MissionTypes>? _dragDrop_MissionType;
+
+        private static void MissionTypeOrderUi()
+        {
+            _dragDrop_MissionType ??= new ImGuiEx.RealtimeDragDrop<MissionTypes>(
+                "MissionTypeDragDrop",
+                (info) => $"{info}_{info.GetHashCode()}",
+                smallButton: false
+            );
+
+            _dragDrop_MissionType.Begin();
+
+            if (ImGui.BeginTable("Mission Type Table", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+            {
+                ImGui.TableSetupColumn("ReOrder");
+                ImGui.TableSetupColumn("Icon");
+                ImGui.TableSetupColumn("Type");
+
+                ImGui.TableHeadersRow();
+
+                for (int i = 0; i < C.MissionTypePrio.Count; i++)
+                {
+                    ImGui.PushID(i);
+                    var entry = C.MissionTypePrio[i];
+
+                    ImGui.TableNextRow();
+                    _dragDrop_MissionType.NextRow();
+                    _dragDrop_MissionType.SetRowColor(entry);
+
+                    ImGui.TableSetColumnIndex(0);
+                    _dragDrop_MissionType.DrawButtonDummy(entry, C.MissionTypePrio, i);
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    FontAwesomeIcon icon = entry switch
+                    {
+                        MissionTypes.DroneSearch => FontAwesomeIcon.Satellite,
+                        MissionTypes.RedAlert => FontAwesomeIcon.Bell,
+                        MissionTypes.Provisional => FontAwesomeIcon.HourglassHalf,
+                        MissionTypes.Standard => FontAwesomeIcon.Star,
+                        _ => FontAwesomeIcon.Question
+                    };
+                    ImGuiEx.Icon(icon);
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    string name = entry switch
+                    {
+                        MissionTypes.DroneSearch => "Drone Search",
+                        MissionTypes.RedAlert => "Red Alert",
+                        MissionTypes.Provisional => "Provisional Missions [Weather/Timed/Sequence]",
+                        MissionTypes.Standard => "Standard Missions [A->D]",
+                        _ => $"{entry}"
+                    };
+                    ImGui.Text($"{name}");
+
+                    ImGui.PopID();
+                }
+
+                ImGui.EndTable();
+            }
+
+            _dragDrop_MissionType.End();
+        }
+
+        private static ImGuiEx.RealtimeDragDrop<uint>? _dragDrop_JobPrio;
+
+        private static void JobPriorityUi()
+        {
+            _dragDrop_JobPrio ??= new ImGuiEx.RealtimeDragDrop<uint>(
+                "JobPrioDragDrop",
+                (info) => ($"{info}_{info.GetHashCode()}"),
+                smallButton: false
+            );
+
+            _dragDrop_JobPrio.Begin();
+
+            if (ImGui.BeginTable("Job Priority Order", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
+            {
+                ImGui.TableSetupColumn("ReOrder");
+                ImGui.TableSetupColumn("Icon");
+                ImGui.TableSetupColumn("Type");
+
+                ImGui.TableHeadersRow();
+
+                for (int i = 0; i < C.JobPrio.Count(); i++)
+                {
+                    ImGui.PushID(i);
+
+                    var entry = C.JobPrio[i];
+                    ImGui.TableNextRow();
+                    _dragDrop_JobPrio.NextRow();
+                    _dragDrop_JobPrio.SetRowColor(entry);
+
+                    ImGui.TableSetColumnIndex(0);
+                    _dragDrop_JobPrio.DrawButtonDummy(entry, C.JobPrio, i);
+
+                    ImGui.TableNextColumn();
+                    if (CosmicHelper.JobIconDict.TryGetValue(entry, out var icon))
+                    {
+                        ImGui.Image(icon.GetWrapOrEmpty().Handle, new(24, 24));
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text($"{GetJobName(entry)}");
+
+                    ImGui.PopID();
+                }
+
+                ImGui.EndTable();
+            }
+
+            _dragDrop_JobPrio.End();
         }
 
         // Quick way of assigning Icons to the mission types

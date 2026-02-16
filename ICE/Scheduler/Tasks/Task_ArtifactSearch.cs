@@ -209,9 +209,14 @@ namespace ICE.Scheduler.Tasks
         private static Vector3 droneLoc = Vector3.Zero;
         public static void Enqueue_DroneCheck()
         {
-            P.TaskManager.Enqueue(() => RefreshMapInfo(), "Queueing Map Refresh Task");
+            P.TaskManager.InsertMulti
+                (
+                    new(CloseMapInfo, "Making sure map is close"),
+                    new(OpenMapInfo, "Re-opening map to refresh"),
+                    new(CloseMapInfo, "Closing one more time cause we don't need it"),
+                    new(CheckBoxStatus, "Checking Box Status")
+                );
         }
-
         public class TempMapMarkerData
         {
             public Vector3 Position { get; set; }
@@ -245,7 +250,7 @@ namespace ICE.Scheduler.Tasks
         }
         public static bool? RefreshMapInfo()
         {
-            P.TaskManager.EnqueueMulti
+            P.TaskManager.InsertMulti
                 (
                     new(CloseMapInfo, "Making sure map is close"),
                     new(OpenMapInfo, "Re-opening map to refresh"),
@@ -254,7 +259,6 @@ namespace ICE.Scheduler.Tasks
                 );
             return true;
         }
-
         public static unsafe bool? CheckBoxStatus()
         {
             droneLoc = Vector3.Zero;
@@ -266,11 +270,8 @@ namespace ICE.Scheduler.Tasks
             {
                 IceLogging.Debug("We've found the map flag! Setting it for us to travel to", tag);
                 droneLoc = marker.Position;
-                P.TaskManager.EnqueueMulti
-                    (
-                        new(PathToDrone, "Pathing to drone"),
-                        new(InteractWithDrone, "Interact with drone")
-                    );
+                P.TaskManager.Insert(InteractWithDrone, "Interact with drone");
+                Task_NavmeshMove.Enqueue_NavmeshTask(droneLoc, false, 3.5f);
                 return true;
             }
             else
@@ -278,32 +279,14 @@ namespace ICE.Scheduler.Tasks
                 if (PlayerHelper.GetItemCount(50414, out var count) && count > 0)
                 {
                     IceLogging.Debug("We have a crate to use! Initiating the task to start using it", tag);
-                    P.TaskManager.Enqueue(() => UseDroneBox(), "Use Drone Box");
+                    P.TaskManager.Insert(UseDroneBox, "Use Drone Box");
                     return true;
                 }
                 else
                 {
                     IceLogging.Debug($"We are out of boxes, and we have no markers. So we're continuing on with the normal task");
-                    SchedulerMain.State = IceState.Start;
                     return true;
                 }
-            }
-        }
-        private static bool? PathToDrone()
-        {
-            if (Task_NavmeshMove.Task_NavTo(droneLoc, distance: 3.5f, waitForBusy: false).Value)
-            {
-                P.Navmesh.Stop();
-
-                IceLogging.Debug("We're at the drone! (Hopefully)... probably");
-                return true;
-            }
-            else
-            {
-                if (EzThrottler.Throttle("Distance Tell", 2000))
-                    IceLogging.Verbose($"Distance: {Player.DistanceTo(droneLoc)}");
-
-                return false;
             }
         }
         private static bool? InteractWithDrone()
@@ -329,7 +312,6 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                P.TaskManager.Enqueue(() => RefreshMapInfo(), "Queueing map refresh info", Utils.TaskConfig);
                 return true;
             }
 
@@ -341,7 +323,7 @@ namespace ICE.Scheduler.Tasks
 
             if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("AreaMap", out var mapAddon) && GenericHelpers.IsAddonReady(mapAddon))
             {
-                P.TaskManager.Enqueue(() => RefreshMapInfo(), "Task Artifact: Check Box Status", Utils.TaskConfig);
+                P.TaskManager.Insert(() => RefreshMapInfo(), "Task Artifact: Check Box Status", Utils.TaskConfig);
                 return true;
             }
             else if (GenericHelpers.TryGetAddonMaster<SelectYesno>("SelectYesno", out var YesNo) && YesNo.IsAddonReady)
@@ -372,7 +354,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    IceLogging.Verbose("We're waiting for the addon map to be visible. If it's not then there's a problem");
+                    IceLogging.Verbose("We're waiting for the addon map to be visible. If it's not then there's a problem", tag);
                 }
             }
                 
