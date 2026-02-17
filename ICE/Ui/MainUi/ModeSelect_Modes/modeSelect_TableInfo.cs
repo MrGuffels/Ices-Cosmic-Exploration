@@ -5,6 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.ImGuiTools;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static MissionTimer;
@@ -1862,11 +1863,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 criticalScore *= 60;
 
                             string showingX = ShowScorePerMinute ? "Per Minute" : "Per Hour";
-                            if (ImGui.Checkbox($"Showing score {showingX} currently", ref ShowScorePerMinute))
+                            if (ImGui_Ice.ToggleButton("ScoreToggle", $"Showing Score {showingX} Currently", ref ShowScorePerMinute))
                             {
                                 C.ShowSPM = ShowScorePerMinute;
                                 C.Save();
                             }
+
                             if (ImGui.BeginTable("Critical Scoring Info", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                             {
                                 ImGui.TableSetupColumn("Turnin");
@@ -1903,7 +1905,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 new() { type = "Gold", color = new Vector4(1.0f, 0.84f, 0.0f, 1.0f)}
                             };
                             string showingX = ShowScorePerMinute ? "Per Minute" : "Per Hour";
-                            if (ImGui.Checkbox($"Showing Score {showingX} Currently", ref ShowScorePerMinute))
+                            if (ImGui_Ice.ToggleButton("ScoreToggle", $"Showing Score {showingX} Currently", ref ShowScorePerMinute))
                             {
                                 C.ShowSPM = ShowScorePerMinute;
                                 C.Save();

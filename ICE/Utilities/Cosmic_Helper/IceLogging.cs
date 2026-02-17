@@ -150,17 +150,25 @@ internal static class IceLogging
     public class LogEntry
     {
         public DateTime Timestamp { get; set; }
+        public DateTime LastOccurrence { get; set; }
         public LogLevel Level { get; set; }
         public string Message { get; set; }
-        public string? Category { get; set; } // Optional: for filtering by system/feature
+        public string? Category { get; set; }
+        public int Count { get; set; } = 1;
 
         public LogEntry(LogLevel level, string message, string? category = null)
         {
             Timestamp = DateTime.Now;
+            LastOccurrence = DateTime.Now;
             Level = level;
             Message = message;
             Category = category;
         }
+
+        public bool IsRepeating => Count > 1;
+
+        // Helper to create a unique key
+        public string GetKey() => $"{Level}|{Category ?? ""}|{Message}";
     }
 
     public class DestinationEntry
@@ -196,43 +204,102 @@ internal static class IceLogging
     public static class LogSystem
     {
         private static List<LogEntry> logs = new();
-        private static int maxLogCount = 3000; // Prevent memory bloat
+        private static Dictionary<string, LogEntry> recentLogs = new(); // Track recent logs for time-window matching
+        private static int maxLogCount = 1000;
+        private static TimeSpan consolidationWindow = TimeSpan.FromMilliseconds(100); // Merge duplicates within 500ms
 
         public static IReadOnlyList<LogEntry> Logs => logs.AsReadOnly();
 
         public static void Log(LogLevel level, string message, string? category = null)
         {
-            logs.Add(new LogEntry(level, message, category));
+            var key = $"{level}|{category ?? ""}|{message}";
+            var now = DateTime.Now;
 
-            // Keep only recent logs
+            // Check if we have this exact log recently (within consolidation window)
+            if (recentLogs.TryGetValue(key, out var recentLog))
+            {
+                var timeSinceLastOccurrence = now - recentLog.LastOccurrence;
+
+                // If it happened recently, just increment the counter
+                if (timeSinceLastOccurrence <= consolidationWindow)
+                {
+                    recentLog.Count++;
+                    recentLog.LastOccurrence = now;
+                    return; // Don't add a new entry
+                }
+                else
+                {
+                    // Too old, this is a new burst
+                    recentLogs.Remove(key);
+                }
+            }
+
+            // Check if the LAST log entry is identical (for consecutive duplicates)
+            if (logs.Count > 0)
+            {
+                var lastLog = logs[logs.Count - 1];
+
+                if (lastLog.GetKey() == key)
+                {
+                    lastLog.Count++;
+                    lastLog.LastOccurrence = now;
+                    recentLogs[key] = lastLog; // Update recent tracker
+                    return;
+                }
+            }
+
+            // New unique entry
+            var newLog = new LogEntry(level, message, category);
+            logs.Add(newLog);
+            recentLogs[key] = newLog;
+
+            // Cleanup old entries from recent logs dictionary (older than window)
+            CleanupRecentLogs(now);
+
+            // Prune old logs
             if (logs.Count > maxLogCount)
             {
                 logs.RemoveAt(0);
             }
         }
 
+        private static void CleanupRecentLogs(DateTime now)
+        {
+            // Remove entries older than the consolidation window
+            var keysToRemove = recentLogs
+                .Where(kvp => (now - kvp.Value.LastOccurrence) > consolidationWindow)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in keysToRemove)
+            {
+                recentLogs.Remove(key);
+            }
+        }
+
         public static void Verbose(string message, string? category = null) => Log(LogLevel.Verbose, message, category);
+        public static void Debug(string message, string? category = null) => Log(LogLevel.Debug, message, category);
+        public static void Info(string message, string? category = null) => Log(LogLevel.Info, message, category);
+        public static void Warning(string message, string? category = null) => Log(LogLevel.Warning, message, category);
+        public static void Error(string message, string? category = null) => Log(LogLevel.Error, message, category);
 
-        public static void Debug(string message, string? category = null)
-            => Log(LogLevel.Debug, message, category);
-
-        public static void Info(string message, string? category = null)
-            => Log(LogLevel.Info, message, category);
-
-        public static void Warning(string message, string? category = null)
-            => Log(LogLevel.Warning, message, category);
-
-        public static void Error(string message, string? category = null)
-            => Log(LogLevel.Error, message, category);
-
-        public static void Clear() => logs.Clear();
+        public static void Clear()
+        {
+            logs.Clear();
+            recentLogs.Clear();
+        }
 
         public static void CopyToClipboard()
         {
             var sb = new System.Text.StringBuilder();
             foreach (var log in logs)
             {
-                sb.AppendLine($"[{log.Timestamp:yyyy-MM-dd HH:mm:ss}] [{log.Level}] {(log.Category != null ? $"[{log.Category}] " : "")}{log.Message}");
+                var countSuffix = log.Count > 1 ? $" (x{log.Count})" : "";
+                var timeRange = log.Count > 1
+                    ? $"{log.Timestamp:HH:mm:ss} - {log.LastOccurrence:HH:mm:ss}"
+                    : $"{log.Timestamp:HH:mm:ss}";
+
+                sb.AppendLine($"[{timeRange}] [{log.Level}] {(log.Category != null ? $"[{log.Category}] " : "")}{log.Message}{countSuffix}");
             }
             ImGui.SetClipboardText(sb.ToString());
         }

@@ -4,8 +4,232 @@ namespace ICE.Utilities;
 
 public class Shop_Cosmocredits
 {
-    public static Dictionary<uint, ItemInfo> CosmocreditShop = new()
+    public static Dictionary<uint, ItemInfo> Shop_MountsCards = new()
     {
+        #region Armor
+
+        [47929] = new ItemInfo
+        {
+            Name = "Star Crew Jacket",
+            Cost = 8400,
+            Index = 1,
+        },
+        [47930] = new ItemInfo
+        {
+            Name = "Star Crew Gloves",
+            Cost = 4800,
+            Index = 1,
+        },
+        [47931] = new ItemInfo
+        {
+            Name = "Star Crew Trousers",
+            Cost = 7200,
+            Index = 1,
+        },
+        [47932] = new ItemInfo
+        {
+            Name = "Star Crew Boots",
+            Cost = 4800,
+            Index = 1,
+        },
+        [47279] = new ItemInfo
+        {
+            Name = "Star Captain Hat",
+            Cost = 4800,
+            Index = 1,
+        },
+        [47280] = new ItemInfo
+        {
+            Name = "Star Captain Coat",
+            Cost = 8400,
+            Index = 1,
+        },
+        [47281] = new ItemInfo
+        {
+            Name = "Star Captain Gloves",
+            Cost = 4800,
+            Index = 1,
+        },
+        [47282] = new ItemInfo
+        {
+            Name = "Star Captain Trousers",
+            Cost = 7200,
+            Index = 1,
+        },
+        [47283] = new ItemInfo
+        {
+            Name = "Star Captain Boots",
+            Cost = 4800,
+            Index = 1,
+        },
+        [50303] = new ItemInfo
+        {
+            Name = "Star Admiral's Helm",
+            Cost = 4800,
+            Index = 1,
+        },
+        [50304] = new ItemInfo
+        {
+            Name = "Star Admiral's Coat",
+            Cost = 8400,
+            Index = 1,
+        },
+        [50305] = new ItemInfo
+        {
+            Name = "Star Admiral's Gloves",
+            Cost = 4800,
+            Index = 1,
+        },
+        [50306] = new ItemInfo
+        {
+            Name = "Star Admiral's Trousers",
+            Cost = 7200,
+            Index = 1,
+        },
+        [50307] = new ItemInfo
+        {
+            Name = "Star Admiral's Boots",
+            Cost = 4800,
+            Index = 1,
+        },
+
+        #endregion
+
+        #region Mounts/Cards/Housing
+
+        [46825] = new ItemInfo
+        {
+            Name = "Interstellar Dhalmel Whistle",
+            Cost = 29000,
+        },
+        [50445] = new ItemInfo
+        {
+            Name = "Rapid-fab Vacuum Suit Identification Key",
+            Cost = 20000,
+        },
+        [50446] = new ItemInfo
+        {
+            Name = "Alert Red Warp Loader Identification Key",
+            Cost = 20000,
+        },
+        [48091] = new ItemInfo
+        {
+            Name = "Cosmic Exploration Framer's Kit",
+            Cost = 6000,
+        },
+        [46768] = new ItemInfo
+        {
+            Name = "Cosmic Constructs Framer's Kit",
+            Cost = 6000,
+        },
+        [50019] = new ItemInfo
+        {
+            Name = "Cosmic Fantasy Framer's Kit",
+            Cost = 6000,
+        },
+        [46816] = new ItemInfo
+        {
+            Name = "Vacuum Suit Card",
+            Cost = 4000,
+        },
+        [46817] = new ItemInfo
+        {
+            Name = "Namingway Card",
+            Cost = 6000,
+        },
+        [49787] = new ItemInfo
+        {
+            Name = "Interstellar Dhalmel Card",
+            Cost = 4000,
+        },
+        [47985] = new ItemInfo
+        {
+            Name = "Ballroom Etiquette - Bearing Insult",
+            Cost = 9600,
+        },
+        [48153] = new ItemInfo
+        {
+            Name = "The Faces We Wear - Reading Glasses",
+            Cost = 6000,
+        },
+        [46838] = new ItemInfo
+        {
+            Name = "The Faces We Wear - Ornamented Leather Eyepatch (Left)",
+            Cost = 3000,
+        },
+        [46839] = new ItemInfo
+        {
+            Name = "The Faces We Wear - Ornamented Leather Eyepatch (Right)",
+            Cost = 3000,
+        },
+        [48211] = new ItemInfo
+        {
+            Name = "Hey, Cid! Orchestrion Roll",
+            Cost = 6000,
+        },
+        [48213] = new ItemInfo
+        {
+            Name = "The Airship Orchestrion Roll",
+            Cost = 6000,
+        },
+        [46156] = new ItemInfo
+        {
+            Name = "Carrots of Passion Orchestrion Roll",
+            Cost = 6000,
+        },
+        [49836] = new ItemInfo
+        {
+            Name = "Cosmomodule Inner Wall",
+            Cost = 4000,
+        },
+        [49837] = new ItemInfo
+        {
+            Name = "Cosmomodule Flooring",
+            Cost = 4000,
+        },
+        [48732] = new ItemInfo
+        {
+            Name = "Cosmochair",
+            Cost = 3000,
+        },
+        [48735] = new ItemInfo
+        {
+            Name = "Stellar Lamppost",
+            Cost = 3000,
+        },
+        [46176] = new ItemInfo
+        {
+            Name = "Docking Station Cover",
+            Cost = 3000,
+        },
+        [46177] = new ItemInfo
+        {
+            Name = "Cosmic Circumferbench",
+            Cost = 3000,
+        },
+        [49870] = new ItemInfo
+        {
+            Name = "Cosmic Safety Lamp",
+            Cost = 3000,
+        },
+        [49871] = new ItemInfo
+        {
+            Name = "Cosmic Antenna",
+            Cost = 3000,
+        },
+        [49872] = new ItemInfo
+        {
+            Name = "Shady Cosmoshelter",
+            Cost = 3000,
+        },
+
+        #endregion
+    };
+
+    public static Dictionary<uint, ItemInfo> Shop_MateriaDye = new()
+    {
+        #region Items/Materia/Dyes
+
         [12669] = new ItemInfo
         {
             Name = "Hi-Cordial",
@@ -252,11 +476,15 @@ public class Shop_Cosmocredits
             Cost = 900,
         },
 
+        #endregion
+
     };
 
     public class ItemInfo
     {
         public string Name { get; set; }
         public uint Cost { get; set; }
+        public uint Index { get; set; } = 3;
+        public ItemTypes Type { get; set; } = ItemTypes.Misc;
     }
 }

@@ -339,9 +339,10 @@ namespace ICE.Scheduler.Tasks
                 BuyDrones = C.Cosmodrone_Buy && Task_ArtifactSearch.CanBuyDroneBoxes();
                 IceLogging.Verbose($"Buying drones? {BuyDrones}", tag);
             }
-            if (CosmicHelper.PlanetCreditInfo.TryGetValue(territoryId, out var gambaCredits))
+            if (CosmicHelper.PlanetCreditInfo.TryGetValue(territoryId, out var gambaCredits) && PlayerHelper.GetItemCount(gambaCredits, out var gambaAmount))
             {
-                GambaWheel = C.GambaAtAmount >= gambaCredits && C.GambaBetweenRuns;
+                IceLogging.Verbose($"{C.GambaAtAmount} >= {gambaAmount} && Gamba between runs {C.GambaBetweenRuns}");
+                GambaWheel = C.GambaAtAmount <= gambaAmount && C.GambaBetweenRuns;
             }
             if (C.RepairAtVendor)
             {

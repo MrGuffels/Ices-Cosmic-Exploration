@@ -333,7 +333,10 @@ namespace ICE.Scheduler.Tasks
                             }
                         case MissionTypes.DroneSearch:
                             {
-                                P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
+                                if (C.Cosmodrone_Run)
+                                {
+                                    P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
+                                }
                                 break;
                             }
                     }

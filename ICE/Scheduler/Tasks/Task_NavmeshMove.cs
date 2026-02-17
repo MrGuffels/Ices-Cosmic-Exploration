@@ -1,13 +1,10 @@
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.Gui.Toast;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using YamlDotNet.Core.Tokens;
 
 namespace ICE.Scheduler.Tasks
 {
@@ -184,9 +181,12 @@ namespace ICE.Scheduler.Tasks
                 return false;
             }
 
-            IceLogging.Debug("We've met the distance threshold for our destination", handle);
-            IceLogging.Debug($"Player Distance: {distanceToTarget:N2}");
-            IceLogging.Debug($"Expected Distance: {requiredDistance}");
+            if (EzThrottler.Throttle($"Met Location throttle", 5000))
+            {
+                IceLogging.Debug("We've met the distance threshold for our destination", handle);
+                IceLogging.Debug($"Player Distance: {distanceToTarget:N2}");
+                IceLogging.Debug($"Expected Distance: {requiredDistance}");
+            }
             ResetInfo();
             return true;
         }

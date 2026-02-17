@@ -22,7 +22,7 @@ namespace ICE.Scheduler.Tasks
 
         public static void Enqueue()
         {
-            P.TaskManager.Enqueue(() => TurninMission(), "Turning in the mission to the moon gods", Utils.TaskConfig);
+            P.TaskManager.Enqueue(() => Mission_TurninV2(), "Turning in the mission to the moon gods", Utils.TaskConfig);
             P.TaskManager.Enqueue(() => GoldCheck(), "Checking if Gold Check Task needs to be completed");
             P.TaskManager.Enqueue(() => CommandCheck(), "Checking for post mission commands");
             P.TaskManager.Enqueue(() => JobSwapCheck(), "Checking for necessary job swap");
@@ -186,7 +186,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    if ((uint)Player.Job == 18 && Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Gathering])
+                    if ((uint)Player.Job == 18 && Svc.Condition[ConditionFlag.Gathering])
                     {
                         if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
                             Task_DualClass.StopFishing();
@@ -221,6 +221,168 @@ namespace ICE.Scheduler.Tasks
 
                     if (EzThrottler.Throttle("Turning in mission", 250))
                         ReportMission();
+                }
+            }
+
+            return false;
+        }
+
+        public static bool? Mission_TurninV2()
+        {
+            string tag = "[Mission Turnin]";
+            var id = CosmicHelper.CurrentLunarMission;
+
+            if (id == 0)
+            {
+                PathfoundToRed = false;
+                HasInteracted = false;
+
+                // Complete the timer and get duration
+                var duration = P.MissionTimer.CompleteMission();
+
+                // Log the results
+                if (C.MissionConfig.TryGetValue(PreviousMissionId, out var config))
+                {
+                    if (config.BestTime != double.MaxValue)
+                        IceLogging.Info($"Mission [{PreviousMissionId}] [{CosmicHelper.SheetMissionDict[PreviousMissionId].Name}] completed in {duration:mm\\:ss\\.ff} | Best: {TimeSpan.FromSeconds(config.BestTime):mm\\:ss\\.ff} | Avg: {TimeSpan.FromSeconds(config.AverageTime):mm\\:ss\\.ff}", $"{tag} [Mission Timer]");
+                }
+
+                if (P.AutoHook.Installed)
+                {
+                    P.AutoHook.DeleteAllAnonymousPresets();
+                }
+
+                Mission_Settings.TurninState = TurninState.None;
+
+                if (Mission_Settings.StopAfterCurrent)
+                {
+                    IceLogging.Debug($"Stop after current was enabled. Stopping now", "[Task Turnin]");
+                    SchedulerMain.State = IceState.Idle;
+                    return true;
+                }
+                else
+                {
+                    IceLogging.Debug($"Stop after current wasn't enabled. Grabbing another mission", "[Task Turnin]");
+                    SchedulerMain.State = IceState.Start;
+                    return true;
+                }
+            }
+            else
+            {
+                if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheetInfo))
+                {
+                    if (sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
+                    {
+                        if (GatheringUtil.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
+                        {
+                            if (Player.DistanceTo(location.RawLocation) > 75)
+                            {
+                                if (!Task_NavmeshMove.Task_NavTo(location.RawLocation, false, 75, true).Value)
+                                {
+                                    // We're to far away from the turnin location to get a turnin point, continuing on
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                if (!PathfoundToRed)
+                                {
+                                    PathfoundToRed = true;
+                                    P.Navmesh.Stop();
+                                }
+
+                                var collectionPoint = Utils.TryGetObjectCollectionPoint();
+                                if (!Task_NavmeshMove.Task_NavTo(collectionPoint.Position, false, 4).Value)
+                                {
+                                    return false;
+                                }
+
+                                if (EzThrottler.Throttle("Log Throttle", 1000))
+                                {
+                                    IceLogging.Debug("Attempting to turnin/chekcing if we need to navmesh stop");
+                                }
+
+                                if (P.Navmesh.IsRunning())
+                                {
+                                    if (EzThrottler.Throttle("Telling navmesh to stop"))
+                                        P.Navmesh.Stop();
+
+                                    return false;
+                                }
+
+                                if (!HasInteracted)
+                                {
+                                    if (Svc.Condition[ConditionFlag.OccupiedInQuestEvent] || Svc.Condition[ConditionFlag.OccupiedInEvent])
+                                    {
+                                        HasInteracted = true;
+                                    }
+                                    else
+                                    {
+                                        if (EzThrottler.Throttle("Interacting with thing", 500))
+                                        {
+                                            Utils.TargetgameObject(collectionPoint);
+                                            Utils.InteractWithObject(collectionPoint);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (EzThrottler.Throttle("Telling it to wait this much before turning it off", 6000))
+                                    {
+                                        TickRate += 1;
+                                    }
+                                    if (TickRate > 1)
+                                    {
+                                        TickRate = 0;
+                                        HasInteracted = false;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                    else
+                    {
+                        if ((uint)Player.Job == 18 && Svc.Condition[ConditionFlag.Gathering])
+                        {
+                            if (EzThrottler.Throttle("Stop fishing so we can turn in this mission!", 2000))
+                                Task_DualClass.StopFishing();
+
+                            return false;
+                        }
+                        if (GenericHelpers.TryGetAddonMaster<Gathering>("Gathering", out var gather) && gather.IsAddonReady)
+                        {
+                            if (EzThrottler.Throttle("Closing the gathering window"))
+                                GenericHandlers.FireCallback("Gathering", true, -1);
+
+                            return false;
+                        }
+                        else if (GenericHelpers.TryGetAddonMaster<GatheringMasterpiece>("GatheringMasterpiece", out var gathMasterpiece) && gathMasterpiece.IsAddonReady)
+                        {
+                            if (EzThrottler.Throttle("Closing the collectable menu"))
+                                GenericHandlers.FireCallback("GatheringMasterpiece", true, -1);
+
+                            return false;
+                        }
+                        else if (GenericHelpers.TryGetAddonMaster<WKSRecipeNotebook>("WKSRecipeNotebook", out var WksRecipe) && WksRecipe.IsAddonReady)
+                        {
+                            if (EzThrottler.Throttle("Closing the crafting menu"))
+                                GenericHandlers.FireCallback("WKSRecipeNotebook", true, -1);
+
+                            return false;
+                        }
+
+                        if (Player.IsBusy)
+                            return false;
+
+                        if (EzThrottler.Throttle("Report Mission"))
+                        {
+                            ReportMission();
+                        }
+                    }
                 }
             }
 

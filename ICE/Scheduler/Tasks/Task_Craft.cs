@@ -16,7 +16,7 @@ namespace ICE.Scheduler.Tasks
             if (P.Artisan.IsBusy())
             {
                 P.TaskManager.Enqueue(() => WaitingForArtisan(), "Waiting for artisan to finish crafting");
-                P.TaskManager.Enqueue(() => Task_CheckScore.Crafts(), "Checking score");
+                P.TaskManager.Enqueue(() => Task_CheckScore.Enqueue(), "Checking score");
             }
             else
             {

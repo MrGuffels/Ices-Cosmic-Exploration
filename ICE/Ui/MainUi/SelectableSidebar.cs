@@ -28,6 +28,9 @@ namespace ICE.Ui.MainUi
                 bool autoSelectMoon = C.AutoSelectMoon;
                 AutoSelectMoonUpdate(autoSelectMoon);
 
+                bool autoSelectedJob = C.AutoPickCurrentJob;
+                AutoSelectClass(autoSelectedJob);
+
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Cosmic Helper", icon: FontAwesomeIcon.ListAlt))
                 {
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.List, "Mission Setup", "modeSelect_MissionSetup");
@@ -58,7 +61,7 @@ namespace ICE.Ui.MainUi
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Planet Selection", FontAwesomeIcon.Moon))
                 {
-                    if (ImGui.Checkbox("Auto Select Moon", ref autoSelectMoon))
+                    if (ImGui_Ice.ToggleButton("AutoSelectMoon", "Auto Select Moon", ref autoSelectMoon))
                     {
                         C.AutoSelectMoon = autoSelectMoon;
                         C.Save();
@@ -124,6 +127,14 @@ namespace ICE.Ui.MainUi
                     float iconSize = 26 * scale;
                     float iconSpacing = 4;
                     float leftOffset = 10f; // Simple offset from the current position
+
+                    if (ImGui_Ice.ToggleButton("AutoSelectJob", "Auto Select Job", ref autoSelectedJob))
+                    {
+                        C.AutoPickCurrentJob = autoSelectedJob;
+                        C.Save();
+                    }
+
+                    ImGui.Dummy(new(0, 3));
 
                     for (uint i = 8; i < 19; ++i)
                     {
@@ -208,6 +219,17 @@ namespace ICE.Ui.MainUi
                     SetMoonVisibility(sinus: false, phaenna: true, oizys: false);
                 else if (PlayerHelper.IsInOizys() && NeedsUpdate(false, false, true))
                     SetMoonVisibility(sinus: false, phaenna: false, oizys: true);
+            }
+        }
+        private static void AutoSelectClass(bool autoSelectClass)
+        {
+            var jobId = (uint)Player.Job;
+
+            bool needsUpdated = autoSelectClass && C.SelectedJob != jobId && jobId != 0;
+            if (needsUpdated)
+            {
+                C.SelectedJob = (uint)Player.Job;
+                C.Save();
             }
         }
     }

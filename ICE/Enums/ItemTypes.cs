@@ -11,5 +11,6 @@
         FishingTackle = 6,
         Dye = 7,
         Materia = 8,
+
     }
 }

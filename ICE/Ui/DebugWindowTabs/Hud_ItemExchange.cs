@@ -83,6 +83,7 @@ namespace ICE.Ui.DebugWindowTabs
                         sb.AppendLine($"\t{{");
                         sb.AppendLine($"\t\tName = \"{itemName}\",");
                         sb.AppendLine($"\t\tCost = {entry.CostAmount},");
+                        sb.AppendLine($"\t\t");
                         sb.AppendLine($"\t}},");
                     }
                     ImGui.SetClipboardText(sb.ToString());

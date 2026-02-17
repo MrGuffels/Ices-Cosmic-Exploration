@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface;
+using ICE.Utilities.ImGuiTools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,6 +139,12 @@ namespace ICE.Ui.SettingTabs
                         _ => $"{entry}"
                     };
                     ImGui.Text($"{name}");
+                    if (entry == MissionTypes.DroneSearch && !C.Cosmodrone_Run)
+                    {
+                        ImGui.SameLine();
+                        ImGui_Ice.IconWithTooltip(FontAwesomeIcon.ExclamationTriangle,
+                            "Finding drone locations is turned off, so we're just going to ignore this. If you want to run this, please enable it");
+                    }
 
                     ImGui.PopID();
                 }

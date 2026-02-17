@@ -747,6 +747,47 @@ public static partial class ImGui_Ice
             }
         }
     }
+    private static float Lerp(float a, float b, float t) => a + (b - a) * t;
+    public static bool ToggleButton(string id, string label, ref bool v)
+    {
+        var pos = ImGui.GetCursorScreenPos();
+        var dl = ImGui.GetWindowDrawList();
+
+        var height = ImGui.GetFrameHeight() * 0.8f;
+        var width = height * 1.8f;
+        var radius = height * 0.5f;
+
+        var storage = ImGui.GetStateStorage();
+        var key = ImGui.GetID(id); // Use the fixed ID here
+
+        var target = v ? 1f : 0f;
+        var anim = Lerp(storage.GetFloat(key, target), target, ImGui.GetIO().DeltaTime * 9f);
+        storage.SetFloat(key, anim);
+
+        var pressed = ImGui.InvisibleButton($"##{id}_toggle", new Vector2(width, height));
+        if (pressed)
+            v = !v;
+
+        var hov = ImGui.IsItemHovered();
+
+        var col = v
+                          ? ImGui.ColorConvertFloat4ToU32(new Vector4((hov ? 0.40f : 0.30f), (hov ? 0.90f : 0.80f), (hov ? 0.40f : 0.30f), 1f))
+                          : ImGui.ColorConvertFloat4ToU32(new Vector4((hov ? 0.90f : 0.80f), (hov ? 0.40f : 0.30f), (hov ? 0.40f : 0.30f), 1f));
+
+        dl.AddRectFilled(pos, new Vector2(pos.X + width, pos.Y + height), col, radius);
+
+        var knobX = pos.X + radius + anim * (width - radius * 2f);
+        dl.AddCircleFilled(new Vector2(knobX, pos.Y + radius), radius - 1.5f,
+                           ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 1f, 1f)));
+
+        if (!string.IsNullOrEmpty(label))
+        {
+            ImGui.SameLine();
+            ImGui.Text(label);
+        }
+
+        return pressed;
+    }
 
     // Quick access functions that are used in multiple places
     public static void Draw_ExpTable(uint jobId)

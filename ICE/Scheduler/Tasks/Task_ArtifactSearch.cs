@@ -266,8 +266,17 @@ namespace ICE.Scheduler.Tasks
 
             var mapMarkers = GetAllEventMarkers();
             var marker = mapMarkers.Where(x => x.IconId == 63989).FirstOrDefault();
+
+
+
             if (marker != null)
             {
+                if (GenericHelpers.TryGetAddonMaster<WKSMission>("WKSMission", out var hud) && hud.IsAddonReady)
+                {
+                    if (EzThrottler.Throttle("Close mission window"))
+                        GenericHandlers.FireCallback("WKSMission", true, -1);
+                }
+
                 IceLogging.Debug("We've found the map flag! Setting it for us to travel to", tag);
                 droneLoc = marker.Position;
                 P.TaskManager.Insert(InteractWithDrone, "Interact with drone");
@@ -312,6 +321,7 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
+                P.TaskManager.Tasks.Clear();
                 return true;
             }
 

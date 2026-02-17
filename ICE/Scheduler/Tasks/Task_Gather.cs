@@ -131,6 +131,10 @@ namespace ICE.Scheduler.Tasks
                         CollectableGather(collectable);
                     }
                 }
+                else
+                {
+                    return true;
+                }
             }
             else
             {

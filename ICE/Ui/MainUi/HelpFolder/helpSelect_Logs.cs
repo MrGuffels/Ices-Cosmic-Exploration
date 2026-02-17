@@ -60,16 +60,17 @@ namespace ICE.Ui.MainUi.HelpFolder
             ImGui.Spacing();
 
             ImGuiTableFlags flags = ImGuiTableFlags.RowBg |
-            ImGuiTableFlags.Borders |
-            ImGuiTableFlags.ScrollY |
-            ImGuiTableFlags.SizingFixedFit;
+                ImGuiTableFlags.Borders |
+                ImGuiTableFlags.ScrollY |
+                ImGuiTableFlags.SizingFixedFit;
 
-            if (ImGui.BeginTable("LogTable", 4, flags))
+            if (ImGui.BeginTable("LogTable", 5, flags))
             {
                 ImGui.TableSetupColumn("Time");
+                ImGui.TableSetupColumn("Count");
                 ImGui.TableSetupColumn("Level");
                 ImGui.TableSetupColumn("Category");
-                ImGui.TableSetupColumn("Message");
+                ImGui.TableSetupColumn("Message", ImGuiTableColumnFlags.WidthStretch);
                 ImGui.TableHeadersRow();
 
                 // Filter logs based on search input
@@ -84,12 +85,35 @@ namespace ICE.Ui.MainUi.HelpFolder
                     );
                 }
 
-                foreach (var log in filteredLogs.OrderByDescending(l => l.Timestamp))
+                foreach (var log in filteredLogs.OrderByDescending(l => l.LastOccurrence))  // Changed from Timestamp
                 {
                     ImGui.TableNextRow();
 
                     ImGui.TableNextColumn();
-                    ImGui.Text(log.Timestamp.ToString("HH:mm:ss"));
+                    // Show time range if repeated
+                    if (log.Count > 1)
+                    {
+                        ImGui.Text($"{log.Timestamp:HH:mm:ss}");
+                        ImGui.SameLine();
+                        ImGui.TextDisabled("-");
+                        ImGui.SameLine();
+                        ImGui.Text($"{log.LastOccurrence:HH:mm:ss}");
+                    }
+                    else
+                    {
+                        ImGui.Text(log.Timestamp.ToString("HH:mm:ss"));
+                    }
+
+                    ImGui.TableNextColumn();
+                    // Show count if > 1
+                    if (log.Count > 1)
+                    {
+                        ImGui.TextColored(new Vector4(1, 0.5f, 0, 1), $"x{log.Count}");  // Orange for visibility
+                    }
+                    else
+                    {
+                        ImGui.TextDisabled("1");
+                    }
 
                     ImGui.TableNextColumn();
                     // Color-code by level

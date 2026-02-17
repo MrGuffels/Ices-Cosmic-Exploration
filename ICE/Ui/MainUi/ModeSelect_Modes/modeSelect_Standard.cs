@@ -653,8 +653,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui_Ice.DrawCategoryButton($"C Rank [{cRankEnabled}]", "main_CRank");
                     ImGui_Ice.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank");
                     var selectedClass = C.SelectedJob;
-                    var jobIcon = CosmicHelper.JobIconDict[selectedClass];
-                    ImGui_Ice.DrawImageBox(jobIcon, "Selected", spacingAfter: 5);
+                    if (CosmicHelper.JobIconDict.TryGetValue(selectedClass, out var icon))
+                    {
+                        ImGui_Ice.DrawImageBox(icon, "Selected", spacingAfter: 5);
+                    }
                     ImGui_Ice.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled", disabled: allEnabled == 0);
 
                     ImGui_Ice.EndCategoryButtonRow();
