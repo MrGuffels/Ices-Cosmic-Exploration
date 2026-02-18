@@ -31,5 +31,9 @@ namespace ICE.Enums
         ProvisionalTimed = 16384,            // Timed Mission
         ProvisionalWeather = 32768,          // Weather Mission
         ProvisionalSequential = 65536,       // Sequential Mission
+
+        GreaterReachGather = 131072, // Greater Reach + Gather 100 Items
+        GreaterReachChain = 262144,   // Greater Reach + Chain Scoring
+        GreaterReachBoon = 524288,   // Greater Reach + Boon Scoring
     }
 }

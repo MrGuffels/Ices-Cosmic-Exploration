@@ -731,6 +731,9 @@ namespace ICE.Scheduler.Tasks
 
             return true;
         }
+
+        private static int counter = 0;
+
         private static unsafe bool? TravelToAethershard(PathInfo shardInfo)
         {
             string tag = "[Navmesh: Aethershard movement]";
@@ -750,7 +753,7 @@ namespace ICE.Scheduler.Tasks
             {
                 if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("TelepotTown", out var TelepotTown) && TelepotTown->IsReady)
                 {
-                    if (EzThrottler.Throttle("Use Aethernet", 500))
+                    if (EzThrottler.Throttle("Use Aethernet", 100))
                     {
                         GenericHandlers.FireCallback("TelepotTown", true, 11, menuId);
                     }
@@ -760,14 +763,22 @@ namespace ICE.Scheduler.Tasks
                     var aethernet = Svc.Objects.Where(x => x.BaseId == targetId).FirstOrDefault();
                     if (aethernet != null)
                     {
-                        Utils.TargetgameObject(aethernet);
-                        Utils.InteractWithObject(aethernet);
+                        if (Player.Mounted || Player.IsJumping)
+                        {
+                            Utils.Dismount();
+                            return false;
+                        }
+                        else if (!Player.IsBusy)
+                        {
+                            Utils.TargetgameObject(aethernet);
+                            Utils.InteractWithObject(aethernet);
+                        }
                     }
                 }
             }
             else if (Player.DistanceTo(destinationAether.Location) < 10)
             {
-                if (Player.IsBusy)
+                if (!PlayerHelper.IsScreenReady())
                 {
                     return false;
                 }
@@ -777,12 +788,6 @@ namespace ICE.Scheduler.Tasks
                     return true;
                 }
             }
-
-
-            // Need to put in the library that keeps the shard info here
-            // Interact -> Make sure window is open
-            // Moment it's open, directly send the command to teleport there
-            // Check to see if distance from destination shard is < 10, that should be more than enough
 
             return false;
         }

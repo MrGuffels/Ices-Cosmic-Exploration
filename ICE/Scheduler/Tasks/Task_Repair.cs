@@ -32,14 +32,24 @@ namespace ICE.Scheduler.Tasks
         }
         public static unsafe bool? HubCheck()
         {
+            string tag = "[Hub Return]";
+
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 Vector3 PlayerPos = Player.Position;
 
                 if (Player.DistanceTo(HubCenter) < 45)
                 {
-                    IceLogging.Info("Player is in the range of the main hub area right now", "[Vendor Repair Check]");
-                    return true;
+                    if (PlayerHelper.IsScreenReady())
+                    {
+                        IceLogging.Info("Player is in the range of the main hub area right now", tag);
+                        return true;
+                    }
+                    else
+                    {
+                        if (EzThrottler.Throttle("Waiting for screen to be ready", 2000))
+                            IceLogging.Verbose("Waiting for screen to be ready", tag);
+                    }
                 }
                 else
                 {
@@ -56,7 +66,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 IceLogging.Error($"HEY. WE'RE MISSING THE HUB. THIS ISN'T GOOD. PLEASE ICE FIX THIS <3\n" +
-                    $"From: Past Ice.");
+                    $"From: Past Ice.", tag);
                 SchedulerMain.State = IceState.Idle;
                 P.TaskManager.Tasks.Clear();
                 return true;

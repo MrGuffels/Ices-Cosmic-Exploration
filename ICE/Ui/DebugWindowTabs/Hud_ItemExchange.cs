@@ -6,6 +6,8 @@ namespace ICE.Ui.DebugWindowTabs
 {
     internal class Hud_ItemExchange
     {
+        private static int Tab = 0;
+
         public static unsafe void Draw()
         {
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
@@ -70,6 +72,7 @@ namespace ICE.Ui.DebugWindowTabs
                 var currencyIcon = sheet.GetRow(shopExchange.CurrencyId).Icon;
                 Svc.Texture.TryGetFromGameIcon((int)currencyIcon, out var texture);
                 ImGui.Text($"{shopExchange.CurrencyAmount}");
+                ImGui.InputInt("Tab #", ref Tab);
                 if (ImGui.Button("Copy Item List"))
                 {
                     var sb = new StringBuilder();
@@ -83,7 +86,8 @@ namespace ICE.Ui.DebugWindowTabs
                         sb.AppendLine($"\t{{");
                         sb.AppendLine($"\t\tName = \"{itemName}\",");
                         sb.AppendLine($"\t\tCost = {entry.CostAmount},");
-                        sb.AppendLine($"\t\t");
+                        sb.AppendLine($"\t\tTab = {Tab},");
+                        sb.AppendLine($"\t\tIndex = {entry.Index},");
                         sb.AppendLine($"\t}},");
                     }
                     ImGui.SetClipboardText(sb.ToString());

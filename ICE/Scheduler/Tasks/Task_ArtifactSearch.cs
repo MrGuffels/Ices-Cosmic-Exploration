@@ -159,16 +159,6 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
-                if (PlayerHelper.GetItemCount(50414, out var droneBox))
-                {
-                    if (C.Cosmodrone_Run && droneBox >= C.Cosmodrone_RunAt)
-                    {
-                        P.TaskManager.Tasks.Clear();
-                        SchedulerMain.State = IceState.ArtifactSearch;
-                        P.TaskManager.Enqueue(() => RefreshMapInfo());
-                    }
-                }
-
                 return true;
             }
 
@@ -209,7 +199,7 @@ namespace ICE.Scheduler.Tasks
         private static Vector3 droneLoc = Vector3.Zero;
         public static void Enqueue_DroneCheck()
         {
-            P.TaskManager.InsertMulti
+            P.TaskManager.EnqueueMulti
                 (
                     new(CloseMapInfo, "Making sure map is close"),
                     new(OpenMapInfo, "Re-opening map to refresh"),
@@ -294,6 +284,11 @@ namespace ICE.Scheduler.Tasks
                 else
                 {
                     IceLogging.Debug($"We are out of boxes, and we have no markers. So we're continuing on with the normal task");
+                    if (SchedulerMain.State == IceState.ArtifactSearch)
+                    {
+                        SchedulerMain.State = IceState.Idle;
+                        P.TaskManager.Tasks.Clear();
+                    }
                     return true;
                 }
             }
@@ -364,7 +359,8 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    IceLogging.Verbose("We're waiting for the addon map to be visible. If it's not then there's a problem", tag);
+                    if (EzThrottler.Throttle("Using drone throttle"))
+                        IceLogging.Verbose("We're waiting for the addon map to be visible. If it's not then there's a problem", tag);
                 }
             }
                 

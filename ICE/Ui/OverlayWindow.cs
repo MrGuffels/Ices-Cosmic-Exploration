@@ -4,20 +4,21 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Globalization;
+using TerraFX.Interop.Windows;
 using static ICE.Utilities.CosmicHelper;
 
 namespace ICE.Ui
 {
     internal class OverlayWindow : Window
     {
-        private uint selectedJob = C.SelectedJob;
         public OverlayWindow() : base("ICE Overlay")
         {
             Flags = ImGuiWindowFlags.None;
-
+     
             P.windowSystem.AddWindow(this);
         }
 
@@ -30,6 +31,13 @@ namespace ICE.Ui
         {
             return C.ShowOverlay
                 && (PlayerHelper.IsInCosmicZone());
+        }
+
+        public override void PreDraw()
+        {
+            Flags = C.Overlay_AutoResize
+                ? ImGuiWindowFlags.AlwaysAutoResize
+                : ImGuiWindowFlags.None;
         }
 
         public override void Draw()
@@ -224,7 +232,7 @@ namespace ICE.Ui
             ImGui.SameLine();
 
             // Start button (disabled while already ticking).
-            bool xpLeveling = C.XPLeveling_Mode;
+            bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
             bool unsupportedArtisan = xpLeveling && !P.Artisan.UpdatedArtisan() && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
             bool unsupportedClass = !PlayerHelper.UsingSupportedJob();
 
@@ -257,45 +265,82 @@ namespace ICE.Ui
         }
         private void ClassExpDetails()
         {
-            if (true && PlayerHelper.UsingSupportedJob())
-            {
-                List<uint> jobs = new();
-                if (CosmicHelper.CurrentLunarMission != 0)
-                    jobs = CosmicHelper.SheetMissionDict[CurrentLunarMission].Jobs;
-                else
-                    jobs.Add((uint)Player.Job);
+            var ScoreInfo = CosmicHelper.Cosmic_ClassInfo();
 
-                foreach (var job in jobs)
+            if (C.ShowCurrentScore)
+            {
+                if (CosmicHelper.SheetMissionDict.TryGetValue(CosmicHelper.CurrentLunarMission, out var sheetInfo))
                 {
-                    if (CosmicHelper.JobIconDict.TryGetValue(job, out var jobIcon))
+                    foreach (var job in sheetInfo.Jobs)
                     {
-                        var imageSize = new Vector2(23, 23);
-                        ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
-                        ImGui.SameLine();
-                        ImGui.AlignTextToFramePadding();
-                        Relic_XP.DrawScoreBar(new Vector2(ImGui.GetContentRegionAvail().X, 10), false, job);
+                        if (ScoreInfo.TryGetValue(job, out var classInfo))
+                        {
+                            if (CosmicHelper.JobIconDict.TryGetValue(job, out var icon))
+                            {
+                                ImGui.Image(icon.GetWrapOrEmpty().Handle, new(25, 25));
+                                ImGui.SameLine();
+                                ImGui.AlignTextToFramePadding();
+                            }
+
+                            ImGui_Ice.Draw_XPBar(classInfo.Score, 0, 500_000, $"{classInfo.Score:N0} / {500_000:N0}");
+                        }
+                    }
+                }
+                else
+                {
+                    var job = (uint)Player.Job;
+                    if (ScoreInfo.TryGetValue(job, out var classInfo))
+                    {
+                        if (CosmicHelper.JobIconDict.TryGetValue(job, out var icon))
+                        {
+                            ImGui.Image(icon.GetWrapOrEmpty().Handle, new(25, 25));
+                            ImGui.SameLine();
+                            ImGui.AlignTextToFramePadding();
+                        }
+
+                        ImGui_Ice.Draw_XPBar(classInfo.Score, 0, 500_000, $"{classInfo.Score:N0} / {500_000:N0}");
                     }
                 }
             }
 
             if (C.ShowTotalScore)
             {
-                (uint TotalScore, uint TotalComplete, uint MaxScore, Dictionary<uint, uint> ClassInfo) = Relic_XP.GetTotalScores();
-                var ScoreBarSize = new Vector2(ImGui.GetContentRegionAvail().X, 10);
-                Relic_XP.DrawXPBar($"Total Score | Completed: [{TotalComplete} / 11]", TotalScore, MaxScore, ScoreBarSize);
+                int maxScore = 5_500_000;
+                int currentTotal = 0;
+                int actualTotal = 0;
+                int totalCompleted = 0;
+
+                foreach (var job in ScoreInfo)
+                {
+                    currentTotal += Math.Min(job.Value.Score, 500_000);
+                    if (currentTotal >= 500_000)
+                        totalCompleted += 1;
+                    actualTotal += job.Value.Score;
+                }
+
+                if (totalCompleted != 11)
+                {
+                    ImGui_Ice.Draw_XPBar(currentTotal, 0, maxScore, label: $"Total: {currentTotal:N0} / {maxScore:N0} [{totalCompleted} / 11]");
+                }
+                else
+                {
+                    ImGui_Ice.Draw_XPBar(actualTotal, 0, maxScore, label: $"Total Score: {actualTotal:N0}");
+                }
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    foreach (var job in ClassInfo)
+
+                    foreach (var job in ScoreInfo)
                     {
                         var jobIdInfo = job.Key;
-                        var jobScore = job.Value;
+                        var jobScore = job.Value.Score;
                         var jobImage = CosmicHelper.JobIconDict[jobIdInfo];
                         ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(23, 23));
                         ImGui.SameLine();
                         ImGui.AlignTextToFramePadding();
                         ImGui.Text($"Score: {jobScore:N0}");
                     }
+
                     ImGui.EndTooltip();
                 }
             }
@@ -305,15 +350,9 @@ namespace ICE.Ui
             if (C.ShowExpBars)
             {
                 var currentJobId = (uint)Player.Job;
-
-                bool showExp = (CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId));
-
-                if (CosmicHelper.CrafterJobList.Contains(currentJobId) || CosmicHelper.GatheringJobList.Contains(currentJobId))
+                if (ImGui.CollapsingHeader("Relic Tool XP"))
                 {
-                    if (ImGui.CollapsingHeader("Relic Tool XP"))
-                    {
-                        Relic_XP.DrawRelicXP((uint)currentJobId);
-                    }
+                    ImGui_Ice.Draw_ExpTable(currentJobId);
                 }
             }
         }

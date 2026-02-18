@@ -79,13 +79,14 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Debug($"RecipeID: {recipeId} | Expert: {expert}");
 
                 throttleCounter += 1;
-                if (C.XPLeveling_Mode)
+                if (C.SelectedMode == ModeSelect.LevelMode)
                 {
                     IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {itemId}");
                     P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
                 }
                 else if (C.Artisan_RaphaelForce)
                 {
+
                     if (!expert)
                     {
                         P.Artisan.ChangeSolver(recipeId, "Raphael Recipe Solver", true);

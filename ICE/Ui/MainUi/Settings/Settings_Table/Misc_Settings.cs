@@ -85,11 +85,27 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
 
+            bool showClassScore = C.ShowCurrentScore;
+            if (ImGui.Checkbox("Show Current Class Score", ref showClassScore))
+            {
+                C.ShowCurrentScore = showClassScore;
+                C.Save();
+            }
+
             bool showTotalScore = C.ShowTotalScore;
             if (ImGui.Checkbox("Show Total Score", ref showTotalScore))
             {
                 C.ShowTotalScore = showTotalScore;
                 C.Save();
+            }
+
+            bool AutoResize = C.Overlay_AutoResize;
+            if (ImGui.Checkbox("Auto Resize Overlay", ref AutoResize))
+            {
+
+                C.Overlay_AutoResize = AutoResize;
+                C.Save();
+
             }
 
             bool disableHudClipping = C.DisableHudClipping;

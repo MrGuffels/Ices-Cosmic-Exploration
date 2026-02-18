@@ -11,23 +11,14 @@ namespace ICE.Utilities.Cosmic
         {
             0,
 
-            479, 
-            481, 482, 
-            484, 
-            486, 487,
-            489, 490, 491, 492, 493, 494, 495,
-            // 508,509, // Dual Craft (A Rank)
-            511, 510, // Dual Craft (Ex+ Rank)
-            543,
+            510, // Dual Craft (Ex+ Rank)
 
-            1003, 
-            // 1004, 1005, 
             1006, 
-            // blacklisted mission ID
 
             // Oizyr Missions
 
-            1281,
+            1289, 1290, 1291, 
+            1317, 1318, 1319,
 
             // Fisher, the cursed lands
             1341, 1345, 1346, 1347, 

@@ -73,9 +73,22 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.OpenPopup("CosmocreditMateriaPopup");
             }
 
+            ImGui.SameLine();
+
             if (ImGui.Button("Add Armor/Housing/Mounts"))
             {
                 ImGui.OpenPopup("Cosmocredit_MountArmorPopup");
+            }
+
+            ImGui.SameLine();
+            
+            if (ImGui.Button("Clear shopping list"))
+            {
+                C.CosmoShopping.Clear();
+                C.CosmoShoppingOrder.Clear();
+                C.CosmoShoppingOrder_Gear.Clear();
+
+                C.Save();
             }
 
             DrawAddItemPopups();

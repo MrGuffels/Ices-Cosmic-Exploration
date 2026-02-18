@@ -21,6 +21,7 @@ namespace ICE.Ui.MainUi.Settings
             DrawCategoryTab("Gathering Profile", "settings_GatheringProfile", FontAwesomeIcon.Leaf);
             DrawCategoryTab("Cosmocredit Shopping", "settings_CosmoShopping", textureId: 65112);
             DrawCategoryTab("Cosmowheel", "settings_CosmoWheel", textureId: 65127);
+            DrawCategoryTab("Dronebit", "setting_Dronebit", textureId: 65138);
             DrawCategoryTab("Stop When...", "settings_StopWhen", FontAwesomeIcon.Stop);
             DrawCategoryTab("Mission Priority", "settings_MissionPrio", FontAwesomeIcon.SortAmountUp);
             DrawCategoryTab("Misc", "settings_Misc", icon: FontAwesomeIcon.Cog);
@@ -39,6 +40,10 @@ namespace ICE.Ui.MainUi.Settings
             else if (settingsTabs["settings_CosmoWheel"])
             {
                 GambaWheel.Draw();
+            }
+            else if (settingsTabs["setting_Dronebit"])
+            {
+                Shop_Dronebit.Draw();
             }
             else if (settingsTabs["settings_StopWhen"])
             {

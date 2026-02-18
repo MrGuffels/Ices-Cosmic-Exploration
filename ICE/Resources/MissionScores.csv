@@ -434,7 +434,6 @@
 433,BTN,EX: Alchemical Refinement Materials,79
 434,BTN,EX: Southwestern Survey,86
 435,BTN,EX: Precise Lunar Nadir Survey,113
-436,BTN,EX+: Rare Material Extraction,0
 437,BTN,EX+: Supplemental Processing Materials,164
 438,BTN,Hub Vicinity Gathering I,27
 439,BTN,EX: Hub Vicinity Gathering II,93
@@ -442,10 +441,7 @@
 441,BTN,EX: High-grade Energization Materials II,93
 442,BTN,EX+: High-grade Energization Materials III,189
 443,BTN,EX: Fine-grade Water Filter Materials I,54
-444,BTN,EX+: Fine-grade Water Filter Materials II,0
 445,BTN,Fine-grade Air Filter Materials I,100
-446,BTN,EX+: Fine-grade Air Filter Materials III,0
-447,BTN,EX: Fine-grade Air Filter Materials II,0
 448,BTN,EX+: Folkloric Materials I,119
 449,BTN,EX+: Folkloric Materials II,237
 450,BTN,EX+: Folkloric Materials III,270
@@ -1000,7 +996,6 @@
 999,FSH,EX: Rare Aquatic Resources,105
 1000,FSH,EX: Elemental-esque River Specimens,67
 1001,FSH,Lower Soda-lime Float Distribution Survey,159
-1002,FSH,EX: Bubble Bursters Distribution Survey,0
 1003,FSH,EX+: Fusingway Flow Distribution Survey,380
 1004,FSH,EX+: Elemental-esque Saltpeter Shore Specimens,358
 1005,FSH,EX+: Elemental-esque Chasm Specimens,364
@@ -1008,28 +1003,22 @@
 1007,CRP, Wiring Repair Tools,215
 1008,CRP, Mutated Flora Samples,215
 1009,CRP, Glass Dust Cleaning Tools,215
-1010,BSM, Experimental Lightning Rod Materials,0
 1011,BSM, Vitreobotany Tools,215
 1012,BSM, Nozzle Parts,215
 1013,ARM, Upgrade Parts,215
 1014,ARM, Dust Tanks,215
 1015,ARM, Rover Plating,215
 1016,GSM, Precision Components,215
-1017,GSM, Electroconductive Wire,0
 1018,GSM, Spare Transport Parts,215
 1019,LTW, Wiring Repair Gloves,215
 1020,LTW, Reinforced Lumbering Boots,215
 1021,LTW, Dust-filtering Masks,215
 1022,WVR, Repair Cloth,215
-1023,WVR, Hanging Tool Pouches,0
 1024,WVR, Dust Filters,215
 1025,ALC, Wiring Repair Rubber,215
-1026,ALC, Experimental Storage Batteries,0
 1027,ALC, Surface Protectant,215
 1028,CUL, Hot Soup,215
-1029,CUL, Reconfiguration Lubricant,0
 1030,CUL, Water Quality Inspection Samples,215
-1031,MIN, Lightning Rod Materials,0
 1032,MIN, Rare Glass Resources,139
 1033,MIN, Metallic Materials,139
 1034,BTN, Supply Route Clearing,139
@@ -1060,12 +1049,6 @@
 1059,CRP,EX: Mass-produced Transportation Materials,60
 1060,CRP,EX: Excavation Necessities,60
 1061,CRP,EX: Excavation Equipment,60
-1062,CRP,EX: Beach Break Supplies,0
-1063,CRP,EX+: Planetary Resource Utilization,0
-1064,CRP,EX+: Organic Material Advanced Processing,0
-1065,CRP,EX+: Renewable Fuel I,0
-1066,CRP,EX+: Renewable Fuel II,0
-1067,CRP,EX+: Renewable Fuel III,0
 1068,BSM, Multi-purpose Alloy Components,2
 1069,BSM, Oizys-primed Metal Processing I,2
 1070,BSM, Gravitational Anomaly Gear I,2
@@ -1088,12 +1071,6 @@
 1087,BSM,EX: Oddweight Azurite Refining,60
 1088,BSM,EX: Gravity Generator Miniaturization I,60
 1089,BSM,EX: Powersuit Chest Component,60
-1090,BSM,EX: Maintenance Part Advanced Processing,0
-1091,BSM,EX+: Gravity Generator Miniaturization II,0
-1092,BSM,EX+: Voyager Artifact Restoration,0
-1093,BSM,EX+: Voyager Implement Reproduction I,0
-1094,BSM,EX+: Voyager Implement Reproduction II,0
-1095,BSM,EX+: Large Voyager Device Restoration,0
 1096,ARM, Multi-purpose Alloy Components,2
 1097,ARM, Oizys-primed Metal Processing I,2
 1098,ARM, Gravitational Anomaly Gear I,2
@@ -1116,12 +1093,6 @@
 1115,ARM,EX: Oddweight Azurite Refining,60
 1116,ARM,EX: Gravity Generator Miniaturization I,60
 1117,ARM,EX: Powersuit Chest Component,60
-1118,ARM,EX: Maintenance Part Advanced Processing,0
-1119,ARM,EX+: Gravity Generator Miniaturization II,0
-1120,ARM,EX+: Voyager Artifact Restoration,0
-1121,ARM,EX+: Voyager Implement Reproduction I,0
-1122,ARM,EX+: Voyager Implement Reproduction II,0
-1123,ARM,EX+: Production Precision Processing,0
 1124,GSM, Multi-purpose Alloy Components,2
 1125,GSM, Oizys-primed Metal Processing I,2
 1126,GSM, Gravitational Anomaly Gear I,2
@@ -1144,12 +1115,6 @@
 1143,GSM,EX: Oddweight Azurite Refining,60
 1144,GSM,EX: Gravity Generator Miniaturization I,60
 1145,GSM,EX: Powersuit Chest Component,60
-1146,GSM,EX: Maintenance Part Advanced Processing,0
-1147,GSM,EX+: Gravity Generator Miniaturization II,0
-1148,GSM,EX+: Voyager Artifact Restoration,0
-1149,GSM,EX+: Voyager Implement Reproduction I,0
-1150,GSM,EX+: Voyager Implement Reproduction II,0
-1151,GSM,EX+: Production Precision Processing,0
 1152,LTW, Multi-purpose Fiber,2
 1153,LTW, Resilient Resource Processing I,2
 1154,LTW, Cushioned Packaging Materials,2
@@ -1172,12 +1137,6 @@
 1171,LTW,EX: Mass-produced Transportation Materials,60
 1172,LTW,EX: Excavation Necessities,60
 1173,LTW,EX: Excavation Equipment,60
-1174,LTW,EX: Beach Break Supplies,0
-1175,LTW,EX+: Planetary Resource Utilization,0
-1176,LTW,EX+: Organic Material Advanced Processing,0
-1177,LTW,EX+: Star Admiral's Trouser Fabric I,0
-1178,LTW,EX+: Star Admiral's Trouser Fabric II,0
-1179,LTW,EX+: Star Admiral's Trouser Fabric III,0
 1180,WVR, Multi-purpose Fiber,2
 1181,WVR, Resilient Resource Processing I,2
 1182,WVR, Cushioned Packaging Materials,2
@@ -1200,68 +1159,19 @@
 1199,WVR,EX: Mass-produced Transportation Materials,60
 1200,WVR,EX: Excavation Necessities,60
 1201,WVR,EX: Excavation Equipment,60
-1202,WVR,EX: Beach Break Supplies,0
-1203,WVR,EX+: Planetary Resource Utilization,0
-1204,WVR,EX+: Organic Material Advanced Processing,0
-1205,WVR,EX+: Star Admiral's Ornamentation I,0
-1206,WVR,EX+: Star Admiral's Ornamentation II,0
-1207,WVR,EX+: Star Admiral's Ornamentation III,0
-1208,ALC, Emergency Water Supply,0
-1209,ALC, Survey Ferrofluid,0
-1210,ALC, Quakeproof Materials,0
-1211,ALC, Recycled Fuel Research I,0
-1212,ALC, Water Supply Preservation,0
-1213,ALC, Precision Instrument Ferrofluid,0
-1214,ALC, Refined Quakeproof Materials,0
-1215,ALC, Recycled Fuel Refinement,0
-1216,ALC, Water Supply Samples,0
-1217,ALC, Mammet Ferrofluid,0
-1218,ALC, Windproof Materials,0
-1219,ALC, Recycled Fuel Research II,0
-1220,ALC, High-quality Foodstuffs I,0
-1221,ALC,High-purity Water,0
-1222,ALC,Advanced Communicator Ferrofluid,0
-1223,ALC,Ruin Reinforcement Components,0
-1224,ALC,Recycled Fuel Research III,0
-1225,ALC,High-quality Foodstuffs II,0
-1226,ALC,High-quality Foodstuffs III,0
-1227,ALC,EX: Archon Loaf Improvement Plan,0
-1228,ALC,EX: Refined Yeast Research,0
-1229,ALC,EX: Experimental Fermentation,0
-1230,ALC,EX: Outskirts Supply Improvements,0
-1231,ALC,EX+: Terminal Restoration Supplies,0
-1232,ALC,EX+: Excavation Materials,0
-1233,ALC,EX+: Cosmic Tool Enhancement I,0
-1234,ALC,EX+: Cosmic Tool Enhancement II,0
-1235,ALC,EX+: Cosmic Tool Enhancement III,0
-1236,CUL, Emergency Water Supply,0
-1237,CUL, Survey Ferrofluid,0
-1238,CUL, Quakeproof Materials,0
-1239,CUL, Recycled Fertilizer Research,0
-1240,CUL, Water Supply Preservation,0
-1241,CUL, Precision Instrument Ferrofluid,0
-1242,CUL, Refined Quakeproof Materials,0
-1243,CUL, Recycled Fuel Refinement,0
-1244,CUL, Water Supply Samples,0
-1245,CUL, Mammet Ferrofluid,0
-1246,CUL, Windproof Materials,0
-1247,CUL, Recycled Fuel Research I,0
-1248,CUL, High-quality Foodstuffs I,0
-1249,CUL,High-purity Water,0
-1250,CUL,Advanced Communicator Ferrofluid,0
-1251,CUL,Ruin Reinforcement Components,0
-1252,CUL,Recycled Fuel Research II,0
-1253,CUL,High-quality Foodstuffs II,0
-1254,CUL,High-quality Foodstuffs III,0
-1255,CUL,EX: Archon Loaf Improvement Plan,0
-1256,CUL,EX: Refined Yeast Research,0
-1257,CUL,EX: Experimental Fermentation,0
-1258,CUL,EX: Outskirts Supply Improvements,0
-1259,CUL,EX+: Terminal Restoration Supplies,0
-1260,CUL,EX+: Excavation Materials,0
-1261,CUL,EX+: Cosmic Tool Refinement I,0
-1262,CUL,EX+: Cosmic Tool Refinement II,0
-1263,CUL,EX+: Cosmic Tool Refinement III,0
+1222,ALC,Advanced Communicator Ferrofluid,24
+1224,ALC,Recycled Fuel Research III,25
+1226,ALC,High-quality Foodstuffs III,24
+1227,ALC,EX: Archon Loaf Improvement Plan,60
+1228,ALC,EX: Refined Yeast Research,60
+1229,ALC,EX: Experimental Fermentation,60
+1248,CUL, High-quality Foodstuffs I,16
+1250,CUL,Advanced Communicator Ferrofluid,24
+1251,CUL,Ruin Reinforcement Components,400
+1254,CUL,High-quality Foodstuffs III,24
+1255,CUL,EX: Archon Loaf Improvement Plan,60
+1256,CUL,EX: Refined Yeast Research,60
+1257,CUL,EX: Experimental Fermentation,60
 1264,MIN, Base Vicinity Survey,3
 1265,MIN, Gravity Distribution Survey,2
 1266,MIN, Fundamental Mineral Procurement,3
@@ -1279,17 +1189,12 @@
 1278,MIN,Unique Resource Procurement,25
 1279,MIN,Oizys Alumen Procurement,15
 1280,MIN,Mineral Gravitational Stabilizers,50
-1281,MIN,Multipurpose Reductions,0
 1282,MIN,Oizys Historical Reductions,30
 1283,MIN,EX: Aether-rich Mineral Survey,53
 1284,MIN,EX: Indicolite Rush,33
 1285,MIN,EX: Bedrock Distribution Survey,33
 1286,MIN,EX: Extreme Mining Analysis,40
 1287,MIN,EX+: Crucial Initiative Reductions,164
-1288,MIN,EX+: Survey of Rare Aetheric Minerals,0
-1289,MIN,EX+: Ruin Excavation Support,0
-1290,MIN,EX+: Voyager Ecological Research,0
-1291,MIN,EX+: Voyager Excavation Research,0
 1292,BTN, Base Vicinity Survey,3
 1293,BTN, Aetherial Current Survey,2
 1294,BTN, Fundamental Flora Procurement,3
@@ -1312,59 +1217,14 @@
 1311,BTN,EX: Aether-rich Flora Survey,53
 1312,BTN,EX: Terrestrianemone Tentacle Harvest,33
 1313,BTN,EX: Environmental Development Survey,33
-1314,BTN,EX: Extreme Harvesting Analysis,0
+1314,BTN,EX: Extreme Harvesting Analysis,73
 1315,BTN,EX+: Rare Alchemical Reductions,164
 1316,BTN,EX+: Survey of Rare Aetheric Flora,164
-1317,BTN,EX+: Subterranean Ruin Research,0
-1318,BTN,EX+: Subterranean Aetherial Research,0
-1319,BTN,EX+: Ruin Sample Procurement,0
-1320,FSH, Anomaly Impact Aquaculture Survey,0
-1321,FSH, Megalithopolis Specimen Survey,0
-1322,FSH, Foregone Oasis Environmental Survey,0
-1323,FSH, Regular Base Resupply,0
-1324,FSH, Large Aquatic Life-form Distribution Survey,0
-1325,FSH, Oizys Bait Suitability Testing,0
-1326,FSH, Large Aquatic Resource Emergency,0
-1327,FSH, Valuable Plains Specimens,0
-1328,FSH, Magnetic Horizon Environmental Survey,0
-1329,FSH, Freshwater Arthrolure Testing,0
-1330,FSH, Oceanic Impesctor Research,0
-1331,FSH, Valuable Ruin Specimens,0
-1332,FSH, Anomaly Adaptation Aquaculture Survey,0
-1333,FSH,Collapsed Tunnel Specimen Survey,0
-1334,FSH,Red Cosmomaggot Testing,0
-1335,FSH,Edible Marine Life Survey,0
-1336,FSH,Moros Well Environmental Survey,0
-1337,FSH,Valuable Marine Specimens,0
-1338,FSH,Marine Distribution Survey,0
-1339,FSH,EX: Large Mutant Distribution Survey,0
-1340,FSH,EX: Dune Resource Emergency I,0
-1341,FSH,EX: Desert Burrow Environmental Survey,0
-1342,FSH,EX: Gravitational Sphere Impact,0
-1343,FSH,EX+: Dune Resource Emergency II,0
-1344,FSH,EX+: Cosmokrill Testing,0
-1345,FSH,EX+: Voyager Relic Survey I,0
-1346,FSH,EX+: Voyager Relic Survey II,0
-1347,FSH,EX+: Ruin Currents Environmental Survey,0
-1348,CRP, Hydrophytic Flora Biofuel,0
-1349,CRP, Relic Restoration Brushes,0
+1327,FSH, Valuable Plains Specimens,13
+1348,CRP, Hydrophytic Flora Biofuel,215
 1350,BSM, Compact Gravity Generator,215
-1351,BSM, Astrodrill Replacement Bit,0
 1352,ARM, Rover Chain,215
-1353,ARM, Overturned Rover Repair,0
+1353,ARM, Overturned Rover Repair,215
 1354,GSM, Portable Beacon,215
-1355,GSM, Wrought Metallic Coral,0
 1356,LTW, Sturdy Leather Band,215
-1357,LTW, Mechanic's Gloves,0
 1358,WVR, Rover Protective Covering,215
-1359,WVR, Emergency Bandaging,0
-1360,ALC, Ruin Remedy,0
-1361,ALC, Emergency Salves,0
-1362,CUL, Hydrophytic Flora Preservatives,0
-1363,CUL, Emergency Pananoodles,0
-1364,MIN, Gilded Coral Rush,0
-1365,MIN, Long-lost Carrot Mining,0
-1366,BTN, Hydrophytic Flora Harvest,0
-1367,BTN, Medicinal Flora Harvest,0
-1368,FSH, Iron Coral Collection,0
-1369,FSH, Sunken Relic Salvage,0

@@ -654,22 +654,18 @@ namespace ICE.Scheduler.Tasks
                 {
                     var startNode = gatherInfo[0];
 
-                    if (!P.Navmesh.IsRunning())
+                    foreach (var node in gatherInfo)
                     {
-                        foreach (var node in gatherInfo)
+                        if (Player.DistanceTo(node.Position) < 5)
                         {
-                            if (Player.DistanceTo(node.Position) < 5)
-                            {
-                                IceLogging.Info("We're close enough to the node! So continuing onto grabbing the mission", tag);
-                                return true;
-                            }
+                            IceLogging.Info("We're close enough to the node! So continuing onto grabbing the mission", tag);
+                            return true;
                         }
                     }
 
-                    if (!Task_NavmeshMove.Task_NavTo(startNode.LandZone).Value)
-                    {
-                        return false;
-                    }
+                    IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now", tag);
+                    Task_NavmeshMove.Enqueue_NavmeshTask(startNode.LandZone);
+                    return true;
                 }
             }
             else if (sheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
@@ -686,16 +682,13 @@ namespace ICE.Scheduler.Tasks
                     UnsupportedMissions.Ids.Add(missionId);
                 }
 
-                if (!P.Navmesh.IsRunning())
+                foreach (var fishingSpot in fishingHole)
                 {
-                    foreach (var fishingSpot in fishingHole)
+                    if (Player.DistanceTo(fishingSpot.FishingSpot) < 3)
                     {
-                        if (Player.DistanceTo(fishingSpot.FishingSpot) < 3)
-                        {
-                            IceLogging.Info($"We've reached our fishing spot! We are current at: {fishingSpot.FishingSpot}", tag);
-                            randomFishingHole = Vector3.Zero;
-                            return true;
-                        }
+                        IceLogging.Info($"We've reached our fishing spot! We are current at: {fishingSpot.FishingSpot}", tag);
+                        randomFishingHole = Vector3.Zero;
+                        return true;
                     }
                 }
 
@@ -711,20 +704,10 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
-                    if (!Task_NavmeshMove.Task_NavTo(randomFishingHole).Value)
-                    {
-                        if (EzThrottler.Throttle("Waitin for nav to finish"))
-                        {
-                            IceLogging.Debug($"Waiting for navmesh to get to: {randomFishingHole}\n" +
-                                             $"Current distance: {Player.DistanceTo(randomFishingHole)}\n" +
-                                             $"Currently at: {Player.Position:N2}");
-                        }
-                        return false;
-                    }
-                    else
-                    {
-                        randomFishingHole = Vector3.Zero;
-                    }
+                    IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now");
+                    Task_NavmeshMove.Enqueue_NavmeshTask(randomFishingHole);
+                    randomFishingHole = Vector3.Zero;
+                    return true;
                 }
             }
             else if (C.PersonalReturnSpot)
@@ -739,18 +722,9 @@ namespace ICE.Scheduler.Tasks
                     var territory = Player.Territory.RowId;
                     if (C.CrafterLocations.TryGetValue(territory, out var location))
                     {
-                        if (!Task_NavmeshMove.Task_NavTo(location).Value)
-                        {
-                            if (EzThrottler.Throttle("Log message", 1000))
-                                IceLogging.Debug("Moving to crafting spot", tag);
-
-                            return false;
-                        }
-                        else
-                        {
-                            IceLogging.Debug("We're at the spot for crafter location!", tag);
-                            return true;
-                        }
+                        IceLogging.Verbose("If we've gotten this far, that means we need to figure out a path to go to the node. Doing so now");
+                        Task_NavmeshMove.Enqueue_NavmeshTask(location);
+                        return true;
                     }
                     else
                     {

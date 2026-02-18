@@ -72,6 +72,7 @@ namespace ICE.Scheduler.Tasks
             else
             {
                 var critical = CosmicHelper.SheetMissionDict[id].Attributes.HasFlag(MissionAttributes.Critical);
+                if (EzThrottler.Throttle("Setting previous missionId"))
                 PreviousMissionId = id;
 
                 if (EzThrottler.Throttle("Checking for previous score"))
@@ -252,6 +253,7 @@ namespace ICE.Scheduler.Tasks
                     P.AutoHook.DeleteAllAnonymousPresets();
                 }
 
+                UpdateScoreInfo();
                 Mission_Settings.TurninState = TurninState.None;
 
                 if (Mission_Settings.StopAfterCurrent)
@@ -271,6 +273,8 @@ namespace ICE.Scheduler.Tasks
             {
                 if (CosmicHelper.SheetMissionDict.TryGetValue(id, out var sheetInfo))
                 {
+                    PreviousMissionId = id;
+
                     if (sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
                     {
                         if (GatheringUtil.CriticalLocations.TryGetValue(id, out var location) && location.RawLocation != Vector3.Zero)
@@ -397,6 +401,15 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? JobSwapCheck()
         {
+            if (CosmicHelper.SheetMissionDict.TryGetValue(PreviousMissionId, out var sheetInfo))
+            {
+
+            }
+            else
+            {
+
+            }
+
             if (CosmicHelper.SheetMissionDict[PreviousMissionId].Jobs.Count == 2)
             {
                 if (Player.Job != (Job)Mission_Settings.SelectedJob && Mission_Settings.SelectedJob != 0)
@@ -415,20 +428,6 @@ namespace ICE.Scheduler.Tasks
             {
                 return true;
             }
-
-            /*
-            if (Player.Job != Mission_Settings.StartJob && Mission_Settings.StartJob != 0)
-            {
-                if (EzThrottler.Throttle("Swapping to crafter job", 1000))
-                    GearsetHandler.TaskClassChange((Job)Mission_Settings.StartJob);
-
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-            */
         }
 
         public static unsafe bool? GoldCheck()
@@ -476,7 +475,7 @@ namespace ICE.Scheduler.Tasks
 
         public static unsafe bool? CommandCheck()
         {
-            if (C.XPLeveling_Mode && Utils.HasPlugin("Stylist"))
+            if (C.SelectedMode == ModeSelect.LevelMode && Utils.HasPlugin("Stylist"))
             {
                 var jobId = (uint)Player.Job;
 
@@ -526,17 +525,20 @@ namespace ICE.Scheduler.Tasks
                 multiplier = 4;
 
             var scoreDifference = (ScoreCheck() - PreviousScore);
-            if (scoreDifference > 0 && scoreDifference < 1000)
+            if (scoreDifference > 0)
             {
                 scoreDifference = scoreDifference / multiplier;
                 IceLogging.Debug($"Base Mission score is: {scoreDifference}");
                 C.ScoreKeeper[PreviousMissionId] = (uint)scoreDifference;
 
-                if (CosmicHelper.SheetMissionDict.TryGetValue(PreviousMissionId, out var missionInfo))
+                if (scoreDifference < 1000)
                 {
-                    missionInfo.ClassScore = (uint)scoreDifference;
+                    if (CosmicHelper.SheetMissionDict.TryGetValue(PreviousMissionId, out var missionInfo))
+                    {
+                        missionInfo.ClassScore = (uint)scoreDifference;
+                    }
+                    C.Save();
                 }
-                C.Save();
             }
         }
     }

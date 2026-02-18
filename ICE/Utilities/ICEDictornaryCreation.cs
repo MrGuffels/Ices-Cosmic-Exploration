@@ -1,6 +1,4 @@
-﻿using ECommons;
-using FFXIVClientStructs.FFXIV.Client.Game.WKS;
-using ICE.ConfigFiles;
+﻿using ICE.ConfigFiles;
 using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.Cosmic_Helper;
@@ -8,7 +6,6 @@ using ICE.Utilities.GatheringHelper;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ICE.ConfigFiles.Config;
-using static ICE.Enums.MissionAttributes;
 using static ICE.Utilities.CosmicHelper;
 using static ICE.Utilities.ExcelHelper;
 
@@ -18,9 +15,10 @@ public sealed partial class ICE
 {
     public static unsafe void DictionaryCreation()
     {
-        var wk = WKSManager.Instance();
+        var MainMoonSheet = Svc.Data.GetExcelSheet<WKSMissionUnit>();
+        string tag = "[Dictionary Creation]";
 
-        foreach (var entry in MoonMissionSheet)
+        foreach (var entry in MainMoonSheet)
         {
             Dictionary<ushort, CosmicHelper.CraftingInfo> crafts_Main = new();
             Dictionary<ushort, CosmicHelper.CraftingInfo> crafts_Pre = new();
@@ -29,28 +27,37 @@ public sealed partial class ICE
             Dictionary<int, int> relicXp = new();
             bool isExpert = false;
             bool isCollectable = false;
+            uint tempActionId = 0;
 
             uint keyId = entry.RowId;
-            string missionName = entry.Name.ToString();
-            missionName = missionName.Replace("<nbsp>", " ");
-            missionName = missionName.Replace("<->", "");
 
-            if (missionName == "")
+            if (keyId == 0)
                 continue;
             if (entry.ClassJobCategory[0].RowId == 0)
                 continue;
 
+            // Mission Name
+            string missionName = entry.Name.ToString();
+            missionName = missionName.Replace("<nbsp>", " ");
+            missionName = missionName.Replace("<->", "");
+
+            // Jobs tied to mission
             jobs.Add(entry.ClassJobCategory[0].RowId - 1);
             var Job2 = entry.ClassJobCategory[1].RowId;
             if (Job2 != 0)
             {
                 jobs.Add(Job2 - 1);
             }
+
+            // Time Limit | Silver | Gold Requirements
             uint timeLimit = entry.MissionTime;
             uint silver = entry.SilverStarRequirement;
             uint gold = entry.GoldStarRequirement;
+
+            // Sequential Requirements
             HashSet<uint> previousMissionId = new() { entry.LockedBehind.RowId };
 
+            // Time | Weather Requirements
             uint timeAndWeather = entry.WKSMissionLotterySpecialCond.RowId;
             uint startTime = 0;
             uint endTime = 0;
@@ -75,6 +82,7 @@ public sealed partial class ICE
                 };
             }
 
+            // Rank | Level
             uint rank = entry.LevelGroup;
             uint level = 0;
             if (rank == 1)
@@ -86,16 +94,18 @@ public sealed partial class ICE
             else if (rank >= 4)
                 level = 100;
 
+            // Is this a critical mission
             bool isCritical = entry.IsSpecialQuest;
 
-            uint RecipeId = entry.WKSMissionRecipe.RowId;
+            // Sheet that contains all the information on what the mission needs to do
+            var missionToDo = entry.MissionToDo[0].Value;
 
-            uint toDoValue = entry.MissionToDo[0].RowId;
+            // - - - HEY. BRONZE SCORE IS KEPT HERE - - - //
+            uint bronze = missionToDo.Unknown2;
 
-            var wksToDo = ToDoSheet.GetRow(toDoValue);
-            uint missionText = wksToDo.WKSMissionText.Value.RowId;
-            var marker = MarkerSheet.GetRow(wksToDo.Unknown13);
-            uint territoryId = 1237; 
+            // TerritoryId that's assigned to each planet. There doesn't seem to be a direct way to grab this...
+            // So just going to hard assign this. TODO: Add last planet when it comes out
+            uint territoryId = 1237;
             if (keyId < 545)
             {
                 territoryId = 1237;
@@ -108,14 +118,14 @@ public sealed partial class ICE
             {
                 territoryId = 1310;
             }
-            // TODO: Make this set the correct territoryId once new planets are added and we figure out where it is.
 
-            Vector2 mapFlag = new((int)marker.Unknown1 - 1024, (int)(marker.Unknown2 - 1024));
+            // Map Marker Information
+            var marker = Svc.Data.GetExcelSheet<WKSMissionMapMarker>().GetRow(missionToDo.Unknown13);
+            Vector2 mapFlag = new(marker.Unknown1 - 1024, (marker.Unknown2 - 1024));
+            int radius = marker.Unknown3;
 
-            int _x = marker.Unknown1 - 1024;
-            int _y = marker.Unknown2 - 1024;
-
-            // This is really specific ONLY cause there are 2 rings that overlap... and this can't happen
+            // Oizys decided they were going to perfectly overlap 2 of the markers *-perfectly-*
+            // So specific missions have their positions changed *-ever-* so slightly to make them different for personal use
             if (keyId == 1272)
             {
                 mapFlag = new(-340, 870);
@@ -129,114 +139,111 @@ public sealed partial class ICE
                 mapFlag = new(-514, 232);
             }
 
-            int radius = marker.Unknown3;
+            // Mission Attributes/Flags. Esentially a quick way to know what is what kind of mission at a quick glance
+            MissionAttributes attributes = MissionAttributes.None;
 
-            MissionAttributes attributes = None;
-
-            if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)) && CosmicHelper.GatheringJobList.Any(x => jobs.Contains(x)))
+            if (jobs.Count > 1)
             {
+                // Dual class speficially. This one always has 2 classes in there. (Sinus Exclusive)
+
                 if (jobs.Contains(18))
-                    attributes = Craft | Fish;
+                    attributes = MissionAttributes.Craft | MissionAttributes.Fish;
                 else
-                    attributes = Craft | Gather;
+                    attributes = MissionAttributes.Craft | MissionAttributes.Gather;
             }
             else if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)))
             {
-                // Just making this nice and simple. Making all crafter missions just check for crafting.
-                // Then going to add critical after
-                attributes = Craft;
+                // Purely just a crafting job. Not going to mark this as special in any other way at the moment. 
+                // Expert Recipies will get checked later
+                attributes = MissionAttributes.Craft;
             }
-            else if (CosmicHelper.GatheringJobList.Any(x => jobs.Contains(x)))
+            else
             {
                 if (jobs.Contains(18))
-                    attributes |= Fish;
+                    attributes |= MissionAttributes.Fish;
                 else
-                    attributes |= Gather;
+                    attributes |= MissionAttributes.Gather;
 
-                attributes = missionText switch
+                attributes = missionToDo.WKSMissionText.RowId switch
                 {
-                    103 => Gather | Limited,
-                    104 => Gather | ScoreTimeRemaining,
-                    105 => Gather,
-                    106 => Gather | ScoreChains,
-                    107 => Gather | ScoreGatherersBoon,
-                    108 => Gather | ScoreChains | ScoreGatherersBoon,
-                    109 or 111 => Gather | Collectables,
-                    110 => Gather | ReducedItems | ScoreTimeRemaining,
-                    112 => Gather | ReducedItems,
-                    113 => Fish | ScoreVariety | ScoreTimeRemaining,
-                    114 or 115 => Fish | ScoreTimeRemaining,
-                    116 => Fish | Limited | ScoreVariety,
-                    117 => Fish | Limited | ScoreLargestSize,
-                    118 => Fish | Limited | Collectables,
-                    119 or 121 => Fish,
-                    120 => Fish | ScoreLargestSize,
-                    122 => Fish | Collectables,
-                    >= 123 and <= 134 => Craft | Gather, // Dual class
-                    >= 135 and <= 138 => Craft | Fish,  // Dual class
-                    139 => jobs.Contains(18) ? Fish : Gather, // Critical
-                    141 => Fish,
-                    _ => None
+                    103 => MissionAttributes.Gather | MissionAttributes.Limited,
+                    104 => MissionAttributes.Gather | MissionAttributes.ScoreTimeRemaining,
+                    105 => MissionAttributes.Gather,
+                    106 => MissionAttributes.Gather | MissionAttributes.ScoreChains,
+                    107 => MissionAttributes.Gather | MissionAttributes.ScoreGatherersBoon,
+                    108 => MissionAttributes.Gather | MissionAttributes.ScoreChains | MissionAttributes.ScoreGatherersBoon,
+                    109 or 111 => MissionAttributes.Gather | MissionAttributes.Collectables,
+                    110 => MissionAttributes.Gather | MissionAttributes.ReducedItems | MissionAttributes.ScoreTimeRemaining,
+                    112 => MissionAttributes.Gather | MissionAttributes.ReducedItems,
+                    113 => MissionAttributes.Fish | MissionAttributes.ScoreVariety | MissionAttributes.ScoreTimeRemaining,
+                    114 or 115 => MissionAttributes.Fish | MissionAttributes.ScoreTimeRemaining,
+                    116 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.ScoreVariety,
+                    117 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.ScoreLargestSize,
+                    118 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Collectables,
+                    119 or 121 => MissionAttributes.Fish,
+                    120 => MissionAttributes.Fish | MissionAttributes.ScoreLargestSize,
+                    122 => MissionAttributes.Fish | MissionAttributes.Collectables,
+                    139 => jobs.Contains(18) ? MissionAttributes.Fish : MissionAttributes.Gather, // Critical
+                    141 => MissionAttributes.Fish,
+                    _ => MissionAttributes.None
                 };
             }
 
-            attributes |= isCritical ? Critical : None;
-            attributes |= weather != CosmicWeather.None ? ProvisionalWeather : None;
-            attributes |= (startTime != 0 || endTime != 0) ? ProvisionalTimed : None;
-            attributes |= !previousMissionId.Contains(0) ? ProvisionalSequential : None;
+            attributes |= isCritical ? MissionAttributes.Critical : MissionAttributes.None;
+            attributes |= weather != CosmicWeather.None ? MissionAttributes.ProvisionalWeather : MissionAttributes.None;
+            attributes |= (startTime != 0 || endTime != 0) ? MissionAttributes.ProvisionalTimed : MissionAttributes.None;
+            attributes |= !previousMissionId.Contains(0) ? MissionAttributes.ProvisionalSequential : MissionAttributes.None;
 
-            // - - - HEY. BRONZE SCORE IS KEPT HERE - - - //
-            uint bronze = wksToDo.Unknown2; // Bronze score for Score missions
+            tempActionId = missionToDo.TemporaryAction.RowId;
 
-            if (CrafterJobList.Any(x => jobs.Contains(x)))
+            // - - - Crafter information - - - //
+            var wksRecipeSheet = entry.WKSMissionRecipe;
+            uint wksRecipeRowId = wksRecipeSheet.RowId;
+
+            if (CosmicHelper.CrafterJobList.Any(x => jobs.Contains(x)))
             {
-                var wksRecipeRow = wksMissionRecipe.GetRow(RecipeId);
-
-                if (isCritical) // Criticals are sus
+                if (isCritical)
                 {
-                    var itemAmount = 3; // It's a pass/fail progress, you need to go till you are full on score
-                    if (keyId < 535)
-                        itemAmount = 3;
-                    else if (keyId < 1039)
-                        itemAmount = 2;
-                    else if (keyId < 1370)
-                        itemAmount = 2;
+                    var requiredAmount = 3; // Sinus Specifically
+                    if (keyId > 535)
+                        requiredAmount = 2; // EVERY other planet
 
-                    var missionRecipeRow = RecipeSheet?.Where(e => e.RowId == wksRecipeRow.Recipe[0].RowId).FirstOrDefault();
-                    var itemId = missionRecipeRow.Value.ItemResult. RowId;
-                    var itemName = ItemSheet.GetRow(itemId).Name.ToString();
-                    var craftingType = missionRecipeRow.Value.CraftType.Value.RowId;
-                    // IceLogging.Verbose($"Recipe Row ID: {missionRecipeRow.Value.RowId} | for item: {itemId} | {itemName}", debugOnly: true);
-                    var item1RecipeId = missionRecipeRow.Value.RowId;
-
-                    crafts_Main[(ushort)item1RecipeId] = new CraftingInfo()
+                    if (Svc.Data.GetExcelSheet<Recipe>().TryGetRow(wksRecipeSheet.Value.Recipe[0].RowId, out var RecipeRow))
                     {
-                        ItemId = itemId,
-                        RequiredAmount = itemAmount,
-                        RecipeId = RecipeId
-                    };
+                        var item = RecipeRow.ItemResult;
+
+                        var itemId = item.RowId;
+                        var itemName = item.Value.Name.ToString();
+                        var itemRecipeId = (ushort)RecipeRow.RowId;
+
+                        crafts_Main[itemRecipeId] = new()
+                        {
+                            ItemId = itemId,
+                            RecipeId = wksRecipeRowId,
+                            RequiredAmount = requiredAmount,
+                        };
+                    }
                 }
                 else
                 {
-                    // Reason for the following code is this:
-                    // If it's a pre-craft, it should be further down the list, which means adding it first to the pre-crafts
-                    // If it's required, then all of them SHOULD... be required. *-shrugs-*
                     List<ushort> recipeIds = new();
                     for (int x = 2; x >= 0; x--)
                     {
-                        var recipeId = (ushort)wksRecipeRow.Recipe[x].Value.RowId;
+                        var recipeId = (ushort)wksRecipeSheet.Value.Recipe[x].RowId;
                         if (recipeId != 0 && !recipeIds.Contains(recipeId))
+                        {
                             recipeIds.Add(recipeId);
+                        }
                     }
 
                     if (recipeIds.Count == 1)
                     {
                         // Only a single item exist in this table. So into the maincrafts it goes
-                        IceLogging.Verbose($"Mission: {keyId} had 1 recipie", debugOnly:true);
+                        IceLogging.Verbose($"Mission: {keyId} had 1 recipie", debugOnly: true);
                         var recipeId = recipeIds[0];
-                        var recipeRow = RecipeSheet.GetRow(recipeId);
+                        var recipeRow = Svc.Data.GetExcelSheet<Recipe>().GetRow(recipeId);
                         var itemId = recipeRow.ItemResult.RowId;
-                        var amountNeeded = wksToDo.RequiredItemQuantity[0];
+                        var amountNeeded = missionToDo.RequiredItemQuantity[0];
                         if (amountNeeded == 0)
                         {
                             // this should never happen. But on the off chance that square decides to be a dick and change it's place
@@ -280,8 +287,6 @@ public sealed partial class ICE
 
                         isExpert |= expertMat;
                         isCollectable |= recipeRow.CollectableMetadataKey == 1;
-                        // if (isExpert)
-                            // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                     }
                     else if (recipeIds.Count == 2)
                     {
@@ -289,9 +294,9 @@ public sealed partial class ICE
                         // First one is going to be the main item that you need.
 
                         var recipeId = recipeIds[0];
-                        var recipeRow = RecipeSheet.GetRow(recipeId);
+                        var recipeRow = Svc.Data.GetExcelSheet<Recipe>().GetRow(recipeId);
                         var itemId = recipeRow.ItemResult.RowId;
-                        var amountNeeded = wksToDo.RequiredItemQuantity[0];
+                        var amountNeeded = missionToDo.RequiredItemQuantity[0];
                         if (amountNeeded == 0)
                         {
                             // this should never happen. But on the off chance that square decides to be a dick and change it's place
@@ -317,7 +322,7 @@ public sealed partial class ICE
 
                         // Second one is going to be the pre-crafting mat that you need
                         var preRecipeId = recipeIds[1];
-                        var preRecipeRow = RecipeSheet.GetRow(preRecipeId);
+                        var preRecipeRow = Svc.Data.GetExcelSheet<Recipe>().GetRow(preRecipeId);
                         var preItemId = preRecipeRow.ItemResult.RowId;
                         var preAmountNeeded = requiredAmount;
                         var preCraftExpert = preRecipeRow.IsExpert;
@@ -348,12 +353,11 @@ public sealed partial class ICE
                         {
                             // Only a single item exist in this table. So into the maincrafts it goes
                             var recipeId = recipeIds[i];
-                            var recipeRow = RecipeSheet.GetRow(recipeId);
+                            var recipeRow = Svc.Data.GetExcelSheet<Recipe>().GetRow(recipeId);
                             var itemId = recipeRow.ItemResult.RowId;
-                            var amountNeeded = wksToDo.RequiredItemQuantity[i];
+                            var amountNeeded = missionToDo.RequiredItemQuantity[i];
                             if (amountNeeded == 0)
                             {
-                                // this should never happen. But on the off chance that square decides to be a dick and change it's place
                                 amountNeeded = 1;
                             }
                             var requiredItem = recipeRow.Ingredient[0].RowId;
@@ -372,12 +376,9 @@ public sealed partial class ICE
                             };
                             isExpert |= expertCraft;
                             isCollectable |= recipeRow.CollectableMetadataKey == 1;
-                            // if (isExpert)
-                            // IceLogging.Verbose($"{recipeRow.RowId} is an expert craft", debugOnly: true);
                         }
                     }
 
-                    // This is just a general sanity check in itself for mission where there isn't a required item count, but moreso just needs score. 
                     if (crafts_Main.Count == 0)
                     {
                         // These are missions that don't require an item, but for the sanity check of it all, going to just have it be 1. 
@@ -391,17 +392,19 @@ public sealed partial class ICE
                         }
                     }
                 }
+
+                // - - - Attribute check for experts here cause needs to be done pd ost crafting - - - - // 
+                if (isExpert)
+                    attributes |= MissionAttributes.ExpertCraft;
+                if (isCollectable)
+                    attributes |= MissionAttributes.Collectables;
             }
 
-            // - - - Attribute check for experts here cause needs to be done pd ost crafting - - - - // 
-            if (isExpert)
-                attributes |= ExpertCraft;
-            if (isCollectable)
-                attributes |= Collectables;
-
-            if (GatheringJobList.Any(x => jobs.Contains(x)))
+            // - - - Botanist | Miner - - - //
+            if (CosmicHelper.GatheringJobList.Any(x => jobs.Contains(x)))
             {
-                var todoRow = ToDoSheet.GetRow(toDoValue);
+                var todoRow = missionToDo;
+                var MoonItemInfoSheet = Svc.Data.GetExcelSheet<WKSItemInfo>();
 
                 if (todoRow.RequiredItem[0].RowId != 0) // First item in the gathering list. Shouldn't be 0...
                 {
@@ -432,9 +435,22 @@ public sealed partial class ICE
                 }
             }
 
+            if (tempActionId != 0)
+                IceLogging.Verbose($"Temp ActionId: {tempActionId} | MissionID: {keyId}", debugOnly: true);
+            if (tempActionId == 42060)
+            {
+                if (attributes.HasFlag(MissionAttributes.ScoreGatherersBoon))
+                    attributes |= MissionAttributes.GreaterReachBoon;
+                else if (attributes.HasFlag(MissionAttributes.ScoreChains))
+                    attributes |= MissionAttributes.GreaterReachChain;
+                else
+                    attributes |= MissionAttributes.GreaterReachGather;
+            }
+
+            // - - - Fisher - - - //
             var fish_varietyAmount = 0;
             var fish_AmountRequired = 0;
- 
+
             if (jobs.Contains(18))
             {
                 // Some things to note while I'm trying to document this shit...
@@ -475,37 +491,34 @@ public sealed partial class ICE
             // Something to note here, a mission can only have a max of 3 types of XP at a time.
             // Which is why there's only 3 entries.
 
-            uint Cosmo = ExpSheet.GetRow(keyId).CosmoCredits;
-            uint Lunar = ExpSheet.GetRow(keyId).PlanetCredits;
-            uint rewardItemId = 0;
-            uint rewardItemAmount = 0;
-            uint dronebitAmount = ExpSheet.GetRow(keyId).Unknown20;
+            var rewardSheet = Svc.Data.GetExcelSheet<WKSMissionReward>().GetRow(keyId);
 
-            // Exp Modifiers
-            uint expModifier_1 = 0;
-            uint expModifier_2 = 0;
-            uint expModifier_3 = 0;
+            uint Cosmo = rewardSheet.CosmoCredits;
+            uint Lunar = rewardSheet.PlanetCredits;
+            uint dronebitAmount = rewardSheet.Unknown20;
 
-            if (ExpSheet.TryGetRow(keyId, out var rewardSheet))
-            {
-                expModifier_1 = rewardSheet.ExpModifier[0].ToUInt();
-                expModifier_2 = rewardSheet.ExpModifier[1].ToUInt();
-                expModifier_3 = rewardSheet.ExpModifier[2].ToUInt();
-            }
+            // - - - Exp Modifiers - - - //
+            uint expModifier_1 = rewardSheet.ExpModifier[0].ToUInt();
+            uint expModifier_2 = rewardSheet.ExpModifier[1].ToUInt();
+            uint expModifier_3 = rewardSheet.ExpModifier[2].ToUInt();
 
             for (var i = 0; i < 3; i++)
             {
-                var expKind = ExpSheet.GetRow(keyId).TypeIndex[i];
-                var expAmount = ExpSheet.GetRow(keyId).ResearchReward[i];
+                var expKind = rewardSheet.TypeIndex[i];
+                var expAmount = rewardSheet.ResearchReward[i];
 
                 if (expKind != 0)
                     relicXp[expKind] = expAmount;
             }
 
-            if (ExpSheet.GetRow(keyId).ItemCount != 0)
+            // - - - Planetary Reward Items - - - //
+            uint rewardItemId = 0;
+            uint rewardItemAmount = 0;
+
+            if (rewardSheet.ItemCount != 0)
             {
-                rewardItemId = ExpSheet.GetRow(keyId).Item.RowId; // Column 15 | Item
-                rewardItemAmount = ExpSheet.GetRow(keyId).ItemCount;
+                rewardItemId = rewardSheet.ItemCount;
+                rewardItemAmount = rewardSheet.ItemCount;
             }
 
             if (!SheetMissionDict.ContainsKey(keyId))
@@ -514,7 +527,7 @@ public sealed partial class ICE
                 {
                     Name = missionName,
                     Jobs = jobs,
-                    ToDoId = toDoValue,
+                    ToDoId = missionToDo.RowId,
                     Rank = rank,
                     Level = level,
                     Attributes = attributes,
@@ -549,7 +562,9 @@ public sealed partial class ICE
 
                     Crafts_Main = crafts_Main,
                     Crafts_Pre = crafts_Pre,
-                    IsExpert = isExpert
+                    IsExpert = isExpert,
+
+                    TemporaryActionId = tempActionId,
                 };
             }
         }
@@ -697,8 +712,8 @@ public sealed partial class ICE
             {
                 C.GatherProfiles = new Dictionary<int, GatherProfile>();
             }
-            IceLogging.Debug($"Checking: {mission.Key}");
-            IceLogging.Debug($"Profile ID: {mission.Value.GProfileId}");
+            // IceLogging.Debug($"Checking: {mission.Key}");
+            // IceLogging.Debug($"Profile ID: {mission.Value.GProfileId}");
             if (!C.GatherProfiles.ContainsKey(mission.Value.GProfileId))
             {
                 mission.Value.GProfileId = 0;

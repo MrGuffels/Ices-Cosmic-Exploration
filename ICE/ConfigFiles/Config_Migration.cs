@@ -89,7 +89,6 @@ public static class ConfigMigration
         C.ShowInfoButton = old.ShowInfoButton;
         C.MiddleColumnWidth = old.MiddleColumnWidth;
         C.SelectedJob = old.SelectedJob;
-        C.XPLeveling_Mode = old.XPLeveling_Mode;
         C.XPRelicIgnoreManual = old.XPRelicIgnoreManual;
         C.XPRelicOnlyEnabled = old.XPRelicOnlyEnabled;
     }

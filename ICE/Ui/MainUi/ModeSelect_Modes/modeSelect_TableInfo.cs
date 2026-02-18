@@ -39,7 +39,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
             "Honestly, just wanted to say thank you for using my plugin, you're appreciated <3",
 
-
+            "Knock knock\n" +
+            "[This is where you say who's there]\n" +
+            "Lettuce\n" +
+            "[Lettuce who]\n" +
+            "Lettuce in"
         };
         public static int jokeId = 0;
 
@@ -269,8 +273,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 #region Auto-Hiding Columns
 
-                ImGui.TableSetColumnEnabled(0, !((C.SelectedMode == ModeSelect.RelicMode && !C.XPRelicOnlyEnabled) || C.XPLeveling_Mode));
-                ImGui.TableSetColumnEnabled(1, (C.ShowCompletionWindow || C.GrindAllProvisionals)); // Job Column (Useful for provisionals/Timed)
+                ImGui.TableSetColumnEnabled(0, (C.SelectedMode == ModeSelect.Standard || (C.SelectedMode == ModeSelect.RelicMode && C.XPRelicOnlyEnabled)));
+                ImGui.TableSetColumnEnabled(1, (C.GrindAllProvisionals)); // Job Column (Useful for provisionals/Timed)
                 ImGui.TableSetColumnEnabled(2, C.ShowManualMode);
 
                 if (C.Auto_ShowTokens)

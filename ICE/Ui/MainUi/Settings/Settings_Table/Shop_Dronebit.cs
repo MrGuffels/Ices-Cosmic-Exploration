@@ -10,6 +10,16 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
     {
         public static void Draw()
         {
+            if (ImGui.Button("Run Drone Finder"))
+            {
+                SchedulerMain.State = IceState.ArtifactSearch;
+            }
+
+            if (ImGui.Button("Stop"))
+            {
+                SchedulerMain.DisablePlugin();
+            }
+
             bool buyDrones = C.Cosmodrone_Buy;
             if (ImGui.Checkbox("Buy Drones", ref buyDrones))
             {
@@ -57,28 +67,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
                 "Do you want to run the automated drone finding? If yes, enable this\n" +
                 "PLEASE NOTE. DO. NOT. LEAVE. THIS. ALONE. This is still being worked on heavily");
-
-            int runAtAmount = C.Cosmodrone_RunAt;
-            ImGui.SetNextItemWidth(200);
-            if (ImGui.InputInt("Start finding drones at", ref runAtAmount))
-            {
-                C.Cosmodrone_RunAt = runAtAmount;
-                C.Save();
-            }
-            ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
-                "How many drone boxes do you want to have before it starts running?\n" +
-                "If you set this at 1, the moment you get any it will proceed to open -> find"
-                );
-
-            bool finishCurrent = C.Cosmodrone_FinishCurrent;
-            if (ImGui.Checkbox("If drone is active, finish current", ref finishCurrent))
-            {
-                C.Cosmodrone_FinishCurrent = finishCurrent;
-                C.Save();
-            }
-            ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle,
-                "If it detects that you're on Oizys and have a drone that is currently on the map,\n" +
-                "It will proceed to pathfind -> collecting said drone for you");
         }
     }
 }
