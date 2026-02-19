@@ -13,6 +13,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
     {
         private static string newProfileName = "";
         private static string[] MissionTypes = ["Limited Nodes", "Gather x Amount", "Time Attack", "Chained Scoring", "Boon Scoring", "Chain + Boon Scoring", "Dual Class"];
+        private static readonly string[] RankLabels = ["All Missions", "D and above", "C and above", "B and above", "A and above", "EX and above", "EX+ only"];
         private static int MissionIndex = 0;
 
         private static readonly string PROFILE_PREFIX = "IceGatherProfile_";
@@ -201,6 +202,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                                "Will also pause pandora cordial usage while on the moon");
             if (ImGui.CollapsingHeader("Cordial Settings"))
             {
+                int cordialMinRank = C.CordialMinRank;
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.Combo("Min mission rank for cordials", ref cordialMinRank, RankLabels, RankLabels.Length))
+                {
+                    C.CordialMinRank = cordialMinRank;
+                    C.Save();
+                }
+
                 bool InverseCordialPrio = C.inverseCordialPrio;
                 bool PreventOvercap = C.PreventOvercap;
                 int CordialMinGp = C.CordialMinGp;
@@ -228,6 +237,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
             if (ImGui.CollapsingHeader("Food Settings"))
             {
+                int foodMinRank = C.FoodMinRank;
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.Combo("Min mission rank for food", ref foodMinRank, RankLabels, RankLabels.Length))
+                {
+                    C.FoodMinRank = foodMinRank;
+                    C.Save();
+                }
+
                 bool useFood = C.UseGatheringFood;
                 if (ImGui.Checkbox("Use food on gathering missions", ref useFood))
                 {

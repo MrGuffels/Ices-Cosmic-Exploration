@@ -102,10 +102,15 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             bool AutoResize = C.Overlay_AutoResize;
             if (ImGui.Checkbox("Auto Resize Overlay", ref AutoResize))
             {
-
                 C.Overlay_AutoResize = AutoResize;
                 C.Save();
+            }
 
+            bool filterByJob = C.Overlay_FilterByJob;
+            if (ImGui.Checkbox("Filter timed missions by current job", ref filterByJob))
+            {
+                C.Overlay_FilterByJob = filterByJob;
+                C.Save();
             }
 
             bool disableHudClipping = C.DisableHudClipping;

@@ -698,6 +698,13 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        private static int GetCurrentMissionRank()
+        {
+            if (CosmicHelper.CurrentLunarMission != 0
+                && CosmicHelper.SheetMissionDict.TryGetValue(CosmicHelper.CurrentLunarMission, out var info))
+                return (int)info.Rank;
+            return 0;
+        }
         public static unsafe void UseCordial()
         {
             if (EzThrottler.Throttle("Cordial usage check while moving"))
@@ -707,6 +714,11 @@ namespace ICE.Scheduler.Tasks
                     IceLogging.Debug("Cordial Checkers");
                     if (C.AutoCordial)
                     {
+                        if (C.CordialMinRank > 0 && GetCurrentMissionRank() < C.CordialMinRank)
+                        {
+                            IceLogging.Debug($"Skipping cordial: mission rank {GetCurrentMissionRank()} below threshold {C.CordialMinRank}");
+                            return;
+                        }
                         IceLogging.Debug($"Min GP: {C.CordialMinGp} <= {PlayerHelper.GetGp()}");
 
                         if (PlayerHelper.GetGp() <= C.CordialMinGp)
@@ -755,6 +767,11 @@ namespace ICE.Scheduler.Tasks
             var ItemId = C.GatheringFood;
             if (C.UseGatheringFood && ItemId != 0)
             {
+                if (C.FoodMinRank > 0 && GetCurrentMissionRank() < C.FoodMinRank)
+                {
+                    IceLogging.Debug($"Skipping food: mission rank {GetCurrentMissionRank()} below threshold {C.FoodMinRank}");
+                    return true;
+                }
                 PlayerHelper.GetItemCount(ItemId, out var HqCount, includeNq: false);
                 PlayerHelper.GetItemCount(ItemId, out var NqCount, includeHq: false);
 

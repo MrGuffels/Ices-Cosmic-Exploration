@@ -8,6 +8,7 @@ using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using TerraFX.Interop.Windows;
 using static ICE.Utilities.CosmicHelper;
 
@@ -38,6 +39,9 @@ namespace ICE.Ui
             Flags = C.Overlay_AutoResize
                 ? ImGuiWindowFlags.AlwaysAutoResize
                 : ImGuiWindowFlags.None;
+
+            if (C.Overlay_AutoResize)
+                ImGui.SetNextWindowSizeConstraints(Vector2.Zero, new Vector2(float.MaxValue, float.MaxValue));
         }
 
         public override void Draw()
@@ -52,16 +56,10 @@ namespace ICE.Ui
 
                 ImGui.TableHeadersRow();
 
-
-                if (true)
-                {
-                    WeatherForcast();
-                }
-
-                if (true)
-                {
-                    TimedMissionDetails();
-                }
+                WeatherForcastForTerritory(1291, "ICE.Resources.Phaenna.png");
+                TimedMissionDetailsForTerritory(1291, "ICE.Resources.Phaenna.png");
+                WeatherForcastForTerritory(1310, "ICE.Resources.Oizys.png");
+                TimedMissionDetailsForTerritory(1310, "ICE.Resources.Oizys.png");
 
                 ImGui.EndTable();
             }
@@ -92,16 +90,15 @@ namespace ICE.Ui
             }
 #endif
         }
-        private void WeatherForcast()
+        private void WeatherForcastForTerritory(ushort territoryId, string moonAsset)
         {
-            var weatherForecasts = WeatherForecastHandler.GetNextWeathers(6); // Current + next 4
+            var weatherForecasts = WeatherForecastHandler.GetTerritoryForecast(territoryId);
 
             if (weatherForecasts.Count == 0) return;
 
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(0);
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text("Weather");
+            DrawMoonAndIcon(moonAsset, FontAwesomeIcon.Cloud);
 
             // Current weather column
             ImGui.TableNextColumn();
@@ -137,34 +134,37 @@ namespace ICE.Ui
                     {
                         ImGui.BeginTooltip();
                         ImGui.Text($"{weather.Name}");
-                        ImGui.Text($"In: {weather.TimeUntil}");
+                        ImGui.Text($"In: {WeatherForecastHandler.FormatForecastTime(weather.Time)}");
                         ImGui.EndTooltip();
                     }
                 }
             }
         }
-        private unsafe void TimedMissionDetails()
+        private unsafe void TimedMissionDetailsForTerritory(uint territoryId, string moonAsset)
         {
             var eorzeaTime = DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime);
             int currentHour = eorzeaTime.Hour;
             int nextHour = (currentHour + 1) % 24;
 
+            var jobFilter = C.Overlay_FilterByJob ? (uint?)Player.Job : null;
+
             var currentHourMissions = SheetMissionDict
                 .Where(kvp => IsAvailableAtHour(kvp.Value, currentHour))
-                .Where(kvp => kvp.Value.TerritoryId == Player.Territory.RowId)
+                .Where(kvp => kvp.Value.TerritoryId == territoryId)
+                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Contains(jobFilter.Value))
                 .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
                 .ToList();
 
             var nextHourMissions = SheetMissionDict
                 .Where(kvp => IsAvailableAtHour(kvp.Value, nextHour))
-                .Where(kvp => kvp.Value.TerritoryId == Player.Territory.RowId)
+                .Where(kvp => kvp.Value.TerritoryId == territoryId)
+                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Contains(jobFilter.Value))
                 .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
                 .ToList();
 
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(0);
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text("Timed");
+            DrawMoonAndIcon(moonAsset, FontAwesomeIcon.Clock);
 
             ImGui.TableNextColumn();
             for (int i = 0; i < currentHourMissions.Count; i++)
@@ -208,6 +208,33 @@ namespace ICE.Ui
                         ImGui.EndTooltip();
                     }
                 }
+            }
+        }
+        private static readonly Dictionary<string, string> MoonNames = new()
+        {
+            ["ICE.Resources.Phaenna.png"] = "Phaenna",
+            ["ICE.Resources.Oizys.png"] = "Oizys",
+        };
+        private void DrawMoonAndIcon(string moonAsset, FontAwesomeIcon icon)
+        {
+            var moonTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moonAsset).GetWrapOrEmpty();
+            ImGui.Image(moonTexture.Handle, new Vector2(23, 23));
+            if (ImGui.IsItemHovered() && MoonNames.TryGetValue(moonAsset, out var moonName))
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(moonName);
+                ImGui.EndTooltip();
+            }
+            ImGui.SameLine(0, 4);
+            ImGui.AlignTextToFramePadding();
+            ImGui.PushFont(UiBuilder.IconFont);
+            ImGui.Text(icon.ToIconString());
+            ImGui.PopFont();
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(icon == FontAwesomeIcon.Cloud ? "Weather" : "Timed");
+                ImGui.EndTooltip();
             }
         }
         private bool IsAvailableAtHour(CosmicInfo mission, int hour)
