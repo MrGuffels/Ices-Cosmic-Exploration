@@ -289,6 +289,27 @@ namespace ICE.Ui
             }
             ImGui.SameLine();
             ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
+
+            // Drone finder toggle
+            ImGui.SameLine();
+            bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
+            if (droneActive)
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
+            if (ImGuiEx.IconButton(FontAwesomeIcon.SearchLocation, "##DroneFinder"))
+            {
+                if (droneActive)
+                    SchedulerMain.DisablePlugin();
+                else
+                    SchedulerMain.State = IceState.ArtifactSearch;
+            }
+            if (droneActive)
+                ImGui.PopStyleColor();
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(droneActive ? "Stop Drone Finder" : "Run Drone Finder");
+                ImGui.EndTooltip();
+            }
         }
         private void ClassExpDetails()
         {

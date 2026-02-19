@@ -682,7 +682,7 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        public static bool? WaitForDesynthCompletion()
+        public static unsafe bool? WaitForDesynthCompletion()
         {
             if (!Svc.Condition[ConditionFlag.Occupied39])
             {
@@ -691,6 +691,18 @@ namespace ICE.Scheduler.Tasks
                 {
                     // Still have some more items to desynth, going to reset the current task count and re-check
                     P.TaskManager.Tasks.Clear();
+                }
+                else
+                {
+                    // All items reduced — close the aetherial reduction window before moving on
+                    try
+                    {
+                        if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("PurifyItemSelector", out var desynthWindow) && desynthWindow->IsReady)
+                        {
+                            desynthWindow->Close(true);
+                        }
+                    }
+                    catch { }
                 }
 
                 return true;
