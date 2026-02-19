@@ -304,8 +304,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     MapSelector = 0,
                     AethernetId = 2015057,
-                    Location = new(336.15f, 52.64f, -381.78f),
-                    LandZone = new(337.29f, 52.64f, -382.62f),
+                    Location = new(336.26f, 52.64f, -381.73f),
+                    LandZone = new(337.50f, 52.64f, -383.00f),
                 },
                 new()
                 {
