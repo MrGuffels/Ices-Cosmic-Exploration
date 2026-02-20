@@ -198,6 +198,8 @@ namespace ICE.Ui
                         ImGui.Text($"[{mission.Key}]");
                         ImGui.SameLine(0, 2);
                         ImGui.Text($"{mission.Value.Name}");
+                        var expires = EorzeaHoursUntil(eorzeaTime, (int)mission.Value.EndTime);
+                        ImGui.Text($"Expires in {FormatRealTime(expires)}");
                         ImGui.EndTooltip();
                     }
                 }
@@ -220,6 +222,8 @@ namespace ICE.Ui
                         ImGui.Text($"[{mission.Key}]");
                         ImGui.SameLine(0, 2);
                         ImGui.Text($"{mission.Value.Name}");
+                        var startsIn = EorzeaHoursUntil(eorzeaTime, (int)mission.Value.StartTime);
+                        ImGui.Text($"Starts in {FormatRealTime(startsIn)}");
                         ImGui.EndTooltip();
                     }
                 }
@@ -251,6 +255,22 @@ namespace ICE.Ui
                 ImGui.Text(icon == FontAwesomeIcon.Cloud ? "Weather" : "Timed");
                 ImGui.EndTooltip();
             }
+        }
+        private static double EorzeaHoursUntil(DateTimeOffset eorzeaTime, int targetHour)
+        {
+            double currentFractional = eorzeaTime.Hour + eorzeaTime.Minute / 60.0 + eorzeaTime.Second / 3600.0;
+            double hoursUntil = targetHour - currentFractional;
+            if (hoursUntil <= 0)
+                hoursUntil += 24;
+            return hoursUntil;
+        }
+        private static string FormatRealTime(double eorzeaHours)
+        {
+            // 1 Eorzea hour = 175 real seconds
+            int totalSeconds = (int)(eorzeaHours * 175);
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            return minutes > 0 ? $"{minutes}m {seconds:D2}s" : $"{seconds}s";
         }
         private bool IsAvailableAtHour(CosmicInfo mission, int hour)
         {

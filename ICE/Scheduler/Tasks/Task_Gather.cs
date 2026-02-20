@@ -13,6 +13,8 @@ namespace ICE.Scheduler.Tasks
 {
     internal static class Task_Gather
     {
+        private static int _lastCollectability = -1;
+        private static DateTime _lastCollectProgress = DateTime.MinValue;
 
         public static void Enqueue()
         {
@@ -152,7 +154,16 @@ namespace ICE.Scheduler.Tasks
             var playerGp = PlayerHelper.GetGp();
             bool missingDur = integrity < collectable.TotalIntegrity;
 
-            if (integrity > 1 && collect_Current < collect_highGrade)
+            // Track collectability progress to detect stuck rotations
+            if (collect_Current != _lastCollectability)
+            {
+                _lastCollectability = collect_Current;
+                _lastCollectProgress = DateTime.Now;
+            }
+            bool isStuck = _lastCollectProgress != DateTime.MinValue
+                        && (DateTime.Now - _lastCollectProgress).TotalSeconds > 5;
+
+            if (integrity > 1 && collect_Current < collect_highGrade && !isStuck)
             {
                 // this is the rotation we should be aiming for in general...
                 // this should cover all baselines
@@ -197,6 +208,13 @@ namespace ICE.Scheduler.Tasks
             }
             else
             {
+                if (isStuck)
+                    IceLogging.Debug("Collectable rotation stuck, falling through to collect");
+
+                // Reset progress tracking when we start collecting
+                _lastCollectability = -1;
+                _lastCollectProgress = DateTime.MinValue;
+
                 // if we've gotten this far, that means we're in a state that we should just be collecting
                 if (CanUseCollectableAction("BonusIntegrityChance", missingDur))
                 {
