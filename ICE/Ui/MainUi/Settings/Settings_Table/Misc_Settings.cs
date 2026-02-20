@@ -360,6 +360,39 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
             ImGui.Checkbox("Visualize Dismount Radius", ref visualizeDismountRadius);
 
+            ImGui.Dummy(new Vector2(0, 5));
+            bool closestNode = C.ClosestNodeSelection;
+            if (ImGui.Checkbox("Prioritize closest gathering node", ref closestNode))
+            {
+                C.ClosestNodeSelection = closestNode;
+                C.Save();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Always navigate to the closest targetable node instead of following the fixed route order.\nUseful for timed EX+ missions where speed matters.");
+            }
+
+            bool randomize = C.RandomizeWaypoints;
+            if (ImGui.Checkbox("Randomize waypoint positions", ref randomize))
+            {
+                C.RandomizeWaypoints = randomize;
+                C.Save();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Adds a small random offset to navigation destinations so the character doesn't always follow the exact same path");
+            }
+            if (randomize)
+            {
+                float radius = C.RandomizeWaypointsRadius;
+                ImGui.SetNextItemWidth(100);
+                if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 5.0f, "%.1f"))
+                {
+                    C.RandomizeWaypointsRadius = radius;
+                    C.SaveDebounced();
+                }
+            }
+
             using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
             {
                 if (drawList == null)

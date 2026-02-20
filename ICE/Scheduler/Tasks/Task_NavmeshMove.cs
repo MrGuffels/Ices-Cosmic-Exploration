@@ -11,6 +11,7 @@ namespace ICE.Scheduler.Tasks
     internal class Task_NavmeshMove
     {
         // Constants
+        private static readonly Random _random = new();
         private const float navmeshTolerance = 0.25f;
         private const float distanceToBeStuck = 1.0f;
         private const int stuckTimeThresholdMs = 1000;
@@ -171,7 +172,17 @@ namespace ICE.Scheduler.Tasks
                 ResetInfo();
                 IceLogging.DestinationLogs.Log(pos);
                 P.Navmesh.SetTolerance(navmeshTolerance);
-                P.Navmesh.PathfindAndMoveTo(pos, false);
+
+                var targetPos = pos;
+                if (C.RandomizeWaypoints)
+                {
+                    float radius = Math.Min(C.RandomizeWaypointsRadius, distance * 0.75f);
+                    float angle = (float)(_random.NextDouble() * 2 * Math.PI);
+                    float dist = (float)(Math.Sqrt(_random.NextDouble()) * radius);
+                    targetPos = new Vector3(pos.X + dist * MathF.Cos(angle), pos.Y, pos.Z + dist * MathF.Sin(angle));
+                }
+
+                P.Navmesh.PathfindAndMoveTo(targetPos, false);
             }
 
             return false;

@@ -4,6 +4,7 @@ using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.Utilities.Cosmic_Helper;
+using ICE.Resources.GatheringRoutes;
 using ICE.Utilities.GatheringHelper;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
@@ -268,8 +269,12 @@ namespace ICE.Scheduler.Tasks
                     var closestDistance = gatherInfo.Where(x => Player.DistanceTo(x.Position) < 5).FirstOrDefault();
                     if (closestDistance == null)
                     {
-                        // We're currently to far from any node. going to rely on the index to tell us where we should be
-                        if (Mission_Settings.nodeCounter >= gatherInfo.Count)
+                        // We're currently too far from any node
+                        if (C.ClosestNodeSelection)
+                        {
+                            SetClosestTargetableNode(gatherInfo);
+                        }
+                        else if (Mission_Settings.nodeCounter >= gatherInfo.Count)
                         {
                             // resetting it back to 0 because we're outside the normal index array
                             Mission_Settings.nodeCounter = 0;
@@ -295,13 +300,20 @@ namespace ICE.Scheduler.Tasks
                         }
                         else
                         {
-                            // Node is not targetable, increment to next node
-                            Mission_Settings.nodeCounter++;
-
-                            // Check if we're out of bounds and wrap back to 0
-                            if (Mission_Settings.nodeCounter >= gatherInfo.Count)
+                            if (C.ClosestNodeSelection)
                             {
-                                Mission_Settings.nodeCounter = 0;
+                                SetClosestTargetableNode(gatherInfo);
+                            }
+                            else
+                            {
+                                // Node is not targetable, increment to next node
+                                Mission_Settings.nodeCounter++;
+
+                                // Check if we're out of bounds and wrap back to 0
+                                if (Mission_Settings.nodeCounter >= gatherInfo.Count)
+                                {
+                                    Mission_Settings.nodeCounter = 0;
+                                }
                             }
                             return true;
                         }
@@ -311,6 +323,39 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
+        private static void SetClosestTargetableNode(List<GathNodeInfo> gatherInfo)
+        {
+            var closestIndex = gatherInfo.Select((node, index) => new { Node = node, Index = index })
+                                         .Where(x => Svc.Objects.Any(obj => obj.ObjectKind == ObjectKind.GatheringPoint && obj.IsTargetable && obj.BaseId == x.Node.NodeId))
+                                         .OrderBy(x =>
+                                         {
+                                             var gameObject = Svc.Objects.First(obj => obj.BaseId == x.Node.NodeId && obj.IsTargetable);
+                                             return Player.DistanceTo(gameObject.Position);
+                                         })
+                                         .Select(x => x.Index)
+                                         .FirstOrDefault(-1);
+
+            if (closestIndex >= 0)
+                Mission_Settings.nodeCounter = closestIndex;
+            else
+            {
+                // No targetable nodes loaded in object table - fall back to closest route position,
+                // but exclude nodes we know are depleted (in object table but not targetable)
+                var fallbackIndex = gatherInfo.Select((node, index) => new { Node = node, Index = index })
+                                              .Where(x =>
+                                              {
+                                                  var obj = Svc.Objects.FirstOrDefault(o => o.ObjectKind == ObjectKind.GatheringPoint && o.BaseId == x.Node.NodeId);
+                                                  return obj == null || obj.IsTargetable;
+                                              })
+                                              .OrderBy(x => Player.DistanceTo(x.Node.Position))
+                                              .Select(x => x.Index)
+                                              .FirstOrDefault(-1);
+
+                Mission_Settings.nodeCounter = fallbackIndex >= 0 ? fallbackIndex : 0;
+            }
+        }
+        private const float SmartRoutingThreshold = 50f;
+
         public static bool? PathandCheckNode()
         {
             var zoneId = Player.Territory;
@@ -319,6 +364,15 @@ namespace ICE.Scheduler.Tasks
             var gatherInfo = GatheringRouteLoader.GetRoute(zoneId.RowId, missionFlag);
 
             var location = gatherInfo[Mission_Settings.nodeCounter];
+
+            // Use smart routing (aethernet/hub) for far nodes when closest node selection is active
+            if (C.ClosestNodeSelection && Player.DistanceTo(location.LandZone) > SmartRoutingThreshold)
+            {
+                IceLogging.Info($"Node is far ({Player.DistanceTo(location.LandZone):N0}y), using smart routing", "[Gathering: SmartRoute]");
+                Task_NavmeshMove.Enqueue_NavmeshTask(location.LandZone, distance: 1);
+                return true;
+            }
+
             if (!Task_NavmeshMove.Task_NavTo(location.LandZone, distance: 1).Value)
             {
                 UseCordial();
