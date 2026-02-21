@@ -313,13 +313,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         foreach (var mission in missions)
                         {
                             C.MissionConfig[mission.id].Enabled = true;
-                            if (GetOnlyPreviousMissionsRecursive(mission.id).Count > 0)
+                            foreach (var PrevMission in CosmicHelper.SheetMissionDict[mission.id].SequenceMissions_Previous)
                             {
-                                foreach (var prevMission in GetOnlyPreviousMissionsRecursive(mission.id))
-                                {
-                                    var prevMissionConfig = C.MissionConfig[prevMission];
-                                    prevMissionConfig.Enabled = true;
-                                }
+                                C.MissionConfig[PrevMission].Enabled = true;
                             }
                         }
                         C.Save();
@@ -584,13 +580,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         missionConfig.Enabled = enabled;
                         if (missionConfig.Enabled == true)
                         {
-                            if (GetOnlyPreviousMissionsRecursive(Id).Count >0)
+                            foreach (var prevMission in CosmicHelper.SheetMissionDict[Id].SequenceMissions_Previous)
                             {
-                                foreach (var prevMission in GetOnlyPreviousMissionsRecursive(Id))
-                                {
-                                    var prevMissionConfig = C.MissionConfig[prevMission];
-                                    prevMissionConfig.Enabled = true;
-                                }
+                                C.MissionConfig[prevMission].Enabled = true;
                             }
                         }
 
@@ -1265,20 +1257,34 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                         notesCount++;
                     }
-                    if (missionInfo.Attributes.HasFlag(MissionAttributes.ProvisionalSequential))
+                    if (missionInfo.SequenceMissions_Previous.Count() != 0 || missionInfo.SequenceMissions_Next.Count() != 0)
                     {
+                        if (notesCount != 0)
+                            ImGui.SameLine(0, 5);
+
                         Table_FontCenter(FontAwesomeIcon.ListOl);
                         if (ImGui.IsItemHovered())
                         {
-                            var prevMissions = GetOnlyPreviousMissionsRecursive(Id);
-
                             ImGui.BeginTooltip();
                             ImGui.Text("Sequence Missions");
-                            ImGui.Separator();
-                            for (int i = 0; i < prevMissions.Count; i++)
+                            if (missionInfo.SequenceMissions_Previous.Count() != 0)
                             {
-                                var prevMission = prevMissions[i];
-                                ImGui.Text($"{i + 1}: [{prevMission}] - {CosmicHelper.SheetMissionDict[prevMission].Name}");
+                                ImGui.Separator();
+                                ImGui.Text($"Previous Missions");
+                                foreach (var prevMission in missionInfo.SequenceMissions_Previous)
+                                {
+                                    ImGui.Text($"[{prevMission}] - {CosmicHelper.SheetMissionDict[prevMission].Name}");
+                                }
+                            }
+
+                            if (missionInfo.SequenceMissions_Next.Count() != 0)
+                            {
+                                ImGui.Separator();
+                                ImGui.Text($"Next Missions");
+                                foreach (var nextMission in missionInfo.SequenceMissions_Next)
+                                {
+                                    ImGui.Text($"[{nextMission}] - {CosmicHelper.SheetMissionDict[nextMission].Name}");
+                                }
                             }
                             ImGui.EndTooltip();
                         }
@@ -2148,30 +2154,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             ImGui.PushFont(UiBuilder.IconFont);
             ImGui.Text(icon.ToIconString());
             ImGui.PopFont();
-        }
-
-        public static List<uint> GetOnlyPreviousMissionsRecursive(uint missionId)
-        {
-            if (!CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo) || missionInfo.PreviousMissions.Contains(0))
-                return [];
-
-            var chain = GetOnlyPreviousMissionsRecursive(missionInfo.PreviousMissions.First());
-            chain.Add(missionInfo.PreviousMissions.First());
-            return chain;
-        }
-        private static List<uint> GetOnlyNextMissionsRecursive(uint missionId)
-        {
-            uint? nextMissionId = CosmicHelper.SheetMissionDict
-                .Where(m => m.Value.PreviousMissions.First() == missionId)
-                .Select(m => (uint?)m.Key)
-                .FirstOrDefault();
-
-            if (!nextMissionId.HasValue)
-                return [];
-
-            var chain = new List<uint> { nextMissionId.Value };
-            chain.AddRange(GetOnlyNextMissionsRecursive(nextMissionId.Value));
-            return chain;
         }
         private static unsafe void CompletionStatus_Formatted(uint id)
         {

@@ -11,6 +11,22 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
     {
         public static List<uint> JobOptions = new() { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
 
+        public static List<PlaylistOptions> PlaylistOptionsOrder = new()
+        {
+            PlaylistOptions.None,
+            PlaylistOptions.SinusMax,
+            PlaylistOptions.PhaennaMax,
+            PlaylistOptions.OizysMax,
+            PlaylistOptions.ToolMaxExp,
+            PlaylistOptions.SelectedRelicLv,
+
+            PlaylistOptions.CreditAmount,
+            PlaylistOptions.PlanetAmount,
+            PlaylistOptions.DronebitAmount,
+
+            PlaylistOptions.ClassLevel,
+        };
+
         public static uint SelectedJob = 8;
         public static PlaylistOptions SelectedOption = PlaylistOptions.None;
 

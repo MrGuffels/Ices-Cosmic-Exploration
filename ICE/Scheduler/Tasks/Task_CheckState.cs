@@ -238,14 +238,31 @@ namespace ICE.Scheduler.Tasks
                     }
                     else
                     {
-                        IceLogging.Info("We've reached the completed relic level wooo! Stopping for now", tag);
-                        SchedulerMain.State = IceState.Idle;
-                        if (C.PlaySoundAlert)
+                        bool needToCap = false;
+                        foreach (var exp in relicInfo.CurrentExp)
                         {
-                            _ = SoundPlayer.PlaySoundAsync();
+                            if (exp.Value.Current != exp.Value.Max)
+                            {
+                                IceLogging.Verbose($"Found an exp that we still need:\n" +
+                                    $"[Current] = {exp.Value.Current}\n" +
+                                    $"[Max] = {exp.Value.Max}\n" +
+                                    $"[Kind] = {exp.Key}");
+                                needToCap = true;
+                                break;
+                            }
                         }
-                        P.TaskManager.Tasks.Clear();
-                        return true;
+
+                        if (!needToCap)
+                        {
+                            IceLogging.Info("We've reached the completed relic level wooo! Stopping for now", tag);
+                            SchedulerMain.State = IceState.Idle;
+                            if (C.PlaySoundAlert)
+                            {
+                                _ = SoundPlayer.PlaySoundAsync();
+                            }
+                            P.TaskManager.Tasks.Clear();
+                            return true;
+                        }
                     }
                 }
 
@@ -292,6 +309,22 @@ namespace ICE.Scheduler.Tasks
                 var classScore = relicInfo.Score;
                 var level = Player.GetLevel((Job)job);
 
+                bool MaxLevelExp = true;
+                foreach (var exp in relicInfo.CurrentExp)
+                {
+                    if (relicInfo.Stage_Current != relicInfo.Stage_Next)
+                    {
+                        MaxLevelExp = false;
+                        break;
+                    }
+
+                    if (exp.Value.Current != exp.Value.Max)
+                    {
+                        MaxLevelExp = false;
+                        break;
+                    }
+                }
+
                 var goal = entry.SelectedOption;
                 bool achieved = false;
 
@@ -306,6 +339,7 @@ namespace ICE.Scheduler.Tasks
                     PlaylistOptions.DronebitAmount => dronebitAmount >= entry.DronebitAmount,
                     PlaylistOptions.ClassLevel => level >= entry.ClassLevel,
                     PlaylistOptions.ClassScore => classScore >= entry.ClassScore,
+                    PlaylistOptions.ToolMaxExp => MaxLevelExp,
                     _ => true
                 };
 

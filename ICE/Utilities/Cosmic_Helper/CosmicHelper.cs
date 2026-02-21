@@ -131,12 +131,14 @@ public static unsafe partial class CosmicHelper
         public uint RewardItem { get; set; } = 0;
         public uint RewardItemAmount { get; set; } = 0;
         public uint DronebitReward { get; set; } = 0;
-        public HashSet<uint> PreviousMissions { get; set; } = new();
+        public uint PreviousMissionId { get; set; } = new();
         public Dictionary<int, int> RelicXpInfo { get; set; } = new();
         public uint BronzeScore { get; set; } = 0;
         public uint SilverScore { get; set; } = 0;
         public uint GoldScore { get; set; } = 0;
         public uint TemporaryActionId { get; set; } = 0;
+        public List<uint> SequenceMissions_Previous { get; set; } = new();
+        public List<uint> SequenceMissions_Next { get; set; } = new();
     }
 
     public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();

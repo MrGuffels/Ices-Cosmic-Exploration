@@ -16,6 +16,8 @@
 
         ClassLevel = 9,
         ClassScore = 10,
+
         // GoldClassMissions = 11,
+        ToolMaxExp = 12
     }
 }

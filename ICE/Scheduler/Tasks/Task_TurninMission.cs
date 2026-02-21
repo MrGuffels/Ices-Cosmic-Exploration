@@ -434,19 +434,25 @@ namespace ICE.Scheduler.Tasks
             var manager = (WKSManagerCustom*)managerPtr;
             var isGold = manager->IsMissionGolded(PreviousMissionId);
 
+            var sheetInfo = CosmicHelper.SheetMissionDict[PreviousMissionId];
+
             if (C.RemoveAfterGold && isGold)
             {
-                C.MissionConfig[PreviousMissionId].Enabled = false;
+                if (sheetInfo.SequenceMissions_Next.Count == 0)
+                {
+                    C.MissionConfig[PreviousMissionId].Enabled = false;
+                    C.Save();
+                }
             }
             if (C.RemoveAfterGold && !isGold)
             {
-                if (MainWindow.GetOnlyPreviousMissionsRecursive(PreviousMissionId).Count > 0)
+                if (sheetInfo.SequenceMissions_Previous.Count != 0)
                 {
-                    foreach (var prevMission in MainWindow.GetOnlyPreviousMissionsRecursive(PreviousMissionId))
+                    foreach (var prevMission in sheetInfo.SequenceMissions_Previous)
                     {
                         C.MissionConfig[prevMission].Enabled = true;
-                        C.Save();
                     }
+                    C.Save();
                 }
             }
 

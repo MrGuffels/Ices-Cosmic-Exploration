@@ -111,29 +111,5 @@ namespace ICE.Ui
                 ImGui.Text("Hehe");
             }
         }
-
-        public static List<uint> GetOnlyPreviousMissionsRecursive(uint missionId)
-        {
-            if (!CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var missionInfo) || missionInfo.PreviousMissions.Contains(0))
-                return [];
-
-            var chain = GetOnlyPreviousMissionsRecursive(missionInfo.PreviousMissions.First());
-            chain.Add(missionInfo.PreviousMissions.First());
-            return chain;
-        }
-        private List<uint> GetOnlyNextMissionsRecursive(uint missionId)
-        {
-            uint? nextMissionId = CosmicHelper.SheetMissionDict
-                .Where(m => m.Value.PreviousMissions.First() == missionId)
-                .Select(m => (uint?)m.Key)
-                .FirstOrDefault();
-
-            if (!nextMissionId.HasValue)
-                return [];
-
-            var chain = new List<uint> { nextMissionId.Value };
-            chain.AddRange(GetOnlyNextMissionsRecursive(nextMissionId.Value));
-            return chain;
-        }
     }
 }

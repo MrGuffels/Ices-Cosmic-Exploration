@@ -142,40 +142,6 @@ public class MissionTimer
 
             return (60.0 * baseScore * multiplier) / averageTimeSeconds;
         }
-        public static double CalculateAverageSequenceScorePerMinute(uint id, int multiplier)
-        {
-            double totalTimeSeconds = 0;
-            double totalScore = 0;
-
-            List<uint> sequenceMissions = new();
-            sequenceMissions = GetOnlyPreviousMissionsRecursive(id);
-            sequenceMissions.Add(id);
-
-            foreach (var missionId in sequenceMissions)
-            {
-                if (C.MissionConfig.TryGetValue(missionId, out var mission))
-                {
-                    // If any mission has invalid time, return 0
-                    if (mission.AverageTime <= 0) return 0;
-
-                    if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var sheetInfo))
-                    {
-                        totalTimeSeconds += mission.AverageTime;
-                        totalScore += sheetInfo.ClassScore * multiplier;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
-                }
-            }
-
-            if (totalTimeSeconds <= 0) return 0;
-
-            double totalTimeMinutes = totalTimeSeconds / 60.0;
-            return totalScore / totalTimeMinutes;
-        }
-
         public static double CalculateActualScorePerMinute(List<TurninData> turninRecords, uint baseScore)
         {
             if (turninRecords.Count == 0) return 0;

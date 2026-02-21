@@ -887,6 +887,7 @@ namespace ICE.Scheduler.Tasks
                         if (retryCheck >= 4)
                         {
                             IceLogging.Verbose($"Mission could no longer be found: {missionId}, retrying the process", tag);
+                            retryCheck = 0;
                             P.TaskManager.Tasks.Clear();
                             return true;
                         }
@@ -970,7 +971,22 @@ namespace ICE.Scheduler.Tasks
                             $"[A] = {ARank.Count()}\n" +
                             $"[B] = {BRank.Count()}\n" +
                             $"[C] = {CRank.Count()}\n" +
-                            $"[D] = {DRank.Count()}\n", tag);
+                            $"[D] = {DRank.Count()}", tag);
+
+                        List<string> ranks = new() { "Ex", "A", "B", "C", "D" };
+                        var enabledCount = 0;
+                        foreach (var rank in ranks)
+                        {
+                            enabledCount += MissionLibrary[rank].Count();
+                        }
+
+                        if (enabledCount == 0)
+                        {
+                            IceLogging.Info("We don't have any basic missions enabled under the following class\n" +
+                                $"{Mission_Settings.SelectedJob}. So we're just going to clear -> Reset (Assuming we're checking for timed and such)");
+                            P.TaskManager.Tasks.Clear();
+                            return true;
+                        }
 
                         var random = new Random();
                         void ShuffleList<T>(List<T> list, Random rnd)
@@ -1157,7 +1173,11 @@ namespace ICE.Scheduler.Tasks
 
                         if (missionToAbandon != 0)
                         {
-                            P.TaskManager.Enqueue(() => GrabMission(missionToAbandon, true));
+                            P.TaskManager.EnqueueMulti
+                                (
+                                    new(() => Mission_ChangeJob(missionToAbandon)),
+                                    new(() => GrabMission(missionToAbandon, true))
+                                );
                             return true;
                         }
                     }

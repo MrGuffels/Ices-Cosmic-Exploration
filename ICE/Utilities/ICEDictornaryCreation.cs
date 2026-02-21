@@ -55,7 +55,7 @@ public sealed partial class ICE
             uint gold = entry.GoldStarRequirement;
 
             // Sequential Requirements
-            HashSet<uint> previousMissionId = new() { entry.LockedBehind.RowId };
+            uint previousMissionId = entry.LockedBehind.RowId;
 
             // Time | Weather Requirements
             uint timeAndWeather = entry.WKSMissionLotterySpecialCond.RowId;
@@ -192,7 +192,7 @@ public sealed partial class ICE
             attributes |= isCritical ? MissionAttributes.Critical : MissionAttributes.None;
             attributes |= weather != CosmicWeather.None ? MissionAttributes.ProvisionalWeather : MissionAttributes.None;
             attributes |= (startTime != 0 || endTime != 0) ? MissionAttributes.ProvisionalTimed : MissionAttributes.None;
-            attributes |= !previousMissionId.Contains(0) ? MissionAttributes.ProvisionalSequential : MissionAttributes.None;
+            attributes |= previousMissionId != 0 ? MissionAttributes.ProvisionalSequential : MissionAttributes.None;
 
             tempActionId = missionToDo.TemporaryAction.RowId;
 
@@ -536,7 +536,7 @@ public sealed partial class ICE
                     EndTime = endTime,
                     CosmoCredit = Cosmo,
                     LunarCredit = Lunar,
-                    PreviousMissions = previousMissionId,
+                    PreviousMissionId = previousMissionId,
                     RelicXpInfo = relicXp,
                     BronzeScore = bronze,
                     SilverScore = silver,
@@ -566,6 +566,45 @@ public sealed partial class ICE
 
                     TemporaryActionId = tempActionId,
                 };
+            }
+        }
+
+        // Sequence Loading/Storing
+        // 1st passthrough
+        foreach (var (missionId, info) in CosmicHelper.SheetMissionDict)
+        {
+            if (info.PreviousMissionId == missionId) 
+                continue;
+
+            if (SheetMissionDict.ContainsKey(info.PreviousMissionId))
+            {
+                info.SequenceMissions_Previous.Add(info.PreviousMissionId);
+
+                SheetMissionDict[info.PreviousMissionId].SequenceMissions_Next.Add(missionId);
+            }
+        }
+
+        foreach (var (missionId, info) in CosmicHelper.SheetMissionDict)
+        {
+            // Walk backwards through the chain
+            var current = info;
+            while (current.PreviousMissionId != 0 && SheetMissionDict.ContainsKey(current.PreviousMissionId))
+            {
+                var prev = SheetMissionDict[current.PreviousMissionId];
+                if (!info.SequenceMissions_Previous.Contains(current.PreviousMissionId))
+                    info.SequenceMissions_Previous.Add(current.PreviousMissionId);
+                current = prev;
+            }
+
+            // Walk forwards through the chain
+            current = info;
+            while (current.SequenceMissions_Next.Count > 0)
+            {
+                var nextId = current.SequenceMissions_Next[0];
+                if (!SheetMissionDict.ContainsKey(nextId)) break;
+                if (!info.SequenceMissions_Next.Contains(nextId))
+                    info.SequenceMissions_Next.Add(nextId);
+                current = SheetMissionDict[nextId];
             }
         }
 
