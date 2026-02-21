@@ -468,7 +468,20 @@ namespace ICE.Ui
         }
         private void ClassRelicDetails()
         {
-            if (C.ShowExpBars)
+            if (!C.ShowExpBars) return;
+
+            if (C.ShowExpBars_HideWhenMaxed)
+            {
+                var expInfo = CosmicHelper.Cosmic_ClassInfo();
+                var currentJobId = (uint)Player.Job;
+                if (expInfo.TryGetValue(currentJobId, out var jobInfo)
+                    && jobInfo.CurrentExp.Count > 0
+                    && jobInfo.CurrentExp.Values.All(exp => exp.Current >= exp.Needed))
+                {
+                    return;
+                }
+            }
+
             {
                 var currentJobId = (uint)Player.Job;
                 if (ImGui.CollapsingHeader("Relic Tool XP"))

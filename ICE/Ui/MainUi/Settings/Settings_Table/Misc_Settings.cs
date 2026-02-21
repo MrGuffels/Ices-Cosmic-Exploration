@@ -84,6 +84,16 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.ShowExpBars = showExpOverlay;
                 C.Save();
             }
+            if (showExpOverlay)
+            {
+                ImGui.SameLine();
+                bool hideWhenMaxed = C.ShowExpBars_HideWhenMaxed;
+                if (ImGui.Checkbox("Until maxed only", ref hideWhenMaxed))
+                {
+                    C.ShowExpBars_HideWhenMaxed = hideWhenMaxed;
+                    C.Save();
+                }
+            }
 
             bool showClassScore = C.ShowCurrentScore;
             if (ImGui.Checkbox("Show Current Class Score", ref showClassScore))

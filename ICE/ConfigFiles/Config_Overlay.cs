@@ -11,6 +11,7 @@ public partial class Config
     public bool ShowCurrentScore { get; set; } = true;
     public bool ShowTotalScore { get; set; } = true;
     public bool ShowExpBars { get; set; } = true;
+    public bool ShowExpBars_HideWhenMaxed { get; set; } = false;
     public bool Overlay_AutoResize { get; set; } = true;
     public bool Overlay_FilterByJob { get; set; } = false;
     public bool Overlay_AllMoons { get; set; } = true;
