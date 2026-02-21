@@ -105,11 +105,72 @@ namespace ICE.Ui
             }
 #endif
         }
+        private static Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>> GetExPlusTokenWeatherMissions(uint territoryId)
+        {
+            var jobFilter = C.Overlay_FilterByJob ? (uint?)Player.Job : null;
+            var result = new Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>>();
+            foreach (var kvp in SheetMissionDict)
+            {
+                var mission = kvp.Value;
+                if (mission.TerritoryId == territoryId
+                    && mission.Rank >= 6
+                    && mission.Weather != CosmicWeather.None
+                    && mission.RewardItem != 0
+                    && (jobFilter == null || mission.Jobs.Contains(jobFilter.Value))
+                    && CosmicHelper.WeatherIds.TryGetValue(mission.Weather, out var iconId))
+                {
+                    var key = (uint)iconId;
+                    if (!result.ContainsKey(key))
+                        result[key] = new List<KeyValuePair<uint, CosmicInfo>>();
+                    result[key].Add(kvp);
+                }
+            }
+            return result;
+        }
+        private void DrawWeatherIcon(WeatherForecast forecast, Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>> weatherMissions, string extraTooltip = null)
+        {
+            if (!Svc.Texture.TryGetFromGameIcon(forecast.IconId, out var weatherIcon))
+                return;
+
+            var iconSize = new Vector2(23, 23);
+            bool highlight = weatherMissions.ContainsKey(forecast.IconId);
+
+            if (highlight)
+            {
+                var drawList = ImGui.GetWindowDrawList();
+                var pos = ImGui.GetCursorScreenPos();
+                var center = pos + iconSize * 0.5f;
+                drawList.AddCircle(center, 13, ImGui.GetColorU32(new Vector4(1.0f, 0.85f, 0.0f, 1.0f)), 0, 2.0f);
+            }
+
+            ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, iconSize);
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text($"{forecast.Name}");
+                if (extraTooltip != null)
+                    ImGui.Text(extraTooltip);
+                if (highlight)
+                {
+                    ImGui.Separator();
+                    foreach (var mission in weatherMissions[forecast.IconId])
+                    {
+                        ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.RewardItemAmount}x tokens)");
+                    }
+                }
+                ImGui.EndTooltip();
+            }
+        }
         private void WeatherForcastForTerritory(ushort territoryId, string moonAsset)
         {
             var weatherForecasts = WeatherForecastHandler.GetTerritoryForecast(territoryId);
 
             if (weatherForecasts.Count == 0) return;
+
+            var weatherMissions = C.Overlay_HighlightTokenWeather
+                ? GetExPlusTokenWeatherMissions(territoryId)
+                : new Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>>();
 
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(0);
@@ -119,18 +180,7 @@ namespace ICE.Ui
             ImGui.TableNextColumn();
             if (weatherForecasts.Count > 0)
             {
-                var current = weatherForecasts[0];
-                if (Svc.Texture.TryGetFromGameIcon(current.IconId, out var weatherIcon))
-                {
-                    ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
-
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.BeginTooltip();
-                        ImGui.Text($"{current.Name}");
-                        ImGui.EndTooltip();
-                    }
-                }
+                DrawWeatherIcon(weatherForecasts[0], weatherMissions);
             }
 
             // Next weather column - show next 4 weathers
@@ -140,19 +190,7 @@ namespace ICE.Ui
                 if (i > 1)
                     ImGui.SameLine(0, 2);
 
-                var weather = weatherForecasts[i];
-                if (Svc.Texture.TryGetFromGameIcon(weather.IconId, out var weatherIcon))
-                {
-                    ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
-
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.BeginTooltip();
-                        ImGui.Text($"{weather.Name}");
-                        ImGui.Text($"In: {WeatherForecastHandler.FormatForecastTime(weather.Time)}");
-                        ImGui.EndTooltip();
-                    }
-                }
+                DrawWeatherIcon(weatherForecasts[i], weatherMissions, $"In: {WeatherForecastHandler.FormatForecastTime(weatherForecasts[i].Time)}");
             }
         }
         private unsafe void TimedMissionDetailsForTerritory(uint territoryId, string moonAsset)

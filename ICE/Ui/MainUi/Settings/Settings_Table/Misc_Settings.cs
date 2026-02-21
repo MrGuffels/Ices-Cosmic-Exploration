@@ -113,8 +113,15 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
 
+            bool highlightTokenWeather = C.Overlay_HighlightTokenWeather;
+            if (ImGui.Checkbox("Highlight EX+ token weathers", ref highlightTokenWeather))
+            {
+                C.Overlay_HighlightTokenWeather = highlightTokenWeather;
+                C.Save();
+            }
+
             bool filterByJob = C.Overlay_FilterByJob;
-            if (ImGui.Checkbox("Filter timed missions by current job", ref filterByJob))
+            if (ImGui.Checkbox("Filter timed/weather missions and weather highlights by current job", ref filterByJob))
             {
                 C.Overlay_FilterByJob = filterByJob;
                 C.Save();
