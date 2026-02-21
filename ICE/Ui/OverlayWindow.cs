@@ -86,16 +86,112 @@ namespace ICE.Ui
             ClassRelicDetails();
         }
 
+        internal static void DrawModeSelectPopup(string popupId)
+        {
+            if (ImGui.BeginPopup(popupId))
+            {
+                ImGui.Text("Select Mode");
+                ImGui.Separator();
+
+                bool standard = C.SelectedMode == ModeSelect.Standard;
+                bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
+                bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
+                bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
+
+                if (ImGui.RadioButton("Standard", standard))
+                {
+                    C.SelectedMode = ModeSelect.Standard;
+                    C.Save();
+                }
+                if (ImGui.RadioButton("Relic Grind", relicMode))
+                {
+                    C.SelectedMode = ModeSelect.RelicMode;
+                    C.Save();
+                }
+                if (ImGui.RadioButton("Leveling Grind", xpLeveling))
+                {
+                    C.SelectedMode = ModeSelect.LevelMode;
+                    C.Save();
+                }
+                if (ImGui.RadioButton("Agenda Mode", agendaMode))
+                {
+                    C.SelectedMode = ModeSelect.AgendaMode;
+                    C.Save();
+                }
+
+                ImGui.EndPopup();
+            }
+        }
         private void MissionDetails()
         {
-            ImGui.Text($"Current state: " + SchedulerMain.State.ToString());
+            if (ImGuiEx.IconButton(FontAwesomeIcon.ListUl, "##OverlayModeSelect"))
+            {
+                ImGui.OpenPopup("Overlay Mode Select");
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("Change mode");
+                ImGui.EndTooltip();
+            }
+            DrawModeSelectPopup("Overlay Mode Select");
+            ImGui.SameLine();
+            var modeName = C.SelectedMode switch
+            {
+                ModeSelect.Standard => "Standard",
+                ModeSelect.RelicMode => "Relic Grind",
+                ModeSelect.LevelMode => "Leveling Grind",
+                ModeSelect.AgendaMode => "Cosmic Agenda",
+                _ => C.SelectedMode.ToString(),
+            };
+            ImGui.Text($"{modeName} - {SchedulerMain.State}");
+
+            // Start/Stop toggle
+            bool running = SchedulerMain.State != IceState.Idle;
+            if (running)
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
+            if (ImGuiEx.IconButton(running ? FontAwesomeIcon.Stop : FontAwesomeIcon.Play, "##StartStop"))
+            {
+                if (running)
+                    SchedulerMain.DisablePlugin();
+                else
+                    SchedulerMain.EnablePlugin();
+            }
+            if (running)
+                ImGui.PopStyleColor();
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(running ? "Stop" : "Start");
+                ImGui.EndTooltip();
+            }
+
+            // Stop after current mission toggle
+            ImGui.SameLine();
+            bool stopAfter = Mission_Settings.StopAfterCurrent;
+            if (stopAfter)
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.5f, 0.0f, 1.0f));
+            if (ImGuiEx.IconButton(FontAwesomeIcon.StepForward, "##StopAfterCurrent"))
+            {
+                Mission_Settings.StopAfterCurrent = !Mission_Settings.StopAfterCurrent;
+            }
+            if (stopAfter)
+                ImGui.PopStyleColor();
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(Mission_Settings.StopAfterCurrent ? "Stop after current mission: ON" : "Stop after current mission: OFF");
+                ImGui.EndTooltip();
+            }
+
+            ImGui.SameLine();
             if (CosmicHelper.SheetMissionDict.TryGetValue(CosmicHelper.CurrentLunarMission, out var missionName) && SchedulerMain.State != IceState.AbandonMission)
             {
-                ImGui.TextWrapped($"Current Mission: [{CosmicHelper.CurrentLunarMission}] {missionName.Name}");
+                ImGui.TextWrapped($"[{CosmicHelper.CurrentLunarMission}] {missionName.Name}");
             }
             else
             {
-                ImGui.Text("Current Mission: None");
+                ImGui.Text("No mission");
             }
 #if DEBUG
             if (C.ShowDebugGatherInfo)
@@ -338,39 +434,6 @@ namespace ICE.Ui
             {
                 P.mainWindow.IsOpen = true;
             }
-            ImGui.SameLine();
-
-            // Start button (disabled while already ticking).
-            bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
-            bool unsupportedArtisan = xpLeveling && !P.Artisan.UpdatedArtisan() && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
-            bool unsupportedClass = !PlayerHelper.UsingSupportedJob();
-
-            bool unsupported = SchedulerMain.State != IceState.Idle || !PlayerHelper.UsingSupportedJob() || unsupportedArtisan;
-
-            using (ImRaii.Disabled(unsupported))
-            {
-                var defaultButtonColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
-                var color = unsupported ? EColor.Red : defaultButtonColor;
-
-                using var tempButton = ImRaii.PushColor(ImGuiCol.Button, color);
-                if (ImGui.Button("Start"))
-                {
-                    SchedulerMain.EnablePlugin();
-                }
-            }
-
-            ImGui.SameLine();
-
-            // Stop button (disabled while not ticking).
-            using (ImRaii.Disabled(SchedulerMain.State == IceState.Idle))
-            {
-                if (ImGui.Button("Stop"))
-                {
-                    SchedulerMain.DisablePlugin();
-                }
-            }
-            ImGui.SameLine();
-            ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
 
             // Drone finder toggle
             ImGui.SameLine();
