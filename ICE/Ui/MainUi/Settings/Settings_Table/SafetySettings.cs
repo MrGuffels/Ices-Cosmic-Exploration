@@ -74,16 +74,51 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
                 }
             }
-            bool jumpIfStuck = C.JumpIfStuck;
-            if (ImGui.Checkbox("Jump if stuck during nav movement", ref jumpIfStuck))
+            bool unstuckEnabled = C.JumpIfStuck || C.RetargetIfStuck;
+            if (ImGui.Checkbox("If stuck during nav movement:", ref unstuckEnabled))
             {
-                C.JumpIfStuck = jumpIfStuck;
+                if (unstuckEnabled)
+                    C.JumpIfStuck = true;
+                else
+                {
+                    C.JumpIfStuck = false;
+                    C.RetargetIfStuck = false;
+                }
                 C.Save();
             }
+            ImGui.SameLine();
             ImGuiEx.HelpMarker(
-                "If you get stuck while navmesh moving, this will allow you to jump after a certain time has passed (3s currently)\n" +
-                "NOTE: THIS IS EXPERIMENTAL. IT WORKS, BUT IT STILL LOOKS SUS. IF YOU SEE A POINT AND YOUR STUCK, REPORT IT PLEASE\n" +
-                "through the logs function, and give info about it so we can fix it.");
+                "When stuck during navmesh movement for the configured delay:\n" +
+                "- Jump: attempts to jump over the obstacle\n" +
+                "- Retarget: stops and re-pathfinds to the destination (re-randomizes if enabled)");
+            if (!unstuckEnabled) ImGui.BeginDisabled();
+            if (ImGui.RadioButton("Jump", C.JumpIfStuck && !C.RetargetIfStuck))
+            {
+                C.JumpIfStuck = true;
+                C.RetargetIfStuck = false;
+                C.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.RadioButton("Retarget", C.RetargetIfStuck))
+            {
+                C.RetargetIfStuck = true;
+                C.JumpIfStuck = false;
+                C.Save();
+            }
+            ImGui.SameLine();
+            ImGui.Text("after");
+            ImGui.SameLine();
+            int stuckDelay = C.StuckDelayMs;
+            ImGui.SetNextItemWidth(100);
+            if (ImGui.SliderInt("ms stuck###StuckDelay", ref stuckDelay, 500, 3000))
+            {
+                if (C.StuckDelayMs != stuckDelay)
+                {
+                    C.StuckDelayMs = stuckDelay;
+                    C.SaveDebounced();
+                }
+            }
+            if (!unstuckEnabled) ImGui.EndDisabled();
             ImGui.Dummy(Vector2.Zero);
 
             int delayRelic = C.DelayPostRelic;

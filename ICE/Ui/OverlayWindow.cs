@@ -4,10 +4,13 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using ICE.Ui.MainUi;
+using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using TerraFX.Interop.Windows;
 using static ICE.Utilities.CosmicHelper;
 
@@ -20,6 +23,14 @@ namespace ICE.Ui
             Flags = ImGuiWindowFlags.None;
      
             P.windowSystem.AddWindow(this);
+            TitleBarButtons.Add(
+                new()
+                {
+                    ShowTooltip = () => ImGui.SetTooltip("Overlay Settings"),
+                    Icon = FontAwesomeIcon.Cog,
+                    IconOffset = new(1, 1),
+                    Click = _ => ImGui.OpenPopup("OverlaySettingsPopup")
+                });
         }
 
         public void Dispose()
@@ -38,51 +49,201 @@ namespace ICE.Ui
             Flags = C.Overlay_AutoResize
                 ? ImGuiWindowFlags.AlwaysAutoResize
                 : ImGuiWindowFlags.None;
+
+            if (C.Overlay_AutoResize)
+            {
+                var minWidth = ImGui.CalcTextSize(new string('A', 30)).X + ImGui.GetStyle().WindowPadding.X * 2;
+                ImGui.SetNextWindowSizeConstraints(new Vector2(minWidth, 0), new Vector2(float.MaxValue, float.MaxValue));
+            }
         }
 
         public override void Draw()
         {
+            if (ImGui.BeginPopup("OverlaySettingsPopup"))
+            {
+                Misc_Settings.OverlaySettings();
+                ImGui.EndPopup();
+            }
+
+            SelectableSidebar.AutoSelectClass(C.AutoPickCurrentJob);
+            SelectableSidebar.AutoSelectMoonUpdate(C.AutoSelectMoon);
+
             MissionDetails();
 
-            if (ImGui.BeginTable("Weather/Time Info", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+            if (ImGui.BeginTable("Weather/Time Info", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("");
+                ImGui.TableSetupColumn("##Planets");
+                ImGui.TableSetupColumn("##Icons");
                 ImGui.TableSetupColumn("Current");
                 ImGui.TableSetupColumn("Next");
 
                 ImGui.TableHeadersRow();
 
-
-                if (true)
+                foreach (var planet in Planets)
                 {
-                    WeatherForcast();
-                }
-
-                if (true)
-                {
-                    TimedMissionDetails();
+                    if (planet.IsEnabled())
+                    {
+                        WeatherForcastForTerritory((ushort)planet.TerritoryId, planet.Asset);
+                        TimedMissionDetailsForTerritory(planet.TerritoryId, planet.Asset);
+                    }
                 }
 
                 ImGui.EndTable();
             }
-
-            HomeButtons();
 
             ClassExpDetails();
 
             ClassRelicDetails();
         }
 
+        internal static void DrawModeSelectPopup(string popupId)
+        {
+            if (ImGui.BeginPopup(popupId))
+            {
+                ImGui.Text("Select Mode");
+                ImGui.Separator();
+
+                bool standard = C.SelectedMode == ModeSelect.Standard;
+                bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
+                bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
+                bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
+
+                if (ImGui.RadioButton("Standard", standard))
+                {
+                    C.SelectedMode = ModeSelect.Standard;
+                    C.Save();
+                }
+                if (ImGui.RadioButton("Relic Grind", relicMode))
+                {
+                    C.SelectedMode = ModeSelect.RelicMode;
+                    C.Save();
+                }
+                if (ImGui.RadioButton("Leveling Grind", xpLeveling))
+                {
+                    C.SelectedMode = ModeSelect.LevelMode;
+                    C.Save();
+                }
+                if (ImGui.RadioButton("Agenda Mode", agendaMode))
+                {
+                    C.SelectedMode = ModeSelect.AgendaMode;
+                    C.Save();
+                }
+
+                ImGui.EndPopup();
+            }
+        }
         private void MissionDetails()
         {
-            ImGui.Text($"Current state: " + SchedulerMain.State.ToString());
+            var settingsIcon = C.Overlay_UseCogsIcon ? FontAwesomeIcon.Cogs : FontAwesomeIcon.Home;
+            ImGui.PushFont(UiBuilder.IconFont);
+            var iconWidth = ImGui.CalcTextSize(FontAwesomeIcon.Cogs.ToIconString()).X;
+            ImGui.PopFont();
+            var buttonSize = new Vector2(iconWidth + ImGui.GetStyle().FramePadding.X * 2, 0);
+            if (ImGuiEx.IconButton(settingsIcon, "##OpenICE", buttonSize))
+            {
+                P.mainWindow.IsOpen = true;
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("Open ICE");
+                ImGui.EndTooltip();
+            }
+            ImGui.SameLine();
+            if (ImGuiEx.IconButton(FontAwesomeIcon.ListUl, "##OverlayModeSelect", buttonSize))
+            {
+                ImGui.OpenPopup("Overlay Mode Select");
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text("Change mode");
+                ImGui.EndTooltip();
+            }
+            DrawModeSelectPopup("Overlay Mode Select");
+            if (PlayerHelper.IsInOizys())
+            {
+                ImGui.SameLine();
+                bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
+                if (droneActive)
+                    ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
+                if (ImGuiEx.IconButton(FontAwesomeIcon.SearchLocation, "##DroneFinder", buttonSize))
+                {
+                    if (droneActive)
+                        SchedulerMain.DisablePlugin();
+                    else
+                        SchedulerMain.State = IceState.ArtifactSearch;
+                }
+                if (droneActive)
+                    ImGui.PopStyleColor();
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Text(droneActive ? "Stop Drone Finder" : "Run Drone Finder");
+                    ImGui.EndTooltip();
+                }
+            }
+            ImGui.SameLine();
+
+            var modeName = C.SelectedMode switch
+            {
+                ModeSelect.Standard => "Standard",
+                ModeSelect.RelicMode => "Relic Grind",
+                ModeSelect.LevelMode => "Leveling Grind",
+                ModeSelect.AgendaMode => "Cosmic Agenda",
+                _ => C.SelectedMode.ToString(),
+            };
+            ImGui.Text($"{modeName} - {SchedulerMain.State}");
+
+            // Start/Stop toggle
+            bool running = SchedulerMain.State != IceState.Idle;
+            if (running)
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
+            if (ImGuiEx.IconButton(running ? FontAwesomeIcon.Stop : FontAwesomeIcon.Play, "##StartStop", buttonSize))
+            {
+                if (running)
+                    SchedulerMain.DisablePlugin();
+                else
+                    SchedulerMain.EnablePlugin();
+            }
+            if (running)
+                ImGui.PopStyleColor();
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(running ? "Stop" : "Start");
+                ImGui.EndTooltip();
+            }
+
+            // Stop after current mission toggle
+            ImGui.SameLine();
+            bool stopAfter = Mission_Settings.StopAfterCurrent;
+            if (stopAfter)
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.5f, 0.0f, 1.0f));
+            if (ImGuiEx.IconButton(FontAwesomeIcon.StepForward, "##StopAfterCurrent", buttonSize))
+            {
+                Mission_Settings.StopAfterCurrent = !Mission_Settings.StopAfterCurrent;
+            }
+            if (stopAfter)
+                ImGui.PopStyleColor();
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(Mission_Settings.StopAfterCurrent ? "Stop after current mission: ON" : "Stop after current mission: OFF");
+                ImGui.EndTooltip();
+            }
+
+            ImGui.SameLine();
             if (CosmicHelper.SheetMissionDict.TryGetValue(CosmicHelper.CurrentLunarMission, out var missionName) && SchedulerMain.State != IceState.AbandonMission)
             {
-                ImGui.TextWrapped($"Current Mission: [{CosmicHelper.CurrentLunarMission}] {missionName.Name}");
+                var missionText = $"[{CosmicHelper.CurrentLunarMission}] {missionName.Name}";
+                if (missionText.Length > 35)
+                    missionText = missionText[..32] + "...";
+                ImGui.Text(missionText);
             }
             else
             {
-                ImGui.Text("Current Mission: None");
+                ImGui.Text("No mission");
             }
 #if DEBUG
             if (C.ShowDebugGatherInfo)
@@ -92,33 +253,91 @@ namespace ICE.Ui
             }
 #endif
         }
-        private void WeatherForcast()
+        private static Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>> GetExPlusTokenWeatherMissions(uint territoryId)
         {
-            var weatherForecasts = WeatherForecastHandler.GetNextWeathers(6); // Current + next 4
+            var jobFilter = C.Overlay_FilterByJob ? (uint?)Player.Job : null;
+            var result = new Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>>();
+            foreach (var kvp in SheetMissionDict)
+            {
+                var mission = kvp.Value;
+                if (mission.TerritoryId == territoryId
+                    && mission.Rank >= 6
+                    && mission.Weather != CosmicWeather.None
+                    && mission.RewardItem != 0
+                    && (jobFilter == null || mission.Jobs.Contains(jobFilter.Value))
+                    && CosmicHelper.WeatherIds.TryGetValue(mission.Weather, out var iconId))
+                {
+                    var key = (uint)iconId;
+                    if (!result.ContainsKey(key))
+                        result[key] = new List<KeyValuePair<uint, CosmicInfo>>();
+                    result[key].Add(kvp);
+                }
+            }
+            return result;
+        }
+        private void DrawWeatherIcon(WeatherForecast forecast, Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>> weatherMissions, string extraTooltip = null)
+        {
+            if (!Svc.Texture.TryGetFromGameIcon(forecast.IconId, out var weatherIcon))
+                return;
+
+            var iconSize = new Vector2(23, 23);
+            bool highlight = weatherMissions.ContainsKey(forecast.IconId);
+
+            if (highlight)
+            {
+                var drawList = ImGui.GetWindowDrawList();
+                var pos = ImGui.GetCursorScreenPos();
+                var center = pos + iconSize * 0.5f;
+                drawList.AddCircle(center, 13, ImGui.GetColorU32(new Vector4(1.0f, 0.85f, 0.0f, 1.0f)), 0, 2.0f);
+            }
+
+            ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, iconSize);
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text($"{forecast.Name}");
+                if (extraTooltip != null)
+                    ImGui.Text(extraTooltip);
+                if (highlight)
+                {
+                    ImGui.Separator();
+                    foreach (var mission in weatherMissions[forecast.IconId])
+                    {
+                        foreach (var jobId in mission.Value.Jobs)
+                        {
+                            if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                            {
+                                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(18, 18));
+                                ImGui.SameLine(0, 4);
+                            }
+                        }
+                        ImGui.AlignTextToFramePadding();
+                        ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.RewardItemAmount}x tokens)");
+                    }
+                }
+                ImGui.EndTooltip();
+            }
+        }
+        private void WeatherForcastForTerritory(ushort territoryId, string moonAsset)
+        {
+            var weatherForecasts = WeatherForecastHandler.GetTerritoryForecast(territoryId);
 
             if (weatherForecasts.Count == 0) return;
 
+            var weatherMissions = C.Overlay_HighlightTokenWeather
+                ? GetExPlusTokenWeatherMissions(territoryId)
+                : new Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>>();
+
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(0);
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text("Weather");
+            DrawMoonAndIcon(moonAsset, FontAwesomeIcon.Cloud);
 
             // Current weather column
             ImGui.TableNextColumn();
             if (weatherForecasts.Count > 0)
             {
-                var current = weatherForecasts[0];
-                if (Svc.Texture.TryGetFromGameIcon(current.IconId, out var weatherIcon))
-                {
-                    ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
-
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.BeginTooltip();
-                        ImGui.Text($"{current.Name}");
-                        ImGui.EndTooltip();
-                    }
-                }
+                DrawWeatherIcon(weatherForecasts[0], weatherMissions);
             }
 
             // Next weather column - show next 4 weathers
@@ -128,43 +347,34 @@ namespace ICE.Ui
                 if (i > 1)
                     ImGui.SameLine(0, 2);
 
-                var weather = weatherForecasts[i];
-                if (Svc.Texture.TryGetFromGameIcon(weather.IconId, out var weatherIcon))
-                {
-                    ImGui.Image(weatherIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
-
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.BeginTooltip();
-                        ImGui.Text($"{weather.Name}");
-                        ImGui.Text($"In: {weather.TimeUntil}");
-                        ImGui.EndTooltip();
-                    }
-                }
+                DrawWeatherIcon(weatherForecasts[i], weatherMissions, $"In: {WeatherForecastHandler.FormatForecastTime(weatherForecasts[i].Time)}");
             }
         }
-        private unsafe void TimedMissionDetails()
+        private unsafe void TimedMissionDetailsForTerritory(uint territoryId, string moonAsset)
         {
             var eorzeaTime = DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime);
             int currentHour = eorzeaTime.Hour;
             int nextHour = (currentHour + 1) % 24;
 
+            var jobFilter = C.Overlay_FilterByJob ? (uint?)Player.Job : null;
+
             var currentHourMissions = SheetMissionDict
                 .Where(kvp => IsAvailableAtHour(kvp.Value, currentHour))
-                .Where(kvp => kvp.Value.TerritoryId == Player.Territory.RowId)
+                .Where(kvp => kvp.Value.TerritoryId == territoryId)
+                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Contains(jobFilter.Value))
                 .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
                 .ToList();
 
             var nextHourMissions = SheetMissionDict
                 .Where(kvp => IsAvailableAtHour(kvp.Value, nextHour))
-                .Where(kvp => kvp.Value.TerritoryId == Player.Territory.RowId)
+                .Where(kvp => kvp.Value.TerritoryId == territoryId)
+                .Where(kvp => jobFilter == null || kvp.Value.Jobs.Contains(jobFilter.Value))
                 .OrderBy(kvp => kvp.Value.Jobs.FirstOrDefault())
                 .ToList();
 
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(0);
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text("Timed");
+            DrawMoonAndIcon(moonAsset, FontAwesomeIcon.Clock);
 
             ImGui.TableNextColumn();
             for (int i = 0; i < currentHourMissions.Count; i++)
@@ -183,6 +393,8 @@ namespace ICE.Ui
                         ImGui.Text($"[{mission.Key}]");
                         ImGui.SameLine(0, 2);
                         ImGui.Text($"{mission.Value.Name}");
+                        var expires = EorzeaHoursUntil(eorzeaTime, (int)mission.Value.EndTime);
+                        ImGui.Text($"Expires in {FormatRealTime(expires)}");
                         ImGui.EndTooltip();
                     }
                 }
@@ -205,10 +417,57 @@ namespace ICE.Ui
                         ImGui.Text($"[{mission.Key}]");
                         ImGui.SameLine(0, 2);
                         ImGui.Text($"{mission.Value.Name}");
+                        var startsIn = EorzeaHoursUntil(eorzeaTime, (int)mission.Value.StartTime);
+                        ImGui.Text($"Starts in {FormatRealTime(startsIn)}");
                         ImGui.EndTooltip();
                     }
                 }
             }
+        }
+        private static readonly (uint TerritoryId, string Asset, string Name, Func<bool> IsEnabled)[] Planets = new[]
+        {
+            ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", "Sinus Ardorum", new Func<bool>(() => C.ShowSinusMissions)),
+            ((uint)1291, "ICE.Resources.Phaenna.png", "Phaenna", new Func<bool>(() => C.ShowPhaennaMissions)),
+            ((uint)1310, "ICE.Resources.Oizys.png", "Oizys", new Func<bool>(() => C.ShowOizysMissions)),
+        };
+        private void DrawMoonAndIcon(string moonAsset, FontAwesomeIcon icon)
+        {
+            var moonTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moonAsset).GetWrapOrEmpty();
+            ImGui.Image(moonTexture.Handle, new Vector2(23, 23));
+            var moonName = Planets.FirstOrDefault(p => p.Asset == moonAsset).Name;
+            if (ImGui.IsItemHovered() && moonName != null)
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(moonName);
+                ImGui.EndTooltip();
+            }
+            ImGui.TableNextColumn();
+            ImGui.AlignTextToFramePadding();
+            ImGui.PushFont(UiBuilder.IconFont);
+            ImGui.Text(icon.ToIconString());
+            ImGui.PopFont();
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text(icon == FontAwesomeIcon.Cloud ? "Weather" : "Timed");
+                ImGui.EndTooltip();
+            }
+        }
+        private static double EorzeaHoursUntil(DateTimeOffset eorzeaTime, int targetHour)
+        {
+            double currentFractional = eorzeaTime.Hour + eorzeaTime.Minute / 60.0 + eorzeaTime.Second / 3600.0;
+            double hoursUntil = targetHour - currentFractional;
+            if (hoursUntil <= 0)
+                hoursUntil += 24;
+            return hoursUntil;
+        }
+        private static string FormatRealTime(double eorzeaHours)
+        {
+            // 1 Eorzea hour = 175 real seconds
+            int totalSeconds = (int)(eorzeaHours * 175);
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            return minutes > 0 ? $"{minutes}m {seconds:D2}s" : $"{seconds}s";
         }
         private bool IsAvailableAtHour(CosmicInfo mission, int hour)
         {
@@ -222,46 +481,6 @@ namespace ICE.Ui
             {
                 return hour >= mission.StartTime || hour < mission.EndTime;
             }
-        }
-        private void HomeButtons()
-        {
-            if (ImGuiEx.IconButton(FontAwesomeIcon.Home, "Open ICE"))
-            {
-                P.mainWindow.IsOpen = true;
-            }
-            ImGui.SameLine();
-
-            // Start button (disabled while already ticking).
-            bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
-            bool unsupportedArtisan = xpLeveling && !P.Artisan.UpdatedArtisan() && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
-            bool unsupportedClass = !PlayerHelper.UsingSupportedJob();
-
-            bool unsupported = SchedulerMain.State != IceState.Idle || !PlayerHelper.UsingSupportedJob() || unsupportedArtisan;
-
-            using (ImRaii.Disabled(unsupported))
-            {
-                var defaultButtonColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Button];
-                var color = unsupported ? EColor.Red : defaultButtonColor;
-
-                using var tempButton = ImRaii.PushColor(ImGuiCol.Button, color);
-                if (ImGui.Button("Start"))
-                {
-                    SchedulerMain.EnablePlugin();
-                }
-            }
-
-            ImGui.SameLine();
-
-            // Stop button (disabled while not ticking).
-            using (ImRaii.Disabled(SchedulerMain.State == IceState.Idle))
-            {
-                if (ImGui.Button("Stop"))
-                {
-                    SchedulerMain.DisablePlugin();
-                }
-            }
-            ImGui.SameLine();
-            ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
         }
         private void ClassExpDetails()
         {
@@ -347,14 +566,36 @@ namespace ICE.Ui
         }
         private void ClassRelicDetails()
         {
-            if (C.ShowExpBars)
+            if (!C.ShowExpBars) return;
+
+            if (C.ShowExpBars_HideWhenMaxed)
+            {
+                var expInfo = CosmicHelper.Cosmic_ClassInfo();
+                var currentJobId = (uint)Player.Job;
+                if (expInfo.TryGetValue(currentJobId, out var jobInfo)
+                    && jobInfo.CurrentExp.Count > 0
+                    && jobInfo.CurrentExp.Values.All(exp => exp.Current >= exp.Needed))
+                {
+                    return;
+                }
+            }
+
             {
                 var currentJobId = (uint)Player.Job;
-                if (ImGui.CollapsingHeader("Relic Tool XP"))
+                var flags = C.Overlay_RelicXpExpanded ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None;
+                var open = ImGui.CollapsingHeader("Relic Tool XP", flags);
+                if (open != C.Overlay_RelicXpExpanded)
+                {
+                    C.Overlay_RelicXpExpanded = open;
+                    C.Save();
+                }
+                if (open)
                 {
                     ImGui_Ice.Draw_ExpTable(currentJobId);
                 }
             }
         }
+
+
     }
 }

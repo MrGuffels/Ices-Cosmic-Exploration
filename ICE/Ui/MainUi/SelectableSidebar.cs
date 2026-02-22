@@ -37,34 +37,25 @@ namespace ICE.Ui.MainUi
                     // ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Trophy, "Complete Overview", "modeSelect_Completion");
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.ClipboardList, "Cosmic Agenda", "modeSelect_CosmicAgenda");
                 }
-                if (ImGui_Ice.Sidebar_CollaspableHeader("Settings", icon: FontAwesomeIcon.Cog))
-                {
-                    if (C.Show_StopWhen)
-                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Stop, "Stop When...", "setting_StopWhen");
-                    if (C.Show_GatheringProfile)
-                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Leaf, "Gathering Profile", "setting_GatheringProfile");
-                    if (C.Show_MissionPriority)
-                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.SortAmountUp, "Mission Priority", "setting_MissionPriority");
-                    if (C.Show_MiscSettings)
-                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.UserCog, "Misc Settings", "setting_Misc");
-
-                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Cog, "All Settings", "helpSelect_AllSettings");
-                }
-                if (C.Show_HubActivities)
-                {
-                    if (ImGui_Ice.Sidebar_CollaspableHeader("Hub Activities", icon: FontAwesomeIcon.Home))
-                    {
-                        ImGui_Ice.DrawSelectable_Image(65112, "Credit Shopping", "hubActivities_CreditShopping");
-                        ImGui_Ice.DrawSelectable_Image(65127, "Gambling Settings", "hubActivites_GambaSetting");
-                        ImGui_Ice.DrawSelectable_Image(65138, "Dronebit Settings", "hubActivies_DroneSetting");
-                    }
-                }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Planet Selection", FontAwesomeIcon.Moon))
                 {
-                    if (ImGui_Ice.SliderButton("AutoSelectMoon", "Auto Select Moon", ref autoSelectMoon))
+                    if (ImGui_Ice.SliderButton("AutoSelectMoon", "Auto Select", ref autoSelectMoon))
                     {
                         C.AutoSelectMoon = autoSelectMoon;
                         C.Save();
+                    }
+                    ImGui.PushFont(UiBuilder.IconFont);
+                    var infoIconWidth = ImGui.CalcTextSize(FontAwesomeIcon.InfoCircle.ToIconString()).X;
+                    ImGui.PopFont();
+                    ImGui.SameLine(ImGui.GetContentRegionAvail().X + ImGui.GetCursorPosX() - infoIconWidth);
+                    ImGui.PushFont(UiBuilder.IconFont);
+                    ImGui.TextDisabled(FontAwesomeIcon.InfoCircle.ToIconString());
+                    ImGui.PopFont();
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text("Filters which planets appear in the\nmission list and the overlay.");
+                        ImGui.EndTooltip();
                     }
                     ImGui.Dummy(new(0, 3));
 
@@ -102,7 +93,28 @@ namespace ICE.Ui.MainUi
                         }
                     }
                 }
+                if (ImGui_Ice.Sidebar_CollaspableHeader("Settings", icon: FontAwesomeIcon.Cog))
+                {
+                    if (C.Show_StopWhen)
+                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Stop, "Stop When...", "setting_StopWhen");
+                    if (C.Show_GatheringProfile)
+                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Leaf, "Gathering Profile", "setting_GatheringProfile");
+                    if (C.Show_MissionPriority)
+                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.SortAmountUp, "Mission Priority", "setting_MissionPriority");
+                    if (C.Show_MiscSettings)
+                        ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.UserCog, "Misc Settings", "setting_Misc");
 
+                    ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Cog, "All Settings", "helpSelect_AllSettings");
+                }
+                if (C.Show_HubActivities)
+                {
+                    if (ImGui_Ice.Sidebar_CollaspableHeader("Hub Activities", icon: FontAwesomeIcon.Home))
+                    {
+                        ImGui_Ice.DrawSelectable_Image(65112, "Credit Shopping", "hubActivities_CreditShopping");
+                        ImGui_Ice.DrawSelectable_Image(65127, "Gambling Settings", "hubActivites_GambaSetting");
+                        ImGui_Ice.DrawSelectable_Image(65138, "Dronebit Settings", "hubActivies_DroneSetting");
+                    }
+                }
                 var currentClass = C.SelectedJob;
                 var classIcon = ImGui_Ice.GetGreyscaleJob(currentClass);
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Select Class", imageTexture: classIcon))
@@ -193,7 +205,7 @@ namespace ICE.Ui.MainUi
                 ImGui.Dummy(new Vector2(0, 10));
             }
         }
-        private static void AutoSelectMoonUpdate(bool autoSelectMoon)
+        public static void AutoSelectMoonUpdate(bool autoSelectMoon)
         {
             bool NeedsUpdate(bool sinus, bool phaenna, bool oizys)
             {
@@ -220,7 +232,7 @@ namespace ICE.Ui.MainUi
                     SetMoonVisibility(sinus: false, phaenna: false, oizys: true);
             }
         }
-        private static void AutoSelectClass(bool autoSelectClass)
+        public static void AutoSelectClass(bool autoSelectClass)
         {
             var jobId = (uint)Player.Job;
 

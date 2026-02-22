@@ -11,9 +11,10 @@ namespace ICE.Scheduler.Tasks
     internal class Task_NavmeshMove
     {
         // Constants
+        private static readonly Random _random = new();
         private const float navmeshTolerance = 0.25f;
         private const float distanceToBeStuck = 1.0f;
-        private const int stuckTimeThresholdMs = 1000;
+        private static int stuckTimeThresholdMs => C.StuckDelayMs;
         private const int navmeshThrottleMs = 3000;
         private const int waitingThrottleMs = 1000;
         private const int positionLogThrottleMs = 500;
@@ -171,7 +172,25 @@ namespace ICE.Scheduler.Tasks
                 ResetInfo();
                 IceLogging.DestinationLogs.Log(pos);
                 P.Navmesh.SetTolerance(navmeshTolerance);
-                P.Navmesh.PathfindAndMoveTo(pos, false);
+
+                var targetPos = pos;
+                if (C.RandomizeWaypoints)
+                {
+                    var playerPos = Player.Position;
+                    var toTarget = pos - playerPos;
+                    var toTargetLen = new Vector2(toTarget.X, toTarget.Z).Length();
+                    if (toTargetLen > 0.1f)
+                    {
+                        float radius = C.RandomizeWaypointsRadius;
+                        float angle = (float)(_random.NextDouble() * 2 * Math.PI);
+                        float dist = (float)(Math.Pow(_random.NextDouble(), 0.33) * radius);
+                        targetPos = new Vector3(pos.X + dist * MathF.Cos(angle), pos.Y, pos.Z + dist * MathF.Sin(angle));
+
+                        SetRandomizationDebug(pos, targetPos, 0, radius);
+                    }
+                }
+
+                P.Navmesh.PathfindAndMoveTo(targetPos, false);
             }
 
             return false;
@@ -224,10 +243,18 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Verbose($"Current Pos: {currentPos:N2} | Last position: {lastPosition:N2} | Distance: {distanceMoved:N2}");
             }
 
-            // If stuck for long enough, try jumping
+            // If stuck for long enough, try unstuck actions
             if (timeSinceLastChecked >= stuckTimeThresholdMs && navmeshStartTime >= stuckTimeThresholdMs)
             {
-                if (EzThrottler.Throttle("Using jump action"))
+                if (C.RetargetIfStuck && EzThrottler.Throttle("Retarget if stuck", 1000))
+                {
+                    IceLogging.Debug("Stuck detected - stopping navmesh to trigger retarget");
+                    P.Navmesh.Stop();
+                    ResetInfo();
+                    return;
+                }
+
+                if (C.JumpIfStuck && EzThrottler.Throttle("Using jump action"))
                 {
                     isJumpInProgress = true;
                     ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
@@ -304,8 +331,8 @@ namespace ICE.Scheduler.Tasks
                 {
                     MapSelector = 0,
                     AethernetId = 2015057,
-                    Location = new(336.15f, 52.64f, -381.78f),
-                    LandZone = new(337.29f, 52.64f, -382.62f),
+                    Location = new(336.26f, 52.64f, -381.73f),
+                    LandZone = new(337.50f, 52.64f, -383.00f),
                 },
                 new()
                 {
@@ -814,6 +841,38 @@ namespace ICE.Scheduler.Tasks
         private static async Task<List<Vector3>> FindPath(Vector3 position, Vector3 destination)
         {
             return await P.Navmesh.Pathfind(position, destination, false);
+        }
+
+        // Randomization debug visualization - stored so it can be drawn every frame
+        private static (Vector3 Original, Vector3 Randomized, float BackAngle, float Radius)? _randomDebug;
+
+        private static void SetRandomizationDebug(Vector3 originalPos, Vector3 randomizedPos, float backAngle, float radius)
+        {
+            _randomDebug = (originalPos, randomizedPos, backAngle, radius);
+        }
+
+        public static void ClearRandomizationDebug()
+        {
+            _randomDebug = null;
+        }
+
+        public static void DrawRandomizationDebug()
+        {
+            if (_randomDebug is not { } dbg) return;
+
+            uint circleColor = 0x4000FF00;    // green, 25% alpha
+            uint originalColor = 0xFFFFFFFF;  // white
+            uint randomizedColor = 0xFF00FF00; // green
+
+            // Draw circle showing the valid randomization zone
+            Handlers.PictoManager.AddDrawCommand(d => d.AddCircleFilled(dbg.Original, dbg.Radius, circleColor, circleColor));
+
+            // Draw original target (white circle)
+            Handlers.PictoManager.AddDrawCommand(d => d.AddCircleFilled(dbg.Original, 0.15f, originalColor, originalColor));
+            // Draw randomized target (green circle)
+            Handlers.PictoManager.AddDrawCommand(d => d.AddCircleFilled(dbg.Randomized, 0.15f, randomizedColor, randomizedColor));
+            // Line between them
+            Handlers.PictoManager.AddDrawCommand(d => d.AddLine(dbg.Original, dbg.Randomized, 0.01f, randomizedColor));
         }
     }
 }

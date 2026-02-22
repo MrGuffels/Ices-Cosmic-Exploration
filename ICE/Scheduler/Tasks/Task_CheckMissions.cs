@@ -675,6 +675,17 @@ namespace ICE.Scheduler.Tasks
         private static void Insert_GrabMissionTask(uint missionId)
         {
             P.TaskManager.Tasks.Clear();
+
+            // Extract materia between missions if spiritbond is ready and next mission is not EX+
+            if (C.SelfSpiritbondGather && Task_Spiritbond.IsSpiritbondReadyAny())
+            {
+                if (CosmicHelper.SheetMissionDict.TryGetValue(missionId, out var nextMission) && nextMission.Rank < 6)
+                {
+                    IceLogging.Info($"Next mission rank {nextMission.Rank} is below EX+, extracting materia first");
+                    P.TaskManager.Enqueue(() => Task_Spiritbond.ExtractMateria(), "Extracting materia before next mission");
+                }
+            }
+
             P.TaskManager.EnqueueMulti
                 (
                     new(() => CheckForMovementRequired(missionId), "Checking to see if we need to move to mission"),

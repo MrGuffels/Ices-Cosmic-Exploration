@@ -40,7 +40,7 @@ namespace ICE.Scheduler
 
         internal static void Tick()
         {
-            if (!P.TaskManager.IsBusy && State != Idle)
+            if (P.TaskManager.NumQueuedTasks == 0 && State != Idle)
             {
                 switch (State)
                 {
