@@ -41,7 +41,10 @@ namespace ICE.Ui
                 : ImGuiWindowFlags.None;
 
             if (C.Overlay_AutoResize)
-                ImGui.SetNextWindowSizeConstraints(Vector2.Zero, new Vector2(float.MaxValue, float.MaxValue));
+            {
+                var minWidth = ImGui.CalcTextSize(new string('A', 30)).X + ImGui.GetStyle().WindowPadding.X * 2;
+                ImGui.SetNextWindowSizeConstraints(new Vector2(minWidth, 0), new Vector2(float.MaxValue, float.MaxValue));
+            }
         }
 
         public override void Draw()
@@ -176,7 +179,10 @@ namespace ICE.Ui
             ImGui.SameLine();
             if (CosmicHelper.SheetMissionDict.TryGetValue(CosmicHelper.CurrentLunarMission, out var missionName) && SchedulerMain.State != IceState.AbandonMission)
             {
-                ImGui.TextWrapped($"[{CosmicHelper.CurrentLunarMission}] {missionName.Name}");
+                var missionText = $"[{CosmicHelper.CurrentLunarMission}] {missionName.Name}";
+                if (missionText.Length > 35)
+                    missionText = missionText[..32] + "...";
+                ImGui.Text(missionText);
             }
             else
             {
@@ -426,7 +432,8 @@ namespace ICE.Ui
                 P.mainWindow.IsOpen = true;
             }
 
-            // Drone finder toggle
+            // Drone finder toggle (only on Oizys)
+            if (!PlayerHelper.IsInOizys()) return;
             ImGui.SameLine();
             bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
             if (droneActive)
