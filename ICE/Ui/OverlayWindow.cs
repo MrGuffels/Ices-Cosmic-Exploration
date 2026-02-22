@@ -114,7 +114,8 @@ namespace ICE.Ui
         }
         private void MissionDetails()
         {
-            if (ImGuiEx.IconButton(FontAwesomeIcon.Cogs, "##OpenICE"))
+            var settingsIcon = C.Overlay_UseCogsIcon ? FontAwesomeIcon.Cogs : FontAwesomeIcon.Home;
+            if (ImGuiEx.IconButton(settingsIcon, "##OpenICE"))
             {
                 P.mainWindow.IsOpen = true;
             }
@@ -557,7 +558,14 @@ namespace ICE.Ui
 
             {
                 var currentJobId = (uint)Player.Job;
-                if (ImGui.CollapsingHeader("Relic Tool XP"))
+                var flags = C.Overlay_RelicXpExpanded ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None;
+                var open = ImGui.CollapsingHeader("Relic Tool XP", flags);
+                if (open != C.Overlay_RelicXpExpanded)
+                {
+                    C.Overlay_RelicXpExpanded = open;
+                    C.Save();
+                }
+                if (open)
                 {
                     ImGui_Ice.Draw_ExpTable(currentJobId);
                 }

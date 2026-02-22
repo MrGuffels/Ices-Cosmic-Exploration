@@ -70,6 +70,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.ShowOverlay = showOverlay;
                 C.Save();
             }
+            ImGui.SameLine();
+            bool useCogsIcon = C.Overlay_UseCogsIcon;
+            if (ImGui.Checkbox("Use cogs button instead of home", ref useCogsIcon))
+            {
+                C.Overlay_UseCogsIcon = useCogsIcon;
+                C.Save();
+            }
 
             bool ShowSeconds = C.ShowSeconds;
             if (ImGui.Checkbox("Show Seconds", ref ShowSeconds))
@@ -101,7 +108,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.ShowCurrentScore = showClassScore;
                 C.Save();
             }
-
+            ImGui.SameLine();
             bool showTotalScore = C.ShowTotalScore;
             if (ImGui.Checkbox("Show Total Score", ref showTotalScore))
             {
