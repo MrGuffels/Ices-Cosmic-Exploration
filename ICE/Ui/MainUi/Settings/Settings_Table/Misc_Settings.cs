@@ -404,10 +404,16 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             {
                 float radius = C.RandomizeWaypointsRadius;
                 ImGui.SetNextItemWidth(100);
-                if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 5.0f, "%.1f"))
+                if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 1.0f, "%.1f"))
                 {
                     C.RandomizeWaypointsRadius = radius;
                     C.SaveDebounced();
+                }
+                bool showDebug = C.RandomizeWaypointsDebug;
+                if (ImGui.Checkbox("Show random location debug target", ref showDebug))
+                {
+                    C.RandomizeWaypointsDebug = showDebug;
+                    C.Save();
                 }
             }
 

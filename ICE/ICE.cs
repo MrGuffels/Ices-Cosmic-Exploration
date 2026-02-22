@@ -144,7 +144,11 @@ public sealed partial class ICE : IDalamudPlugin
     private void OnDraw()
     {
         if (PlayerHelper.IsInCosmicZone())
+        {
+            if (C.RandomizeWaypointsDebug)
+                Task_NavmeshMove.DrawRandomizationDebug();
             PictoManager.DrawPicto();
+        }
     }
 
     public void Dispose()

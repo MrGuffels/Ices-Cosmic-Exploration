@@ -22,6 +22,7 @@ public partial class Config
     public bool ClosestNodeSelection { get; set; } = false;
     public bool RandomizeWaypoints { get; set; } = false;
     public float RandomizeWaypointsRadius { get; set; } = 1.5f;
+    public bool RandomizeWaypointsDebug { get; set; } = false;
     public Dictionary<uint, Vector3> CrafterLocations { get; set; } = new();
     public List<MissionCommand> PostMissionCommands { get; set; } = new();
 
