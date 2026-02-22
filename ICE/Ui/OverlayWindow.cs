@@ -5,6 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ICE.Ui.MainUi;
+using ICE.Ui.MainUi.Settings.Settings_Table;
 using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
@@ -22,6 +23,14 @@ namespace ICE.Ui
             Flags = ImGuiWindowFlags.None;
      
             P.windowSystem.AddWindow(this);
+            TitleBarButtons.Add(
+                new()
+                {
+                    ShowTooltip = () => ImGui.SetTooltip("Overlay Settings"),
+                    Icon = FontAwesomeIcon.Cog,
+                    IconOffset = new(1, 1),
+                    Click = _ => ImGui.OpenPopup("OverlaySettingsPopup")
+                });
         }
 
         public void Dispose()
@@ -50,6 +59,12 @@ namespace ICE.Ui
 
         public override void Draw()
         {
+            if (ImGui.BeginPopup("OverlaySettingsPopup"))
+            {
+                Misc_Settings.OverlaySettings();
+                ImGui.EndPopup();
+            }
+
             SelectableSidebar.AutoSelectClass(C.AutoPickCurrentJob);
             SelectableSidebar.AutoSelectMoonUpdate(C.AutoSelectMoon);
 
@@ -580,5 +595,7 @@ namespace ICE.Ui
                 }
             }
         }
+
+
     }
 }

@@ -59,7 +59,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             Separator();
         }
 
-        private static void OverlaySettings()
+        public static void OverlaySettings()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.WindowMaximize, "Overlay Window");
             ImGui.Dummy(new (0, 5));
