@@ -120,7 +120,11 @@ namespace ICE.Ui
         private void MissionDetails()
         {
             var settingsIcon = C.Overlay_UseCogsIcon ? FontAwesomeIcon.Cogs : FontAwesomeIcon.Home;
-            if (ImGuiEx.IconButton(settingsIcon, "##OpenICE"))
+            ImGui.PushFont(UiBuilder.IconFont);
+            var iconWidth = ImGui.CalcTextSize(FontAwesomeIcon.Cogs.ToIconString()).X;
+            ImGui.PopFont();
+            var buttonSize = new Vector2(iconWidth + ImGui.GetStyle().FramePadding.X * 2, 0);
+            if (ImGuiEx.IconButton(settingsIcon, "##OpenICE", buttonSize))
             {
                 P.mainWindow.IsOpen = true;
             }
@@ -131,7 +135,7 @@ namespace ICE.Ui
                 ImGui.EndTooltip();
             }
             ImGui.SameLine();
-            if (ImGuiEx.IconButton(FontAwesomeIcon.ListUl, "##OverlayModeSelect"))
+            if (ImGuiEx.IconButton(FontAwesomeIcon.ListUl, "##OverlayModeSelect", buttonSize))
             {
                 ImGui.OpenPopup("Overlay Mode Select");
             }
@@ -148,7 +152,7 @@ namespace ICE.Ui
                 bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
                 if (droneActive)
                     ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
-                if (ImGuiEx.IconButton(FontAwesomeIcon.SearchLocation, "##DroneFinder"))
+                if (ImGuiEx.IconButton(FontAwesomeIcon.SearchLocation, "##DroneFinder", buttonSize))
                 {
                     if (droneActive)
                         SchedulerMain.DisablePlugin();
@@ -180,7 +184,7 @@ namespace ICE.Ui
             bool running = SchedulerMain.State != IceState.Idle;
             if (running)
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1.0f));
-            if (ImGuiEx.IconButton(running ? FontAwesomeIcon.Stop : FontAwesomeIcon.Play, "##StartStop"))
+            if (ImGuiEx.IconButton(running ? FontAwesomeIcon.Stop : FontAwesomeIcon.Play, "##StartStop", buttonSize))
             {
                 if (running)
                     SchedulerMain.DisablePlugin();
@@ -201,7 +205,7 @@ namespace ICE.Ui
             bool stopAfter = Mission_Settings.StopAfterCurrent;
             if (stopAfter)
                 ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.8f, 0.5f, 0.0f, 1.0f));
-            if (ImGuiEx.IconButton(FontAwesomeIcon.StepForward, "##StopAfterCurrent"))
+            if (ImGuiEx.IconButton(FontAwesomeIcon.StepForward, "##StopAfterCurrent", buttonSize))
             {
                 Mission_Settings.StopAfterCurrent = !Mission_Settings.StopAfterCurrent;
             }
