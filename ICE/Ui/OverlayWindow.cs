@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using ICE.Ui.MainUi;
 using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
@@ -49,11 +50,15 @@ namespace ICE.Ui
 
         public override void Draw()
         {
+            SelectableSidebar.AutoSelectClass(C.AutoPickCurrentJob);
+            SelectableSidebar.AutoSelectMoonUpdate(C.AutoSelectMoon);
+
             MissionDetails();
 
-            if (ImGui.BeginTable("Weather/Time Info", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+            if (ImGui.BeginTable("Weather/Time Info", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
             {
-                ImGui.TableSetupColumn("");
+                ImGui.TableSetupColumn("##Planets");
+                ImGui.TableSetupColumn("##Icons");
                 ImGui.TableSetupColumn("Current");
                 ImGui.TableSetupColumn("Next");
 
@@ -417,7 +422,7 @@ namespace ICE.Ui
                 ImGui.Text(moonName);
                 ImGui.EndTooltip();
             }
-            ImGui.SameLine(0, 4);
+            ImGui.TableNextColumn();
             ImGui.AlignTextToFramePadding();
             ImGui.PushFont(UiBuilder.IconFont);
             ImGui.Text(icon.ToIconString());

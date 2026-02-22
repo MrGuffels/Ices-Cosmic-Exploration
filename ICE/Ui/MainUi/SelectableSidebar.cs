@@ -205,7 +205,7 @@ namespace ICE.Ui.MainUi
                 ImGui.Dummy(new Vector2(0, 10));
             }
         }
-        private static void AutoSelectMoonUpdate(bool autoSelectMoon)
+        public static void AutoSelectMoonUpdate(bool autoSelectMoon)
         {
             bool NeedsUpdate(bool sinus, bool phaenna, bool oizys)
             {
@@ -232,7 +232,7 @@ namespace ICE.Ui.MainUi
                     SetMoonVisibility(sinus: false, phaenna: false, oizys: true);
             }
         }
-        private static void AutoSelectClass(bool autoSelectClass)
+        public static void AutoSelectClass(bool autoSelectClass)
         {
             var jobId = (uint)Player.Job;
 
