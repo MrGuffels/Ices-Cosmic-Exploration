@@ -14,7 +14,7 @@ namespace ICE.Scheduler.Tasks
         private static readonly Random _random = new();
         private const float navmeshTolerance = 0.25f;
         private const float distanceToBeStuck = 1.0f;
-        private const int stuckTimeThresholdMs = 1000;
+        private static int stuckTimeThresholdMs => C.StuckDelayMs;
         private const int navmeshThrottleMs = 3000;
         private const int waitingThrottleMs = 1000;
         private const int positionLogThrottleMs = 500;
@@ -243,10 +243,18 @@ namespace ICE.Scheduler.Tasks
                 IceLogging.Verbose($"Current Pos: {currentPos:N2} | Last position: {lastPosition:N2} | Distance: {distanceMoved:N2}");
             }
 
-            // If stuck for long enough, try jumping
-            if (C.JumpIfStuck && timeSinceLastChecked >= stuckTimeThresholdMs && navmeshStartTime >= stuckTimeThresholdMs)
+            // If stuck for long enough, try unstuck actions
+            if (timeSinceLastChecked >= stuckTimeThresholdMs && navmeshStartTime >= stuckTimeThresholdMs)
             {
-                if (EzThrottler.Throttle("Using jump action"))
+                if (C.RetargetIfStuck && EzThrottler.Throttle("Retarget if stuck", 1000))
+                {
+                    IceLogging.Debug("Stuck detected - stopping navmesh to trigger retarget");
+                    P.Navmesh.Stop();
+                    ResetInfo();
+                    return;
+                }
+
+                if (C.JumpIfStuck && EzThrottler.Throttle("Using jump action"))
                 {
                     isJumpInProgress = true;
                     ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
