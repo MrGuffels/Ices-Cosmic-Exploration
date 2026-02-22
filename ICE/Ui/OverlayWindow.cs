@@ -56,23 +56,12 @@ namespace ICE.Ui
 
                 ImGui.TableHeadersRow();
 
-                if (C.Overlay_AllMoons)
+                foreach (var planet in Planets)
                 {
-                    WeatherForcastForTerritory(1291, "ICE.Resources.Phaenna.png");
-                    TimedMissionDetailsForTerritory(1291, "ICE.Resources.Phaenna.png");
-                    WeatherForcastForTerritory(1310, "ICE.Resources.Oizys.png");
-                    TimedMissionDetailsForTerritory(1310, "ICE.Resources.Oizys.png");
-                }
-                else
-                {
-                    var territory = Player.Territory.RowId;
-                    var moonAsset = territory == 1291 ? "ICE.Resources.Phaenna.png"
-                                  : territory == 1310 ? "ICE.Resources.Oizys.png"
-                                  : null;
-                    if (moonAsset != null)
+                    if (planet.IsEnabled())
                     {
-                        WeatherForcastForTerritory((ushort)territory, moonAsset);
-                        TimedMissionDetailsForTerritory((ushort)territory, moonAsset);
+                        WeatherForcastForTerritory((ushort)planet.TerritoryId, planet.Asset);
+                        TimedMissionDetailsForTerritory(planet.TerritoryId, planet.Asset);
                     }
                 }
 
@@ -372,16 +361,18 @@ namespace ICE.Ui
                 }
             }
         }
-        private static readonly Dictionary<string, string> MoonNames = new()
+        private static readonly (uint TerritoryId, string Asset, string Name, Func<bool> IsEnabled)[] Planets = new[]
         {
-            ["ICE.Resources.Phaenna.png"] = "Phaenna",
-            ["ICE.Resources.Oizys.png"] = "Oizys",
+            ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", "Sinus Ardorum", new Func<bool>(() => C.ShowSinusMissions)),
+            ((uint)1291, "ICE.Resources.Phaenna.png", "Phaenna", new Func<bool>(() => C.ShowPhaennaMissions)),
+            ((uint)1310, "ICE.Resources.Oizys.png", "Oizys", new Func<bool>(() => C.ShowOizysMissions)),
         };
         private void DrawMoonAndIcon(string moonAsset, FontAwesomeIcon icon)
         {
             var moonTexture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), moonAsset).GetWrapOrEmpty();
             ImGui.Image(moonTexture.Handle, new Vector2(23, 23));
-            if (ImGui.IsItemHovered() && MoonNames.TryGetValue(moonAsset, out var moonName))
+            var moonName = Planets.FirstOrDefault(p => p.Asset == moonAsset).Name;
+            if (ImGui.IsItemHovered() && moonName != null)
             {
                 ImGui.BeginTooltip();
                 ImGui.Text(moonName);

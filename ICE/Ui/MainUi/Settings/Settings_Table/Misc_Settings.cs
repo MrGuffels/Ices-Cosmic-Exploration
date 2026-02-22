@@ -116,12 +116,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
 
-            bool allMoons = C.Overlay_AllMoons;
-            if (ImGui.Checkbox("Show all moons in weather/timed table", ref allMoons))
-            {
-                C.Overlay_AllMoons = allMoons;
-                C.Save();
-            }
 
             bool highlightTokenWeather = C.Overlay_HighlightTokenWeather;
             if (ImGui.Checkbox("Highlight EX+ token weathers", ref highlightTokenWeather))
