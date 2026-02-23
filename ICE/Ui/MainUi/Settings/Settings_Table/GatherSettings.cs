@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
+using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Text;
@@ -663,11 +664,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
 
                     ImGui.SetNextItemWidth(200);
-                    if (ImGui.SliderInt("Minimum Node Durability for Usage", ref minUsableDurability, 0, 8))
+                    if (ImGui.SliderInt("Node Durability For Usage", ref minUsableDurability, 0, 8))
                     {
                         entry.GatherBuffs.Buffs[buffName].MinUsableDurability = minUsableDurability;
                         C.SaveDebounced();
                     }
+                    ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.InfoCircle,
+                        "What's the minimum durability a node can have before this action is activated?\n" +
+                        "Mainly used for missions where you can chain durability refresh");
 
                     ImGui.SetNextItemWidth(200);
                     if (ImGui.InputInt("Max Use", ref maxActionUsage))
@@ -716,11 +720,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
 
                     ImGui.SetNextItemWidth(200);
-                    if (ImGui.SliderInt("Minimum Node Durability for Usage", ref minUsableDurability, 0, 8))
+                    if (ImGui.SliderInt("Node Durability For Usage", ref minUsableDurability, 0, 8))
                     {
                         entry.GatherBuffs.Buffs[buffName].MinUsableDurability = minUsableDurability;
                         C.SaveDebounced();
                     }
+                    ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.InfoCircle,
+                        "What's the minimum durability a node can have before this action is activated?\n" +
+                        "Mainly used for missions where you can chain durability refresh");
 
                     ImGui.SetNextItemWidth(200);
                     if (ImGui.InputInt("Max Use", ref maxActionUsage))

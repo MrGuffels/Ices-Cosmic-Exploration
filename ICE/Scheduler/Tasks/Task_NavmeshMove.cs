@@ -562,6 +562,9 @@ namespace ICE.Scheduler.Tasks
             IceLogging.Info($"Direct Pathing Complete", tag);
             return true;
         }
+
+        private static float MinDistanceToHub = 75f;
+
         private static bool? CalculateHub(Vector3 destination)
         {
             string tag = "[Navmesh: Calculate Hub Path]";
@@ -569,49 +572,59 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 var method = TravelMethods["HubReturn"];
-                if (_PathCalculations == null)
+                if (Player.DistanceTo(HubCenter) > MinDistanceToHub)
                 {
-                    _PathCalculations = Task.Run(async () =>
+                    if (_PathCalculations == null)
                     {
-                        TravelMethods["HubReturn"].pathTo = await FindPath(HubCenter, destination);
-                    });
-                    if (EzThrottler.Throttle("Started task"))
-                        IceLogging.Verbose("Started to calculate path", tag);
-                    return false; // Keep checking
-                }
-
-                // Wait for completion
-                if (!_PathCalculations.IsCompleted)
-                {
-                    if (EzThrottler.Throttle("Calculating path message", 1000))
-                    {
-                        IceLogging.Verbose("Still calculating path that would be direct (via navmesh)", tag);
+                        _PathCalculations = Task.Run(async () =>
+                        {
+                            TravelMethods["HubReturn"].pathTo = await FindPath(HubCenter, destination);
+                        });
+                        if (EzThrottler.Throttle("Started task"))
+                            IceLogging.Verbose("Started to calculate path", tag);
+                        return false; // Keep checking
                     }
 
-                    return false; // Still calculating
-                }
+                    // Wait for completion
+                    if (!_PathCalculations.IsCompleted)
+                    {
+                        if (EzThrottler.Throttle("Calculating path message", 1000))
+                        {
+                            IceLogging.Verbose("Still calculating path that would be direct (via navmesh)", tag);
+                        }
 
-                // Done!
-                _PathCalculations = null; // Reset for next use
-                if (method.pathTo != null)
+                        return false; // Still calculating
+                    }
+
+                    // Done!
+                    _PathCalculations = null; // Reset for next use
+                    if (method.pathTo != null)
+                    {
+                        float distance = 0;
+
+                        for (int i = 0; i < method.pathTo.Count - 1; i++)
+                        {
+                            var start = method.pathTo[i];
+                            var end = method.pathTo[i + 1];
+
+                            distance += Vector3.Distance(start, end);
+                        }
+
+                        if (distance > 0)
+                        {
+                            method.distance = distance;
+                        }
+                    }
+                    IceLogging.Info("HubPath Calculations Complete", tag);
+                    return true;
+                }
+                else
                 {
-                    float distance = 0;
-
-                    for (int i = 0; i < method.pathTo.Count - 1; i++)
-                    {
-                        var start = method.pathTo[i];
-                        var end = method.pathTo[i + 1];
-
-                        distance += Vector3.Distance(start, end);
-                    }
-
-                    if (distance > 0)
-                    {
-                        method.distance = distance;
-                    }
+                    IceLogging.Info("We're within walking distance of the hub currently, so teleporting seems... reduntant to say the least. \n" +
+                        "Going to just in turn set this to 0");
+                    method.distance = 0;
+                    return true;
                 }
-                IceLogging.Info("HubPath Calculations Complete", tag);
-                return true;
             }
             else
             {
@@ -625,89 +638,97 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 var method = TravelMethods["HubAethernet"];
-
-                var territory = Player.Territory.RowId;
-                if (!PlanetAethernet.TryGetValue(territory, out var aetherList))
+                if (Player.DistanceTo(HubCenter) > MinDistanceToHub)
                 {
-                    IceLogging.Info("No valid aethernets, returning", tag);
-                    return true;
-                }
-
-                var closestAetheryte = aetherList.OrderBy(x => Vector3.Distance(HubCenter, x.Location)).FirstOrDefault();
-                var destinationAetheryte = aetherList.OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
-
-                if (closestAetheryte == null || destinationAetheryte == null)
-                {
-                    IceLogging.Info("Was not able to find a valid aetheryte for either going to or destination, continuing", tag);
-                    return true;
-                }
-
-                if (closestAetheryte.Location == destinationAetheryte.Location)
-                {
-                    IceLogging.Info("Both aetherytes were the same ID/Location, so we don't need to take one, continuing", tag);
-                    return true;
-                }
-
-                if (_PathCalculations == null)
-                {
-                    IceLogging.Verbose($"Hub Center: {HubCenter}\n" +
-                        $"Closest Aetheryte: {closestAetheryte.LandZone}\n" +
-                        $"Destination Aetheryte: {destinationAetheryte.LandZone}\n" +
-                        $"Destination: {destination}", tag);
-
-                    _PathCalculations = Task.Run(async () =>
+                    var territory = Player.Territory.RowId;
+                    if (!PlanetAethernet.TryGetValue(territory, out var aetherList))
                     {
-                        method.pathTo = await FindPath(HubCenter, closestAetheryte.LandZone);
-                        method.pathFrom = await FindPath(destinationAetheryte.LandZone, destination);
-                    });
-                    if (EzThrottler.Throttle("Started task: Direct"))
-                        IceLogging.Verbose("Started to calculate path", tag);
-                    return false; // Keep checking
-                }
-
-                // Wait for completion
-                if (!_PathCalculations.IsCompleted)
-                {
-                    if (EzThrottler.Throttle("Calculating path message", 1000))
-                    {
-                        IceLogging.Verbose("Still calculating path that would be direct (via navmesh)", tag);
+                        IceLogging.Info("No valid aethernets, returning", tag);
+                        return true;
                     }
 
-                    return false; // Still calculating
-                }
+                    var closestAetheryte = aetherList.OrderBy(x => Vector3.Distance(HubCenter, x.Location)).FirstOrDefault();
+                    var destinationAetheryte = aetherList.OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
 
-                // Done!
-                _PathCalculations = null; // Reset for next use
-                float distance = 0;
-                if (method.pathTo != null && method.pathTo.Count > 1)
-                {
-                    for (int i = 0; i < method.pathTo.Count - 1; i++)
+                    if (closestAetheryte == null || destinationAetheryte == null)
                     {
-                        var start = method.pathTo[i];
-                        var end = method.pathTo[i + 1];
-                        distance += Vector3.Distance(start, end);
+                        IceLogging.Info("Was not able to find a valid aetheryte for either going to or destination, continuing", tag);
+                        return true;
                     }
-                }
 
-                if (method.pathFrom != null && method.pathFrom.Count > 1)
-                {
-                    for (int i = 0; i < method.pathFrom.Count - 1; i++)
+                    if (closestAetheryte.Location == destinationAetheryte.Location)
                     {
-                        var start = method.pathFrom[i];
-                        var end = method.pathFrom[i + 1];
-                        distance += Vector3.Distance(start, end);
+                        IceLogging.Info("Both aetherytes were the same ID/Location, so we don't need to take one, continuing", tag);
+                        return true;
                     }
-                }
 
-                if (distance > 0 && method.pathTo != null && method.pathFrom != null)
+                    if (_PathCalculations == null)
+                    {
+                        IceLogging.Verbose($"Hub Center: {HubCenter}\n" +
+                            $"Closest Aetheryte: {closestAetheryte.LandZone}\n" +
+                            $"Destination Aetheryte: {destinationAetheryte.LandZone}\n" +
+                            $"Destination: {destination}", tag);
+
+                        _PathCalculations = Task.Run(async () =>
+                        {
+                            method.pathTo = await FindPath(HubCenter, closestAetheryte.LandZone);
+                            method.pathFrom = await FindPath(destinationAetheryte.LandZone, destination);
+                        });
+                        if (EzThrottler.Throttle("Started task: Direct"))
+                            IceLogging.Verbose("Started to calculate path", tag);
+                        return false; // Keep checking
+                    }
+
+                    // Wait for completion
+                    if (!_PathCalculations.IsCompleted)
+                    {
+                        if (EzThrottler.Throttle("Calculating path message", 1000))
+                        {
+                            IceLogging.Verbose("Still calculating path that would be direct (via navmesh)", tag);
+                        }
+
+                        return false; // Still calculating
+                    }
+
+                    // Done!
+                    _PathCalculations = null; // Reset for next use
+                    float distance = 0;
+                    if (method.pathTo != null && method.pathTo.Count > 1)
+                    {
+                        for (int i = 0; i < method.pathTo.Count - 1; i++)
+                        {
+                            var start = method.pathTo[i];
+                            var end = method.pathTo[i + 1];
+                            distance += Vector3.Distance(start, end);
+                        }
+                    }
+
+                    if (method.pathFrom != null && method.pathFrom.Count > 1)
+                    {
+                        for (int i = 0; i < method.pathFrom.Count - 1; i++)
+                        {
+                            var start = method.pathFrom[i];
+                            var end = method.pathFrom[i + 1];
+                            distance += Vector3.Distance(start, end);
+                        }
+                    }
+
+                    if (distance > 0 && method.pathTo != null && method.pathFrom != null)
+                    {
+                        method.distance = distance;
+                        method.Aethernet_TravelTo = closestAetheryte.AethernetId;
+                        method.Aethernet_TravelFrom = destinationAetheryte.AethernetId;
+                    }
+
+                    IceLogging.Info($"Hub -> Aethernet Complete", tag);
+                    return true;
+                }
+                else
                 {
-                    method.distance = distance;
-                    method.Aethernet_TravelTo = closestAetheryte.AethernetId;
-                    method.Aethernet_TravelFrom = destinationAetheryte.AethernetId;
+                    IceLogging.Info("Player distance to the hub center is more than 50, which seems reduntant to cast a hub return in there, so going to just set this to 0", tag);
+                    method.distance = 0;
+                    return true;
                 }
-
-                IceLogging.Info($"Hub -> Aethernet Complete", tag);
-                return true;
             }
             else
             {

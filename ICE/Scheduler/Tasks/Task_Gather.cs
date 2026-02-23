@@ -49,6 +49,8 @@ namespace ICE.Scheduler.Tasks
 
         public static bool? GatherInteractV2()
         {
+            string tag = "Gather: Gather Interacting";
+
             var missionInfo = CosmicHelper.CurrentMissionInfo;
             bool collectableItem = missionInfo.Attributes.HasFlag(MissionAttributes.Collectables);
             bool reduceItems = missionInfo.Attributes.HasFlag(MissionAttributes.ReducedItems);
@@ -136,6 +138,7 @@ namespace ICE.Scheduler.Tasks
                 }
                 else
                 {
+                    IceLogging.Verbose("Currently executing a gathering action, waiting patiently", tag);
                     return true;
                 }
             }
@@ -637,6 +640,7 @@ namespace ICE.Scheduler.Tasks
                                     && hasGp
                                     && PlayerHelper.GetGp() >= gatherBuff.MinGp
                                     && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)
+                                    && (maxDur >= gatherBuff.MinUsableDurability)
                                     && properLvl,
                 "BountifulYieldII" => gatherBuff.Enabled
                                    && !hasStatus
@@ -907,7 +911,6 @@ namespace ICE.Scheduler.Tasks
             Name = "Leveing Profile",
             Id = 99999,
             MinimumGp = 0,
-            DualClassCraftAmount = 0,
             GatherBuffs = new()
             {
                 BountifulMinItem = 1,

@@ -13,7 +13,6 @@ public partial class Config
     public bool PreventOvercap { get; set; } = false;
     public bool UseOnlyInMission { get; set; } = false;
     public int CordialMinRank { get; set; } = 0; // 0=all, 1=D+, 2=C+, 3=B+, 4=A+, 5=Ex+, 6=Ex+ only
-
     public int SelectedGatherIndex { get; set; } = 0;
     public bool UseGatheringFood { get; set; } = false;
     public uint GatheringFood { get; set; } = 0;
@@ -37,7 +36,6 @@ public partial class Config
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public int MinimumGp { get; set; } = -1;
-        public int DualClassCraftAmount { get; set; } = 1;
         public GatherBuffs GatherBuffs { get; set; } = new();
     }
 
@@ -67,6 +65,6 @@ public partial class Config
             ["FieldMasteryTemp"] = new() { MinGp = 50 },
         };
 
-        public int BountifulMinItem { get; set; } = 4;
+        public int BountifulMinItem = 4;
     }
 }

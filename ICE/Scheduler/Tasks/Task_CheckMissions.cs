@@ -38,6 +38,32 @@ namespace ICE.Scheduler.Tasks
                     new(() => CheckTabs(), "Checking tabs for valid missions")
                 );
         }
+        private static int GrabMission_Counter = 0;
+        private static bool? GrabMissionDelay()
+        {
+            if (C.DelayGrabMission)
+            {
+                if (EzThrottler.Throttle("Adding delay to grab mission", C.DelayIncrease))
+                {
+                    GrabMission_Counter += 1;
+                }
+
+                if (GrabMission_Counter > 1)
+                {
+                    GrabMission_Counter = 0;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                GrabMission_Counter = 0;
+                return true;
+            }
+        }
         private static void ReOpenMissionUi(string tag)
         {
             if (GenericHelpers.TryGetAddonMaster<WKSHud>("WKSHud", out var moonHud) && moonHud.IsAddonReady)
@@ -915,7 +941,10 @@ namespace ICE.Scheduler.Tasks
         private static unsafe void InitiateMission(uint missionId)
         {
             var WKSInstance = WKSManager.Instance();
-            WKSInstance->MissionModule->InitiateMission((ushort)missionId);
+            if (WKSInstance != null)
+            {
+                WKSInstance->MissionModule->InitiateMission((ushort)missionId);
+            }
         }
         private static bool? FindReroll()
         {
