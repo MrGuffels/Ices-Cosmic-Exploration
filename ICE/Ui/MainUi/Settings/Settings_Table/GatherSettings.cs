@@ -255,7 +255,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
                 if (ImGui.Button("Select Gathering Food"))
                 {
-                    foreach (var item in ConsumableInfo.Food)
+                    foreach (var item in ConsumableInfo.GatherFood)
                     {
                         if (PlayerHelper.GetItemCount(item.Id, out var count) && count > 0)
                             Foods[item.Id] = item.Name;

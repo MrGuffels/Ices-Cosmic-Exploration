@@ -1,5 +1,6 @@
 ﻿using ECommons.EzIpcManager;
 using ECommons.Reflection;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 
 namespace ICE.IPC
 {
@@ -18,8 +19,21 @@ namespace ICE.IPC
         [EzIPC] public Action<bool> SetStopRequest;
         [EzIPC] public Action<ushort, int> CraftItem;
         [EzIPC] public Action<ushort, uint, uint, uint, uint> AssignRecipie;
+
         [EzIPC] public Action<uint, string, bool> ChangeSolver;
         [EzIPC] public Action<uint> SetTempSolverBackToNormal;
+
+        [EzIPC] public Action<uint, uint, bool, bool> ChangeFood;
+        [EzIPC] public Action<uint> SetTempFoodBackToNormal;
+
+        [EzIPC] public Action<uint, uint, bool, bool> ChangePotion;
+        [EzIPC] public Action<uint> SetTempPotionBackToNormal;
+
+        [EzIPC] public Action<uint, uint, bool> ChangeManual;
+        [EzIPC] public Action<uint> SetTempManualBackToNormal;
+
+        [EzIPC] public Action<uint, uint, bool> ChangeSquadronManual;
+        [EzIPC] public Action<uint> SetTempSquadronManualBackToNormal;
 
         public void AssignArtisanRecipe(ushort recipeId, uint reqFood, uint reqPotion = 0, uint reqManual = 0, uint reqSquadronManual = 0)
         {

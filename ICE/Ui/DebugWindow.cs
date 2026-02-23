@@ -67,6 +67,8 @@ internal class DebugWindow : Window
         ["Table: Leveling Missions"] = () => Table_LevelingMissions.Draw(),
         ["Table: Mission Select"] = () => Table_MissionSelect.Draw(),
         ["Oizyr Map Stuff"] = () => Ui_OyzinMap.Draw(),
+
+        ["IPC: Artisan"] = () => Ipc_Artisan.Draw()
     };
 
     private string selectedDebugView = "Hud: Moon Main"; // Store the name instead of index

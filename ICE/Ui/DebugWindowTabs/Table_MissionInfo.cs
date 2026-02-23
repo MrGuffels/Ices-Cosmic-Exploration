@@ -562,47 +562,32 @@ namespace ICE.Ui.DebugWindowTabs
                     return;
                 }
 
-                // Ensure the path ends with .csv
                 if (!exportPath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                {
                     exportPath += ".csv";
-                }
 
-                // Create directory if it doesn't exist
                 var directory = Path.GetDirectoryName(exportPath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
                     Directory.CreateDirectory(directory);
-                }
 
                 var csv = new StringBuilder();
-
-                // Add header
                 csv.AppendLine("MissionID,Class,MissionName,Score");
 
-                // Add data rows
                 foreach (var mission in CosmicHelper.SheetMissionDict)
                 {
                     uint missionId = mission.Key;
                     var info = mission.Value;
 
-                    // Convert Jobs HashSet to abbreviation-separated string
                     string classes = info.Jobs != null && info.Jobs.Any()
                         ? string.Join(";", info.Jobs.Select(jobId =>
                             JobAbbreviations.TryGetValue(jobId, out var abbr) ? abbr : jobId.ToString()))
                         : "None";
 
-                    // Remove special characters AND escape CSV special chars
                     string missionName = EscapeCsvField(RemovePrivateUseChars(info.Name ?? ""));
 
-                    uint score = info.ClassScore;
-
-                    csv.AppendLine($"{missionId},{classes},{missionName},{score}");
+                    csv.AppendLine($"{missionId},{classes},{missionName},{info.ClassScore}");
                 }
 
-                // Write to file
                 File.WriteAllText(exportPath, csv.ToString(), Encoding.UTF8);
-
                 statusMessage = $"Success: Exported {CosmicHelper.SheetMissionDict.Count} missions to {exportPath}";
             }
             catch (Exception ex)

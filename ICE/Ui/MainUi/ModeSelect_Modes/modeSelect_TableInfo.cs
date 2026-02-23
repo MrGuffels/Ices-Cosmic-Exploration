@@ -1673,6 +1673,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     ImGui.TableNextRow();
                                     ImGui.TableSetColumnIndex(0);
                                     ImGui.Text($"{itemName}");
+#if DEBUG
+                                    if (ImGui.IsItemHovered())
+                                    {
+                                        ImGui.SetTooltip($"RecipeId: {recipe.RowId}");
+                                    }
+#endif
                                     if (recipe.IsExpert)
                                     {
                                         ImGui.SameLine();

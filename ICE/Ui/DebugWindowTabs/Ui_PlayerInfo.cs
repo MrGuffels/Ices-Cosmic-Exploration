@@ -72,7 +72,7 @@ namespace ICE.Ui.DebugWindowTabs
             }
 
             ImGui.Text($"Items on person: ");
-            foreach (var item in ConsumableInfo.Food)
+            foreach (var item in ConsumableInfo.GatherFood)
             {
                 if (PlayerHelper.GetItemCount(item.Id, out var count) && count > 0)
                     ImGui.Text($"{item.Name} | {item.Id}");
