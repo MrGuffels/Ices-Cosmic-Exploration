@@ -1,4 +1,4 @@
-﻿using Dalamud.Interface;
+using Dalamud.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,53 +74,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
                 }
             }
-            bool unstuckEnabled = C.JumpIfStuck_V2 || C.RetargetIfStuck;
-            if (ImGui.Checkbox("If stuck during nav movement:", ref unstuckEnabled))
-            {
-                if (unstuckEnabled)
-                    C.JumpIfStuck_V2 = true;
-                else
-                {
-                    C.JumpIfStuck_V2 = false;
-                    C.RetargetIfStuck = false;
-                }
-                C.Save();
-            }
-            ImGui.SameLine();
-            ImGuiEx.HelpMarker(
-                "When stuck during navmesh movement for the configured delay:\n" +
-                "- Jump: attempts to jump over the obstacle\n" +
-                "- Retarget: stops and re-pathfinds to the destination (re-randomizes if enabled)");
-            if (!unstuckEnabled) ImGui.BeginDisabled();
-            if (ImGui.RadioButton("Jump", C.JumpIfStuck_V2 && !C.RetargetIfStuck))
-            {
-                C.JumpIfStuck_V2 = true;
-                C.RetargetIfStuck = false;
-                C.Save();
-            }
-            ImGui.SameLine();
-            if (ImGui.RadioButton("Retarget", C.RetargetIfStuck))
-            {
-                C.RetargetIfStuck = true;
-                C.JumpIfStuck_V2 = false;
-                C.Save();
-            }
-            ImGui.SameLine();
-            ImGui.Text("after");
-            ImGui.SameLine();
-            int stuckDelay = C.StuckDelayMs;
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.SliderInt("ms stuck###StuckDelay", ref stuckDelay, 500, 3000))
-            {
-                if (C.StuckDelayMs != stuckDelay)
-                {
-                    C.StuckDelayMs = stuckDelay;
-                    C.SaveDebounced();
-                }
-            }
-            if (!unstuckEnabled) ImGui.EndDisabled();
-            ImGui.Dummy(Vector2.Zero);
-
             int delayRelic = C.DelayPostRelic;
             ImGui.SetNextItemWidth(150);
             if (ImGui.SliderInt("Delay Post Relic Turnin", ref delayRelic, 0, 5000))

@@ -761,6 +761,7 @@ namespace ICE.Scheduler.Tasks
         private static bool? FindBestTravel(Vector3 destination, bool waitForBusy, float distance)
         {
             var bestTravel = TravelMethods.Where(x => x.Value.distance != 0)
+                .Where(x => !C.AvoidStellarReturn || x.Key != "HubReturn")
                 .OrderBy(x => x.Value.distance)
                 .FirstOrDefault();
 

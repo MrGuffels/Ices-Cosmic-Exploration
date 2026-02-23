@@ -52,13 +52,6 @@ public static class Settings_TableColumns
                            "If you just want to focus one specific class, set this to false\n" +
                            "Do note: this replaced provisional grinding, due to just being built into the standard mode now (finally)");
 
-        bool showExtraInfo = C.ShowExtraMissionInfo;
-        if (ImGui.Checkbox("Show Extra Mission Info Side-Window", ref showExtraInfo))
-        {
-            C.ShowExtraMissionInfo = showExtraInfo;
-            C.Save();
-        }
-
         bool autoShowToken = C.Auto_ShowTokens;
         if (ImGui.Checkbox("Auto Hide/Show Planet Tokens", ref autoShowToken))
         {

@@ -86,7 +86,7 @@ namespace ICE.Ui
             ["setting_GatheringProfile"] = () => GatherSettings.Draw(),
             ["setting_MissionPriority"] = () => Priority_Settings.Draw(),
             ["setting_Misc"] = () => Misc_Settings.Draw(),
-            ["helpSelect_AllSettings"] = () => helpSelect_AllSettings.Draw(),
+            ["setting_Travel"] = () => TravelSettings.Draw(),
 
             // Hub Activities
             ["hubActivities_CreditShopping"] = () => ShoppingTab.Draw(),

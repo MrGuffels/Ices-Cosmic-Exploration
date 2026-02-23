@@ -18,5 +18,6 @@ public partial class Config
     public bool Show_GatheringProfile { get; set; } = true;
     public bool Show_MissionPriority { get; set; } = true;
     public bool Show_MiscSettings { get; set; } = true;
+    public bool Show_TravelSettings { get; set; } = true;
     public bool Show_HubActivities { get; set; } = true;
 }

@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Ui.MainUi.ModeSelect_Modes;
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,8 @@ namespace ICE.Ui
 {
     internal class Window_ExternalDetails : Window
     {
+        private int focusDelayFrames = 0;
+
         public Window_ExternalDetails() : base($"Ice's Cosmic Exploration | Mission Details")
         {
             Flags = ImGuiWindowFlags.None;
@@ -23,8 +25,20 @@ namespace ICE.Ui
             P.windowSystem.RemoveWindow(this);
         }
 
+        public void RequestFocus()
+        {
+            focusDelayFrames = 10;
+        }
+
         public override void Draw()
         {
+            if (focusDelayFrames > 0)
+            {
+                focusDelayFrames--;
+                if (focusDelayFrames == 0)
+                    BringToFront();
+            }
+
             var selectedId = modeSelect_TableInfo.selectedMission;
             if (selectedId == 0)
             {

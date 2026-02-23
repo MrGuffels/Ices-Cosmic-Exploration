@@ -100,7 +100,7 @@ public sealed partial class ICE : IDalamudPlugin
         Svc.PluginInterface.UiBuilder.OpenConfigUi += () =>
         {
             mainWindow.IsOpen = true;
-            C.MainUi_SelectedWindow = "helpSelect_AllSettings";
+            C.MainUi_SelectedWindow = "modeSelect_MissionSetup";
         };
 
         // timer stuff
@@ -187,7 +187,7 @@ public sealed partial class ICE : IDalamudPlugin
         else if (firstArg.ToLower() == "s" || firstArg.ToLower() == "settings")
         {
             mainWindow.IsOpen = true;
-            C.MainUi_SelectedWindow = "helpSelect_AllSettings";
+            C.MainUi_SelectedWindow = "modeSelect_MissionSetup";
             return;
         }
         else if (firstArg.ToLower() == "clear")

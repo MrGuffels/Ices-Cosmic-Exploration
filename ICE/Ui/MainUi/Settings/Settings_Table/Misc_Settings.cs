@@ -1,9 +1,8 @@
-﻿using Dalamud.Interface;
+using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ICE.Utilities.ImGuiTools;
-using InteropGenerator.Runtime.Attributes;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
@@ -15,84 +14,23 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
     {
         public static void Draw()
         {
-            if (ImGui.BeginTabBar("MiscSettingsTabBar"))
-            {
-                if (ImGui.BeginTabItem("Overlay"))
-                {
-                    OverlaySettings();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Auto-Use"))
-                {
-                    AutoUse();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Repair"))
-                {
-                    RepairSettings();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Safety"))
-                {
-                    SafetySettings.Draw();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Mount"))
-                {
-                    MountSelection();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Show / Hide"))
-                {
-                    ShowSystemButtons();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Records"))
-                {
-                    TimeRecords();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Crafting"))
-                {
-                    CraftingLocations();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Artisan"))
-                {
-                    ArtisanSettings();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Movement"))
-                {
-                    MovementSettings();
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Post Mission Command"))
-                {
-                    PostMissionCommands();
-                    ImGui.EndTabItem();
-                }
-
+            OverlaySettings();
+            Separator();
+            AutoUse();
+            Separator();
+            RepairSettings();
+            Separator();
+            SafetySettings.Draw();
+            Separator();
+            ArtisanSettings();
+            Separator();
+            TimeRecords();
+            Separator();
+            PostMissionCommands();
 #if DEBUG
-                if (ImGui.BeginTabItem("Debug"))
-                {
-                    DebugTab.Draw();
-                    ImGui.EndTabItem();
-                }
+            Separator();
+            DebugTab.Draw();
 #endif
-
-                ImGui.EndTabBar();
-            }
         }
 
         public static void OverlaySettings()
@@ -192,29 +130,19 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGuiEx.IconWithText(FontAwesomeIcon.PersonRays, "Auto-Use");
             ImGui.Dummy(new Vector2(0, 5));
 
-            bool AutoMoonSprint = C.MoonSprint;
-            if (ImGui.Checkbox("Auto-Use Moon Sprint", ref AutoMoonSprint))
-            {
-                C.MoonSprint = AutoMoonSprint;
-                C.Save();
-            }
-
             bool DisableLunarAura = C.RemoveStellarStatus;
             if (ImGui.Checkbox("Auto-Remove Stellar Status", ref DisableLunarAura))
             {
                 C.RemoveStellarStatus = DisableLunarAura;
                 C.Save();
             }
-
-            bool DisableRedAlertPathing = C.DisablePathfindingToRedAlert;
-            if (ImGui.Checkbox("Disable Pathfinding to Red Alerts", ref DisableRedAlertPathing))
-            {
-                C.DisablePathfindingToRedAlert = DisableRedAlertPathing;
-                C.Save();
-            }
+            ImGui.SameLine();
+            ImGuiEx.IconWithTooltip(FontAwesomeIcon.InfoCircle,
+                                   "Automatically removes the Star Contributor visual effect (the glow you get for being a top contributor).\n" +
+                                   "The buff restores itself when you re-enter the zone.");
 
             bool autoStartOnMoonEnter = C.StartUponEnterMoon;
-            if (ImGui.Checkbox("Auto start upon enter moon", ref autoStartOnMoonEnter))
+            if (ImGui.Checkbox("Auto start upon entering a Cosmic Exploration area", ref autoStartOnMoonEnter))
             {
                 C.StartUponEnterMoon = autoStartOnMoonEnter;
                 C.Save();
@@ -290,171 +218,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
         }
 
-        private static bool visualizeRadius = false;
-        private static bool visualizeDismountRadius = false;
-        private static Dictionary<uint, string> availableMounts = new();
-
-        private static string mountSearchText = "";
-        private static int mountDisplayOffset = 0;
-        private static int mountItemsPerPage = 10;
-
-        private static unsafe void MountSelection()
-        {
-            bool mountOutsideMission = C.UseMountOutsideMission;
-            bool mountInMission = C.UseMountInMission;
-            float minMountRange = C.MountRadius;
-            float dismountRange = C.DismountRadius;
-
-            ImGuiEx.IconWithText(FontAwesomeIcon.Feather, "Mount Settings");
-            ImGui.Dummy(new Vector2(0, 5));
-
-            if (ImGui.Button("Select Mounting Option"))
-            {
-                availableMounts.Clear();
-                availableMounts[0] = "Mount Roulette";
-
-                var mountSheet = Svc.Data.GetExcelSheet<Mount>();
-
-                foreach (var mountItem in mountSheet)
-                {
-                    //Checking to see if the current mount is unlocked
-                    if (!PlayerState.Instance()->IsMountUnlocked(mountItem.RowId)) continue;
-
-                    string mountName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mountItem.Singular.ToString().ToLower());
-                    uint id = mountItem.RowId;
-
-                    availableMounts[id] = mountName;
-                }
-
-                mountSearchText = "";
-                mountDisplayOffset = 0;
-
-                ImGui.OpenPopup("Mount Options");
-            }
-            ImGui.SameLine();
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text($"Mount: {C.MountName}");
-
-            if (ImGui.BeginPopup("Mount Options"))
-            {
-                // Search box
-                ImGui.InputText("Search", ref mountSearchText, 100);
-
-                // Filter mounts based on search
-                var filteredMounts = availableMounts
-                    .Where(kvp => string.IsNullOrEmpty(mountSearchText) ||
-                                  kvp.Value.Contains(mountSearchText, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                // Calculate page count here, just to peeps know how many pages there are
-                int totalItems = filteredMounts.Count;
-                int maxOffset = Math.Max(0, totalItems - mountItemsPerPage);
-                mountDisplayOffset = Math.Min(mountDisplayOffset, maxOffset);
-
-                // Display current page of mounts
-                var displayMounts = filteredMounts
-                    .Skip(mountDisplayOffset)
-                    .Take(mountItemsPerPage);
-
-                foreach (var mount in displayMounts)
-                {
-                    if (ImGui.Selectable($"{mount.Value}##{mount.Key}"))
-                    {
-                        C.MountId = mount.Key;
-                        C.MountName = mount.Value;
-                        C.Save();
-                        ImGui.CloseCurrentPopup();
-                    }
-                }
-
-                // Navigation buttons
-                ImGui.Separator();
-
-                if (ImGui.Button("Previous") && mountDisplayOffset > 0)
-                {
-                    mountDisplayOffset = Math.Max(0, mountDisplayOffset - mountItemsPerPage);
-                }
-
-                ImGui.SameLine();
-                ImGui.Text($"{mountDisplayOffset + 1}-{Math.Min(mountDisplayOffset + mountItemsPerPage, totalItems)} of {totalItems}");
-
-                ImGui.SameLine();
-                if (ImGui.Button("Next") && mountDisplayOffset < maxOffset)
-                {
-                    mountDisplayOffset = Math.Min(maxOffset, mountDisplayOffset + mountItemsPerPage);
-                }
-
-                ImGui.EndPopup();
-            }
-
-            if (ImGui.Checkbox("Use mount outside mission", ref mountOutsideMission))
-            {
-                C.UseMountOutsideMission = mountOutsideMission;
-                C.Save();
-            }
-
-            if (ImGui.Checkbox("Use mount in mission", ref mountInMission))
-            {
-                C.UseMountInMission = mountInMission;
-                C.Save();
-            }
-
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.DragFloat("Minimum Mounting Range", ref minMountRange, 1))
-            {
-                C.MountRadius = minMountRange;
-                C.Save();
-            }
-            ImGui.Checkbox("Visualize radius", ref visualizeRadius);
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.DragFloat("Dismount Target Range", ref dismountRange, 1))
-            {
-                C.DismountRadius = dismountRange;
-                C.Save();
-            }
-            ImGui.Checkbox("Visualize Dismount Radius", ref visualizeDismountRadius);
-        }
-
-        private static void ShowSystemButtons()
-        {
-            ImGuiEx.IconWithText(FontAwesomeIcon.WindowRestore, "Show / Hide Tabs");
-            ImGui.Dummy(new(0, 5));
-
-            bool showStopWhen = C.Show_StopWhen;
-            if (ImGui.Checkbox("Show Stop When... Tab", ref showStopWhen))
-            {
-                C.Show_StopWhen = showStopWhen;
-                C.Save();
-            }
-
-            bool showGProfile = C.Show_GatheringProfile;
-            if (ImGui.Checkbox("Show Gathering Profile Tab", ref showGProfile))
-            {
-                C.Show_GatheringProfile = showGProfile;
-                C.Save();
-            }
-
-            bool showMissionPrio = C.Show_MissionPriority;
-            if (ImGui.Checkbox("Show Mission Priority Tab", ref showMissionPrio))
-            {
-                C.Show_MissionPriority = showMissionPrio;
-                C.Save();
-            }
-
-            bool showMisc = C.Show_MiscSettings;
-            if (ImGui.Checkbox("Show Misc Settings Tab", ref showMisc))
-            {
-                C.Show_MiscSettings = showMisc;
-                C.Save();
-            }
-
-            bool showHubActivities = C.Show_HubActivities;
-            if (ImGui.Checkbox("Show Hub Activities Section", ref showHubActivities))
-            {
-                C.Show_HubActivities = showHubActivities;
-                C.Save();
-            }
-        }
         private static void PostMissionCommands()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Play, "Post Mission Commands");
@@ -466,9 +229,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
             if (ImGui.Button("Add New Command"))
             {
-                C.PostMissionCommands.Add(new MissionCommand 
-                { 
-                    command = "", 
+                C.PostMissionCommands.Add(new MissionCommand
+                {
+                    command = "",
                     Delay = 0,
                 });
                 C.Save();
@@ -527,44 +290,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
         }
 
-        private static void CraftingLocations()
-        {
-            ImGuiEx.IconWithText(FontAwesomeIcon.MapPin, "Crafting Return Spot");
-            ImGui.Dummy(new Vector2(0, 5));
-
-            bool usePersonalLocations = C.PersonalReturnSpot;
-            if (ImGui.Checkbox("Use personal return spots", ref usePersonalLocations))
-            {
-                C.PersonalReturnSpot = usePersonalLocations;
-                C.Save();
-            }
-
-            if (usePersonalLocations)
-            {
-                var territory = Player.Territory.RowId;
-                var location = Player.Position;
-                if (C.CrafterLocations.TryGetValue(territory, out var moonLoc))
-                {
-                    ImGui.Text($"Territory: {territory} \n" +
-                               $"Position: {moonLoc:N2}");
-                    if (ImGui.Button("Set to current location"))
-                    {
-                        C.CrafterLocations[territory] = location;
-                        C.Save();
-                    }
-                }
-                else
-                {
-                    ImGui.Text("No location set currently");
-                    if (ImGui.Button("Add Location"))
-                    {
-                        C.CrafterLocations[territory] = Player.Position;
-                        C.Save();
-                    }
-                }
-            }
-        }
-
         private static void ArtisanSettings()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, "Artisan Settings");
@@ -609,84 +334,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
 
             ImGui.TextDisabled("More Coming Soon. . . ");
-        }
-
-        private static void MovementSettings()
-        {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Running, "Movement Settings");
-
-            bool closestNode = C.ClosestNodeSelection;
-            if (ImGui.Checkbox("Prioritize closest gathering node", ref closestNode))
-            {
-                C.ClosestNodeSelection = closestNode;
-                C.Save();
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Always navigate to the closest targetable node instead of following the fixed route order.\nUseful for timed EX+ missions where speed matters.");
-            }
-
-            bool randomize = C.RandomizeWaypoints;
-            if (ImGui.Checkbox("Randomize waypoint positions", ref randomize))
-            {
-                C.RandomizeWaypoints = randomize;
-                C.Save();
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Adds a small random offset to navigation destinations so the character doesn't always follow the exact same path");
-            }
-            if (randomize)
-            {
-                float radius = C.RandomizeWaypointsRadius;
-                ImGui.SetNextItemWidth(100);
-                if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 1.0f, "%.1f"))
-                {
-                    C.RandomizeWaypointsRadius = radius;
-                    C.SaveDebounced();
-                }
-                bool showDebug = C.RandomizeWaypointsDebug;
-                if (ImGui.Checkbox("Show random location debug target", ref showDebug))
-                {
-                    C.RandomizeWaypointsDebug = showDebug;
-                    C.Save();
-                }
-            }
-
-            var minHubReturnDistance = C.HubReturn_Distance;
-            ImGui.SetNextItemWidth(200);
-            if (ImGui.DragFloat("Distance before hub return is used", ref minHubReturnDistance))
-            {
-                C.HubReturn_Distance = minHubReturnDistance;
-                C.SaveDebounced();
-            }
-
-            bool useHubReturn = C.UseHubReturn;
-            if (ImGui.Checkbox("Use Hub Return", ref useHubReturn))
-            {
-                C.UseHubReturn = useHubReturn;
-                C.Save();
-            }
-
-            bool useAethernet = C.UseAethernet;
-            if (ImGui.Checkbox("Use Aethernet", ref useAethernet))
-            {
-                C.UseAethernet = useAethernet;
-                C.Save();
-            }
-
-            using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
-            {
-                if (drawList == null)
-                    return;
-
-                var playerPos = Player.Position;
-
-                if (visualizeRadius)
-                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos, C.MountRadius, Utils.FromUintABGR(2616716297));
-                if (visualizeDismountRadius)
-                    PictoService.VfxRenderer.AddCircle("Dismount_Radius Circle", playerPos, C.DismountRadius, Utils.FromUintABGR(2601121571));
-            }
         }
 
         private static void Separator()

@@ -209,14 +209,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             var headerHeight = textSize.Y + headerPadding.Y * 2;
 
             // Custom header to display above the table. This is moreso for quick user viewability
-            using (ImRaii.Child($"Table Header: {headerName}", new Vector2(availableSpace, headerHeight), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
-            {
-                var centeredPosX = (availableSpace - textSize.X) / 2;
-
-                ImGui.SetCursorPosY(headerPadding.Y);
-                ImGui.SetCursorPosX(centeredPosX);
-                ImGui.Text($"{headerName} Missions");
-            }
+            ImGui.Dummy(new Vector2(0, headerPadding.Y));
+            var centeredPosX = (availableSpace - textSize.X) / 2;
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Math.Max(0, centeredPosX));
+            ImGui.Text($"{headerName} Missions");
+            ImGui.Separator();
 
             // Table settings, just so I can sort it out visibly vs... being shoved in the table
             ImGuiTableFlags tableFlags = ImGuiTableFlags.RowBg |
@@ -268,7 +265,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 ImGui.TableSetupColumn("Turnin Mode"); // 16
                 ImGui.TableSetupColumn("Gathering Profile"); // 17
-                ImGui.TableSetupColumn("Mission Notes"); // 18
+                ImGui.TableSetupColumn("Notes"); // 18
 
                 #endregion
 
@@ -522,10 +519,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 #endregion
 
-                #region Mission Notes
+                #region Notes
 
                 ImGui.TableSetColumnIndex(columnIndexCount);
-                ImGui.TableHeader("Mission Notes");
+                ImGui.TableHeader("Notes");
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
@@ -688,10 +685,17 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.SameLine();
                     }
 
-                    ImGui.Text(missionInfo.Name);
+                    ImGui.TextColored(ImGuiColors.DalamudWhite2, missionInfo.Name);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                        ImGui.SetTooltip("Open mission details");
+                    }
                     if (ImGui.IsItemClicked())
                     {
                         selectedMission = Id;
+                        P.externalDetails.IsOpen = true;
+                        P.externalDetails.RequestFocus();
                     }
                     if (missionInfo.MarkerId != 0)
                     {
@@ -720,17 +724,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             Utils.SetFlagForNPC(missionInfo.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
                         }
                     }
-                    if (!C.ShowExtraMissionInfo)
-                    {
-                        ImGui.SameLine();
-                        ImGuiEx.Icon(FontAwesomeIcon.ArrowUpRightFromSquare);
-                        if (ImGui.IsItemClicked())
-                        {
-                            selectedMission = Id;
-                            P.externalDetails.IsOpen = true;
-                        }
-                    }
-
                     #endregion
 
                     #region Cosmo | Planetary | Class Score | Tokens
@@ -2050,6 +2043,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 C.ShowSPM = ShowScorePerMinute;
                                 C.Save();
                             }
+                            if (ImGui.IsItemHovered())
+                                ImGui.SetTooltip("Toggle between showing score per minute and score per hour");
 
                             if (ImGui.BeginTable("Critical Scoring Info", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                             {
@@ -2092,6 +2087,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 C.ShowSPM = ShowScorePerMinute;
                                 C.Save();
                             }
+                            if (ImGui.IsItemHovered())
+                                ImGui.SetTooltip("Toggle between showing score per minute and score per hour");
                             if (ImGui.BeginTable("Critical Scoring Info", 4, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
                             {
                                 ImGui.TableSetupColumn("Turnin");

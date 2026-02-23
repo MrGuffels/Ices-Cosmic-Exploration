@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using ECommons.ImGuiMethods;
@@ -16,6 +17,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         public static unsafe void Draw()
         {
+            float minContentWidth = 920 * ImGuiHelpers.GlobalScale;
+            var availWidth = ImGui.GetContentRegionAvail().X;
+            if (availWidth < minContentWidth)
+                ImGui.SetNextWindowContentSize(new Vector2(minContentWidth, 0));
+
+            using var scrollChild = ImRaii.Child("##shoppingTabScroll", new Vector2(0, 0), false, ImGuiWindowFlags.HorizontalScrollbar);
+            if (!scrollChild.Success) return;
+
             bool BuyItems = C.BuyItems;
 
             if (ImGui.Checkbox("Buy Items", ref BuyItems))
@@ -210,7 +219,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.TableSetupColumn("Keep", ImGuiTableColumnFlags.WidthFixed);
                 ImGui.TableSetupColumn("Buy", ImGuiTableColumnFlags.WidthFixed);
                 ImGui.TableSetupColumn("Keep Buying", ImGuiTableColumnFlags.WidthFixed);
-                ImGui.TableSetupColumn("Remove", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
 
                 ImGui.TableHeadersRow();
 
