@@ -1,4 +1,5 @@
 ﻿using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ICE.ConfigFiles;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
@@ -144,12 +145,12 @@ namespace ICE.Scheduler.Tasks
 
             return false;
         }
-        private static bool? CloseShop()
+        private static unsafe bool? CloseShop()
         {
-            if (GenericHelpers.TryGetAddonMaster<ShopExchangeCurrency>("ShopExchangeCurrency", out var shopExchange) && shopExchange.IsAddonReady)
+            if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("ShopExchangeCurrency", out var shopAddon) && shopAddon->IsReady)
             {
                 if (EzThrottler.Throttle("Close Shop"))
-                    GenericHandlers.FireCallback("ShopExchangeCurrency", true, -1);
+                    shopAddon->Close(true);
                 return false;
             }
             else
