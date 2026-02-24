@@ -81,7 +81,7 @@ public static class ConfigMigration
         C.DelayCraft = old.DelayCraft;
         C.DelayCraftIncrease = old.DelayCraftIncrease;
         C.AnimationLockAbandon = old.AnimationLockAbandon;
-        C.JumpIfStuck = old.JumpIfStuck;
+        C.JumpIfStuck_V2 = old.JumpIfStuck;
     }
 
     private static void MigrateMainWindow(MissionConfigs old)

@@ -31,11 +31,17 @@ namespace ICE.Scheduler.Tasks
         {
             string tag = "[Hub Return]";
 
+            if (!C.UseHubReturn)
+            {
+                IceLogging.Info("We were told we didn't wanna hub return, so we gonna respec this");
+                return true;
+            }
+
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 Vector3 PlayerPos = Player.Position;
 
-                if (Player.DistanceTo(HubCenter) < 45)
+                if (Player.DistanceTo(HubCenter) < C.HubReturn_Distance)
                 {
                     if (PlayerHelper.IsScreenReady())
                     {

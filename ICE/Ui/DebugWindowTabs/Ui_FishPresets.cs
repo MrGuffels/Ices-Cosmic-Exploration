@@ -62,7 +62,13 @@ namespace ICE.Ui.DebugWindowTabs
             foreach (var mission in list)
             {
                 bool isSelected = mission.Key == selectedMission;
-                if (ImGui.Selectable($"[{mission.Key}] - {mission.Value.Name}##{mission.Key}", isSelected))
+                if (mission.Value.Fish_Presets.Count == 0)
+                {
+                    ImGuiEx.Icon(FontAwesomeIcon.ExclamationTriangle);
+                    ImGui.SameLine();
+                }
+
+                if (ImGui.Selectable($"[{mission.Key}] - {mission.Value.Name}##{mission.Key}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
                 {
                     selectedMission = mission.Key;
                 }

@@ -2,6 +2,8 @@
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using ICE.Utilities.ImGuiTools;
+using InteropGenerator.Runtime.Attributes;
 using Lumina.Excel.Sheets;
 using Pictomancy;
 using System.Collections.Generic;
@@ -13,50 +15,84 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
     {
         public static void Draw()
         {
-            if (ImGui.BeginTable("Misc Columns Stuff", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
+            if (ImGui.BeginTabBar("MiscSettingsTabBar"))
             {
-                ImGui.TableNextRow();
+                if (ImGui.BeginTabItem("Overlay"))
+                {
+                    OverlaySettings();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableSetColumnIndex(0);
-                OverlaySettings();
+                if (ImGui.BeginTabItem("Auto-Use"))
+                {
+                    AutoUse();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableNextColumn();
-                AutoUse();
+                if (ImGui.BeginTabItem("Repair"))
+                {
+                    RepairSettings();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableNextColumn();
-                RepairSettings();
+                if (ImGui.BeginTabItem("Safety"))
+                {
+                    SafetySettings.Draw();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                SafetySettings.Draw();
+                if (ImGui.BeginTabItem("Mount"))
+                {
+                    MountSelection();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableNextColumn();
-                MountSelection();
+                if (ImGui.BeginTabItem("Show / Hide"))
+                {
+                    ShowSystemButtons();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableNextColumn();
-                ShowSystemButtons();
+                if (ImGui.BeginTabItem("Records"))
+                {
+                    TimeRecords();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.Dummy(new Vector2(0, 5));
+                if (ImGui.BeginTabItem("Crafting"))
+                {
+                    CraftingLocations();
+                    ImGui.EndTabItem();
+                }
 
-                TimeRecords();
+                if (ImGui.BeginTabItem("Artisan"))
+                {
+                    ArtisanSettings();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                CraftingLocations();
+                if (ImGui.BeginTabItem("Movement"))
+                {
+                    MovementSettings();
+                    ImGui.EndTabItem();
+                }
 
-                ImGui.TableNextColumn();
-                ArtisanSettings();
+                if (ImGui.BeginTabItem("Post Mission Command"))
+                {
+                    PostMissionCommands();
+                    ImGui.EndTabItem();
+                }
 
 #if DEBUG
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                DebugTab.Draw();
+                if (ImGui.BeginTabItem("Debug"))
+                {
+                    DebugTab.Draw();
+                    ImGui.EndTabItem();
+                }
 #endif
-                ImGui.EndTable();
-            }
 
-            PostMissionCommands();
-            Separator();
+                ImGui.EndTabBar();
+            }
         }
 
         public static void OverlaySettings()
@@ -377,58 +413,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
             ImGui.Checkbox("Visualize Dismount Radius", ref visualizeDismountRadius);
-
-            ImGui.Dummy(new Vector2(0, 5));
-            bool closestNode = C.ClosestNodeSelection;
-            if (ImGui.Checkbox("Prioritize closest gathering node", ref closestNode))
-            {
-                C.ClosestNodeSelection = closestNode;
-                C.Save();
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Always navigate to the closest targetable node instead of following the fixed route order.\nUseful for timed EX+ missions where speed matters.");
-            }
-
-            bool randomize = C.RandomizeWaypoints;
-            if (ImGui.Checkbox("Randomize waypoint positions", ref randomize))
-            {
-                C.RandomizeWaypoints = randomize;
-                C.Save();
-            }
-            if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Adds a small random offset to navigation destinations so the character doesn't always follow the exact same path");
-            }
-            if (randomize)
-            {
-                float radius = C.RandomizeWaypointsRadius;
-                ImGui.SetNextItemWidth(100);
-                if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 1.0f, "%.1f"))
-                {
-                    C.RandomizeWaypointsRadius = radius;
-                    C.SaveDebounced();
-                }
-                bool showDebug = C.RandomizeWaypointsDebug;
-                if (ImGui.Checkbox("Show random location debug target", ref showDebug))
-                {
-                    C.RandomizeWaypointsDebug = showDebug;
-                    C.Save();
-                }
-            }
-
-            using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
-            {
-                if (drawList == null)
-                    return;
-
-                var playerPos = Player.Position;
-
-                if (visualizeRadius)
-                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos, C.MountRadius, Utils.FromUintABGR(2616716297));
-                if (visualizeDismountRadius)
-                    PictoService.VfxRenderer.AddCircle("Dismount_Radius Circle", playerPos, C.DismountRadius, Utils.FromUintABGR(2601121571));
-            }
         }
 
         private static void ShowSystemButtons()
@@ -595,7 +579,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
             ImGui.SameLine();
-            ImGuiEx.Icon(FontAwesomeIcon.QuestionCircle);
+            ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle);
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
@@ -603,7 +587,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 ImGui.Text($"This excludes the expert solver crafts due to their nature of how they function");
                 ImGui.EndTooltip();
             }
-            ImGui.Dummy(Vector2.Zero);
             if (force_Raphael)
             {
                 if (ImGui.Checkbox("Use Raphael Solver on Expert Recipe", ref expertRaphael))
@@ -612,7 +595,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     C.Save();
                 }
                 ImGui.SameLine();
-                ImGuiEx.Icon(FontAwesomeIcon.QuestionCircle);
+                ImGui_Ice.IconWithTooltip(FontAwesomeIcon.QuestionCircle);
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
@@ -623,6 +606,86 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     ImGui.Text($"I would not recommend this on Oizys, it's not perfect and has been causing a lot of issues for peeps.");
                     ImGui.EndTooltip();
                 }
+            }
+
+            ImGui.TextDisabled("More Coming Soon. . . ");
+        }
+
+        private static void MovementSettings()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Running, "Movement Settings");
+
+            bool closestNode = C.ClosestNodeSelection;
+            if (ImGui.Checkbox("Prioritize closest gathering node", ref closestNode))
+            {
+                C.ClosestNodeSelection = closestNode;
+                C.Save();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Always navigate to the closest targetable node instead of following the fixed route order.\nUseful for timed EX+ missions where speed matters.");
+            }
+
+            bool randomize = C.RandomizeWaypoints;
+            if (ImGui.Checkbox("Randomize waypoint positions", ref randomize))
+            {
+                C.RandomizeWaypoints = randomize;
+                C.Save();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Adds a small random offset to navigation destinations so the character doesn't always follow the exact same path");
+            }
+            if (randomize)
+            {
+                float radius = C.RandomizeWaypointsRadius;
+                ImGui.SetNextItemWidth(100);
+                if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 1.0f, "%.1f"))
+                {
+                    C.RandomizeWaypointsRadius = radius;
+                    C.SaveDebounced();
+                }
+                bool showDebug = C.RandomizeWaypointsDebug;
+                if (ImGui.Checkbox("Show random location debug target", ref showDebug))
+                {
+                    C.RandomizeWaypointsDebug = showDebug;
+                    C.Save();
+                }
+            }
+
+            var minHubReturnDistance = C.HubReturn_Distance;
+            ImGui.SetNextItemWidth(200);
+            if (ImGui.DragFloat("Distance before hub return is used", ref minHubReturnDistance))
+            {
+                C.HubReturn_Distance = minHubReturnDistance;
+                C.SaveDebounced();
+            }
+
+            bool useHubReturn = C.UseHubReturn;
+            if (ImGui.Checkbox("Use Hub Return", ref useHubReturn))
+            {
+                C.UseHubReturn = useHubReturn;
+                C.Save();
+            }
+
+            bool useAethernet = C.UseAethernet;
+            if (ImGui.Checkbox("Use Aethernet", ref useAethernet))
+            {
+                C.UseAethernet = useAethernet;
+                C.Save();
+            }
+
+            using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
+            {
+                if (drawList == null)
+                    return;
+
+                var playerPos = Player.Position;
+
+                if (visualizeRadius)
+                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos, C.MountRadius, Utils.FromUintABGR(2616716297));
+                if (visualizeDismountRadius)
+                    PictoService.VfxRenderer.AddCircle("Dismount_Radius Circle", playerPos, C.DismountRadius, Utils.FromUintABGR(2601121571));
             }
         }
 

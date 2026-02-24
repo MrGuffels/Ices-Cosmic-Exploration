@@ -6,6 +6,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.WKS;
 using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static MissionTimer;
@@ -1665,7 +1666,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                             foreach (var craft in mission.Crafts_Main)
                             {
-                                if (Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Recipe>().TryGetRow(craft.Key, out var recipe))
+                                if (Svc.Data.GetExcelSheet<Recipe>().TryGetRow(craft.Key, out var recipe))
                                 {
                                     string itemName = recipe.ItemResult.Value.Name.ToString();
                                     var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
@@ -1747,6 +1748,171 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             ImGui.EndTable();
                         }
                     }
+
+#if DEBUG
+                    if (ImGui.CollapsingHeader("Craft Item Settings", headerFlags))
+                    {
+                        foreach (var craft in mission.Crafts_Main)
+                        {
+                            if (Svc.Data.GetExcelSheet<Recipe>().TryGetRow(craft.Key, out var recipe))
+                            {
+                                var availWidth = ImGui.GetContentRegionAvail();
+
+                                if (ImGui.BeginChild($"Main Craft Details_{craft.Value.RecipeId}", new(availWidth.X, 200), true))
+                                {
+                                    if (ImGui.BeginTable($"Main Craft Detail Table_{craft.Value.RecipeId}", 2, ImGuiTableFlags.SizingFixedFit))
+                                    {
+                                        ImGui.TableSetupColumn("Item Details");
+                                        ImGui.TableSetupColumn("Item Settings");
+
+                                        ImGui.PushID(craft.Value.RecipeId);
+
+                                        if (C.MissionConfig[id].CraftSettings.TryGetValue(craft.Value.RecipeId, out var recipeConfig))
+                                        {
+                                            var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
+                                            var iconId = recipe.ItemResult.Value.Icon;
+                                            string itemName = recipe.ItemResult.Value.Name.ToString();
+
+                                            ImGui.TableNextRow();
+                                            // 1st Row: Image + Global 
+                                            ImGui.TableNextRow();
+                                            ImGui.TableSetColumnIndex(0);
+                                            if (Svc.Texture.TryGetFromGameIcon((int)iconId, out var iconImage))
+                                            {
+                                                ImGui.Image(iconImage.GetWrapOrEmpty().Handle, new Vector2(30, 30));
+                                            }
+                                            if (recipe.IsExpert)
+                                            {
+                                                ImGui.SameLine();
+                                                ImGui.AlignTextToFramePadding();
+                                                ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
+                                                if (ImGui.IsItemHovered())
+                                                {
+                                                    ImGui.SetTooltip("Expert Craft");
+                                                }
+                                            }
+
+                                            ImGui.TableNextColumn();
+                                            bool globalArtisan = recipeConfig.UseGlobal;
+                                            if (ImGui.Checkbox("Use Global Artisan Settings", ref globalArtisan))
+                                            {
+                                                recipeConfig.UseGlobal = globalArtisan;
+                                                C.Save();
+                                            }
+
+                                            // 2nd Row: Item Name + Food Dropdown
+                                            ImGui.TableNextRow();
+                                            ImGui.TableSetColumnIndex(0);
+                                            ImGui.AlignTextToFramePadding();
+                                            ImGui.Text($"{itemName}");
+
+                                            ImGui.TableNextColumn();
+                                            ImGui.SetNextItemWidth(200);
+                                            using (ImRaii.Disabled(globalArtisan))
+                                            {
+                                                if (ImGui.BeginCombo("##Test", "Food Selector"))
+                                                {
+                                                    ImGui.EndCombo();
+                                                }
+                                            }
+
+                                            ImGui.TableNextRow();
+                                            ImGui.TableSetColumnIndex(0);
+                                            ImGui.AlignTextToFramePadding();
+                                            ImGui.Text($"Durability: {recipeInfo.Durability}");
+
+                                            ImGui.TableNextColumn();
+                                            ImGui.SetNextItemWidth(200);
+                                            using (ImRaii.Disabled(globalArtisan))
+                                            {
+                                                if (ImGui.BeginCombo("##Test2", "Potion Selector"))
+                                                {
+                                                    ImGui.EndCombo();
+                                                }
+                                            }
+
+                                            ImGui.TableNextRow();
+                                            ImGui.TableSetColumnIndex(0);
+                                            ImGui.AlignTextToFramePadding();
+                                            ImGui.Text($"Progress: {recipeInfo.Progress}");
+
+                                            ImGui.TableNextColumn();
+                                            ImGui.SetNextItemWidth(200);
+                                            using (ImRaii.Disabled(globalArtisan))
+                                            {
+                                                if (ImGui.BeginCombo("##Test3", "Manual Selector"))
+                                                {
+                                                    ImGui.EndCombo();
+                                                }
+                                            }
+
+                                            ImGui.TableNextRow();
+                                            ImGui.TableSetColumnIndex(0);
+                                            ImGui.AlignTextToFramePadding();
+                                            ImGui.Text($"Quality: {recipeInfo.Quality}");
+
+                                            ImGui.TableNextColumn();
+                                            ImGui.SetNextItemWidth(200);
+                                            using (ImRaii.Disabled(globalArtisan))
+                                            {
+                                                if (ImGui.BeginCombo("##Test4", "Squad Manual Selector"))
+                                                {
+                                                    ImGui.EndCombo();
+                                                }
+                                            }
+
+                                            ImGui.TableNextRow();
+                                            ImGui.TableSetColumnIndex(0);
+                                            ImGui.SetNextItemWidth(200);
+                                            var currentSolver = recipeConfig.ArtisanSolverType;
+                                            using (ImRaii.Disabled(globalArtisan))
+                                            {
+                                                if (ImGui.BeginCombo("##Test 5", $"{currentSolver}"))
+                                                {
+                                                    foreach (ArtisanCraftType option in Enum.GetValues(typeof(ArtisanCraftType)))
+                                                    {
+                                                        bool isSelected = currentSolver == option;
+                                                        if (ImGui.Selectable(option.ToString(), isSelected))
+                                                        {
+                                                            recipeConfig.ArtisanSolverType = option;
+                                                            C.Save();
+                                                        }
+                                                        if (isSelected)
+                                                            ImGui.SetItemDefaultFocus();
+                                                    }
+
+                                                    ImGui.EndCombo();
+                                                }
+                                            }
+
+                                            ImGui.TableNextColumn();
+                                            if (currentSolver == ArtisanCraftType.Macro)
+                                            {
+                                                var macro = recipeConfig.MacroName;
+                                                ImGui.SetNextItemWidth(200);
+                                                if (ImGui.InputText("##MacroName", ref macro, 1000))
+                                                {
+                                                    recipeConfig.MacroName = macro;
+                                                    C.SaveDebounced();
+                                                }
+                                            }
+
+                                            ImGui.PopID();
+                                        }
+                                        else
+                                        {
+                                            C.MissionConfig[id].CraftSettings[craft.Value.RecipeId] = new();
+                                            C.SaveDebounced();
+                                        }
+
+                                        ImGui.EndTable();
+                                    }
+                                }
+                                ImGui.EndChild();
+                            }
+                        }
+                    }
+#endif
                 }
 
                 WindowSpacer();

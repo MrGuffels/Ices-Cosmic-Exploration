@@ -254,7 +254,7 @@ namespace ICE.Scheduler.Tasks
                     return;
                 }
 
-                if (C.JumpIfStuck && EzThrottler.Throttle("Using jump action"))
+                if (C.JumpIfStuck_V2 && EzThrottler.Throttle("Using jump action"))
                 {
                     isJumpInProgress = true;
                     ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2);
@@ -434,6 +434,12 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
+            if (!C.UseAethernet)
+            {
+                IceLogging.Info("We have aethernet travel turned off, so continuing");
+                return true;
+            }
+
             var closestAetheryte = aetherList.OrderBy(x => Player.DistanceTo(x.Location)).FirstOrDefault();
             var destinationAetheryte = aetherList.OrderBy(x => Vector3.Distance(x.Location, destination)).FirstOrDefault();
 
@@ -562,9 +568,6 @@ namespace ICE.Scheduler.Tasks
             IceLogging.Info($"Direct Pathing Complete", tag);
             return true;
         }
-
-        private static float MinDistanceToHub = 75f;
-
         private static bool? CalculateHub(Vector3 destination)
         {
             string tag = "[Navmesh: Calculate Hub Path]";
@@ -572,7 +575,13 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 var method = TravelMethods["HubReturn"];
-                if (Player.DistanceTo(HubCenter) > MinDistanceToHub)
+
+                if (!C.UseHubReturn)
+                {
+                    IceLogging.Info("We were told not to use hub return, so we're going to respect your decision", tag);
+                }
+
+                if (Player.DistanceTo(HubCenter) > C.HubReturn_Distance)
                 {
                     if (_PathCalculations == null)
                     {
@@ -638,7 +647,20 @@ namespace ICE.Scheduler.Tasks
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 var method = TravelMethods["HubAethernet"];
-                if (Player.DistanceTo(HubCenter) > MinDistanceToHub)
+
+                if (!C.UseHubReturn)
+                {
+                    IceLogging.Info("We were told no hub return, so not going to do so", tag);
+                    return true;
+                }
+
+                if (!C.UseAethernet)
+                {
+                    IceLogging.Info("We were told no teleporting via aethernet, so we shall respect this decision");
+                    return true;
+                }
+
+                if (Player.DistanceTo(HubCenter) > C.HubReturn_Distance)
                 {
                     var territory = Player.Territory.RowId;
                     if (!PlanetAethernet.TryGetValue(territory, out var aetherList))

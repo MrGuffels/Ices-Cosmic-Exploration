@@ -26,6 +26,10 @@ public partial class Config
     public Dictionary<uint, Vector3> CrafterLocations { get; set; } = new();
     public List<MissionCommand> PostMissionCommands { get; set; } = new();
 
+    public bool UseHubReturn { get; set; } = true;
+    public bool UseAethernet { get; set; } = true;
+    public float HubReturn_Distance { get; set; } = 75f;
+
     public class MissionCommand
     {
         public required string command { get; set; }

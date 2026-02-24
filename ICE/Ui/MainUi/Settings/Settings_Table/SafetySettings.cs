@@ -74,14 +74,14 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     }
                 }
             }
-            bool unstuckEnabled = C.JumpIfStuck || C.RetargetIfStuck;
+            bool unstuckEnabled = C.JumpIfStuck_V2 || C.RetargetIfStuck;
             if (ImGui.Checkbox("If stuck during nav movement:", ref unstuckEnabled))
             {
                 if (unstuckEnabled)
-                    C.JumpIfStuck = true;
+                    C.JumpIfStuck_V2 = true;
                 else
                 {
-                    C.JumpIfStuck = false;
+                    C.JumpIfStuck_V2 = false;
                     C.RetargetIfStuck = false;
                 }
                 C.Save();
@@ -92,9 +92,9 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 "- Jump: attempts to jump over the obstacle\n" +
                 "- Retarget: stops and re-pathfinds to the destination (re-randomizes if enabled)");
             if (!unstuckEnabled) ImGui.BeginDisabled();
-            if (ImGui.RadioButton("Jump", C.JumpIfStuck && !C.RetargetIfStuck))
+            if (ImGui.RadioButton("Jump", C.JumpIfStuck_V2 && !C.RetargetIfStuck))
             {
-                C.JumpIfStuck = true;
+                C.JumpIfStuck_V2 = true;
                 C.RetargetIfStuck = false;
                 C.Save();
             }
@@ -102,7 +102,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             if (ImGui.RadioButton("Retarget", C.RetargetIfStuck))
             {
                 C.RetargetIfStuck = true;
-                C.JumpIfStuck = false;
+                C.JumpIfStuck_V2 = false;
                 C.Save();
             }
             ImGui.SameLine();

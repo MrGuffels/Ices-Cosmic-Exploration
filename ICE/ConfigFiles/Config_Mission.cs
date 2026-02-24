@@ -54,7 +54,6 @@ public partial class Config
     {
         public bool Enabled { get; set; } = false;
         public bool ManualMode { get; set; } = false;
-
         public int GProfileId { get; set; } = 0;
         public bool AutoTurnin { get; set; } = true;
         public bool TurninGold { get; set; } = false;
@@ -75,14 +74,25 @@ public partial class Config
         public int CriticalCompletions { get; set; } = 0;
         public int FailedCounters { get; set; } = 0;
         public List<TurninData> TurninRecords { get; set; } = new();
-        // Old References to time below for migration
-        [YamlIgnore]
-        public List<double> Times { get; set; } = new();
+        public Dictionary<uint, ArtisanSettings> CraftSettings { get; set; } = new();
 
         public class TurninData
         {
             public double Time { get; set; }
             public TurninState State { get; set; }
         }
+
+        public class ArtisanSettings
+        {
+            public bool UseGlobal { get; set; } = true;
+            public uint SelectedFood { get; set; } = 0;
+            public bool FoodHQ { get; set; } = true;
+            public uint SelectedPotion { get; set; } = 0;
+            public uint PotionHQ { get; set; } = 0;
+            public uint SelectedManual { get; set; } = 0;
+            public uint SelectedSquadronManual { get; set; } = 0;
+            public ArtisanCraftType ArtisanSolverType { get; set; } = ArtisanCraftType.Standard;
+            public string MacroName { get; set; } = "";
+        };
     }
 }
