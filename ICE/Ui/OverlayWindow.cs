@@ -255,7 +255,7 @@ namespace ICE.Ui
         }
         private static Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>> GetExPlusTokenWeatherMissions(uint territoryId)
         {
-            var jobFilter = C.Overlay_FilterByJob ? (uint?)Player.Job : null;
+            var jobFilter = C.Overlay_FilterByJob ? (uint?)C.SelectedJob : null;
             var result = new Dictionary<uint, List<KeyValuePair<uint, CosmicInfo>>>();
             foreach (var kvp in SheetMissionDict)
             {
@@ -356,7 +356,7 @@ namespace ICE.Ui
             int currentHour = eorzeaTime.Hour;
             int nextHour = (currentHour + 1) % 24;
 
-            var jobFilter = C.Overlay_FilterByJob ? (uint?)Player.Job : null;
+            var jobFilter = C.Overlay_FilterByJob ? (uint?)C.SelectedJob : null;
 
             var currentHourMissions = SheetMissionDict
                 .Where(kvp => IsAvailableAtHour(kvp.Value, currentHour))

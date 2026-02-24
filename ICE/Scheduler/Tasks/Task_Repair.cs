@@ -37,6 +37,12 @@ namespace ICE.Scheduler.Tasks
                 return true;
             }
 
+            if (C.AvoidStellarReturn && !C.AvoidStellarReturnExceptHub)
+            {
+                IceLogging.Info("Stellar Return is fully disabled, walking to hub instead", tag);
+                return true;
+            }
+
             if (CosmicHelper.HubCenter.TryGetValue(Player.Territory.RowId, out var HubCenter))
             {
                 Vector3 PlayerPos = Player.Position;

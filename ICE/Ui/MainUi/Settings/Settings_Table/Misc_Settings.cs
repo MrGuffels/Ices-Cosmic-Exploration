@@ -106,7 +106,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
 
             bool filterByJob = C.Overlay_FilterByJob;
-            if (ImGui.Checkbox("Filter timed/weather missions and weather highlights by current job", ref filterByJob))
+            if (ImGui.Checkbox("Filter by currently selected class (auto for current job only)", ref filterByJob))
             {
                 C.Overlay_FilterByJob = filterByJob;
                 C.Save();

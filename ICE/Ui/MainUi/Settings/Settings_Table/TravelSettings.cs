@@ -135,6 +135,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.MountRadius = minMountRange;
                 C.Save();
             }
+            ImGui.SameLine();
             ImGui.Checkbox("Visualize radius", ref visualizeRadius);
             ImGui.SetNextItemWidth(100);
             if (ImGui.DragFloat("Dismount Target Range", ref dismountRange, 1))
@@ -142,6 +143,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.DismountRadius = dismountRange;
                 C.Save();
             }
+            ImGui.SameLine();
             ImGui.Checkbox("Visualize Dismount Radius", ref visualizeDismountRadius);
 
             using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
@@ -193,6 +195,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
             if (randomize)
             {
+                ImGui.SameLine();
                 float radius = C.RandomizeWaypointsRadius;
                 ImGui.SetNextItemWidth(100);
                 if (ImGui.SliderFloat("Randomize radius (yalms)", ref radius, 0.5f, 1.0f, "%.1f"))
@@ -208,6 +211,20 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 }
             }
 
+            bool useHubReturn = C.UseHubReturn;
+            if (ImGui.Checkbox("Use Hub Return", ref useHubReturn))
+            {
+                C.UseHubReturn = useHubReturn;
+                C.Save();
+            }
+            ImGui.SameLine();
+            bool useAethernet = C.UseAethernet;
+            if (ImGui.Checkbox("Use Aethernet", ref useAethernet))
+            {
+                C.UseAethernet = useAethernet;
+                C.Save();
+            }
+
             bool avoidStellarReturn = C.AvoidStellarReturn;
             if (ImGui.Checkbox("Avoid Stellar Return for pathing", ref avoidStellarReturn))
             {
@@ -216,26 +233,26 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("When enabled, the pathfinder will never use Stellar Return as a shortcut.\nIt will still be used when returning to hub for vendors/repairs.");
+                ImGui.SetTooltip("When enabled, the pathfinder will not use Stellar Return to travel to gathering nodes.\nThis applies to both Hub Return and Hub + Aethernet travel methods.");
             }
-
-            bool useHubReturn = C.UseHubReturn;
-            if (ImGui.Checkbox("Use Hub Return", ref useHubReturn))
+            if (C.AvoidStellarReturn)
             {
-                C.UseHubReturn = useHubReturn;
-                C.Save();
-            }
-
-            bool useAethernet = C.UseAethernet;
-            if (ImGui.Checkbox("Use Aethernet", ref useAethernet))
-            {
-                C.UseAethernet = useAethernet;
-                C.Save();
+                ImGui.SameLine();
+                bool exceptHub = C.AvoidStellarReturnExceptHub;
+                if (ImGui.Checkbox("Except for hub activities", ref exceptHub))
+                {
+                    C.AvoidStellarReturnExceptHub = exceptHub;
+                    C.Save();
+                }
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("When enabled, Stellar Return will still be used to return to the hub\nfor activities like credit purchases, gambling, drone bits, and repairs.");
+                }
             }
 
             var minHubReturnDistance = C.HubReturn_Distance;
             ImGui.SetNextItemWidth(200);
-            if (ImGui.DragFloat("Distance before hub return is used", ref minHubReturnDistance))
+            if (ImGui.DragFloat("Distance before hub return is used (yalms)", ref minHubReturnDistance))
             {
                 C.HubReturn_Distance = minHubReturnDistance;
                 C.SaveDebounced();
