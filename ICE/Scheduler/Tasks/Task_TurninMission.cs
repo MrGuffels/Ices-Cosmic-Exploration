@@ -28,8 +28,7 @@ namespace ICE.Scheduler.Tasks
                     new(() => Mission_TurninV2(), "Turning in the mission to the moon gods", Utils.TaskConfig),
                     new(() => GoldCheck(), "Checking if Gold Check Task needs to be completed"),
                     new(() => CommandCheck(), "Checking for post mission commands"),
-                    new(() => JobSwapCheck(), "Checking for necessary job swap"),
-                    new(() => ClearAllPostTask(), "Clearing all post task")
+                    new(() => JobSwapCheck(), "Checking for necessary job swap")
                 );
         }
 
@@ -500,7 +499,7 @@ namespace ICE.Scheduler.Tasks
             {
                 IceLogging.Info($"Queueing up the following command:\n" +
                     $"{task.command}\n" +
-                    $"Delay: {task.Delay}");
+                    $"Delay: {task.Delay}", tag);
                 P.TaskManager.Enqueue(() => ExecuteCommand(task.command));
                 if (task.Delay > 0)
                     P.TaskManager.EnqueueDelay(task.Delay);
