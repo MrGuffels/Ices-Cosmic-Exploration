@@ -356,29 +356,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                     }
 
-                    if (false)
-                    {
-                        ImGui.TableNextColumn();
-                        if (completionExpanded)
-                        {
-                            bool showSelectedJobOnly = C.ShowSelectedJobOnly;
-                            if (ImGui.Checkbox("Show only selected job", ref showSelectedJobOnly))
-                            {
-                                C.ShowSelectedJobOnly = showSelectedJobOnly;
-                                if (showSelectedJobOnly)
-                                    C.ShowCompletionOnlyJob = false;
-                                C.Save();
-                            }
-
-                            bool nonGold = C.ShowCompletion_MissingGold;
-                            if (ImGui.Checkbox("Show Only Non-Gold Missions", ref nonGold))
-                            {
-                                C.ShowCompletion_MissingGold = nonGold;
-                                C.Save();
-                            }
-                        }
-                    }
-
                     if (C.SelectedMode == ModeSelect.Standard)
                     {
                         ImGui.TableNextColumn();
@@ -560,15 +537,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     bool sinusEnabled = C.ShowSinusMissions;
                     bool phaennaEnabled = C.ShowPhaennaMissions;
                     bool oizysEnabled = C.ShowOizysMissions;
-
-                    if (C.ShowCompletionWindow)
-                    {
-                        if (C.ShowCompletionOnlyJob)
-                        {
-                            if (!Jobs.Contains(selectedJob))
-                                continue;
-                        }
-                    }
 
                     if (!sinusEnabled && territoryId == 1237)
                         continue;

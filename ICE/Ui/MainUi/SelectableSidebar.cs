@@ -165,6 +165,8 @@ namespace ICE.Ui.MainUi
                 }
             }
         }
+
+
         private static void PluginIcon()
         {
             string PluginIcon = "ICE.Resources.Icon.png";
@@ -184,11 +186,18 @@ namespace ICE.Ui.MainUi
                 // Center and drawing the image now
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offsetX);
                 ImGui.Image(pluginIcon.Handle, imageSize);
-                if (ImGui.IsItemClicked())
+                if (ImGui.IsItemHovered())
                 {
-                    var random = new Random();
-                    modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count - 1);
-                    modeSelect_TableInfo.selectedMission = 0;
+                    if (modeSelect_TableInfo.jokeId == -1)
+                    {
+                        var random = new Random();
+                        modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count);
+                    }
+                    ImGui.SetTooltip(modeSelect_TableInfo.JokeList[modeSelect_TableInfo.jokeId]);
+                }
+                else
+                {
+                    modeSelect_TableInfo.jokeId = -1;
                 }
 
                 // Add spacing after image
