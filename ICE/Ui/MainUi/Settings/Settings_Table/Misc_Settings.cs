@@ -23,7 +23,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             Separator();
             SafetySettings.Draw();
             Separator();
-            ArtisanSettings();
+            ArtisanSettingsV2();
             Separator();
             TimeRecords();
             Separator();
@@ -324,7 +324,7 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 
         private static void ArtisanSettings()
         {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, "Artisan Settings");
+            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, "Global Artisan Settings");
             ImGui.Dummy(new Vector2(0, 5));
 
             bool force_Raphael = C.Artisan_RaphaelForce;
@@ -366,6 +366,531 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
 
             ImGui.TextDisabled("More Coming Soon. . . ");
+        }
+
+        private static void ArtisanSettingsV2()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Wrench, "Global Artisan Settings");
+            ImGui.Dummy(new Vector2(0, 5));
+
+            List<ArtisanCraftType> global_StandardModes = new()
+            {
+                ArtisanCraftType.Default,
+                ArtisanCraftType.ProgressOnly,
+                ArtisanCraftType.Standard,
+                ArtisanCraftType.Raphael,
+            };
+
+            List<ArtisanCraftType> global_ExpertModes = new()
+            {
+                ArtisanCraftType.Default,
+                ArtisanCraftType.Expert,
+                ArtisanCraftType.Raphael,
+            };
+
+            if (ImGui.BeginTable("Global Artisan Settings", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
+            {
+                ImGui.TableSetupColumn("");
+                ImGui.TableSetupColumn("Standard Craft Settings");
+                ImGui.TableSetupColumn("Expert Craft Settings");
+
+                ImGui.TableHeadersRow();
+
+                var craft_Standard = C.Artisan_GlobalStandard;
+                var craft_Expert = C.Artisan_GlobalExpert;
+
+                #region Labels
+
+                string GetSolverLabel(ArtisanCraftType type)
+                {
+                    return type switch
+                    {
+                        ArtisanCraftType.Default => "Default",
+                        ArtisanCraftType.Raphael => "Raphael Solver",
+                        ArtisanCraftType.ProgressOnly => "Progress Only Solver",
+                        ArtisanCraftType.Standard => "Standard Solver",
+                        ArtisanCraftType.Expert => "Expert Recipe Solver",
+                        _ => "Unknown"
+                    };
+                }
+                string GetFoodLable(uint foodId)
+                {
+                    if (foodId == 0) return "Default";
+                    var item = ConsumableInfo.CrafterFood.FirstOrDefault(x => x.Id == foodId);
+                    PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                    PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
+                    return BuildItemLabel(item.Name, nq, hq);
+                }
+                string GetPotionLable(uint potionId)
+                {
+                    if (potionId == 0) return "Default";
+                    var item = ConsumableInfo.Pots.FirstOrDefault(x => x.Id == potionId);
+                    PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                    PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
+                    return BuildItemLabel(item.Name, nq, hq);
+                }
+                string GetManualLabel(uint manualId)
+                {
+                    if (manualId == 0) return "Default";
+                    var item = ConsumableInfo.Manuals.FirstOrDefault(x => x.Id == manualId);
+                    PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                    return BuildItemLabel(item.Name, nq, 0);
+                }
+                string GetSquadronManualLabel(uint squadManualId)
+                {
+                    if (squadManualId == 0) return "Default";
+                    var item = ConsumableInfo.SquadronManuals.FirstOrDefault(x => x.Id == squadManualId);
+                    PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                    return BuildItemLabel(item.Name, nq, 0);
+                }
+                string BuildItemLabel(string name, int nqCount, int hqCount)
+                {
+                    var parts = new List<string>();
+                    if (hqCount > 0) parts.Add($"{(char)0xE03C} {name} [x{hqCount}]");
+                    if (nqCount > 0) parts.Add($"{name} [x{nqCount}]");
+                    return string.Join(" / ", parts);
+                }
+
+                var standard_FoodLabel = GetFoodLable(craft_Standard.FoodId);
+                var Expert_FoodLabel = GetFoodLable(craft_Expert.FoodId);
+
+                var standard_PotionLabel = GetPotionLable(craft_Standard.PotionId);
+                var expert_PotionLabel = GetPotionLable(craft_Expert.PotionId);
+
+                var standard_ManualLabel = GetManualLabel(craft_Standard.ManualId);
+                var expert_ManalLabel = GetManualLabel(craft_Expert.ManualId);
+
+                var standard_SquadManualLabel = GetSquadronManualLabel(craft_Standard.SquadronManual);
+                var expert_SquadManalLabel = GetSquadronManualLabel(craft_Expert.SquadronManual);
+
+                var standardSolver = craft_Standard.SolverType.ToString();
+                var expertSolver = craft_Expert.SolverType.ToString();
+
+                float standard_ComboWidth = new[]
+                {
+                    standard_FoodLabel,
+                    standard_PotionLabel,
+                    standard_ManualLabel,
+                    standard_SquadManualLabel,
+                    GetSolverLabel(craft_Standard.SolverType),
+                }.Max(label => ImGui.CalcTextSize(label).X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ScrollbarSize + 10);
+
+                float expert_ComboWidth = new[]
+                {
+                    Expert_FoodLabel,
+                    expert_PotionLabel,
+                    expert_ManalLabel,
+                    expert_SquadManalLabel,
+                    GetSolverLabel(craft_Expert.SolverType),
+                }.Max(label => ImGui.CalcTextSize(label).X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ScrollbarSize + 10);
+
+                #endregion
+
+                #region Solvers
+
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+
+                ImGui.AlignTextToFramePadding();
+                ImGui.Text("Solver Type");
+
+                ImGui.TableNextColumn();
+                ImGui.SetNextItemWidth(standard_ComboWidth);
+                if (ImGui.BeginCombo("##StandardSolverType", GetSolverLabel(craft_Standard.SolverType)))
+                {
+                    foreach (var type in global_StandardModes)
+                    {
+                        bool isSelected = craft_Standard.SolverType == type;
+                        if (ImGui.Selectable(GetSolverLabel(type), isSelected))
+                        {
+                            craft_Standard.SolverType = type;
+                            C.Save();
+                        }
+                        if (isSelected)
+                            ImGui.SetItemDefaultFocus();
+                    }
+                    ImGui.EndCombo();
+                }
+
+                ImGui.TableNextColumn();
+                ImGui.SetNextItemWidth(expert_ComboWidth);
+                if (ImGui.BeginCombo("##ExpertSolverType", GetSolverLabel(craft_Expert.SolverType)))
+                {
+                    foreach (var type in global_ExpertModes)
+                    {
+                        bool isSelected = craft_Expert.SolverType == type;
+                        if (ImGui.Selectable(GetSolverLabel(type), isSelected))
+                        {
+                            craft_Expert.SolverType = type;
+                            C.Save();
+                        }
+                        if (isSelected)
+                            ImGui.SetItemDefaultFocus();
+                    }
+                    ImGui.EndCombo();
+                }
+
+                #endregion
+
+                bool supportedArtisan = P.Artisan.UpdatedArtisan();
+
+                if (supportedArtisan)
+                {
+                    #region Food Column
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text("Food");
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(standard_ComboWidth);
+                    if (ImGui.BeginCombo("##StandardFood", standard_FoodLabel))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Standard.FoodId == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Standard.FoodId = 0;
+                            craft_Standard.FoodHQ = false;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.CrafterFood)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+                            PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
+
+                            if (nqCount == 0 && hqCount == 0) continue;
+
+                            bool isSelected = craft_Standard.FoodId == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Standard.FoodId = item.Id;
+                                craft_Standard.FoodHQ = hqCount > 0;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(expert_ComboWidth);
+                    if (ImGui.BeginCombo("##ExpertFood", GetFoodLable(craft_Expert.FoodId)))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Expert.FoodId == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Expert.FoodId = 0;
+                            craft_Expert.FoodHQ = false;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.CrafterFood)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+                            PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
+
+                            if (nqCount == 0 && hqCount == 0) continue;
+
+                            bool isSelected = craft_Expert.FoodId == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Expert.FoodId = item.Id;
+                                craft_Expert.FoodHQ = hqCount > 0;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    #endregion
+
+                    #region Potion Row
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text("Potions");
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(standard_ComboWidth);
+                    if (ImGui.BeginCombo("##StandardPotion", standard_PotionLabel))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Standard.PotionId == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Standard.PotionId = 0;
+                            craft_Standard.PotionHQ = false;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.Pots)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+                            PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
+
+                            if (nqCount == 0 && hqCount == 0) continue;
+
+                            bool isSelected = craft_Standard.PotionId == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Standard.PotionId = item.Id;
+                                craft_Standard.PotionHQ = hqCount > 0;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(expert_ComboWidth);
+                    if (ImGui.BeginCombo("##ExpertPotion", expert_PotionLabel))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Expert.PotionId == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Expert.PotionId = 0;
+                            craft_Expert.PotionHQ = false;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.Pots)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+                            PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
+
+                            if (nqCount == 0 && hqCount == 0) continue;
+
+                            bool isSelected = craft_Expert.PotionId == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Expert.PotionId = item.Id;
+                                craft_Expert.PotionHQ = hqCount > 0;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    #endregion
+
+                    #region Manual
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text("Manual");
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(standard_ComboWidth);
+                    if (ImGui.BeginCombo("##StandardManual", standard_ManualLabel))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Standard.ManualId == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Standard.ManualId = 0;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.Manuals)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+
+                            if (nqCount == 0) continue;
+
+                            bool isSelected = craft_Standard.ManualId == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Standard.ManualId = item.Id;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(expert_ComboWidth);
+                    if (ImGui.BeginCombo("##ExpertManual", expert_ManalLabel))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Expert.ManualId == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Expert.ManualId = 0;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.Manuals)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+
+                            if (nqCount == 0) continue;
+
+                            bool isSelected = craft_Expert.ManualId == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Expert.ManualId = item.Id;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    #endregion
+
+                    #region Squadron Manual
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text("Squadron Manual");
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(standard_ComboWidth);
+                    if (ImGui.BeginCombo("##StandardSquadManual", standard_SquadManualLabel))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Standard.SquadronManual == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Standard.SquadronManual = 0;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.SquadronManuals)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+
+                            if (nqCount == 0) continue;
+
+                            bool isSelected = craft_Standard.SquadronManual == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Standard.SquadronManual = item.Id;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.SetNextItemWidth(expert_ComboWidth);
+                    if (ImGui.BeginCombo("##ExpertSquadManual", expert_SquadManalLabel))
+                    {
+                        // Default option
+                        bool isDefaultSelected = craft_Expert.SquadronManual == 0;
+                        if (ImGui.Selectable("Default", isDefaultSelected))
+                        {
+                            craft_Expert.SquadronManual = 0;
+                            C.Save();
+                        }
+                        if (isDefaultSelected)
+                            ImGui.SetItemDefaultFocus();
+
+                        ImGui.Separator();
+
+                        foreach (var item in ConsumableInfo.SquadronManuals)
+                        {
+                            PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+
+                            if (nqCount == 0) continue;
+
+                            bool isSelected = craft_Expert.SquadronManual == item.Id;
+                            string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
+
+                            if (ImGui.Selectable(label, isSelected))
+                            {
+                                craft_Expert.SquadronManual = item.Id;
+                                C.Save();
+                            }
+
+                            if (isSelected)
+                                ImGui.SetItemDefaultFocus();
+                        }
+
+                        ImGui.EndCombo();
+                    }
+
+                    #endregion
+                }
+
+                ImGui.EndTable();
+            }
         }
 
         private static void Separator()

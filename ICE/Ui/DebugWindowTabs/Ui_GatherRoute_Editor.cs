@@ -2,16 +2,12 @@
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using ICE.Resources.GatheringRoutes;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
-using Pictomancy;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using static FFXIVClientStructs.FFXIV.Client.UI.AddonRelicNoteBook;
-using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentWKSMission;
 
 namespace ICE.Ui.DebugWindowTabs
 {
@@ -27,6 +23,9 @@ namespace ICE.Ui.DebugWindowTabs
         private static bool showSelectedNode = false;
         private static bool showRouteBetween = true;
 
+        private static bool _isGeneratingFan = false;
+        private static string _fanGenStatus = string.Empty;
+
         private static FileDialogManager fileDialogManager = new FileDialogManager();
 
         public static unsafe async Task Draw()
@@ -35,8 +34,6 @@ namespace ICE.Ui.DebugWindowTabs
 
             // used for picto drawing here
             List<(uint nodeId, Vector3 position)> AllNodes = new();
-
-
 
             // end picto stuff
 
@@ -385,6 +382,11 @@ namespace ICE.Ui.DebugWindowTabs
                         {
                             UpdateCache(routeList);
                         }
+                        ImGui.SameLine();
+                        if (ImGui.Button("Clear Path"))
+                        {
+                            cachedWaypointPath = null;
+                        }
 
                         var route = routeList.Where(x => x.NodeId == selectedNode).FirstOrDefault();
                         if (route != null)
@@ -408,43 +410,51 @@ namespace ICE.Ui.DebugWindowTabs
 
                             // Radius Start/End
                             ImGui.Text("Radius Info");
-                            float radiusStart = route.RadiusStart;
-                            float radiusEnd = route.RadiusEnd;
+                            float radiusStart = route.Radius_Start;
+                            float radiusEnd = route.Radius_End;
+                            float height = route.FanHeight;
 
                             ImGui.SetNextItemWidth(100);
-                            if (ImGui.DragFloat("Start##radiusStart", ref radiusStart, 1, -360, 360))
+                            if (ImGui.DragFloat("Start##radiusStart", ref radiusStart, 1, 0, 360))
                             {
-                                route.RadiusStart = radiusStart;
+                                route.Radius_Start = radiusStart;
                             }
 
                             ImGui.SameLine();
                             ImGui.SetNextItemWidth(100);
-                            if (ImGui.DragFloat("End##radiusEnd", ref radiusEnd, 1, -360, 360))
+                            if (ImGui.DragFloat("End##radiusEnd", ref radiusEnd, 1, 0, 360))
                             {
-                                route.RadiusEnd = radiusEnd;
+                                route.Radius_End = radiusEnd;
+                            }
+
+                            ImGui.SameLine();
+                            ImGui.SetNextItemWidth(100);
+                            if (ImGui.DragFloat("Height", ref height, 0.1f, 0, 3))
+                            {
+                                route.FanHeight = height;
                             }
 
                             // Min/Max Distance
                             ImGui.Text("Distance to Node");
-                            float minDistance = route.MinDistance;
-                            float maxDistance = route.MaxDistance;
+                            float minDistance = route.Distance_Min;
+                            float maxDistance = route.Distance_Max;
 
                             ImGui.SetNextItemWidth(100);
                             if (ImGui.DragFloat("Start##minDistance", ref minDistance, 0.1f, 0, 5))
                             {
-                                route.MinDistance = minDistance;
+                                route.Distance_Min = minDistance;
                             }
 
                             ImGui.SameLine();
                             ImGui.SetNextItemWidth(100);
                             if (ImGui.DragFloat("End##maxDistance", ref maxDistance, 0.1f, 0, 5))
                             {
-                                route.MaxDistance = maxDistance;
+                                route.Distance_Max = maxDistance;
                             }
 
                             if (ImGui.Button("Path to node"))
                             {
-                                P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(route.LandZone, stayMounted: true), Utils.TaskConfig);
+                                P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_GatherMove(route, stayMounted: true), Utils.TaskConfig);
                             }
                             ImGui.SameLine();
                             if (ImGui.Button("Test Massive Pathfinding"))
@@ -460,7 +470,7 @@ namespace ICE.Ui.DebugWindowTabs
                                     if (firstPosition == Vector3.Zero)
                                         firstPosition = routeItem.LandZone;
 
-                                    P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(routeItem.LandZone, stayMounted: true), Utils.TaskConfig);
+                                    P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_GatherMove(routeItem, stayMounted: true), Utils.TaskConfig);
                                 }
                                 P.TaskManager.Enqueue(() => Task_NavmeshMove.Task_NavTo(firstPosition, stayMounted: true), Utils.TaskConfig);
                             }
@@ -471,12 +481,35 @@ namespace ICE.Ui.DebugWindowTabs
                                 P.TaskManager.Abort();
                                 P.Navmesh.Stop();
                             }
+
+                            ImGui.Dummy(new Vector2(0, 5));
+                            ImGui.Separator();
+                            ImGui.Text("Fan Auto-Generation");
+
+                            using (var disabled = ImRaii.Disabled(_isGeneratingFan))
+                            {
+                                if (ImGui.Button("Generate Fan from Navmesh"))
+                                {
+                                    _ = GenerateFanForNode(route);
+                                }
+                            }
+
+                            if (_isGeneratingFan)
+                            {
+                                ImGui.SameLine();
+                                ImGui.TextColored(new Vector4(1f, 1f, 0f, 1f), "Sampling...");
+                            }
+
+                            if (!string.IsNullOrEmpty(_fanGenStatus))
+                            {
+                                ImGui.TextWrapped(_fanGenStatus);
+                            }
                         }
                     }
 
                     if (showRouteBetween)
                     {
-                        PictoManager.DrawGatherNodes(routeList, cachedWaypointPath);
+                        PictoManager.DrawGatherNodes(routeList, selectedNode, cachedWaypointPath);
                     }
                 }
             }
@@ -738,6 +771,181 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 IceLogging.Error($"Error generating waypoint path: {ex.Message}");
                 return null;
+            }
+        }
+
+        private static async Task GenerateFanForNode(GathNodeInfo route)
+        {
+            _isGeneratingFan = true;
+            _fanGenStatus = string.Empty;
+
+            try
+            {
+                Vector3 nodePos = route.Position;
+
+                // Sampling config
+                const float snapToleranceXZ = 0.5f;
+                const float snapToleranceY = 5f;
+                const float testDistanceMin = 1.0f;
+                const float testDistanceMax = 2.4f;
+                const float distanceStep = 0.5f;
+                const int angleSamples = 360;
+
+                var validDistances = new Dictionary<int, List<float>>();
+                var validYHeights = new Dictionary<int, float>();
+
+                await Task.Run(() =>
+                {
+                    for (int angleDeg = 0; angleDeg < angleSamples; angleDeg++)
+                    {
+                        float ffxivAngle = angleDeg;
+                        bool allDistancesValid = true;
+                        var distancesForAngle = new List<float>();
+                        float highestY = float.MinValue;
+
+                        for (float dist = testDistanceMin; dist <= testDistanceMax; dist += distanceStep)
+                        {
+                            float standardAngle = 180f - ffxivAngle;
+                            float rad = standardAngle * (MathF.PI / 180f);
+                            Vector3 candidate = new Vector3(
+                                nodePos.X + dist * MathF.Sin(rad),
+                                nodePos.Y,
+                                nodePos.Z + dist * MathF.Cos(rad)
+                            );
+
+                            var nearest = P.Navmesh.NearestPointReachable(candidate, snapToleranceXZ, snapToleranceY);
+                            if (nearest.HasValue)
+                            {
+                                float xzDist = MathF.Sqrt(
+                                    MathF.Pow(nearest.Value.X - candidate.X, 2) +
+                                    MathF.Pow(nearest.Value.Z - candidate.Z, 2)
+                                );
+                                float yDist = MathF.Abs(nearest.Value.Y - candidate.Y);
+
+                                if (xzDist <= snapToleranceXZ && yDist <= snapToleranceY)
+                                {
+                                    distancesForAngle.Add(dist);
+                                    if (nearest.Value.Y > highestY)
+                                        highestY = nearest.Value.Y;
+                                }
+                                else
+                                {
+                                    allDistancesValid = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                allDistancesValid = false;
+                                break;
+                            }
+                        }
+
+                        if (allDistancesValid && distancesForAngle.Count > 0)
+                        {
+                            validDistances[angleDeg] = distancesForAngle;
+                            validYHeights[angleDeg] = highestY;
+                        }
+                    }
+                });
+
+                if (validDistances.Count == 0)
+                {
+                    _fanGenStatus = "No reachable points found around this node.";
+                    return;
+                }
+
+                // Build bool array of valid angles
+                bool[] valid = new bool[360];
+                foreach (var kvp in validDistances)
+                    valid[kvp.Key] = true;
+
+                // Find largest contiguous arc (handles wraparound by doubling the array)
+                int bestStart = 0, bestLen = 0;
+                int currentStart = 0, currentLen = 0;
+
+                for (int i = 0; i < 720; i++)
+                {
+                    if (valid[i % 360])
+                    {
+                        if (currentLen == 0)
+                            currentStart = i;
+                        currentLen++;
+
+                        if (currentLen > bestLen)
+                        {
+                            bestLen = currentLen;
+                            bestStart = currentStart;
+                        }
+                    }
+                    else
+                    {
+                        currentLen = 0;
+                    }
+
+                    if (currentLen >= 360)
+                        break;
+                }
+
+                if (bestLen == 0)
+                {
+                    _fanGenStatus = "Could not find a contiguous arc of reachable angles.";
+                    return;
+                }
+
+                int ffxivStart = bestStart % 360;
+                int ffxivEnd = (bestStart + bestLen - 1) % 360;
+
+                // Convert back to Pictomancy space
+                float pictoStart = (ffxivStart + 180f) % 360f;
+                float pictoEnd = (ffxivEnd + 180f) % 360f;
+
+                // Derive min/max distance and max Y within the arc
+                float allMin = float.MaxValue, allMax = float.MinValue;
+                float arcMaxY = float.MinValue;
+
+                foreach (var kvp in validDistances)
+                {
+                    int normalizedAngle = ((kvp.Key - ffxivStart) % 360 + 360) % 360;
+                    if (normalizedAngle < bestLen)
+                    {
+                        foreach (var d in kvp.Value)
+                        {
+                            if (d < allMin) allMin = d;
+                            if (d > allMax) allMax = d;
+                        }
+                    }
+                }
+
+                foreach (var kvp in validYHeights)
+                {
+                    int normalizedAngle = ((kvp.Key - ffxivStart) % 360 + 360) % 360;
+                    if (normalizedAngle < bestLen && kvp.Value > arcMaxY)
+                        arcMaxY = kvp.Value;
+                }
+
+                // Compute fan height offset
+                float fanHeight = 0f;
+                if (arcMaxY != float.MinValue && arcMaxY > nodePos.Y)
+                    fanHeight = MathF.Round((arcMaxY - nodePos.Y) + 0.2f, 2);
+
+                route.Radius_Start = pictoStart;
+                route.Radius_End = pictoEnd;
+                route.Distance_Min = MathF.Round(allMin, 1);
+                route.Distance_Max = MathF.Round(allMax, 1);
+                route.FanHeight = fanHeight;
+
+                _fanGenStatus = $"Generated! Angles: {pictoStart:F0}→{pictoEnd:F0} (arc {bestLen}°), Distance: {allMin:F1}→{allMax:F1}, Height: {fanHeight:F2}";
+                IceLogging.Info($"[FanGen] Node {route.NodeId}: Picto {pictoStart:F0}→{pictoEnd:F0}, dist {allMin:F1}→{allMax:F1}, height {fanHeight:F2}");
+            }
+            catch (Exception ex)
+            {
+                _fanGenStatus = $"Error: {ex.Message}";
+                IceLogging.Error($"[FanGen] Failed: {ex.Message}");
+            }
+            finally
+            {
+                _isGeneratingFan = false;
             }
         }
     }

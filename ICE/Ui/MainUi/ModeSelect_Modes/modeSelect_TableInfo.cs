@@ -7,9 +7,11 @@ using ICE.Utilities.Cosmic;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
 using Lumina.Excel.Sheets;
+using Lumina.Excel.Sheets.Experimental;
 using System.Collections.Generic;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 using static MissionTimer;
+using Recipe = Lumina.Excel.Sheets.Recipe;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes
 {
@@ -1756,161 +1758,421 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     {
                         foreach (var craft in mission.Crafts_Main)
                         {
-                            if (Svc.Data.GetExcelSheet<Recipe>().TryGetRow(craft.Key, out var recipe))
+                            if (ImGui.BeginTable($"Main Craft Details_{craft.Value.RecipeId}", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Hideable))
                             {
-                                var availWidth = ImGui.GetContentRegionAvail();
+                                ImGui.TableSetupColumn("Item Details");
+                                ImGui.TableSetupColumn("Dropdown Detail");
+                                ImGui.TableSetupColumn("Dropdown Selection", ImGuiTableColumnFlags.WidthStretch);
 
-                                if (ImGui.BeginChild($"Main Craft Details_{craft.Value.RecipeId}", new(availWidth.X, 200), true))
+                                if (C.MissionConfig[id].CraftSettings.TryGetValue(craft.Value.RecipeId, out var recipeConfig))
                                 {
-                                    if (ImGui.BeginTable($"Main Craft Detail Table_{craft.Value.RecipeId}", 2, ImGuiTableFlags.SizingFixedFit))
+                                    bool globalArtisan = recipeConfig.UseGlobal;
+                                    bool supportedArtisan = P.Artisan.UpdatedArtisan();
+
+                                    ImGui.TableSetColumnEnabled(1, !globalArtisan);
+                                    ImGui.TableSetColumnEnabled(2, !globalArtisan);
+
+                                    var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Value.RecipeId);
+                                    var recipeSheet = Svc.Data.GetExcelSheet<Recipe>().GetRow(craft.Value.RecipeId);
+                                    var iconId = recipeSheet.ItemResult.Value.Icon;
+                                    string itemName = recipeSheet.ItemResult.Value.Name.ToString();
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    if (ImGui.Checkbox("Use Global Artisan Settings", ref globalArtisan))
                                     {
-                                        ImGui.TableSetupColumn("Item Details");
-                                        ImGui.TableSetupColumn("Item Settings");
+                                        recipeConfig.UseGlobal = globalArtisan;
+                                        C.Save();
+                                    }
 
-                                        ImGui.PushID(craft.Value.RecipeId);
+                                    #region Label info
 
-                                        if (C.MissionConfig[id].CraftSettings.TryGetValue(craft.Value.RecipeId, out var recipeConfig))
+                                    string GetSolverLabel(ArtisanCraftType type)
+                                    {
+                                        return type switch
                                         {
-                                            var recipeInfo = CosmicHelper.SpecificRecipeInfo(job, craft.Key);
-                                            var iconId = recipe.ItemResult.Value.Icon;
-                                            string itemName = recipe.ItemResult.Value.Name.ToString();
+                                            ArtisanCraftType.Default => "Default",
+                                            ArtisanCraftType.Raphael => "Raphael Solver",
+                                            ArtisanCraftType.ProgressOnly => "Progress Only Solver",
+                                            ArtisanCraftType.Standard => "Standard Solver",
+                                            ArtisanCraftType.Expert => "Expert Recipe Solver",
+                                            ArtisanCraftType.Macro => "Artisan Macro",
+                                            _ => "Unknown"
+                                        };
+                                    }
+                                    string GetFoodLable(uint foodId)
+                                    {
+                                        if (foodId == 0) return "Default";
+                                        var item = ConsumableInfo.CrafterFood.FirstOrDefault(x => x.Id == foodId);
+                                        PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                                        PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
+                                        return BuildItemLabel(item.Name, nq, hq);
+                                    }
+                                    string GetPotionLable(uint potionId)
+                                    {
+                                        if (potionId == 0) return "Default";
+                                        var item = ConsumableInfo.Pots.FirstOrDefault(x => x.Id == potionId);
+                                        PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                                        PlayerHelper.GetItemCount(item.Id, out var hq, includeHq: true, includeNq: false);
+                                        return BuildItemLabel(item.Name, nq, hq);
+                                    }
+                                    string GetManualLabel(uint manualId)
+                                    {
+                                        if (manualId == 0) return "Default";
+                                        var item = ConsumableInfo.Manuals.FirstOrDefault(x => x.Id == manualId);
+                                        PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                                        return BuildItemLabel(item.Name, nq, 0);
+                                    }
+                                    string GetSquadronManualLabel(uint squadManualId)
+                                    {
+                                        if (squadManualId == 0) return "Default";
+                                        var item = ConsumableInfo.SquadronManuals.FirstOrDefault(x => x.Id == squadManualId);
+                                        PlayerHelper.GetItemCount(item.Id, out var nq, includeHq: false, includeNq: true);
+                                        return BuildItemLabel(item.Name, nq, 0);
+                                    }
+                                    string BuildItemLabel(string name, int nqCount, int hqCount)
+                                    {
+                                        var parts = new List<string>();
+                                        if (hqCount > 0) parts.Add($"{(char)0xE03C} {name} [x{hqCount}]");
+                                        if (nqCount > 0) parts.Add($"{name} [x{nqCount}]");
+                                        return string.Join(" / ", parts);
+                                    }
 
-                                            ImGui.TableNextRow();
-                                            // 1st Row: Image + Global 
-                                            ImGui.TableNextRow();
-                                            ImGui.TableSetColumnIndex(0);
-                                            if (Svc.Texture.TryGetFromGameIcon((int)iconId, out var iconImage))
+                                    var recipe_Solver = GetSolverLabel(recipeConfig.ArtisanSolverType);
+                                    var recipe_FoodLabel = GetFoodLable(recipeConfig.FoodId);
+                                    var recipe_PotionLabel = GetPotionLable(recipeConfig.PotionId);
+                                    var recipe_ManualLabel = GetManualLabel(recipeConfig.ManualId);
+                                    var recipe_SquadManualLabel = GetSquadronManualLabel(recipeConfig.SquadronManualId);
+
+                                    float recipe_ComboWidth = new[]
+                                    {
+                                                recipe_FoodLabel,
+                                                recipe_PotionLabel,
+                                                recipe_ManualLabel,
+                                                recipe_SquadManualLabel,
+                                                recipe_Solver
+                                            }.Max(label => ImGui.CalcTextSize(label).X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ScrollbarSize + 10);
+
+                                    List<ArtisanCraftType> standardSolvers = new()
+                                    {
+                                        ArtisanCraftType.Default,
+                                        ArtisanCraftType.Standard,
+                                        ArtisanCraftType.Raphael,
+                                        ArtisanCraftType.ProgressOnly,
+                                        ArtisanCraftType.Macro,
+                                    };
+
+                                    List<ArtisanCraftType> expertSolvers = new()
+                                    {
+                                        ArtisanCraftType.Default,
+                                        ArtisanCraftType.Expert,
+                                        ArtisanCraftType.Raphael,
+                                        ArtisanCraftType.Macro,
+                                    };
+
+                                    #endregion
+
+                                    #region Image
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    if (Svc.Texture.TryGetFromGameIcon((int)iconId, out var iconImage))
+                                    {
+                                        ImGui.Image(iconImage.GetWrapOrEmpty().Handle, new Vector2(24, 24));
+                                    }
+                                    if (craft.Value.ExpertCraft)
+                                    {
+                                        ImGui.SameLine();
+                                        ImGui.AlignTextToFramePadding();
+                                        ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
+                                        if (ImGui.IsItemHovered())
+                                        {
+                                            ImGui.SetTooltip("Expert Craft");
+                                        }
+                                    }
+
+                                    #endregion
+
+                                    #region Item Name + Solver
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.AlignTextToFramePadding();
+                                    ImGui.Text($"{itemName}");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text("Solver");
+
+                                    ImGui.TableNextColumn();
+                                    ImGui.SetNextItemWidth(recipe_ComboWidth);
+                                    if (ImGui.BeginCombo("##Solver", recipe_Solver))
+                                    {
+                                        if (craft.Value.ExpertCraft)
+                                        {
+                                            foreach (var type in expertSolvers)
                                             {
-                                                ImGui.Image(iconImage.GetWrapOrEmpty().Handle, new Vector2(30, 30));
-                                            }
-                                            if (recipe.IsExpert)
-                                            {
-                                                ImGui.SameLine();
-                                                ImGui.AlignTextToFramePadding();
-                                                ImGuiEx.Icon(new Vector4(1.0f, 0.4f, 0.0f, 1.0f), FontAwesomeIcon.Diamond);
-                                                if (ImGui.IsItemHovered())
+                                                bool isSelected = recipeConfig.ArtisanSolverType == type;
+                                                if (ImGui.Selectable(GetSolverLabel(type), isSelected))
                                                 {
-                                                    ImGui.SetTooltip("Expert Craft");
+                                                    recipeConfig.ArtisanSolverType = type;
+                                                    C.Save();
                                                 }
+                                                if (isSelected)
+                                                    ImGui.SetItemDefaultFocus();
                                             }
-
-                                            ImGui.TableNextColumn();
-                                            bool globalArtisan = recipeConfig.UseGlobal;
-                                            if (ImGui.Checkbox("Use Global Artisan Settings", ref globalArtisan))
-                                            {
-                                                recipeConfig.UseGlobal = globalArtisan;
-                                                C.Save();
-                                            }
-
-                                            // 2nd Row: Item Name + Food Dropdown
-                                            ImGui.TableNextRow();
-                                            ImGui.TableSetColumnIndex(0);
-                                            ImGui.AlignTextToFramePadding();
-                                            ImGui.Text($"{itemName}");
-
-                                            ImGui.TableNextColumn();
-                                            ImGui.SetNextItemWidth(200);
-                                            using (ImRaii.Disabled(globalArtisan))
-                                            {
-                                                if (ImGui.BeginCombo("##Test", "Food Selector"))
-                                                {
-                                                    ImGui.EndCombo();
-                                                }
-                                            }
-
-                                            ImGui.TableNextRow();
-                                            ImGui.TableSetColumnIndex(0);
-                                            ImGui.AlignTextToFramePadding();
-                                            ImGui.Text($"Durability: {recipeInfo.Durability}");
-
-                                            ImGui.TableNextColumn();
-                                            ImGui.SetNextItemWidth(200);
-                                            using (ImRaii.Disabled(globalArtisan))
-                                            {
-                                                if (ImGui.BeginCombo("##Test2", "Potion Selector"))
-                                                {
-                                                    ImGui.EndCombo();
-                                                }
-                                            }
-
-                                            ImGui.TableNextRow();
-                                            ImGui.TableSetColumnIndex(0);
-                                            ImGui.AlignTextToFramePadding();
-                                            ImGui.Text($"Progress: {recipeInfo.Progress}");
-
-                                            ImGui.TableNextColumn();
-                                            ImGui.SetNextItemWidth(200);
-                                            using (ImRaii.Disabled(globalArtisan))
-                                            {
-                                                if (ImGui.BeginCombo("##Test3", "Manual Selector"))
-                                                {
-                                                    ImGui.EndCombo();
-                                                }
-                                            }
-
-                                            ImGui.TableNextRow();
-                                            ImGui.TableSetColumnIndex(0);
-                                            ImGui.AlignTextToFramePadding();
-                                            ImGui.Text($"Quality: {recipeInfo.Quality}");
-
-                                            ImGui.TableNextColumn();
-                                            ImGui.SetNextItemWidth(200);
-                                            using (ImRaii.Disabled(globalArtisan))
-                                            {
-                                                if (ImGui.BeginCombo("##Test4", "Squad Manual Selector"))
-                                                {
-                                                    ImGui.EndCombo();
-                                                }
-                                            }
-
-                                            ImGui.TableNextRow();
-                                            ImGui.TableSetColumnIndex(0);
-                                            ImGui.SetNextItemWidth(200);
-                                            var currentSolver = recipeConfig.ArtisanSolverType;
-                                            using (ImRaii.Disabled(globalArtisan))
-                                            {
-                                                if (ImGui.BeginCombo("##Test 5", $"{currentSolver}"))
-                                                {
-                                                    foreach (ArtisanCraftType option in Enum.GetValues(typeof(ArtisanCraftType)))
-                                                    {
-                                                        bool isSelected = currentSolver == option;
-                                                        if (ImGui.Selectable(option.ToString(), isSelected))
-                                                        {
-                                                            recipeConfig.ArtisanSolverType = option;
-                                                            C.Save();
-                                                        }
-                                                        if (isSelected)
-                                                            ImGui.SetItemDefaultFocus();
-                                                    }
-
-                                                    ImGui.EndCombo();
-                                                }
-                                            }
-
-                                            ImGui.TableNextColumn();
-                                            if (currentSolver == ArtisanCraftType.Macro)
-                                            {
-                                                var macro = recipeConfig.MacroName;
-                                                ImGui.SetNextItemWidth(200);
-                                                if (ImGui.InputText("##MacroName", ref macro, 1000))
-                                                {
-                                                    recipeConfig.MacroName = macro;
-                                                    C.SaveDebounced();
-                                                }
-                                            }
-
-                                            ImGui.PopID();
                                         }
                                         else
                                         {
-                                            C.MissionConfig[id].CraftSettings[craft.Value.RecipeId] = new();
-                                            C.SaveDebounced();
+                                            foreach (var type in standardSolvers)
+                                            {
+                                                bool isSelected = recipeConfig.ArtisanSolverType == type;
+                                                if (ImGui.Selectable(GetSolverLabel(type), isSelected))
+                                                {
+                                                    recipeConfig.ArtisanSolverType = type;
+                                                    C.Save();
+                                                }
+                                                if (isSelected)
+                                                    ImGui.SetItemDefaultFocus();
+                                            }
                                         }
 
-                                        ImGui.EndTable();
+                                        ImGui.EndCombo();
                                     }
+
+                                    if (recipeConfig.ArtisanSolverType == ArtisanCraftType.Macro)
+                                    {
+                                        string macroName = recipeConfig.MacroName;
+                                        ImGui.SameLine();
+                                        ImGui.SetNextItemWidth(200);
+                                        if (ImGui.InputText("Macro Name", ref macroName))
+                                        {
+                                            recipeConfig.MacroName = macroName;
+                                            C.Save();
+                                        }
+                                    }
+
+                                    #endregion
+
+                                    #region Durability + Food
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.AlignTextToFramePadding();
+                                    ImGui.Text($"Durability: {recipeInfo.Durability}");
+
+                                    if (supportedArtisan)
+                                    {
+                                        ImGui.TableNextColumn();
+                                        ImGui.Text("Food");
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.SetNextItemWidth(recipe_ComboWidth);
+                                        if (ImGui.BeginCombo("##FoodSelection", recipe_FoodLabel))
+                                        {
+                                            bool isDefaultSelected = recipeConfig.FoodId == 0;
+                                            if (ImGui.Selectable("Default", isDefaultSelected))
+                                            {
+                                                recipeConfig.FoodId = 0;
+                                                recipeConfig.FoodHQ = false;
+                                                C.Save();
+                                            }
+                                            if (isDefaultSelected)
+                                                ImGui.SetItemDefaultFocus();
+
+                                            ImGui.Separator();
+
+                                            foreach (var item in ConsumableInfo.CrafterFood)
+                                            {
+                                                PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+                                                PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
+
+                                                if (nqCount == 0 && hqCount == 0) continue;
+
+                                                bool isSelected = recipeConfig.FoodId == item.Id;
+                                                string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
+
+                                                if (ImGui.Selectable(label, isSelected))
+                                                {
+                                                    recipeConfig.FoodId = item.Id;
+                                                    recipeConfig.FoodHQ = hqCount > 0;
+                                                    C.Save();
+                                                }
+
+                                                if (isSelected)
+                                                    ImGui.SetItemDefaultFocus();
+                                            }
+
+                                            ImGui.EndCombo();
+                                        }
+                                    }
+
+                                    #endregion
+
+                                    #region Progress + Potion
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.AlignTextToFramePadding();
+                                    ImGui.Text($"Progress: {recipeInfo.Progress}");
+
+                                    if (supportedArtisan)
+                                    {
+                                        ImGui.TableNextColumn();
+                                        ImGui.Text("Potion");
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.SetNextItemWidth(recipe_ComboWidth);
+                                        if (ImGui.BeginCombo("##StandardPotion", recipe_PotionLabel))
+                                        {
+                                            // Default option
+                                            bool isDefaultSelected = recipeConfig.PotionId == 0;
+                                            if (ImGui.Selectable("Default", isDefaultSelected))
+                                            {
+                                                recipeConfig.PotionId = 0;
+                                                recipeConfig.PotionHQ = false;
+                                                C.Save();
+                                            }
+                                            if (isDefaultSelected)
+                                                ImGui.SetItemDefaultFocus();
+
+                                            ImGui.Separator();
+
+                                            foreach (var item in ConsumableInfo.Pots)
+                                            {
+                                                PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+                                                PlayerHelper.GetItemCount(item.Id, out var hqCount, includeHq: true, includeNq: false);
+
+                                                if (nqCount == 0 && hqCount == 0) continue;
+
+                                                bool isSelected = recipeConfig.PotionId == item.Id;
+                                                string label = BuildItemLabel(item.Name, nqCount, hqCount) + $"###{item.Id}";
+
+                                                if (ImGui.Selectable(label, isSelected))
+                                                {
+                                                    recipeConfig.PotionId = item.Id;
+                                                    recipeConfig.PotionHQ = hqCount > 0;
+                                                    C.Save();
+                                                }
+
+                                                if (isSelected)
+                                                    ImGui.SetItemDefaultFocus();
+                                            }
+
+                                            ImGui.EndCombo();
+                                        }
+                                    }
+
+                                    #endregion
+
+                                    #region Quality + Manual
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+                                    ImGui.AlignTextToFramePadding();
+                                    ImGui.Text($"Quality: {recipeInfo.Quality}");
+
+                                    if (supportedArtisan)
+                                    {
+                                        ImGui.TableNextColumn();
+                                        ImGui.AlignTextToFramePadding();
+                                        ImGui.Text("Manual");
+
+                                        ImGui.TableNextColumn();
+                                        ImGui.SetNextItemWidth(recipe_ComboWidth);
+                                        if (ImGui.BeginCombo("##StandardManual", recipe_ManualLabel))
+                                        {
+                                            // Default option
+                                            bool isDefaultSelected = recipeConfig.ManualId == 0;
+                                            if (ImGui.Selectable("Default", isDefaultSelected))
+                                            {
+                                                recipeConfig.ManualId = 0;
+                                                C.Save();
+                                            }
+                                            if (isDefaultSelected)
+                                                ImGui.SetItemDefaultFocus();
+
+                                            ImGui.Separator();
+
+                                            foreach (var item in ConsumableInfo.Manuals)
+                                            {
+                                                PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+
+                                                if (nqCount == 0) continue;
+
+                                                bool isSelected = recipeConfig.ManualId == item.Id;
+                                                string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
+
+                                                if (ImGui.Selectable(label, isSelected))
+                                                {
+                                                    recipeConfig.ManualId = item.Id;
+                                                    C.Save();
+                                                }
+
+                                                if (isSelected)
+                                                    ImGui.SetItemDefaultFocus();
+                                            }
+
+                                            ImGui.EndCombo();
+                                        }
+                                    }
+
+                                    #endregion
+
+                                    #region Squadron Manual
+
+                                    if (globalArtisan)
+                                    {
+                                        ImGui.TableNextRow();
+                                        ImGui.TableSetColumnIndex(1);
+                                        ImGui.Text("Squadron Manual");
+
+                                        ImGui.TableNextColumn();
+                                        if (ImGui.BeginCombo("##StandardSquadManual", recipe_SquadManualLabel))
+                                        {
+                                            // Default option
+                                            bool isDefaultSelected = recipeConfig.SquadronManualId == 0;
+                                            if (ImGui.Selectable("Default", isDefaultSelected))
+                                            {
+                                                recipeConfig.SquadronManualId = 0;
+                                                C.Save();
+                                            }
+                                            if (isDefaultSelected)
+                                                ImGui.SetItemDefaultFocus();
+
+                                            ImGui.Separator();
+
+                                            foreach (var item in ConsumableInfo.SquadronManuals)
+                                            {
+                                                PlayerHelper.GetItemCount(item.Id, out var nqCount, includeHq: false, includeNq: true);
+
+                                                if (nqCount == 0) continue;
+
+                                                bool isSelected = recipeConfig.SquadronManualId == item.Id;
+                                                string label = BuildItemLabel(item.Name, nqCount, 0) + $"###{item.Id}";
+
+                                                if (ImGui.Selectable(label, isSelected))
+                                                {
+                                                    recipeConfig.SquadronManualId = item.Id;
+                                                    C.Save();
+                                                }
+
+                                                if (isSelected)
+                                                    ImGui.SetItemDefaultFocus();
+                                            }
+
+                                            ImGui.EndCombo();
+                                        }
+                                    }
+
+                                    #endregion
                                 }
-                                ImGui.EndChild();
+                                else
+                                {
+                                    C.MissionConfig[id].CraftSettings[craft.Value.RecipeId] = new();
+                                    C.SaveDebounced();
+                                }
+
+                                ImGui.EndTable();
                             }
                         }
                     }
