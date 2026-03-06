@@ -29,6 +29,10 @@ namespace ICE.Ui.DebugWindowTabs
             ImGui.InputInt("Max XP", ref maxXp);
             ImGui_Ice.Draw_XPBar(currentXp, neededXp, maxXp, size: new Vector2(200, 10));
 
+            ImGui.Separator();
+            var currentProgress = WorldProgress();
+            ImGui.Text($"World Stage: {currentProgress}");
+
             ImGui.Text("Need to actually put the player info here. It got lost");
             ImGui.Spacing();
             ImGui.AlignTextToFramePadding();
@@ -278,6 +282,15 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 return false;
             }
+        }
+
+        private static unsafe uint WorldProgress()
+        {
+            var wks = WKSManager.Instance();
+            if (wks == null)
+                return 0;
+
+            return wks->DevGrade;
         }
     }
 }
