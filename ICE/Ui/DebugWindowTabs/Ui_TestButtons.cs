@@ -218,6 +218,11 @@ namespace ICE.Ui.DebugWindowTabs
 
             ImGui.Text($"{WKSManager.Instance()->CurrentMissionUnitRowId}");
 
+            if (ImGui.Button("Test Drone Buy"))
+            {
+                Task_ArtifactSearch.EnqueueBuy();
+            }
+
             if (ImGui.Button("Find Mission"))
             {
                 // TaskMissionFind.Enqueue();
