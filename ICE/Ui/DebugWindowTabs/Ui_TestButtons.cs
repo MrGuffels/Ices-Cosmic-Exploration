@@ -194,11 +194,36 @@ namespace ICE.Ui.DebugWindowTabs
             { "uE0E9", "\uE0E9" },
         };
 
+        private static Vector3 WorldPos = Vector3.Zero;
+        private static float Scale = 1.0f;
+        private static float Height = 1.0f;
 
         public static unsafe void Draw()
         {
             ImGui.Text($"Current Mission: {CosmicHelper.CurrentLunarMission}");
             ImGui.Text($"Artisan Endurance: {P.Artisan.GetEnduranceStatus()}");
+
+            if (ImGui.Button($"Set Location: {WorldPos}##SetPositionForDraw"))
+            {
+                var pos = Player.Position;
+                WorldPos = pos;
+            }
+            ImGui.DragFloat("Height", ref Height, 0.1f, 0, 10);
+            ImGui.DragFloat("Scale", ref Scale);
+
+            if (WorldPos != Vector3.Zero)
+            {
+                var size = new Vector2(24 * Scale, 24 * Scale);
+                var icon = CosmicHelper.JobIconDict[8].GetWrapOrDefault();
+                if (icon != null)
+                {
+                    PictoManager.DrawIcon(icon.Handle, new(WorldPos.X, WorldPos.Y + Height, WorldPos.Z), size);
+                    ImGui.Image(icon.Handle, new(24, 24));
+                }
+            }
+
+            Ui_WorldIconTEst.DrawControls();
+            Ui_WorldIconTEst.DrawOverlay();
 
             //  4 - Col 2  - Unknown 7
             //  8 - Col 3  - Unknown 0
