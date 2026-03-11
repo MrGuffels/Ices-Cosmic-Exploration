@@ -330,14 +330,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
 
                             ImGui.Separator();
-
-                            ImGui.SameLine();
-                            ImGui.TextDisabled("?");
-                            if (ImGui.IsItemHovered())
+                            bool relic_AllowRedAlert = C.Relic_IncludeCriticals;
+                            if (ImGui.Checkbox("Allow Red Alerts for Relic", ref relicGrindExpanded))
                             {
-                                ImGui.SetTooltip("Please note. This will ONLY grind for relic Exp under the basic mission tab. \n" +
-                                                   "This will NOT work (even with missions selected) on the Sequence/Timed/Weather/Critical Missions");
+                                C.Relic_IncludeCriticals = relic_AllowRedAlert;
+                                C.Save();
                             }
+                            
                             bool OnlySelected = C.XPRelicOnlyEnabled;
                             if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
                             {
