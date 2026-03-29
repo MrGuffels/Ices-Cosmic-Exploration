@@ -129,6 +129,8 @@ namespace ICE.Ui.DebugWindowTabs
             {
                 customDestination = Player.Position;
             }
+
+            ImGui.Text($"Any need repaired: {PlayerHelper.AnyNeedsRepair(99)}");
         }
 
         private static unsafe void ClassInfo()

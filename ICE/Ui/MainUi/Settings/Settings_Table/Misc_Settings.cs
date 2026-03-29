@@ -234,6 +234,30 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                     C.SaveDebounced();
                 }
             }
+
+            bool repairAll = C.RepairAllGear;
+            if (ImGui.Checkbox("Repair all gear in bag", ref repairAll))
+            {
+                C.RepairAllGear = repairAll;
+                C.Save();
+            }
+
+            bool stopWhenNoDarkMatter = C.Stop_DarkMatter;
+            if (ImGui.Checkbox("Stop when below x dark matter", ref stopWhenNoDarkMatter))
+            {
+                C.Stop_DarkMatter = stopWhenNoDarkMatter;
+                C.Save();
+            }
+
+            int minDarkMatter = C.Minimum_DarkMatter;
+            ImGui.SetNextItemWidth(200);
+            if (ImGui.InputInt("Minimum Grade 8 Dark Matter", ref minDarkMatter, 1, 10))
+            {
+                C.Minimum_DarkMatter = minDarkMatter;
+                C.SaveDebounced();
+            }
+            PlayerHelper.GetItemCount(Utils.DarkMatter_8Id, out var dmCount);
+            ImGui.Text($"Current have: {dmCount:N0} Grade 8 Dark Matter");
         }
 
         private static void TimeRecords()
