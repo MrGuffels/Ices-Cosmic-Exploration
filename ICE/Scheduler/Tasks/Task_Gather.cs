@@ -639,7 +639,7 @@ namespace ICE.Scheduler.Tasks
                                     && (maxDur >= gatherBuff.MinUsableDurability)
                                     && properLvl,
                 "BountifulYieldII" => gatherBuff.Enabled
-                                   && !hasStatus
+                                   && !hasStatus && !PlayerHelper.HasStatusId(actionInfo.StatusId2)
                                    && hasGp
                                    && PlayerHelper.GetGp() >= gatherBuff.MinGp
                                    && (gatherBuff.MaxUse == -1 || gatherBuff.MaxUse > used)

@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface.Utility.Raii;
+using ICE.Utilities.ImGuiTools;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -192,53 +193,46 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         var jobImage = CosmicHelper.JobIconDict[agendaInfo.SelectedJob];
                         float zoom = 0.15f;
 
-                        if (ImGui.ImageButton(
-                            jobImage.GetWrapOrEmpty().Handle,
-                            new Vector2(20, 20),
-                            new Vector2(zoom, zoom),
-                            new Vector2(1 - zoom, 1 - zoom)
-                        ))
+                        if (ImGui.ImageButton(jobImage.GetWrapOrEmpty().Handle,new Vector2(20, 20), new Vector2(zoom, zoom), new Vector2(1 - zoom, 1 - zoom)))
                         {
                             ImGui.OpenPopup("Job Selection");
                         }
-                        using (var popup = ImRaii.Popup("Job Selection"))
+                        if (ImGui.BeginPopup("Job Selection"))
                         {
-                            if (popup)
+                            if (ImGui.BeginTable("JobTable", 2, ImGuiTableFlags.BordersInnerV))
                             {
-                                using (var table = ImRaii.Table("JobTable", 2, ImGuiTableFlags.BordersInnerV))
+                                ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 24);
+                                ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+
+                                foreach (var jobId in JobOptions)
                                 {
-                                    if (table)
+                                    var jobIcon = CosmicHelper.JobIconDict[jobId];
+                                    var jobName = CosmicHelper.GetJobName(jobId);
+                                    bool isSelected = jobId == SelectedJob;
+
+                                    ImGui.TableNextRow();
+                                    ImGui.TableNextColumn();
+
+                                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
+
+                                    ImGui.TableNextColumn();
+
+                                    if (ImGui.Selectable($"{jobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
                                     {
-                                        ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 24);
-                                        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch);
+                                        agendaInfo.SelectedJob = jobId;
+                                        C.Save();
+                                    }
 
-                                        foreach (var jobId in JobOptions)
-                                        {
-                                            var jobIcon = CosmicHelper.JobIconDict[jobId];
-                                            var jobName = CosmicHelper.GetJobName(jobId);
-                                            bool isSelected = jobId == SelectedJob;
-
-                                            ImGui.TableNextRow();
-                                            ImGui.TableNextColumn();
-
-                                            ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
-
-                                            ImGui.TableNextColumn();
-
-                                            if (ImGui.Selectable($"{jobName}##{jobName}_{jobId}", isSelected, ImGuiSelectableFlags.SpanAllColumns))
-                                            {
-                                                agendaInfo.SelectedJob = jobId;
-                                                C.Save();
-                                            }
-
-                                            if (isSelected)
-                                            {
-                                                ImGui.SetItemDefaultFocus();
-                                            }
-                                        }
+                                    if (isSelected)
+                                    {
+                                        ImGui.SetItemDefaultFocus();
                                     }
                                 }
+
+                                ImGui.EndTable();
                             }
+
+                            ImGui.EndPopup();
                         }
 
                         ImGui.TableNextColumn();
@@ -363,6 +357,52 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             }
 
                             ImGui.EndCombo();
+                        }
+                        if (currentMode == ModeSelect.Standard && PlayerHelper.IsInCosmicZone())
+                        {
+                            var SinusStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1237)
+                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
+                                .Where(x => C.MissionConfig[x.Key].Enabled)
+                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
+                                .Where(x => x.Value.Rank < 6)
+                                .Count();
+
+                            var PhaennaStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1291)
+                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
+                                .Where(x => C.MissionConfig[x.Key].Enabled)
+                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
+                                .Where(x => x.Value.Rank < 6)
+                                .Count();
+
+                            var OizysStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1310)
+                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
+                                .Where(x => C.MissionConfig[x.Key].Enabled)
+                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
+                                .Where(x => x.Value.Rank < 6)
+                                .Count();
+
+                            bool sinusWarning = PlayerHelper.IsInSinusArdorum() && SinusStandard == 0;
+                            bool phaennaWarning = PlayerHelper.IsInPhaenna() && PhaennaStandard == 0;
+                            bool oizysWarning = PlayerHelper.IsInOizys() && OizysStandard == 0;
+
+                            if (sinusWarning || phaennaWarning || oizysWarning)
+                            {
+                                string tooltip = "Hey! You seem to not have any standardard missions enabled on the planet/moon you're currently on.\n" +
+                                    "Please make sure to do so for this job if you don't want it to stall out when there is no timed/weather missions.\n" +
+                                    "Currently enabled on the planet you're on:";
+                                    
+
+                                if (PlayerHelper.IsInSinusArdorum())
+                                    tooltip += "\nSinus = {SinusStandard}";
+                                else if (PlayerHelper.IsInPhaenna())
+                                    tooltip += $"\nPhaenna = {PhaennaStandard}";
+                                else if (PlayerHelper.IsInOizys())
+                                    tooltip += $"\nOizys = {OizysStandard}";
+
+                                ImGui.SameLine();
+                                ImGui.AlignTextToFramePadding();
+                                ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.ExclamationTriangle, tooltip, false);
+                            }
                         }
 
                         ImGui.TableNextColumn();
