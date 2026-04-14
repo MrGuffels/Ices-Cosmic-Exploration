@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using static ICE.ConfigFiles.Config;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table
+namespace ICE.Ui.MainUi.Settings
 {
     internal class GatherSettings
     {

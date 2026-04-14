@@ -9,17 +9,8 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
 {
     internal class TravelSettings
     {
-        private static bool visualizeRadius = false;
-        private static bool visualizeDismountRadius = false;
-        private static Dictionary<uint, string> availableMounts = new();
-
-        private static string mountSearchText = "";
-        private static int mountDisplayOffset = 0;
-        private static int mountItemsPerPage = 10;
-
         public static unsafe void Draw()
         {
-            MountSelection();
             ImGui.Dummy(new Vector2(0, 5));
             ImGui.Separator();
             ImGui.Dummy(new Vector2(0, 5));
@@ -32,132 +23,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             ImGui.Separator();
             ImGui.Dummy(new Vector2(0, 5));
             CraftingLocations();
-        }
-
-        private static unsafe void MountSelection()
-        {
-            ImGuiEx.IconWithText(FontAwesomeIcon.Feather, "Mount Settings");
-            ImGui.Dummy(new Vector2(0, 5));
-
-            bool mountOutsideMission = C.UseMountOutsideMission;
-            bool mountInMission = C.UseMountInMission;
-            float minMountRange = C.MountRadius;
-            float dismountRange = C.DismountRadius;
-
-            if (ImGui.Button("Select Mounting Option"))
-            {
-                availableMounts.Clear();
-                availableMounts[0] = "Mount Roulette";
-
-                var mountSheet = Svc.Data.GetExcelSheet<Mount>();
-
-                foreach (var mountItem in mountSheet)
-                {
-                    if (!PlayerState.Instance()->IsMountUnlocked(mountItem.RowId)) continue;
-
-                    string mountName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mountItem.Singular.ToString().ToLower());
-                    uint id = mountItem.RowId;
-
-                    availableMounts[id] = mountName;
-                }
-
-                mountSearchText = "";
-                mountDisplayOffset = 0;
-
-                ImGui.OpenPopup("Mount Options");
-            }
-            ImGui.SameLine();
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text($"Mount: {C.MountName}");
-
-            if (ImGui.BeginPopup("Mount Options"))
-            {
-                ImGui.InputText("Search", ref mountSearchText, 100);
-
-                var filteredMounts = availableMounts
-                    .Where(kvp => string.IsNullOrEmpty(mountSearchText) ||
-                                  kvp.Value.Contains(mountSearchText, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                int totalItems = filteredMounts.Count;
-                int maxOffset = Math.Max(0, totalItems - mountItemsPerPage);
-                mountDisplayOffset = Math.Min(mountDisplayOffset, maxOffset);
-
-                var displayMounts = filteredMounts
-                    .Skip(mountDisplayOffset)
-                    .Take(mountItemsPerPage);
-
-                foreach (var mount in displayMounts)
-                {
-                    if (ImGui.Selectable($"{mount.Value}##{mount.Key}"))
-                    {
-                        C.MountId = mount.Key;
-                        C.MountName = mount.Value;
-                        C.Save();
-                        ImGui.CloseCurrentPopup();
-                    }
-                }
-
-                ImGui.Separator();
-
-                if (ImGui.Button("Previous") && mountDisplayOffset > 0)
-                {
-                    mountDisplayOffset = Math.Max(0, mountDisplayOffset - mountItemsPerPage);
-                }
-
-                ImGui.SameLine();
-                ImGui.Text($"{mountDisplayOffset + 1}-{Math.Min(mountDisplayOffset + mountItemsPerPage, totalItems)} of {totalItems}");
-
-                ImGui.SameLine();
-                if (ImGui.Button("Next") && mountDisplayOffset < maxOffset)
-                {
-                    mountDisplayOffset = Math.Min(maxOffset, mountDisplayOffset + mountItemsPerPage);
-                }
-
-                ImGui.EndPopup();
-            }
-
-            if (ImGui.Checkbox("Use mount outside mission", ref mountOutsideMission))
-            {
-                C.UseMountOutsideMission = mountOutsideMission;
-                C.Save();
-            }
-
-            if (ImGui.Checkbox("Use mount in mission", ref mountInMission))
-            {
-                C.UseMountInMission = mountInMission;
-                C.Save();
-            }
-
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.DragFloat("Minimum Mounting Range", ref minMountRange, 1))
-            {
-                C.MountRadius = minMountRange;
-                C.Save();
-            }
-            ImGui.SameLine();
-            ImGui.Checkbox("Visualize radius", ref visualizeRadius);
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.DragFloat("Dismount Target Range", ref dismountRange, 1))
-            {
-                C.DismountRadius = dismountRange;
-                C.Save();
-            }
-            ImGui.SameLine();
-            ImGui.Checkbox("Visualize Dismount Radius", ref visualizeDismountRadius);
-
-            using (var drawList = PictoService.Draw(hints: Utils.GetPictoHints()))
-            {
-                if (drawList == null)
-                    return;
-
-                var playerPos = Player.Position;
-
-                if (visualizeRadius)
-                    PictoService.VfxRenderer.AddCircle("Mount_Radius Circle", playerPos, C.MountRadius, Utils.FromUintABGR(2616716297));
-                if (visualizeDismountRadius)
-                    PictoService.VfxRenderer.AddCircle("Dismount_Radius Circle", playerPos, C.DismountRadius, Utils.FromUintABGR(2601121571));
-            }
         }
 
         private static void PathfindingSettings()

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table
+namespace ICE.Ui.MainUi.Settings
 {
     internal class StopWhen
     {

@@ -1748,8 +1748,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.Text("Average Time: --:--:--");
                     }
 
-                    ImGui.Text($"Amount of times completed: {config.TotalCompletions}");
-                    ImGui.Text($"Amount of timed abandoned: {config.FailedCounters}");
+                    ImGui.Text($"Times Completed: {config.TotalCompletions}");
+                    ImGui.Text($"Times Attempted: {config.TotalAttempts}");
 
                     if (CosmicHelper.SheetMissionDict.TryGetValue(selectedMission, out var missionInfo))
                     {

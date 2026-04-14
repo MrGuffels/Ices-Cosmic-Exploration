@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ICE.ConfigFiles.Config;
 
-namespace ICE.Ui.SettingTabs
+namespace ICE.Ui.MainUi.Settings
 {
     internal class GambaWheel
     {

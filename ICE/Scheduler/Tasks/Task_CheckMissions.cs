@@ -617,6 +617,8 @@ namespace ICE.Scheduler.Tasks
                             var relicInfo = CosmicHelper.Cosmic_ClassInfo();
                             var classInfo = relicInfo[job];
 
+                            var jobLv = Player.GetLevel((Job)job);
+
                             var urgency = new Dictionary<int, float>();
                             foreach (var exp in classInfo.CurrentExp)
                             {
@@ -640,6 +642,12 @@ namespace ICE.Scheduler.Tasks
                                 {
                                     if (CosmicHelper.SheetMissionDict.TryGetValue(mission.MissionId, out var sheetInfo))
                                     {
+                                        if (jobLv < sheetInfo.Level)
+                                        {
+                                            IceLogging.Verbose($"Skipping Mission: {mission.MissionId} due to not high enough lv [Player: {jobLv} | Mission: {sheetInfo.Level}].\n");
+                                            continue;
+                                        }
+
                                         float score = 0;
                                         foreach (var reward in sheetInfo.RelicXpInfo)
                                         {

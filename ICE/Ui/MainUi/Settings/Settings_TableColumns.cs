@@ -1,6 +1,7 @@
-﻿using ICE.Utilities.Cosmic_Helper;
+﻿using Dalamud.Interface.Utility.Raii;
+using ICE.Utilities.Cosmic_Helper;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table;
+namespace ICE.Ui.MainUi.Settings;
 
 public static class Settings_TableColumns
 {
@@ -123,6 +124,15 @@ public static class Settings_TableColumns
         {
             C.RemoveAfterGold = removeGold;
             C.Save();
+        }
+        using (ImRaii.Disabled(!removeGold))
+        {
+            bool keepARanks = C.KeepARanks;
+            if (ImGui.Checkbox("Keep \"A Rank\" missions and below", ref keepARanks))
+            {
+                C.KeepARanks = keepARanks;
+                C.Save();
+            }
         }
 
         ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);

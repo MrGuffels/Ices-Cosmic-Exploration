@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table
+namespace ICE.Ui.MainUi.Settings
 {
     internal class Shop_Dronebit
     {

@@ -7,7 +7,7 @@ using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using static ICE.ConfigFiles.Config;
 
-namespace ICE.Ui.MainUi.Settings.Settings_Table
+namespace ICE.Ui.MainUi.Settings
 {
     internal class ShoppingTab
     {
