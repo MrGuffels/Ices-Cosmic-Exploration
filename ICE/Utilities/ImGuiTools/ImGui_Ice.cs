@@ -795,7 +795,7 @@ public static partial class ImGui_Ice
     }
 
     // Quick access functions that are used in multiple places
-    public static void Draw_ExpTable(uint jobId)
+    public static void Draw_ExpTable(uint jobId, Vector2? Barsize = null)
     {
         var ExpInfo = CosmicHelper.Cosmic_ClassInfo();
         if (ExpInfo.TryGetValue(jobId, out var jobInfo))
@@ -803,7 +803,10 @@ public static partial class ImGui_Ice
             foreach (var exp in jobInfo.CurrentExp.Values)
             {
                 ImGui.Text($"Exp {exp.Name}: {exp.Current} / {exp.Needed}");
-                Draw_XPBar(exp.Current, exp.Needed, exp.Max);
+                if (Barsize == null)
+                    Draw_XPBar(exp.Current, exp.Needed, exp.Max);
+                else
+                    Draw_XPBar(exp.Current, exp.Needed, exp.Max, size: Barsize);
                 if (ImGui.IsItemHovered())
                 {
                     using (var expTooltip = ImRaii.Tooltip())

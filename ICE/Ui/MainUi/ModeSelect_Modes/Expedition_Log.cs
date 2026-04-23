@@ -1130,8 +1130,66 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui.EndTable();
                 }
             }
-        }
+            else
+            {
+                var jobStatus = expInfo[SelectedJob];
+                if (ImGui.BeginTable("Specific Class Details", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Borders))
+                {
+                    ImGui.TableSetupColumn("Info");
+                    ImGui.TableSetupColumn("ExpBar");
 
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui_Ice.Table_FullCenterText($"Class Score");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui_Ice.Table_FullCenterText($"{jobStatus.Score:N0}");
+
+                    ImGui.TableNextColumn();
+                    // Get the column's available width and current cursor position
+                    var colWidth = ImGui.GetColumnWidth();
+                    var cellMin = ImGui.GetCursorScreenPos();
+
+                    float barHeight = 10f;
+                    float rowHeight = ImGui.GetFrameHeight(); // matches text/icon row height
+
+                    // Vertically center the bar
+                    float offsetY = (rowHeight - barHeight) / 2f;
+                    ImGui.SetCursorScreenPos(new Vector2(cellMin.X, cellMin.Y + offsetY));
+
+                    ImGui_Ice.Draw_XPBar(jobStatus.Score, 500_000, 500_000, size: new(200, barHeight));
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text($"Stage");
+
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui_Ice.Table_FullCenterText($" {jobStatus.Stage_Current} / {CosmicHelper.MaxRelicLevel}");
+
+                    ImGui.TableNextColumn();
+                    var LvCellMin = ImGui.GetCursorScreenPos();
+                    ImGui.SetCursorScreenPos(new Vector2(LvCellMin.X, LvCellMin.Y + offsetY));
+                    ImGui_Ice.Draw_XPBar(jobStatus.Stage_Current, CosmicHelper.MaxRelicLevel, CosmicHelper.MaxRelicLevel);
+
+                    foreach (var exp in jobStatus.CurrentExp)
+                    {
+                        ImGui.TableNextRow();
+                        ImGui.TableSetColumnIndex(0);
+                        ImGui_Ice.Table_FullCenterText($"{exp.Value.Name} | {exp.Value.Current:N0} / {exp.Value.Needed:N0}");
+
+                        ImGui.TableNextColumn();
+                        var scoreCellMin = ImGui.GetCursorScreenPos();
+                        ImGui.SetCursorScreenPos(new Vector2(scoreCellMin.X, scoreCellMin.Y + offsetY));
+                        ImGui_Ice.Draw_XPBar(exp.Value.Current, exp.Value.Needed, exp.Value.Max, size: new(200, barHeight));
+                    }
+
+
+                    ImGui.EndTable();
+                }
+            }
+        }
         private static unsafe void CompletionStatus_Formatted(uint id)
         {
             var managerPtr = WKSManager.Instance();
