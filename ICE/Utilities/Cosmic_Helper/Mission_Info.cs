@@ -19,11 +19,11 @@ public static partial class CosmicHelper
         {
             try
             {
-                var manager = (WKSManagerCustom*)WKSManager.Instance();
+                var manager = WKSManager.Instance();
                 if (manager == null)
                     return 0; // or some default value
 
-                return manager->CurrentMissionId;
+                return manager->CurrentMissionUnitRowId;
             }
             catch (AccessViolationException)
             {
@@ -115,7 +115,20 @@ public static partial class CosmicHelper
 
     public unsafe static Dictionary<uint, ClassInfo> Cosmic_ClassInfo()
     {
-        Dictionary<uint, ClassInfo> cosmicClassInfo = new();
+        Dictionary<uint, ClassInfo> cosmicClassInfo = new()
+        {
+            [8] = new(),
+            [9] = new(),
+            [10] = new(),
+            [11] = new(),
+            [12] = new(),
+            [13] = new(),
+            [14] = new(),
+            [15] = new(),
+            [16] = new(),
+            [17] = new(),
+            [18] = new(),
+        };
 
         var wksManager = WKSManager.Instance();
         if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)

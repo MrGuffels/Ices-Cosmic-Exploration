@@ -566,8 +566,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         var managerPtr = WKSManager.Instance();
                         if (managerPtr == null) continue;
 
-                        var manager = (WKSManagerCustom*)managerPtr;
-                        var isGold = manager->IsMissionGolded(Id);
+                        var isGold = managerPtr->IsMissionGolded(Id);
 
                         if (isGold)
                             continue;
@@ -2599,9 +2598,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            var isCompleted = manager->IsMissionCompleted(id);
-            var isGold = manager->IsMissionGolded(id);
+            var isCompleted = managerPtr->IsMissionCompleted(id);
+            var isGold = managerPtr->IsMissionGolded(id);
 
             float availableWidth = ImGui.GetContentRegionAvail().X;
 
@@ -2650,9 +2648,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             var managerPtr = WKSManager.Instance();
             if (managerPtr == null) return;
 
-            var manager = (WKSManagerCustom*)managerPtr;
-            var isCompleted = manager->IsMissionCompleted(id);
-            var isGold = manager->IsMissionGolded(id);
+            var isCompleted = managerPtr->IsMissionCompleted(id);
+            var isGold = managerPtr->IsMissionGolded(id);
 
             var containerSize = new Vector2(23, 23);
 
