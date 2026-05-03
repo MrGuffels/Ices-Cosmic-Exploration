@@ -130,22 +130,38 @@ public static partial class CosmicHelper
             [18] = new(),
         };
 
-        var wksManager = WKSManager.Instance();
-        if (wksManager == null || wksManager->ResearchModule == null || !wksManager->ResearchModule->IsLoaded)
+        var wksManagerPtr = WKSManager.Instance();
+        if (wksManagerPtr == null)
+        {
+            if (EzThrottler.Throttle("Throttling log message", 3000))
+                IceLogging.Error("WKSManager returned null");
             return cosmicClassInfo;
+        }
+
+        var wks = (WKSManagerCustom*)wksManagerPtr;
+        var researchModule = wks->ResearchModule;
+
+        if (researchModule == null || !researchModule->IsLoaded)
+        {
+            if (EzThrottler.Throttle("Throttling log message", 3000))
+                IceLogging.Error("Research Module has returned null");
+            return cosmicClassInfo;
+        }
+
+        // Use original pointer only for member function calls
+        var researchModuleFuncs = (WKSResearchModule*)researchModule;
 
         for (int i = 0; i < 11; i++)
         {
             uint jobId = (uint)i + 8;
             byte toolClassId = (byte)(jobId - 7);
-            byte arrayIndex = (byte)(toolClassId - 1);  // This gives us 0-10 for array access
+            byte arrayIndex = (byte)(toolClassId - 1);
 
-            var score = wksManager->Scores[arrayIndex];
-            var currentStage = wksManager->ResearchModule->CurrentStages[arrayIndex];
+            var score = wks->Scores[arrayIndex];
+            var currentStage = researchModule->CurrentStages[arrayIndex];
             var nextStage = currentStage == CosmicHelper.MaxRelicLevel
                 ? CosmicHelper.MaxRelicLevel
-                : currentStage + 1;
-
+                : (byte)(currentStage + 1);
 
             ClassInfo entry = new()
             {
@@ -156,24 +172,15 @@ public static partial class CosmicHelper
 
             for (byte type = 1; type <= MaxXpKind; type++)
             {
-                if (!wksManager->ResearchModule->IsTypeAvailable(toolClassId, type))
+                if (!researchModuleFuncs->IsTypeAvailable(toolClassId, type))
                     break;
-
-                var needed = wksManager->ResearchModule->GetNeededAnalysis(toolClassId, type);
-                var current = wksManager->ResearchModule->GetCurrentAnalysis(toolClassId, type);
-                var max = wksManager->ResearchModule->GetMaxAnalysis(toolClassId, type);
-                var name = "???";
-                if (ExpDictionary.TryGetValue(type, out var ExpName))
-                {
-                    name = ExpName;
-                }
 
                 entry.CurrentExp[type] = new()
                 {
-                    Name = name,
-                    Needed = needed,
-                    Current = current,
-                    Max = max,
+                    Name = ExpDictionary.TryGetValue(type, out var expName) ? expName : "???",
+                    Needed = researchModuleFuncs->GetNeededAnalysis(toolClassId, type),
+                    Current = researchModuleFuncs->GetCurrentAnalysis(toolClassId, type),
+                    Max = researchModuleFuncs->GetMaxAnalysis(toolClassId, type),
                 };
             }
 
@@ -181,5 +188,5 @@ public static partial class CosmicHelper
         }
 
         return cosmicClassInfo;
-    }   
+    }
 }
