@@ -164,7 +164,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 {
                                     Name = profileName,
                                     Description = profileDescription,
-                                    MissionList = new List<AgendaInfo>(C.Cosmic_Agenda)
+                                    MissionList = C.Cosmic_Agenda.Select(a => a.Clone()).ToList()
                                 };
 
                                 C.Agenda_Profiles.Add(newProfile);
@@ -257,7 +257,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             {
                                 if (ImGui.Button("Apply to agenda"))
                                 {
-                                    C.Cosmic_Agenda = new(agenda.MissionList);
+                                    C.Cosmic_Agenda = agenda.MissionList.Select(a => a.Clone()).ToList();
                                     C.Save();
                                 }
                             }
@@ -731,8 +731,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 return max;
             }
         }
-
-
         public static string ExportProfile(AgendaProfileInfo profile)
         {
             var json = JsonConvert.SerializeObject(profile);

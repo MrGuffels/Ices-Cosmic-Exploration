@@ -695,17 +695,16 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.SameLine();
                     }
 
-                    ImGui.TextColored(ImGuiColors.DalamudWhite2, missionInfo.Name);
-                    if (ImGui.IsItemHovered())
-                    {
-                        ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
-                        ImGui.SetTooltip("Open mission details");
-                    }
-                    if (ImGui.IsItemClicked())
+                    if (ImGui.Button(missionInfo.Name))
                     {
                         selectedMission = Id;
                         P.externalDetails.IsOpen = true;
                         P.externalDetails.RequestFocus();
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                        ImGui.SetTooltip("Open mission details");
                     }
                     if (missionInfo.MarkerId != 0)
                     {

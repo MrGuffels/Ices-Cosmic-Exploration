@@ -910,41 +910,14 @@ public sealed partial class ICE
             C.Config_Versioning = 2;
             C.Save();
         }
-        if (C.Config_Versioning == 2)
+        if (C.Config_Versioning < 4)
         {
-            // List of ALL the old dyes that were in the shops/gamba wheel. Need to just remove them all lol
-            List<uint> oldDyes = new()
-            {
-                30116, 30117, 48227, 48163, 48164, 30118, 30119,
-                48166, 48165, 30120, 30121, 48168, 48167, 30122,
-                30123, 30124,
-            };
+            Shop_DepreciatedItems();
 
-            foreach (var dye in oldDyes)
-            {
-                if (C.CosmoShoppingOrder.Contains(dye))
-                    C.CosmoShopping.Remove(dye);
+            // had to version bump this up to atleast 4 due to not removing proper thing the first time
+            // updated function/covers up to the right version for this now
 
-                if (C.CosmoShopping.ContainsKey(dye))
-                    C.CosmoShopping.Remove(dye);
-
-                var gambaDye = C.GambaItemWeights.Where(x => x.ItemId == dye).FirstOrDefault();
-                if (gambaDye != null)
-                    C.GambaItemWeights.Remove(gambaDye);
-            }
-
-            foreach (var dye in C.GambaItemWeights.Where(x => x.Type == GambaType.Dye).ToList())
-                C.GambaItemWeights.Remove(dye);
-
-            var dye1 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52255).FirstOrDefault();
-            if (dye1 != null && !C.GambaItemWeights.Contains(dye1))
-                C.GambaItemWeights.Add(dye1);
-
-            var dye2 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52256).FirstOrDefault();
-            if (dye2 != null && !C.GambaItemWeights.Contains(dye2))
-                C.GambaItemWeights.Add(dye2);
-
-            C.Config_Versioning = 3;
+            C.Config_Versioning = 4;
             C.SaveDebounced();
         }
     }
@@ -976,5 +949,35 @@ public sealed partial class ICE
         }
         C.MigratedOldArtisan = true;
         C.Save();
+    }
+    public static void Shop_DepreciatedItems()
+    {
+        // List of ALL the old dyes that were in the shops/gamba wheel. Need to just remove them all lol
+        List<uint> oldDyes = new()
+        {
+            30116, 30117, 48227, 48163, 48164, 30118, 30119,
+            48166, 48165, 30120, 30121, 48168, 48167, 30122,
+            30123, 30124,
+        };
+
+        foreach (var dye in oldDyes)
+        {
+            if (C.CosmoShoppingOrder.Contains(dye))
+                C.CosmoShoppingOrder.Remove(dye);
+
+            if (C.CosmoShopping.ContainsKey(dye))
+                C.CosmoShopping.Remove(dye);
+        }
+
+        foreach (var dye in C.GambaItemWeights.Where(x => x.Type == GambaType.Dye).ToList())
+            C.GambaItemWeights.Remove(dye);
+
+        var dye1 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52255).FirstOrDefault();
+        if (dye1 != null && !C.GambaItemWeights.Contains(dye1))
+            C.GambaItemWeights.Add(dye1);
+
+        var dye2 = Task_Gamba.DefaultGambaItems.Where(x => x.ItemId == 52256).FirstOrDefault();
+        if (dye2 != null && !C.GambaItemWeights.Contains(dye2))
+            C.GambaItemWeights.Add(dye2);
     }
 }
