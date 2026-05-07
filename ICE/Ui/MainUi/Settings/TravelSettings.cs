@@ -103,6 +103,15 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
 
+            bool useRedAlertNpc = C.UseRedAlertNpc;
+            if (ImGui.Checkbox("Use Red Alert NPC for travel", ref useRedAlertNpc))
+            {
+                C.UseRedAlertNpc = useRedAlertNpc;
+                C.Save();
+            }
+            ImGui.SameLine();
+            ImGui.TextDisabled("Beta, might not work");
+
             bool avoidStellarReturn = C.AvoidStellarReturn;
             if (ImGui.Checkbox("Avoid Stellar Return for pathing", ref avoidStellarReturn))
             {
@@ -143,7 +152,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.Save();
             }
         }
-
         private static void StuckSettings()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.ExclamationTriangle, "Stuck Detection");
@@ -195,7 +203,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
             }
             if (!unstuckEnabled) ImGui.EndDisabled();
         }
-
         private static void CraftingLocations()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.MapPin, "Crafting Return Spot");
@@ -234,7 +241,6 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 }
             }
         }
-
         private static void FishingLocations()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Fish, "Personalized Fishing Spots");

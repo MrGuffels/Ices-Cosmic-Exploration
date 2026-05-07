@@ -102,6 +102,7 @@ namespace ICE.Ui
                 bool standard = C.SelectedMode == ModeSelect.Standard;
                 bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
                 bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
+                bool goldMode = C.SelectedMode == ModeSelect.MissionGoldMode;
                 bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
 
                 if (ImGui.RadioButton("Standard", standard))
@@ -118,6 +119,10 @@ namespace ICE.Ui
                 {
                     C.SelectedMode = ModeSelect.LevelMode;
                     C.Save();
+                }
+                if (ImGui.RadioButton("Gold Completion Mode", goldMode))
+                {
+                    C.SelectedMode = ModeSelect.MissionGoldMode;
                 }
                 if (ImGui.RadioButton("Agenda Mode", agendaMode))
                 {
@@ -187,6 +192,7 @@ namespace ICE.Ui
                 ModeSelect.RelicMode => "Relic Grind",
                 ModeSelect.LevelMode => "Leveling Grind",
                 ModeSelect.AgendaMode => "Cosmic Agenda",
+                ModeSelect.MissionGoldMode => "Gold Completion Grind",
                 _ => C.SelectedMode.ToString(),
             };
             ImGui.Text($"{modeName} - {SchedulerMain.State}");
