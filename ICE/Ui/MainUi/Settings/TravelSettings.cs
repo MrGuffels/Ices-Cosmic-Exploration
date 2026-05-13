@@ -151,6 +151,13 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.DisablePathfindingToRedAlert = DisableRedAlertPathing;
                 C.Save();
             }
+
+            bool DisableHubActivies_RE = C.DisableHub_Critical;
+            if (ImGui.Checkbox("Don't do hub activities when a red alert is active", ref DisableHubActivies_RE))
+            {
+                C.DisableHub_Critical = DisableHubActivies_RE;
+                C.Save();
+            }
         }
         private static void StuckSettings()
         {
