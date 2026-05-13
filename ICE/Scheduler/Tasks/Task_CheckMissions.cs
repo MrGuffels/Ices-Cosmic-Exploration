@@ -180,9 +180,7 @@ namespace ICE.Scheduler.Tasks
 
                         if (C.XPRelicOnlyEnabled)
                         {
-                            if (config.Enabled
-                                && (mission.Value.Jobs.Contains(Mission_Settings.SelectedJob)
-                                    || mission.Value.Attributes.HasFlag(MissionAttributes.Critical)))
+                            if (config.Enabled && mission.Value.Jobs.Contains(Mission_Settings.SelectedJob))
                                 MissionLibrary[LibraryInfo(mission)].Add(missionId);
                         }
                         else
