@@ -689,6 +689,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     {
                         selectedMission = Id;
                         P.externalDetails.IsOpen = true;
+                        P.externalDetails.Collapsed = false;
                         P.externalDetails.RequestFocus();
                     }
                     if (ImGui.IsItemHovered())
