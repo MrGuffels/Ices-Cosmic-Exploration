@@ -130,7 +130,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.Jobs.Contains(SelectedJob)).Where(x => x.Value.TerritoryId == moon.Territory))
                         {
                             missions.Add(mission.Key);
-                            if (mission.Value.MissionStatus is CosmicHelper.CompletionStatus.Gold)
+                            if (mission.Value.CompletionStatus is CosmicHelper.Status.Gold)
                                 completed += 1;
                         }
                     }
@@ -139,7 +139,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         foreach (var mission in CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == moon.Territory))
                         {
                             missions.Add(mission.Key);
-                            if (mission.Value.MissionStatus is CosmicHelper.CompletionStatus.Gold)
+                            if (mission.Value.CompletionStatus is CosmicHelper.Status.Gold)
                                 completed += 1;
                         }
                     }
@@ -277,7 +277,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         var missionConfig = C.MissionConfig[Id];
                         var missionInfo = CosmicHelper.SheetMissionDict[Id];
 
-                        if (HideCompleted && missionInfo.MissionStatus is CosmicHelper.CompletionStatus.Gold)
+                        if (HideCompleted && missionInfo.CompletionStatus is CosmicHelper.Status.Gold)
                             continue;
 
                         ImGui.TableNextRow();
@@ -925,7 +925,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
         }
         public static void ClassProgress()
         {
-            var expInfo = CosmicHelper.Cosmic_ClassInfo;
+            var expInfo = CosmicHelper.Cosmic_ClassInfo();
 
             if (SelectedJob == 0)
             {

@@ -77,7 +77,7 @@ public static unsafe partial class CosmicHelper
         public string ItemName { get; set; } = "???";
     }
 
-    public enum CompletionStatus
+    public enum Status
     {
         None,
         Completed,
@@ -119,7 +119,6 @@ public static unsafe partial class CosmicHelper
         public List<uint> Jobs { get; set; } = new();
         public uint ToDoId { get; set; } = 0;
         public uint Rank { get; set; } = 1;
-        public MissionClass Rankv2 { get; set; } = MissionClass.D;
         public uint Level { get; set; } = 0;
         public MissionAttributes Attributes { get; set; }
         public CosmicWeather Weather { get; set; }
@@ -138,7 +137,7 @@ public static unsafe partial class CosmicHelper
         public uint GoldScore { get; set; } = 0;
         public uint TemporaryActionId { get; set; } = 0;
         public uint TemporaryActionCount { get; set; } = 0;
-        public CompletionStatus MissionStatus { get; set; } = CompletionStatus.None;
+        public Status CompletionStatus { get; set; } = Status.None;
         public List<uint> SequenceMissions_Previous { get; set; } = new();
         public List<uint> SequenceMissions_Next { get; set; } = new();
 
