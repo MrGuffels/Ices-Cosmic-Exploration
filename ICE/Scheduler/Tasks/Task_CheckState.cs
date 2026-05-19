@@ -99,8 +99,20 @@ namespace ICE.Scheduler.Tasks
                         }
                         else if (s.HasFlag(MissionAttributes.Fish))
                         {
-                            IceLogging.Debug("We seem to be in the middle of a fishing mission. Going to reset/import all the presets");
-                            Task_ExecuteMission.FishingTask(currentMissionId);
+                            IceLogging.Debug("We seem to be in the middle of a fishing mission. Going to check presets");
+							var missionConfig = C.MissionConfig[missionId];
+							if (config.Use_BuildinPreset)
+							{
+								IceLogging.Debug("Use Built-In Presets Checked. Resetting/Importing presets.");
+								P.AutoHook.DeleteAllAnonymousPresets();
+								Task_ExecuteMission.FishingTask(missionId);
+							}
+							else
+							{
+								IceLogging.Debug("Use Built-In Presets Unchecked. Setting configured preset.");
+								string presetName = missionConfig.AutoHookPresetName;
+								P.AutoHook.SetPreset(presetName);
+							}
                             SchedulerMain.State = IceState.ScoreCheck;
                         }
                         else
