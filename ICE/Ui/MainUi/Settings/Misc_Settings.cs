@@ -25,6 +25,8 @@ namespace ICE.Ui.MainUi.Settings
             TimeRecords();
             Separator();
             PostMissionCommands();
+            Separator();
+            FunSettings();
 #if DEBUG
             Separator();
             DebugTab.Draw();
@@ -160,7 +162,6 @@ namespace ICE.Ui.MainUi.Settings
             }
 
         }
-
         private static void AutoUse()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.PersonRays, "Auto-Use");
@@ -191,7 +192,6 @@ namespace ICE.Ui.MainUi.Settings
                                    "This will ONLY run upon first entry.");
             ImGui.Dummy(Vector2.Zero);
         }
-
         private static void GoldMissionRemover()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Medal, "Post Mission Settings");
@@ -213,7 +213,6 @@ namespace ICE.Ui.MainUi.Settings
                 }
             }
         }
-
         private static void TimeRecords()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Clock, "Record Settings");
@@ -234,7 +233,6 @@ namespace ICE.Ui.MainUi.Settings
                                  "Above 0 to keep a set limit");
             }
         }
-
         private static void PostMissionCommands()
         {
             ImGuiEx.IconWithText(FontAwesomeIcon.Play, "Post Mission Commands");
@@ -306,7 +304,26 @@ namespace ICE.Ui.MainUi.Settings
                 ImGui.EndTable();
             }
         }
+        private static void FunSettings()
+        {
+            ImGuiEx.IconWithText(FontAwesomeIcon.Heart, "Dev Favorites");
+            var crazyEnabled = C.CrazyTaxiArrow;
+            if (ImGui.Checkbox("Show Crazy Taxi Arrow when navmeshing", ref crazyEnabled))
+            {
+                C.CrazyTaxiArrow = crazyEnabled;
+                C.Save();
+            }
 
+            var placiboEffect = C.PlaceboCheckbox;
+            if (ImGui.Checkbox("Increase Gathering & Crafting Speed", ref placiboEffect))
+            {
+                C.PlaceboCheckbox = placiboEffect;
+                C.Save();
+            }
+            ImGuiEx.IconWithTooltip(FontAwesomeIcon.Question, "This does abosolutely nothing\n" +
+                "But I know there's going to be people who enable this and don't read, so it's a tehe.\n" +
+                "Thanks for using my plugin though, it means a lot <3");
+        }
         private static void Separator()
         {
             ImGui.Dummy(new Vector2(0, 5));
