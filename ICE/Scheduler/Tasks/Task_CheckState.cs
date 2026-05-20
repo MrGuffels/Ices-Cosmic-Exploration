@@ -100,12 +100,12 @@ namespace ICE.Scheduler.Tasks
                         else if (s.HasFlag(MissionAttributes.Fish))
                         {
                             IceLogging.Debug("We seem to be in the middle of a fishing mission. Going to check presets");
-							var missionConfig = C.MissionConfig[missionId];
+							var missionConfig = C.MissionConfig[currentMissionId];
 							if (config.Use_BuildinPreset)
 							{
 								IceLogging.Debug("Use Built-In Presets Checked. Resetting/Importing presets.");
 								P.AutoHook.DeleteAllAnonymousPresets();
-								Task_ExecuteMission.FishingTask(missionId);
+								Task_ExecuteMission.FishingTask(currentMissionId);
 							}
 							else
 							{

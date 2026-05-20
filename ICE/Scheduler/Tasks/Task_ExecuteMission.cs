@@ -43,7 +43,7 @@ namespace ICE.Scheduler.Tasks
 						else
 						{
 							IceLogging.Debug("Use Built-In Presets Unchecked. Setting configured preset.");
-							string presetName = missionConfig.AutoHookPresetName;
+							string presetName = C.MissionConfig[CosmicHelper.CurrentLunarMission].AutoHookPresetName;
 							P.AutoHook.SetPreset(presetName);
 						}
                     }
