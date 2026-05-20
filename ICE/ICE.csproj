@@ -61,6 +61,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
 		<ProjectReference Include="..\ffxiv_pictomancy\Pictomancy\Pictomancy.csproj" />
+		<ProjectReference Include="..\OtterGui\OtterGui.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
