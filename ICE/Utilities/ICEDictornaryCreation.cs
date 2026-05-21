@@ -681,17 +681,6 @@ public sealed partial class ICE
             }
         }
 
-        for (int i = 0; i < CosmicHelper.GreyIconList.Count; i++)
-        {
-            var slot = i + 8;
-            var iconId = GreyIconList[i];
-
-            if (Svc.Texture.TryGetFromGameIcon(iconId, out var texture))
-            {
-                GreyTexture.TryAdd((uint)slot, texture);
-            }
-        }
-
         CosmicHelper.LoadMissionScores();
 
         foreach (var entry in C.ScoreKeeper)
@@ -715,30 +704,6 @@ public sealed partial class ICE
             else
             {
                 entry.Value.ClassScore = 0;
-            }
-        }
-
-        foreach (var item in MoonItemInfoSheet)
-        {
-            var itemId = item.Item.RowId;
-            if (itemId == 0) continue;
-            string itemName = ItemSheet.GetRow(itemId).Name.ToString();
-            var type = item.WKSItemSubCategory.RowId;
-            // IceLogging.Debug($"RowID: {item.RowId} | ID: {itemId} | Name: {itemName}", debugOnly: true);
-
-            if (CosmicHelper.GatheringItems.TryGetValue(itemName, out var itemEntry))
-            {
-                itemEntry.itemIds.Add(itemId);
-            }
-            else
-            {
-                // IceLogging.Debug($"Adding a new entry: {itemName}", debugOnly: true);
-
-                CosmicHelper.GatheringItems[itemName] = new()
-                {
-                    Type = item.WKSItemSubCategory.RowId,
-                    itemIds = new HashSet<uint> { itemId },
-                };
             }
         }
 

@@ -52,6 +52,9 @@ public partial class Config
     public bool Relic_IncludeCriticals { get; set; } = true;
     public bool DisableHub_Critical { get; set; } = false;
 
+    // New Table Settings
+    public ItemFilter ItemFilter { get; set; } = ItemFilter.All;
+
     public class MissionSettings
     {
         public bool Enabled { get; set; } = false;
@@ -101,7 +104,6 @@ public partial class Config
             public uint ExpertProfileId = 0;
         };
     }
-
     public class FishingLocations
     {
         public uint ZoneId { get; set; } = 0;
