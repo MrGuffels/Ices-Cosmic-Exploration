@@ -24,6 +24,16 @@ internal class Table_MissionsV3
         ImGui.Text($"Item Count: {ItemCount}");
         if (ImGui.BeginChild("###MissionTableV3", size, false))
         {
+            var showRedAlert = C.MissionFilter.HasFlag(MissionFilter.RedAlert);
+            if (ImGui.Checkbox("Red Alert", ref showRedAlert))
+            {
+                C.MissionFilter = showRedAlert
+                    ? C.MissionFilter | MissionFilter.RedAlert
+                    : C.MissionFilter & ~MissionFilter.RedAlert;
+                C.SaveDebounced();
+                MissionTable.SetFilterDirty();
+            }
+
             try
             {
                 if (MissionTable == null && CosmicHelper.SheetMissionDict.Count > 0)
@@ -38,7 +48,8 @@ internal class Table_MissionsV3
                 }
                 var filterActive = MissionTable.FilteredItems.Count != 0 && MissionTable.FilteredItems.Count != ItemCount;
                 var filterCount = filterActive ? $" (of {ItemCount})" : "";
-                MissionTable.Draw(24 + 4f);
+                var height = ImGui.GetFrameHeight();
+                MissionTable.Draw(height + 4f);
             }
             catch (Exception ex)
             {

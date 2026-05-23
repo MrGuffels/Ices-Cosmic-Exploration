@@ -573,6 +573,7 @@ public sealed partial class ICE
             {
                 CosmicHelper.SheetMissionDict[keyId] = new CosmicInfo()
                 {
+                    MissionId = keyId,
                     Name = missionName,
                     Jobs = jobs,
                     ToDoId = missionToDo.RowId,
@@ -594,8 +595,8 @@ public sealed partial class ICE
                     ExpModifier_2 = expModifier_2,
                     ExpModifier_3 = expModifier_3,
 
-                    RewardItem = rewardItemId,
-                    RewardItemAmount = rewardItemAmount,
+                    TokenItemId = rewardItemId,
+                    TokenItemAmount = rewardItemAmount,
                     DronebitReward = dronebitAmount,
 
                     MapPosition = mapFlag,

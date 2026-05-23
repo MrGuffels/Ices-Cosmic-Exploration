@@ -234,7 +234,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 var id = mission.id;
                 var missionInfo = CosmicHelper.SheetMissionDict[id];
 
-                if (missionInfo.RewardItemAmount > 0)
+                if (missionInfo.TokenItemAmount > 0)
                     hasToken = true;
             }
 
@@ -738,7 +738,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     ImGui_Ice.Table_FullCenterText(missionInfo.ClassScore.ToString());
 
                     ImGui.TableNextColumn();
-                    string itemAmount = missionInfo.RewardItemAmount > 0 ? $"{missionInfo.RewardItemAmount}" : "-";
+                    string itemAmount = missionInfo.TokenItemAmount > 0 ? $"{missionInfo.TokenItemAmount}" : "-";
                     ImGui_Ice.Table_FullCenterText(itemAmount);
 
                     #endregion

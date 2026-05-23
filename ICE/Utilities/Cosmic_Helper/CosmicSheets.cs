@@ -1,6 +1,8 @@
-﻿using System;
+﻿using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using static MissionTimer;
 
 namespace ICE.Utilities.Cosmic_Helper;
 
@@ -25,6 +27,7 @@ public static unsafe partial class CosmicHelper
     }
     public class CosmicInfo
     {
+        public uint MissionId { get; set; } = 0;
         // - - - Crafter Specific - - - //
         /// <summary>
         /// Key = What's used in the config per recipe. This keeps track of it on a per-recipe basis
@@ -66,8 +69,8 @@ public static unsafe partial class CosmicHelper
         public uint ClassScore { get; set; } = 0;
         public uint CosmoCredit { get; set; } = 0;
         public uint LunarCredit { get; set; } = 0;
-        public uint RewardItem { get; set; } = 0;
-        public uint RewardItemAmount { get; set; } = 0;
+        public uint TokenItemId { get; set; } = 0;
+        public uint TokenItemAmount { get; set; } = 0;
         public uint DronebitReward { get; set; } = 0;
         public uint PreviousMissionId { get; set; } = new();
         public Dictionary<int, int> RelicXpInfo { get; set; } = new();
@@ -79,6 +82,39 @@ public static unsafe partial class CosmicHelper
         public Status CompletionStatus { get; set; } = Status.None;
         public List<uint> SequenceMissions_Previous { get; set; } = new();
         public List<uint> SequenceMissions_Next { get; set; } = new();
+        public Dictionary<TurninState, RewardInfo> ScoreInfo()
+        {
+            Dictionary<TurninState, RewardInfo> reward = new();
+            if (!C.MissionConfig.TryGetValue(MissionId, out var config))
+                return reward;
+
+            Dictionary<TurninState, (int Multiplier, double AverageTime, int TotalCompleted)> stateInfo = new()
+            {
+                [TurninState.Critical] = (1, config.AverageTime, config.CriticalCompletions),
+                [TurninState.Bronze] = (1, config.AverageBronzeTime, config.BronzeCompletion),
+                [TurninState.Silver] = (4, config.AverageSilverTime, config.SilverCompletions),
+                [TurninState.Gold] = (5, config.AverageGoldTime, config.GoldCompletions),
+            };
+
+            foreach (var (state, info) in stateInfo)
+            {
+                if (IsCritical && state != TurninState.Critical)
+                    continue;
+                else if (!IsCritical && state == TurninState.Critical)
+                    continue;
+
+
+                reward[state] = new RewardInfo
+                {
+                    Score = CalculatePerMinute(info.AverageTime, ClassScore, info.Multiplier),
+                    Cosmocredit = CalculatePerMinute(info.AverageTime, CosmoCredit, info.Multiplier),
+                    PlanetCredits = CalculatePerMinute(info.AverageTime, LunarCredit, info.Multiplier),
+                    Tokens = CalculatePerMinute(info.AverageTime, TokenItemAmount, info.Multiplier)
+                };
+            }
+
+            return reward;
+        }
 
         public bool IsProvisional => Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
             || Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
@@ -91,15 +127,26 @@ public static unsafe partial class CosmicHelper
         public bool ARank => Rank is 5 or 4;
         public bool BRank => Rank is 3;
         public bool CRank => Rank is 2;
-        public bool Drank => Rank is 1;
+        public bool Drank => Rank == 1 && !Attributes.HasFlag(MissionAttributes.Critical);
 
     }
     public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();
-
+    public class RewardInfo
+    {
+        public double Score { get; set; } = 0;
+        public double Cosmocredit { get; set; } = 0;
+        public double PlanetCredits { get; set; } = 0;
+        public double Tokens { get; set; } = 0;
+    }
     public class MissionInfo
     {
         public uint Id { get; set; } = 0;
         public bool Enabled => C.MissionConfig[Id].Enabled;
         public CosmicInfo SheetInfo => SheetMissionDict[Id];
+    }
+    private static double CalculatePerMinute(double averageTime, uint score, int multiplier)
+    {
+        if (averageTime <= 0) return 0;
+        return (60 * score * multiplier) / averageTime;
     }
 }

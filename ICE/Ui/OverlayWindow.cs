@@ -274,7 +274,7 @@ namespace ICE.Ui
                 if (mission.TerritoryId == territoryId
                     && mission.Rank >= 6
                     && mission.Weather != CosmicWeather.None
-                    && mission.RewardItem != 0
+                    && mission.TokenItemId != 0
                     && (jobFilter == null || mission.Jobs.Any(j => jobFilter.Contains(j)))
                     && CosmicHelper.WeatherIds.TryGetValue(mission.Weather, out var iconId))
                 {
@@ -324,7 +324,7 @@ namespace ICE.Ui
                             }
                         }
                         ImGui.AlignTextToFramePadding();
-                        ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.RewardItemAmount}x tokens)");
+                        ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.TokenItemAmount}x tokens)");
                     }
                 }
                 if (C.Overlay_WeatherSelected)
