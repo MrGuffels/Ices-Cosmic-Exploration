@@ -65,9 +65,6 @@ namespace ICE.Enums
         CRank = 1 << 6,
         DRank = 1 << 7,
 
-        ALL_PRIVISIONALS = 1 << 8,
-        All_REDALERTS = 1 << 9,
-
         All = RedAlert
             + Sequence + Weather + Timed
             + ARank + BRank + CRank + DRank
@@ -88,12 +85,8 @@ namespace ICE.Enums
         BTN = 1 << 9,
         FSH = 1 << 10,
 
-        ALL_PROVISIONALS = 1 << 11,
-        ALL_CRITICAL = 1 << 12,
-
         All = CRP + BSM + ARM + GSM
             + LTW + WVR + ALC + CUL 
             + MIN + BTN + FSH
-            + ALL_PROVISIONALS + ALL_CRITICAL
     }
 }

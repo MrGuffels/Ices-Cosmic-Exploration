@@ -55,6 +55,7 @@ public partial class Config
     // New Table Settings
     public ItemFilter ItemFilter { get; set; } = ItemFilter.All;
     public MissionFilter MissionFilter { get; set; } = MissionFilter.All;
+    public JobFilter JobFilter { get; set; } = JobFilter.All;
 
     public class MissionSettings
     {

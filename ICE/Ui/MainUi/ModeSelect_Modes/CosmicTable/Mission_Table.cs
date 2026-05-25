@@ -103,11 +103,47 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             C.SaveDebounced();
         }
     }
+    internal class JobFilterColumn : ColumnFlags<JobFilter, MissionInfo>
+    {
+        private JobFilter[] FlagValues = Array.Empty<JobFilter>();
+        private string[] FlagNames = Array.Empty<string>();
+
+        protected void SetFlags(params JobFilter[] flags)
+        {
+            FlagValues = flags;
+            AllFlags = FlagValues.Aggregate((f, g) => f | g);
+        }
+
+        protected void SetFlagsAndNames(params JobFilter[] flags)
+        {
+            SetFlags(flags);
+            SetNames(flags.Select(f => f.ToString()).ToArray());
+        }
+
+        protected void SetNames(params string[] names) => FlagNames = names;
+
+        protected sealed override IReadOnlyList<JobFilter> Values => FlagValues;
+
+        protected sealed override string[] Names => FlagNames;
+
+        public sealed override JobFilter FilterValue => C.JobFilter;
+
+        protected sealed override void SetValue(JobFilter f, bool v)
+        {
+            var tmp = v ? FilterValue | f : FilterValue & ~f;
+            if (tmp == FilterValue)
+                return;
+
+            C.JobFilter = tmp;
+            C.SaveDebounced();
+        }
+    }
     internal class Mission_Table : Table<MissionInfo>, IDisposable
     {
         public readonly EnabledColumn _enabledColumn = new() { Label = "Enabled" };
         public readonly NameColumn _nameColumn = new() { Label = "Name" };
         public readonly IdColumn _idColumn = new() { Label = "ID" };
+        public readonly JobColumn _jobColumn = new() { Label = "Job" };
         public readonly MissionColumn _missionColumn = new() { Label = "Rank" };
         public readonly CompletionColumn _completionColumn = new() { Label = "Completed" };
         public readonly ClassScoreColumn _classScoreColumn = new() { Label = "Class Score" };
@@ -121,7 +157,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
         public Mission_Table(List<MissionInfo> itemList) : base("Item_Table", itemList)
         {
-            List<Column<MissionInfo>> headers = [_enabledColumn, _completionColumn, _idColumn, _planetColumn, _missionColumn, _nameColumn, _classScoreColumn, _cosmoColumn, _lunarColumn, _droneColumn, _planetTokenColumn, _spmColumn, _turninColumn];
+            List<Column<MissionInfo>> headers = [_enabledColumn, _completionColumn, _idColumn, _planetColumn, _jobColumn, _missionColumn, _nameColumn, _classScoreColumn, _cosmoColumn, _lunarColumn, _droneColumn, _planetTokenColumn, _spmColumn, _turninColumn];
 
             var tierFlags = new (int tier, ItemFilter flag)[]
             {
@@ -648,6 +684,55 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     1310 => FilterValue.HasFlag(ItemFilter.Oizys),
                     _ => false
                 };
+            }
+        }
+        public sealed class JobColumn : JobFilterColumn
+        {
+            public JobColumn()
+            {
+                Flags = ImGuiTableColumnFlags.None;
+                SetFlagsAndNames(JobFilter.CRP, JobFilter.BSM, JobFilter.ARM, JobFilter.GSM,
+                                 JobFilter.LTW, JobFilter.WVR, JobFilter.ALC, JobFilter.CUL,
+                                 JobFilter.MIN, JobFilter.BTN, JobFilter.FSH);
+            }
+            public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.Jobs.First().CompareTo(rhs.SheetInfo.Jobs.First());
+
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var frameHeight = ImGui.GetFrameHeight();
+                var size = new Vector2(frameHeight);
+
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
+
+                foreach (var job in item.SheetInfo.Jobs)
+                {
+                    var icon = CosmicHelper.JobIconDict[job];
+                    ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
+                    ImGui.SameLine();
+                }
+            }
+            public override bool FilterFunc(MissionInfo item)
+            {
+                return item.SheetInfo.Jobs.Any(job =>
+                {
+                    var flag = job switch
+                    {
+                        8 => JobFilter.CRP,
+                        9 => JobFilter.BSM,
+                        10 => JobFilter.ARM,
+                        11 => JobFilter.GSM,
+                        12 => JobFilter.LTW,
+                        13 => JobFilter.WVR,
+                        14 => JobFilter.ALC,
+                        15 => JobFilter.CUL,
+                        16 => JobFilter.MIN,
+                        17 => JobFilter.BTN,
+                        18 => JobFilter.FSH,
+                        _ => JobFilter.None,
+                    };
+                    return FilterValue.HasFlag(flag);
+                });
             }
         }
     }
