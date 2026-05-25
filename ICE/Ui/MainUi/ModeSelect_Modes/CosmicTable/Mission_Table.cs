@@ -1,11 +1,9 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using ICE.Utilities.Cosmic_Helper;
-using JetBrains.Annotations;
 using OtterGui;
 using OtterGui.Table;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Reflection;
 using static ICE.Utilities.Cosmic_Helper.CosmicHelper;
 
@@ -118,10 +116,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         public readonly DroneCreditColumn _droneColumn = new() { Label = "Dronebits" };
         public readonly PlanetTokensColumn _planetTokenColumn = new() { Label = "Planet Tokens" };
         public readonly SPMColumn _spmColumn = new() { Label = "SPM" };
+        public readonly TurninColumn _turninColumn = new() { Label = "Turnin Goal" };
+        public readonly PlanetColumn _planetColumn = new() { Label = "Moons" };
 
         public Mission_Table(List<MissionInfo> itemList) : base("Item_Table", itemList)
         {
-            List<Column<MissionInfo>> headers = [_enabledColumn, _completionColumn, _idColumn, _missionColumn, _nameColumn, _classScoreColumn, _cosmoColumn, _lunarColumn, _droneColumn, _planetTokenColumn, _spmColumn];
+            List<Column<MissionInfo>> headers = [_enabledColumn, _completionColumn, _idColumn, _planetColumn, _missionColumn, _nameColumn, _classScoreColumn, _cosmoColumn, _lunarColumn, _droneColumn, _planetTokenColumn, _spmColumn, _turninColumn];
 
             var tierFlags = new (int tier, ItemFilter flag)[]
             {
@@ -137,7 +137,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             this.Headers = [.. headers];
 
             Sortable = true;
-            Flags |= ImGuiTableFlags.Hideable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Resizable;
+            Flags |= ImGuiTableFlags.Hideable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Resizable | ImGuiTableFlags.Borders;
         }
 
         public void Dispose()
@@ -534,6 +534,120 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     ImGuiUtil.Center("-");
                 }
 
+            }
+        }
+        public sealed class TurninColumn : ItemFilterColumn
+        {
+            public TurninColumn()
+            {
+                Flags = ImGuiTableColumnFlags.None;
+                SetFlags(ItemFilter.TurninGold, ItemFilter.TurninSilver, ItemFilter.TurninBronze);
+                SetNames("Gold", "Silver", "Bronze");
+            }
+            public override int Compare(MissionInfo lhs, MissionInfo rhs)
+            {
+                if (C.MissionConfig.TryGetValue(lhs.Id, out var lhsConfig) && C.MissionConfig.TryGetValue(rhs.Id, out var rhsConfig))
+                {
+                    return lhsConfig.TurninGoal.CompareTo(rhsConfig.TurninGoal);
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining) || item.SheetInfo.IsCritical)
+                    ImGuiUtil.Center("Auto");
+                else
+                {
+                    Vector4 BronzeColor = new Vector4(0.804f, 0.498f, 0.196f, 1.0f);
+                    Vector4 SilverColor = new Vector4(0.753f, 0.753f, 0.753f, 1.0f);
+                    Vector4 GoldColor = new Vector4(1.0f, 0.843f, 0.0f, 1.0f);
+                    Vector4 DisabledColor = new Vector4(0.4f, 0.4f, 0.4f, 1.0f);
+
+                    ImGui.PushID($"Mission_{item.Id}");
+
+                    if (C.MissionConfig.TryGetValue(item.Id, out var configInfo))
+                    {
+                        var highestTurnin = configInfo.TurninGoal;
+                        var goldEnabled = highestTurnin >= TurninState.Gold;
+                        var silverEnabled = highestTurnin >= TurninState.Silver;
+                        var bronzeEnabled = highestTurnin >= TurninState.Bronze;
+
+                        using (ImRaii.PushColor(ImGuiCol.Text, goldEnabled ? GoldColor : DisabledColor))
+                        {
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold"))
+                            {
+                                configInfo.TurninGoal = TurninState.Gold;
+                                C.SaveDebounced();
+                            }
+                        }
+                        ImGui.SameLine();
+                        using (ImRaii.PushColor(ImGuiCol.Text, silverEnabled ? SilverColor : DisabledColor))
+                        {
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Silver"))
+                            {
+                                configInfo.TurninGoal = TurninState.Silver;
+                                C.SaveDebounced();
+                            }
+
+                        }
+                        ImGui.SameLine();
+                        using (ImRaii.PushColor(ImGuiCol.Text, bronzeEnabled ? BronzeColor : DisabledColor))
+                        {
+                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Bronze"))
+                            {
+                                configInfo.TurninGoal = TurninState.Bronze;
+                                C.SaveDebounced();
+                            }
+                        }
+
+                    }
+
+                    ImGui.PopID();
+                }
+            }
+        }
+        public sealed class PlanetColumn : ItemFilterColumn
+        {
+            public PlanetColumn()
+            {
+                Flags = ImGuiTableColumnFlags.None;
+                SetFlags(ItemFilter.Sinus, ItemFilter.Phaenna, ItemFilter.Oizys);
+                SetNames("Sinus", "Phaenna", "Oizys");
+            }
+
+            public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.TerritoryId.CompareTo(rhs.SheetInfo.TerritoryId);
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var status = item.SheetInfo.CompletionStatus;
+                var frameHeight = ImGui.GetFrameHeight();
+                var size = new Vector2(frameHeight);
+
+                var columnWidth = ImGui.GetColumnWidth();
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (columnWidth - frameHeight) / 2);
+
+                string planetIcon = item.SheetInfo.TerritoryId switch
+                {
+                    1237 => "ICE.Resources.Sinus_Ardorum.png",
+                    1291 => "ICE.Resources.Phaenna.png",
+                    1310 => "ICE.Resources.Oizys.png",
+                    _ => "ICE.Resources.Sinus_Ardorum.png",
+                };
+
+                var texture = Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), planetIcon).GetWrapOrEmpty();
+                ImGui.Image(texture.Handle, size);
+            }
+            public override bool FilterFunc(MissionInfo item)
+            {
+                return item.SheetInfo.TerritoryId switch
+                {
+                    1237 => FilterValue.HasFlag(ItemFilter.Sinus),
+                    1291 => FilterValue.HasFlag(ItemFilter.Phaenna),
+                    1310 => FilterValue.HasFlag(ItemFilter.Oizys),
+                    _ => false
+                };
             }
         }
     }

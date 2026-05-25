@@ -89,9 +89,10 @@ namespace ICE.Utilities
                         allMissions.Add(mission.MissionUnitId);
                 }
 
-                foreach (var mission in wks->Data->MissionList.ToList())
+                StdVector<MissionEntry> criticalList = default;
+                if (AgentWKSMissionEx.GetCriticalMissions(wks, &criticalList))
                 {
-                    if (!allMissions.Contains(mission.MissionUnitId))
+                    foreach (var mission in criticalList)
                         allMissions.Add(mission.MissionUnitId);
                 }
             }

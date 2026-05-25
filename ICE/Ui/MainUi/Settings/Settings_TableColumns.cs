@@ -146,6 +146,8 @@ public static class Settings_TableColumns
         18  // Fisher
     };
 
+    private static TurninState HighestTurnin = TurninState.Gold;
+
     private static bool AnyTurnin = true;
     private static bool TurninGold = false;
     private static bool TurninSilver = false;
@@ -216,51 +218,18 @@ public static class Settings_TableColumns
             ImGui.Text("Select Turnin Options");
             ImGui.Dummy(new Vector2(0, 2));
 
-            if (ImGui.Checkbox("Auto", ref AnyTurnin))
+            if (ImGui.RadioButton("Gold", HighestTurnin is TurninState.Gold))
             {
-                if (AnyTurnin)
-                {
-                    TurninGold = false;
-                    TurninSilver = false;
-                    TurninBronze = false;
-
-                    AnyTurnin = true;
-                }
-                else
-                {
-                    if (!(TurninBronze && TurninSilver && TurninGold))
-                    {
-                        AnyTurnin = true;
-                    }
-                }
-
-                C.Save();
+                HighestTurnin = TurninState.Gold;
             }
-            ImGuiEx.HelpMarker("This option will strive to get the best result, but will turn in any result if necessary without stopping.");
-
-            ImGui.Separator();
-
-            if (ImGui.Checkbox("Gold", ref TurninGold))
+            if (ImGui.RadioButton("Silver", HighestTurnin is TurninState.Silver))
             {
-                if (AnyTurnin && TurninGold)
-                    AnyTurnin = false;
-
+                HighestTurnin = TurninState.Silver;
             }
-            if (ImGui.Checkbox("Silver", ref TurninSilver))
+            if (ImGui.RadioButton("Bronze", HighestTurnin is TurninState.Bronze))
             {
-                if (AnyTurnin && TurninSilver)
-                    AnyTurnin = false;
-
+                HighestTurnin = TurninState.Bronze;
             }
-            if (ImGui.Checkbox("Bronze", ref TurninBronze))
-            {
-                if (AnyTurnin && TurninBronze)
-                    AnyTurnin = false;
-
-            }
-
-            if (!AnyTurnin && !TurninGold && !TurninSilver && !TurninBronze)
-                AnyTurnin = true;
 
             ImGui.Separator();
 
@@ -279,10 +248,7 @@ public static class Settings_TableColumns
 
                         if (C.MissionConfig.TryGetValue(mission.Key, out var config))
                         {
-                            config.AutoTurnin = AnyTurnin;
-                            config.TurninGold = TurninGold;
-                            config.TurninSilver = TurninSilver;
-                            config.TurninBronze = TurninBronze;
+                            config.TurninGoal = HighestTurnin;
                         }
                         amountApplied += 1;
                     }

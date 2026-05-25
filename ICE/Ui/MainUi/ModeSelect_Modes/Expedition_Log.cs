@@ -379,14 +379,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         if (missionInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
                         {
                             ImGui_Ice.Table_FullCenterText("Auto");
-                            if (missionConfig.AutoTurnin == false)
+                            if (missionConfig.TurninGoal != TurninState.Gold)
                             {
-                                missionConfig.AutoTurnin = true;
-                                missionConfig.TurninGold = false;
-                                missionConfig.TurninSilver = false;
-                                missionConfig.TurninBronze = false;
-
-                                C.Save();
+                                missionConfig.TurninGoal = TurninState.Gold;
+                                C.SaveDebounced();
                             }
                         }
                         else
@@ -408,7 +404,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             ImGui.SetCursorPosX(cursorPosX + (availWidth - totalWidth) * 0.5f);
 
                             // Gold
-                            ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninGold || missionConfig.AutoTurnin ? GoldColor : DisabledColor);
+                            ImGui.PushStyleColor(ImGuiCol.Text, missionConfig.TurninGoal == TurninState.Gold ? GoldColor : DisabledColor);
                             if (ImGuiEx.IconButton(FontAwesomeIcon.Trophy, "##Gold", buttonSize))
                             {
                                 // If AutoTurnin is on, we're enabling individual controls

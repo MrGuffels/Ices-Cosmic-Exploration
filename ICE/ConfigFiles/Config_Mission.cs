@@ -61,10 +61,7 @@ public partial class Config
         public bool Enabled { get; set; } = false;
         public bool ManualMode { get; set; } = false;
         public int GProfileId { get; set; } = 0;
-        public bool AutoTurnin { get; set; } = true;
-        public bool TurninGold { get; set; } = false;
-        public bool TurninSilver { get; set; } = false;
-        public bool TurninBronze { get; set; } = false;
+        public TurninState TurninGoal { get; set; } = TurninState.Gold;
         public bool Use_BuildinPreset { get; set; } = false;
         public string AutoHookPresetName { get; set; } = string.Empty;
         public double BestTime { get; set; } = double.MaxValue;
@@ -104,6 +101,15 @@ public partial class Config
             public int MinStepsForMiracle { get; set; } = -1;
             public uint ExpertProfileId = 0;
         };
+
+        [Obsolete]
+        public bool AutoTurnin { get; set; } = true;
+        [Obsolete]
+        public bool TurninGold { get; set; } = false;
+        [Obsolete]
+        public bool TurninSilver { get; set; } = false;
+        [Obsolete]
+        public bool TurninBronze { get; set; } = false;
     }
     public class FishingLocations
     {
