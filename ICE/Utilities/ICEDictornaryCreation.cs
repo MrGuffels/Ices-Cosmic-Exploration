@@ -619,8 +619,8 @@ public sealed partial class ICE
             }
         }
 
-        // Sequence Loading/Storing
-        // 1st passthrough
+        #region Sequence Mission Storing
+
         foreach (var (missionId, info) in CosmicHelper.SheetMissionDict)
         {
             if (info.PreviousMissionId == missionId) 
@@ -658,6 +658,10 @@ public sealed partial class ICE
             }
         }
 
+        #endregion
+
+        #region Icon Assignment
+
         foreach (var Icon in LeveAssignmentSheet)
         {
             var iconId = Icon.RowId;
@@ -681,6 +685,10 @@ public sealed partial class ICE
                 }
             }
         }
+
+        #endregion
+
+        #region Score Loading
 
         CosmicHelper.LoadMissionScores();
 
@@ -707,6 +715,18 @@ public sealed partial class ICE
                 entry.Value.ClassScore = 0;
             }
         }
+
+        #endregion
+
+        #region Mission Notes
+
+        CosmicHelper.CreateMissionNotes();
+        foreach (var mission in MissionUnlock)
+        {
+            CosmicHelper.SheetMissionDict[mission.Key].MissionUnlock = mission.Value;
+        }
+
+        #endregion
 
         foreach (var weather in CosmicHelper.WeatherIds)
         {
@@ -759,6 +779,8 @@ public sealed partial class ICE
         }
 
         EnsureAllMission();
+
+        #region Config Stuff
 
         foreach (var mission in C.MissionConfig)
         {
@@ -834,6 +856,8 @@ public sealed partial class ICE
         }
 
         C.Save();
+
+        #endregion
     }
 
     private static void MigrateConfigSettings()

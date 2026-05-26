@@ -42,6 +42,14 @@ namespace ICE.Enums
         TurninSilver = 1 << 19,
         TurninBronze = 1 << 20,
 
+        CrafterProfile = 1 << 21,
+        GatherProfile = 1 << 22,
+        FisherProfile = 1 << 23,
+
+        BestSPM = 1 << 24,
+        Sequence = 1 << 25,
+        Unlock = 1 << 26,
+        NoNotes = 1 << 27,
 
         All = Enabled + Disabled 
             + NotCompleted + Completed + Gold
@@ -49,6 +57,8 @@ namespace ICE.Enums
             + HasI + HasII + HasIII + HasIV + HasVI // + HasVIi
             + Sinus + Phaenna + Oizys // + Planet#4
             + TurninGold + TurninSilver + TurninBronze
+            + CrafterProfile + GatherProfile + FisherProfile
+            + BestSPM + Sequence + Unlock + NoNotes
             
     }
 

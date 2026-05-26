@@ -106,6 +106,7 @@ public static unsafe partial class CosmicHelper
 
                 reward[state] = new RewardInfo
                 {
+                    Completions = info.TotalCompleted,
                     Score = CalculatePerMinute(info.AverageTime, ClassScore, info.Multiplier),
                     Cosmocredit = CalculatePerMinute(info.AverageTime, CosmoCredit, info.Multiplier),
                     PlanetCredits = CalculatePerMinute(info.AverageTime, LunarCredit, info.Multiplier),
@@ -115,6 +116,8 @@ public static unsafe partial class CosmicHelper
 
             return reward;
         }
+        public CustomNotes BestSPM { get; set; } = new();
+        public List<uint> MissionUnlock { get; set; } = new();
 
         public bool IsProvisional => Attributes.HasFlag(MissionAttributes.ProvisionalWeather)
             || Attributes.HasFlag(MissionAttributes.ProvisionalSequential)
@@ -133,6 +136,7 @@ public static unsafe partial class CosmicHelper
     public static Dictionary<uint, CosmicInfo> SheetMissionDict = new();
     public class RewardInfo
     {
+        public int Completions { get; set; } = 0;
         public double Score { get; set; } = 0;
         public double Cosmocredit { get; set; } = 0;
         public double PlanetCredits { get; set; } = 0;

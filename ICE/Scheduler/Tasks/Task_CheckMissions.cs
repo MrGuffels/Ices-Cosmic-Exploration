@@ -442,10 +442,10 @@ namespace ICE.Scheduler.Tasks
             {
                 var basicMissionList = CosmicHandler.Basic_AvailableMissions();
                 var specialMissionList = CosmicHandler.Provisional_AvailableMissions();
-                var visibleMissions = CosmicHandler.VisibleMissions();
+                var criticalMissions = CosmicHandler.Critical_AvailableMissions();
                 var mode = Mission_Settings.Mode;
 
-                if (OpenCorrectTab(missionList, missionInfo))
+                if (OpenCorrectTab(missionInfo))
                 {
                     if (mode == ModeSelect.LevelMode)
                     {
@@ -741,11 +741,11 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Verbose($"Checking missions for the following mode:\n" +
                                 $"Mode: {type}\n" +
                                 $"Loaded mission count: {missionList.Count()}\n" +
-                                $"Amount of viable missions: {visibleMissions.Count()}", tag);
+                                $"Amount of available missions: {criticalMissions.Count()}", tag);
 
                             foreach (var missionId in missionList)
                             {
-                                if (visibleMissions.Contains(missionId))
+                                if (criticalMissions.Contains(missionId))
                                 {
                                     LogInfo(missionId);
                                     Insert_GrabMissionTask(missionId);
@@ -987,10 +987,10 @@ namespace ICE.Scheduler.Tasks
                     List<uint> viableMissions = new();
                     viableMissions.Add(missionId);
 
-                    if (OpenCorrectTab(viableMissions, missionInfo))
+                    if (OpenCorrectTab(missionInfo))
                     {
                         IceLogging.Verbose("On the correct tab, we're going to see the total mission count", tag);
-                        var allmissions = CosmicHandler.AllMissions();
+                        var allmissions = CosmicHandler.All_AvailableMissions();
                         IceLogging.Verbose($"All mission count: {allmissions.Count()} | Goal: {missionId}");
                         foreach (var mission in allmissions.OrderBy(x => CosmicHelper.SheetMissionDict[x].Rank))
                         {
@@ -1363,31 +1363,20 @@ namespace ICE.Scheduler.Tasks
 
             return jobTab[job];
         }
-        private static bool OpenCorrectTab(List<uint> missionList, WKSMission missionAddon)
+        private static bool OpenCorrectTab(WKSMission missionAddon)
         {
             string tag = "Opening Correct Tab";
 
             var hudInfo = CosmicHandler.HudInfo();
 
             var goalTab = 0;
-            foreach (var mission in missionList)
-            {
-                if (CosmicHelper.SheetMissionDict[mission].IsCritical)
-                {
-                    goalTab = 2;
-                    break;
-                }
-            }
 
             if (hudInfo.SelectedTabIndex != goalTab)
             {
                 if (FrameThrottler.Throttle("Selecting job", 8))
                 {
-                    IceLogging.Verbose("Selecting the basic tab because hard requirement for it (and we're needing basic missions)", tag);
-                    if (goalTab == 2)
-                        missionAddon.CriticalMissions();
-                    else
-                        missionAddon.BasicMissions();
+                    IceLogging.Verbose("Selecting the basic tab to allow refreshing of all tabs", tag);
+                    missionAddon.BasicMissions();
                 }
                 return false;
             }

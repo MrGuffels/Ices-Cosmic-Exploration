@@ -1367,6 +1367,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.Image(job2Icon.GetWrapOrEmpty().Handle, imageSize);
                         notesCount++;
                     }
+                    /*
                     if (CosmicHelper.CustomMissionNotes.TryGetValue(Id, out var notes))
                     {
                         if (notesCount > 0)
@@ -1381,6 +1382,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             ImGui.EndTooltip();
                         }
                     }
+                    */
 
                     #endregion
 
