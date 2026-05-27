@@ -94,6 +94,7 @@ public static unsafe partial class CosmicHelper
                 [TurninState.Bronze] = (1, config.AverageBronzeTime, config.BronzeCompletion),
                 [TurninState.Silver] = (4, config.AverageSilverTime, config.SilverCompletions),
                 [TurninState.Gold] = (5, config.AverageGoldTime, config.GoldCompletions),
+                [TurninState.SequenceGold] = new()
             };
 
             foreach (var (state, info) in stateInfo)
@@ -102,6 +103,13 @@ public static unsafe partial class CosmicHelper
                     continue;
                 else if (!IsCritical && state == TurninState.Critical)
                     continue;
+                else if (state == TurninState.SequenceGold)
+                {
+                    if (!IsSequence || SequenceMissions_Previous.Count() == 0)
+                        continue;
+                    reward[TurninState.SequenceGold] = CalculateSequenceGoldSPM(MissionId);
+                    continue;
+                }
 
 
                 reward[state] = new RewardInfo
@@ -152,5 +160,49 @@ public static unsafe partial class CosmicHelper
     {
         if (averageTime <= 0) return 0;
         return (60 * score * multiplier) / averageTime;
+    }
+    private static RewardInfo CalculateSequenceGoldSPM(uint missionId)
+    {
+        if (!SheetMissionDict.TryGetValue(missionId, out var root))
+            return new RewardInfo();
+
+        // Build the full chain: previous missions + this one
+        var chain = root.SequenceMissions_Previous
+            .Select(id => SheetMissionDict.TryGetValue(id, out var m) ? m : null)
+            .Append(root)
+            .ToList();
+
+        // If any mission in the chain has no gold completions, sequence gold is meaningless
+        if (chain.Any(m => m == null
+            || !C.MissionConfig.TryGetValue(m.MissionId, out var cfg)
+            || cfg.GoldCompletions == 0))
+            return new RewardInfo { Score = 0, Cosmocredit = 0, PlanetCredits = 0, Tokens = 0 };
+
+        double totalTime = 0;
+        double totalScore = 0;
+        double totalCosmo = 0;
+        double totalPlanet = 0;
+        double totalTokens = 0;
+
+        foreach (var mission in chain)
+        {
+            if (!C.MissionConfig.TryGetValue(mission.MissionId, out var config))
+                return new RewardInfo();
+
+            totalTime += config.AverageGoldTime;
+            totalScore += mission.ClassScore * 5;
+            totalCosmo += mission.CosmoCredit * 5;
+            totalPlanet += mission.LunarCredit * 5;
+            totalTokens += mission.TokenItemAmount * 5;
+        }
+
+        return new RewardInfo
+        {
+            Completions = C.MissionConfig[missionId].GoldCompletions,
+            Score = CalculatePerMinute(totalTime, (uint)totalScore, 1),
+            Cosmocredit = CalculatePerMinute(totalTime, (uint)totalCosmo, 1),
+            PlanetCredits = CalculatePerMinute(totalTime, (uint)totalPlanet, 1),
+            Tokens = CalculatePerMinute(totalTime, (uint)totalTokens, 1),
+        };
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ICE.ConfigFiles;
+using ICE.Ui;
 using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.Cosmic_Helper;
@@ -798,7 +799,7 @@ public sealed partial class ICE
 
         // This is here, merely for the reason of I want a random joke to show up every time they boot up the plugin. I even added some more!
         var random = new Random();
-        modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count-1);
+        Window_ExternalDetails.jokeId = random.Next(0, Window_ExternalDetails.JokeList.Count-1);
 
         if (!C.ShowManualMode)
         {

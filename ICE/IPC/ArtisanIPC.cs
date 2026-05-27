@@ -1,6 +1,7 @@
 ﻿using ECommons.EzIpcManager;
 using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using System.Collections.Generic;
 
 namespace ICE.IPC
 {
@@ -47,9 +48,42 @@ namespace ICE.IPC
         [EzIPC] public Action<uint, uint, bool> ChangeExpertMinimumStepsBeforeMiracle;
         [EzIPC] public Action<uint> SetTempExpertMinimumStepsBeforeMiracleBackToNormal;
 
+        [EzIPC] public Action<uint, bool> ChangeStandardMaxMaterialMiracleUses;
+        [EzIPC] public Action SetTempStandardMaxMaterialMiracleUsesBackToNormal;
+
+        [EzIPC] public Action<uint, bool> ChangeStandardMinimumStepsBeforeMiracle;
+        [EzIPC] public Action SetTempStandardMinimumStepsBeforeMiracleBackToNormal;
+
         public void AssignArtisanRecipe(ushort recipeId, uint reqFood, uint reqPotion = 0, uint reqManual = 0, uint reqSquadronManual = 0)
         {
             P.Artisan.AssignRecipie(recipeId, reqFood, reqPotion, reqManual, reqSquadronManual);
+        }
+
+        public class ArtisanInfo
+        {
+            public ArtisanCraftType Solver { get; set; } = ArtisanCraftType.Default;
+            public uint FoodId { get; set; } = 0;
+            public uint PotionId { get; set; } = 0;
+            public uint ManualId { get; set; } = 0;
+            public uint SquadronManualId { get; set; } = 0;
+            public int SkillUsage { get; set; } = -1;
+            public int MMSteps { get; set; } = -1;
+        }
+
+        public Dictionary<ushort, ArtisanInfo> CraftSettings = new();
+
+        public void CheckArtisanSettings(ushort recipeId, uint missionId)
+        {
+            if (C.MissionConfig.TryGetValue(missionId, out var configInfo))
+            {
+                if (configInfo.CraftSettings.TryGetValue(recipeId, out var recipeSettings))
+                {
+                    if (CraftSettings.TryGetValue(recipeId, out var artisanSettings))
+                    {
+
+                    }
+                }
+            }
         }
 
         public bool UpdatedArtisan()

@@ -193,16 +193,16 @@ namespace ICE.Ui.MainUi
                 ImGui.Image(pluginIcon.Handle, imageSize);
                 if (ImGui.IsItemHovered())
                 {
-                    if (modeSelect_TableInfo.jokeId == -1)
+                    if (Window_ExternalDetails.jokeId == -1)
                     {
                         var random = new Random();
-                        modeSelect_TableInfo.jokeId = random.Next(0, modeSelect_TableInfo.JokeList.Count);
+                        Window_ExternalDetails.jokeId = random.Next(0, Window_ExternalDetails.JokeList.Count);
                     }
-                    ImGui.SetTooltip(modeSelect_TableInfo.JokeList[modeSelect_TableInfo.jokeId]);
+                    ImGui.SetTooltip(Window_ExternalDetails.JokeList[Window_ExternalDetails.jokeId]);
                 }
                 else
                 {
-                    modeSelect_TableInfo.jokeId = -1;
+                    Window_ExternalDetails.jokeId = -1;
                 }
 
                 // Add spacing after image

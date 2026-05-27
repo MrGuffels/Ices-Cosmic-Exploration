@@ -2,6 +2,7 @@
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ECommons.GameHelpers;
+using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Ui.MainUi.Settings;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.ImGuiTools;
@@ -45,6 +46,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             { "Pictomancer", 42 }
         };
         private static string newListName = "";
+
+        private static Mission_Table? MissionTable;
+        private static List<CosmicHelper.MissionInfo> TableItems = [];
+        private static int ItemCount = 0;
 
         public static void Draw()
         {
@@ -636,34 +641,59 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                     if (!missionButtons.Success)
                         return;
 
-                    ImGui_Ice.DrawCategoryButton($"Red Alert [{criticalEnabled}]", "main_Critical");
-                    ImGui_Ice.DrawCategoryButton($"Sequence [{sequenceEnabled}]", "main_Sequence");
-                    ImGui_Ice.DrawCategoryButton($"Weather [{weatherEnabled}]", "main_Weather");
-                    ImGui_Ice.DrawCategoryButton($"Timed [{timedEnabled}]", "main_Timed");
-                    ImGui_Ice.DrawCategoryButton($"A Rank [{aRankEnabled}]", "main_ARank");
-                    ImGui_Ice.DrawCategoryButton($"B Rank [{bRankEnabled}]", "main_BRank");
-                    ImGui_Ice.DrawCategoryButton($"C Rank [{cRankEnabled}]", "main_CRank");
-                    ImGui_Ice.DrawCategoryButton($"D Rank [{dRankEnabled}]", "main_DRank");
-                    var selectedClass = C.SelectedJob;
-                    if (CosmicHelper.JobIconDict.TryGetValue(selectedClass, out var icon))
-                    {
-                        ImGui_Ice.DrawImageBox(icon, "Selected", spacingAfter: 5);
-                    }
-                    ImGui_Ice.DrawCategoryButton($"All Enabled [{allEnabled}]", "main_AllEnabled", disabled: allEnabled == 0);
+                    ImGui_Ice.DrawRankButton("Red Alert", MissionFilter.RedAlert, MissionTable);
+                    ImGui_Ice.DrawRankButton("Sequence", MissionFilter.Sequence, MissionTable);
+                    ImGui_Ice.DrawRankButton("Weather", MissionFilter.Weather, MissionTable);
+                    ImGui_Ice.DrawRankButton("Weather", MissionFilter.Timed, MissionTable);
+                    ImGui_Ice.DrawRankButton("Weather", MissionFilter.ARank, MissionTable);
+                    ImGui_Ice.DrawRankButton("Weather", MissionFilter.BRank, MissionTable);
+                    ImGui_Ice.DrawRankButton("Weather", MissionFilter.CRank, MissionTable);
+                    ImGui_Ice.DrawRankButton("Weather", MissionFilter.DRank, MissionTable);
 
                     ImGui_Ice.EndCategoryButtonRow();
                 }
 
-                float minContentWidth = 880 * ImGuiHelpers.GlobalScale;
-                var availWidth = ImGui.GetContentRegionAvail().X;
-                if (availWidth < minContentWidth)
-                    ImGui.SetNextWindowContentSize(new Vector2(minContentWidth, 0));
+                var bottomSpace = ImGui.GetTextLineHeight() + 6f;
+                bottomSpace += 12f; // prevent the tabs from creating a scrollbar
 
-                using (var missionTableChild = ImRaii.Child("##modeSelect_MissionTables", new Vector2(0, 0), false, ImGuiWindowFlags.HorizontalScrollbar))
+                Vector2 size = new(ImGui.GetContentRegionAvail().X, ImGui.GetContentRegionAvail().Y - bottomSpace);
+
+                ImGui.Text($"Item Count: {ItemCount}");
+                if (ImGui.BeginChild("###MissionTableV3", size, false))
                 {
-                    if (missionTableChild.Success)
-                        DrawMissionTables();
+                    var showRedAlert = C.MissionFilter.HasFlag(MissionFilter.RedAlert);
+                    if (ImGui.Checkbox("Red Alert", ref showRedAlert))
+                    {
+                        C.MissionFilter = showRedAlert
+                            ? C.MissionFilter | MissionFilter.RedAlert
+                            : C.MissionFilter & ~MissionFilter.RedAlert;
+                        C.SaveDebounced();
+                        MissionTable.SetFilterDirty();
+                    }
+
+                    try
+                    {
+                        if (MissionTable == null && CosmicHelper.SheetMissionDict.Count > 0)
+                        {
+                            foreach (var mission in CosmicHelper.SheetMissionDict)
+                            {
+                                CosmicHelper.MissionInfo missionDetails = new() { Id = mission.Key };
+                                TableItems.Add(missionDetails);
+                            }
+                            ItemCount = TableItems.Count();
+                            MissionTable = new(TableItems);
+                        }
+                        var filterActive = MissionTable.FilteredItems.Count != 0 && MissionTable.FilteredItems.Count != ItemCount;
+                        var filterCount = filterActive ? $" (of {ItemCount})" : "";
+                        var height = ImGui.GetFrameHeight();
+                        MissionTable.Draw(height + 4f);
+                    }
+                    catch (Exception ex)
+                    {
+                        IceLogging.Error(ex.Message, "Drawing Mission Table");
+                    }
                 }
+                ImGui.EndChild();
             }
         }
 

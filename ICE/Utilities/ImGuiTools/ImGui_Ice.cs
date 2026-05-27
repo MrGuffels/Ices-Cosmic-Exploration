@@ -3,6 +3,7 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
 using System.Reflection;
@@ -643,6 +644,81 @@ public static partial class ImGui_Ice
         // Create an invisible button to properly reserve space and handle layout
         ImGui.SetCursorScreenPos(cursorPos);
         ImGui.InvisibleButton($"##{categoryId}_btn", new Vector2(contentWidth, contentHeight));
+
+        // Add spacing after the button (scaled)
+        ImGui.SameLine(0, spacingAfter * scale);
+
+        return isExpanded;
+    }
+    internal static bool DrawRankButton(string label, MissionFilter missionType, Mission_Table? missionTable, FontAwesomeIcon? icon = null, float spacingAfter = 5, bool disabled = false)
+    {
+        float scale = ImGuiHelpers.GlobalScale;
+
+        // Setting the values of the content size (padding, spacing, etc) that way it's used across the board
+        float horizontalPadding = 8 * scale;
+        float verticalPadding = 4 * scale;
+        float iconTextSpacing = 4 * scale;
+
+        // These are to make sure that they're drawn in place
+        var drawList = ImGui.GetWindowDrawList();
+        var cursorPos = ImGui.GetCursorScreenPos();
+
+        // Calculate text size
+        var textSize = ImGui.CalcTextSize(label);
+
+        // Calculate icon width if present
+        float iconWidth = icon.HasValue ? textSize.Y + iconTextSpacing : 0;
+
+        // Calculate button dimensions based on content
+        float contentWidth = horizontalPadding * 2 + iconWidth + textSize.X;
+        float contentHeight = verticalPadding * 2 + textSize.Y;
+
+        // Initialize category state if needed
+        bool isExpanded = C.MissionFilter.HasFlag(missionType);
+
+        // Calculate interaction state
+        var buttonRect = new Vector2(cursorPos.X + contentWidth, cursorPos.Y + contentHeight);
+        bool isHovered = !disabled && ImGui.IsMouseHoveringRect(cursorPos, buttonRect)
+                      && ImGui.IsWindowHovered(ImGuiHoveredFlags.AllowWhenBlockedByPopup | ImGuiHoveredFlags.ChildWindows);
+        bool isClicked = isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+
+        if (isClicked)
+        {
+            // I hate fucking ? statments lol
+            C.MissionFilter = isExpanded
+                ? C.MissionFilter & ~missionType  // was on → turn off 
+                : C.MissionFilter | missionType;  // was off → turn on
+            C.SaveDebounced();
+            missionTable?.SetFilterDirty();
+        }
+
+        // Determine colors based on state
+        var headerColor = GetButtonColor(isExpanded, isHovered, disabled);
+        var textColor = disabled
+            ? ImGui.GetColorU32(ImGuiCol.TextDisabled)
+            : ImGui.GetColorU32(ImGuiCol.Text);
+
+        // Draw background rectangle with rounded corners (scaled)
+        drawList.AddRectFilled(cursorPos, buttonRect, headerColor, 5.0f * scale);
+
+        // Draw content with disabled color if needed
+        ImGui.SetCursorScreenPos(new Vector2(cursorPos.X + horizontalPadding, cursorPos.Y + verticalPadding));
+
+        ImGui.PushStyleColor(ImGuiCol.Text, textColor);
+
+        // Draw icon if provided
+        if (icon.HasValue)
+        {
+            ImGuiEx.Icon(icon.Value);
+            ImGui.SameLine(0, iconTextSpacing);
+        }
+
+        ImGui.Text(label);
+        ImGui.PopStyleColor();
+
+        // Create an invisible button to properly reserve space and handle layout
+        ImGui.SetCursorScreenPos(cursorPos);
+        ImGui.InvisibleButton($"##{label}_{missionType.ToString()}_btn", new Vector2(contentWidth, contentHeight));
 
         // Add spacing after the button (scaled)
         ImGui.SameLine(0, spacingAfter * scale);

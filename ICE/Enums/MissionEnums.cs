@@ -37,6 +37,7 @@ namespace ICE.Enums
         Silver = 2,
         Gold = 3,
         Critical = 4,
+        SequenceGold = 5,
     }
 
     public enum ArtisanCraftType

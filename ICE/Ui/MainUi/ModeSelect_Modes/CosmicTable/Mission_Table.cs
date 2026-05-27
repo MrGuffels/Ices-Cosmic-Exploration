@@ -21,7 +21,6 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             ImGui.SetCursorPosY(pos + offset);
         }
     }
-
     internal class ItemFilterColumn : ColumnFlags<ItemFilter, MissionInfo>
     {
         private ItemFilter[] FlagValues = Array.Empty<ItemFilter>();
@@ -141,9 +140,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             C.SaveDebounced();
         }
     }
+
     internal class Mission_Table : Table<MissionInfo>, IDisposable
     {
-        public readonly EnabledColumn _enabledColumn = new() { Label = "Enabled" };
+        public readonly EnabledColumn _enabledColumn;
         public readonly NameColumn _nameColumn = new() { Label = "Name" };
         public readonly IdColumn _idColumn = new() { Label = "ID" };
         public readonly JobColumn _jobColumn = new() { Label = "Job" };
@@ -158,9 +158,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         public readonly TurninColumn _turninColumn = new() { Label = "Turnin Goal" };
         public readonly PlanetColumn _planetColumn = new() { Label = "Moons" };
         public readonly ProfileColumn _profileColumn = new() { Label = "Profile" };
+        public readonly NotesColumn _notesColumn = new() { Label = "Notes" };
 
         public Mission_Table(List<MissionInfo> itemList) : base("Item_Table", itemList)
         {
+            _enabledColumn = new EnabledColumn(this) { Label = "Enabled" };
+
             List<Column<MissionInfo>> headers = [
                 _enabledColumn, _completionColumn, _idColumn, _planetColumn,
                 _jobColumn, _missionColumn, _nameColumn, _classScoreColumn, 
@@ -178,7 +181,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 string tierName = tier switch { 1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V", 6 => "VI", _ => "?" };
                 headers.Add(new RelicExpColumn(tier, flag) { Label = $"Exp {tierName}" });
             }
-            headers.Add(_profileColumn);
+            headers.Add(_profileColumn, _notesColumn);
             this.Headers = [.. headers];
 
             Sortable = true;
@@ -192,8 +195,10 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
         public sealed class EnabledColumn : ItemFilterColumn
         {
-            public EnabledColumn()
+            private readonly Mission_Table _table;
+            public EnabledColumn(Mission_Table table)
             {
+                _table = table;
                 Flags = ImGuiTableColumnFlags.NoHide;
                 SetFlags(ItemFilter.Enabled, ItemFilter.Disabled);
                 SetNames("Enabled", "Disabled");
@@ -204,20 +209,34 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             public override void DrawColumn(MissionInfo item, int _)
             {
+                ImGui.PushID(item.Id);
                 bool disabled = C.SelectedMode == ModeSelect.MissionGoldMode
                              || C.SelectedMode == ModeSelect.LevelMode
                              || (C.SelectedMode == ModeSelect.RelicMode && !C.XPRelicOnlyEnabled);
 
                 if (!disabled)
                 {
-                    var enabled = item.Enabled;
-                    PreDraw();
-                    if (ImGui.Checkbox("###Enabled", ref enabled))
+                    bool enabled = C.MissionConfig[item.Id].Enabled;
+                    if (ImGui_Ice.Table_CenterCheckbox("##EnableMission", ref enabled))
                     {
                         C.MissionConfig[item.Id].Enabled = enabled;
-                        C.SaveDebounced();
+                        if (enabled == true)
+                        {
+                            foreach (var prevMission in CosmicHelper.SheetMissionDict[item.Id].SequenceMissions_Previous)
+                            {
+                                C.MissionConfig[prevMission].Enabled = true;
+                            }
+                        }
+
+                        C.Save();
+                        _table.SetFilterDirty();
+                    }
+                    if (ImGui.IsItemClicked())
+                    {
+                        Window_ExternalDetails.SelectedMission = item.Id;
                     }
                 }
+                ImGui.PopID();
             }
 
             public override bool FilterFunc(MissionInfo item)
@@ -231,18 +250,33 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override string ToName(MissionInfo mission) => mission.SheetInfo.Name;
             public override void DrawColumn(MissionInfo mission, int _)
             {
+                ImGui.PushID(mission.Id);
+
                 if (ImGui.Button(mission.SheetInfo.Name))
                 {
-
+                    Window_ExternalDetails.SelectedMission = mission.Id;
+                    P.externalDetails.IsOpen = true;
+                    P.externalDetails.Collapsed = false;
                 }
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                 {
-
+                    ImGui.SameLine();
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.Flag))
+                    {
+                        Window_ExternalDetails.SelectedMission = mission.Id;
+                        Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, (int)mission.SheetInfo.MapPosition.X, (int)mission.SheetInfo.MapPosition.Y, mission.SheetInfo.Radius, mission.SheetInfo.Name);
+                    }
                 }
-                if (mission.SheetInfo.IsCritical)
+                if (CosmicHelper.CriticalLocations.TryGetValue(mission.Id, out var criticalLoc))
                 {
-
+                    ImGui.SameLine();
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.FlagCheckered))
+                    {
+                        Utils.SetFlagForNPC(mission.SheetInfo.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
+                    }
                 }
+
+                ImGui.PopID();
             }
         }
         public sealed class IdColumn : VerticalCenterColumnString
@@ -505,7 +539,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             private double GetScore(MissionInfo item)
             {
                 var scoreInfo = item.SheetInfo.ScoreInfo();
-                return item.SheetInfo.IsCritical ? scoreInfo[TurninState.Critical].Score : scoreInfo.Values.MaxBy(r => r.Score)?.Score ?? 0;
+                if (item.SheetInfo.IsCritical)
+                    return scoreInfo[TurninState.Critical].Score;
+                if (scoreInfo.TryGetValue(TurninState.SequenceGold, out var seqGold) && seqGold.Score != 0)
+                    return seqGold.Score;
+                return scoreInfo.Values.MaxBy(r => r.Score)?.Score ?? 0;
             }
 
             public override string ToName(MissionInfo item) => $"{GetScore(item):N2}";
@@ -514,6 +552,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 var scoreInfo = item.SheetInfo.ScoreInfo();
                 var bestScore = scoreInfo.MaxBy(r => r.Value.Score);
+                if (scoreInfo.TryGetValue(TurninState.SequenceGold, out var seqGold) && seqGold.Score != 0)
+                    bestScore = new(TurninState.SequenceGold, seqGold);
 
                 if (bestScore.Value.Score != 0)
                 {
@@ -529,10 +569,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         TurninState.Silver => new(0.6f, 0.6f, 0.6f, 1.0f),
                         TurninState.Gold => new(0.85f, 0.70f, 0.0f, 1.0f), // slightly muted gold
                         TurninState.Critical => new(0.7f, 0.1f, 0.9f, 1.0f), // purple feels "special"
+                        TurninState.SequenceGold => new(0.95f, 0.60f, 0.0f, 1.0f),  // amber-gold, more orange warmth
                         _ => new(0.5f, 0.5f, 0.5f, 0.8f)
                     };
 
-                    bool isBright = bestScore.Key is TurninState.Gold or TurninState.Silver;
+                    bool isBright = bestScore.Key is TurninState.Gold or TurninState.Silver or TurninState.SequenceGold;
                     Vector4 textColor = isBright ? new(0.1f, 0.1f, 0.1f, 1.0f) : new(1.0f, 1.0f, 1.0f, 1.0f);
 
                     using (ImRaii.PushColor(ImGuiCol.Button, pillColor)
@@ -886,11 +927,88 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         {
             public NotesColumn()
             {
+                Flags = ImGuiTableColumnFlags.None;
                 SetFlags(ItemFilter.BestSPM, ItemFilter.Sequence, ItemFilter.Unlock, ItemFilter.NoNotes);
                 SetNames("Best Score Per Minute", "Sequence", "Needs Unlocked", "No Notes");
             }
-        }
+            public override void DrawColumn(MissionInfo item, int idx)
+            {
+                var sheetInfo = item.SheetInfo;
+                var HasSPM = sheetInfo.BestSPM.SPM > 0;
+                var HasSequence = sheetInfo.SequenceMissions_Next.Count() > 0 || sheetInfo.SequenceMissions_Previous.Count() > 0;
+                var HasUnlockable = sheetInfo.MissionUnlock.Count() > 0;
 
+                if (HasSPM)
+                {
+                    ImGuiEx.Icon(FontAwesomeIcon.Trophy);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text($"Average SPM: {sheetInfo.BestSPM.SPM:N2}");
+                        ImGui.Text($"{sheetInfo.BestSPM.NoteInfo}");
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (HasSequence)
+                {
+                    if (HasSPM)
+                        ImGui.SameLine();
+
+                    ImGuiEx.Icon(FontAwesomeIcon.ListOl);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        if (sheetInfo.SequenceMissions_Next.Count() > 0)
+                        {
+                            ImGui.Text("Next Sequence:");
+                            foreach(var mission in sheetInfo.SequenceMissions_Next)
+                            {
+                                var seqInfo = CosmicHelper.SheetMissionDict[mission];
+                                ImGui.Text($"[{mission}] {seqInfo.Name}");
+                            }
+                        }
+                        if (sheetInfo.SequenceMissions_Previous.Count() > 0)
+                        {
+                            ImGui.Text("Previous Sequence:");
+                            foreach (var mission in sheetInfo.SequenceMissions_Previous)
+                            {
+                                var seqInfo = CosmicHelper.SheetMissionDict[mission];
+                                ImGui.Text($"[{mission}] {seqInfo.Name}");
+                            }
+                        }
+                        ImGui.EndTooltip();
+                    }
+                }
+                if (HasUnlockable)
+                {
+                    if (HasSPM || HasSequence)
+                    {
+                        ImGui.SameLine();
+                    }
+                    if (Svc.Texture.GetFromGame("ui/uld/WKSMission_hr1.tex") is { } tex)
+                    {
+                        var frameHeight = ImGui.GetFrameHeight();
+                        var size = new Vector2(frameHeight);
+                        if (tex.TryGetWrap(out var wrap, out var exc))
+                        {
+                            ImGui.Image(wrap.Handle, size);
+                        }
+                    }
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.BeginTooltip();
+                        ImGui.Text("The following missions are required to have gold before you can do this one");
+                        foreach (var mission in sheetInfo.MissionUnlock)
+                        {
+                            ImGui_Ice.CompletionStatusIcon(CosmicHelper.SheetMissionDict[mission]);
+                            ImGui.SameLine();
+                            ImGui.Text($"[{mission}] - {CosmicHelper.SheetMissionDict[mission].Name}");
+                        }
+                        ImGui.EndTooltip();
+                    }
+                }
+            }
+        }
         public static void CrafterManagement(CosmicHelper.CosmicInfo mission, uint id, ImGuiTreeNodeFlags openDefault = ImGuiTreeNodeFlags.DefaultOpen)
         {
             var job = mission.Jobs.First(x => CosmicHelper.CrafterJobList.Contains(x));
@@ -1433,9 +1551,58 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                         C.SaveDebounced();
                                     }
 
+                                    ImGui.TableNextRow();
+                                    ImGui.TableSetColumnIndex(0);
+#if DEBUG
+                                    if (ImGui.Button("Test Apply"))
+                                    {
+                                        var key = craft.Key;
+                                        var useAmount = recipeConfig.SkillUsageAmount;
+                                        var miracleSteps = recipeConfig.MinStepsForMiracle;
+                                        IceLogging.Verbose($"Was Expert: {craft.Value.ExpertCraft}", "Test Apply Skills");
+                                        if (craft.Value.ExpertCraft)
+                                        {
+                                            if (recipeConfig.SkillUsageAmount != -1)
+                                            {
+                                                P.Artisan.ChangeExpertMaxSteadyUses(key, (uint)useAmount, true);
+                                                P.Artisan.ChangeExpertMaxMaterialMiracleUses(key, (uint)useAmount, true);
+                                            }
+                                            else
+                                            {
+                                                P.Artisan.SetTempExpertMaxSteadyUsesBackToNormal(key);
+                                                P.Artisan.SetTempExpertMaxMaterialMiracleUsesBackToNormal(key);
+                                            }
+
+                                            if (miracleSteps != -1)
+                                                P.Artisan.ChangeExpertMinimumStepsBeforeMiracle(key, (uint)miracleSteps, true);
+                                            else
+                                                P.Artisan.SetTempExpertMinimumStepsBeforeMiracleBackToNormal(key);
+                                        }
+                                        else
+                                        {
+                                            if (useAmount != -1)
+                                            {
+                                                P.Artisan.ChangeStandardMaxMaterialMiracleUses((uint)useAmount, true);
+                                            }
+                                            else
+                                            {
+                                                P.Artisan.SetTempStandardMaxMaterialMiracleUsesBackToNormal();
+                                            }
+
+                                            if (miracleSteps != 1)
+                                            {
+                                                P.Artisan.ChangeStandardMinimumStepsBeforeMiracle((uint)miracleSteps, true);
+                                            }
+                                            else
+                                            {
+                                                P.Artisan.SetTempStandardMinimumStepsBeforeMiracleBackToNormal();
+                                            }
+                                        }
+                                    }
+#endif
+
                                     if (mission.TemporaryActionId == 41269 && !globalArtisan)
                                     {
-                                        ImGui.TableNextRow();
                                         ImGui.TableSetColumnIndex(1);
                                         ImGui.Text("Use after this many steps");
 
