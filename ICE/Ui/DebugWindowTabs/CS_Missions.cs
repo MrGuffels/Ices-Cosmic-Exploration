@@ -51,7 +51,7 @@ namespace ICE.Ui.DebugWindowTabs
                         ImGui.TableSetColumnIndex(0);
                         foreach (var job in sheetInfo.Jobs)
                         {
-                            ImGui.Image(CosmicHelper.JobIconDict[job].GetWrapOrEmpty().Handle, new(24, 24));
+                            ImGui.Image(CosmicHelper.ClassInfoDict[job].JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
                             ImGui.SameLine();
                         }
 

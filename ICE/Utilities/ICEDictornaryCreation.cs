@@ -682,8 +682,18 @@ public sealed partial class ICE
             {
                 if (Svc.Texture.TryGetFromGameIcon(jobicon, out var texture))
                 {
-                    JobIconDict.TryAdd(iconId, texture);
+                    ClassInfoDict[iconId].JobIcon = texture;
                 }
+            }
+        }
+
+        for (uint i = 8; i < 19; i++)
+        {
+            if (Svc.Data.GetExcelSheet<ClassJob>().TryGetRow(i, out var classInfo))
+            {
+                var classDict = ClassInfoDict[i];
+                classDict.JobName = classInfo.Name.ToString();
+                classDict.shortName = classInfo.Abbreviation.ToString();
             }
         }
 

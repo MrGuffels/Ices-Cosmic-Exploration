@@ -87,7 +87,8 @@ namespace ICE.Ui.MainUi
                                 ? C.ItemFilter & ~moon.planetFilter  // was on → turn off 
                                 : C.ItemFilter | moon.planetFilter;  // was off → turn on
                             C.AutoSelectMoon = false;
-                            Mission_Setup.MissionTable.SetFilterDirty();
+                            if (Mission_Setup.MissionTable != null)
+                                Mission_Setup.MissionTable.SetFilterDirty();
 
                             C.Save();
                         }
@@ -117,20 +118,6 @@ namespace ICE.Ui.MainUi
                 var classIcon = ImGui_Ice.GetGreyscaleJob(currentClass);
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Select Class", SidebarTabs.ClassSelection, imageTexture: classIcon))
                 {
-                    Dictionary<uint, string> ClassDict = new()
-                    {
-                        [8] = "CRP",
-                        [9] = "BSM",
-                        [10] = "ARM",
-                        [11] = "GSM",
-                        [12] = "LTW",
-                        [13] = "WVR",
-                        [14] = "ALC",
-                        [15] = "CUL",
-                        [16] = "MIN",
-                        [17] = "BTN",
-                        [18] = "FSH",
-                    };
                     int itemsPerRow = 4;
                     int currentItem = 0;
 
@@ -152,7 +139,7 @@ namespace ICE.Ui.MainUi
                         if (currentItem % itemsPerRow == 0)
                             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + leftOffset);
 
-                        ImGui_Ice.DrawJobButtons(i, ClassDict[i]);
+                        ImGui_Ice.DrawJobButtons(i, CosmicHelper.ClassInfoDict[i]);
 
                         currentItem++;
 
@@ -238,7 +225,8 @@ namespace ICE.Ui.MainUi
                 if (C.ItemFilter != desired)
                 {
                     C.ItemFilter = desired;
-                    Mission_Setup.MissionTable.SetFilterDirty();
+                    if (Mission_Setup.MissionTable != null)
+                        Mission_Setup.MissionTable.SetFilterDirty();
                     C.SaveDebounced();
                 }
                 return;
@@ -248,11 +236,21 @@ namespace ICE.Ui.MainUi
         {
             var jobId = (uint)Player.Job;
 
-            bool needsUpdated = autoSelectClass && C.SelectedJob != jobId && CosmicHelper.SupportedJobs.Contains(jobId);
+            if (!autoSelectClass) return;
+            if (!CosmicHelper.ClassInfoDict.TryGetValue(jobId, out var jobClass)) return;
+
+            var currentFlag = jobClass.JobFlag;
+
+            // Check if any flags other than the current job are active
+            bool needsUpdated = (C.JobFilter & ~currentFlag) != JobFilter.None
+                             || (C.JobFilter & currentFlag) == JobFilter.None;
+
             if (needsUpdated)
             {
-                C.SelectedJob = (uint)Player.Job;
+                C.JobFilter = currentFlag;
                 C.Save();
+                if (Mission_Setup.MissionTable != null)
+                    Mission_Setup.MissionTable.SetFilterDirty();
             }
         }
     }

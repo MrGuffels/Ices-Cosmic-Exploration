@@ -45,8 +45,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 if (ImGui.BeginTabItem("Current Agenda"))
                 {
-                    var selectedJobIcon = CosmicHelper.JobIconDict[SelectedJob];
-                    var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
+                    var selectedJobIcon = CosmicHelper.ClassInfoDict[SelectedJob].JobIcon;
+                    var selectedJobName = CosmicHelper.ClassInfoDict[SelectedJob].JobName;
 
                     ImGui.Image(selectedJobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
                     ImGui.SameLine();
@@ -63,7 +63,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                                 foreach (var jobId in JobOptions)
                                 {
-                                    var jobIcon = CosmicHelper.JobIconDict[jobId];
+                                    var jobIcon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
                                     var jobName = CosmicHelper.GetJobName(jobId);
                                     bool isSelected = jobId == SelectedJob;
 
@@ -294,7 +294,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     ImGui.TableNextRow();
 
                                     ImGui.TableSetColumnIndex(0);
-                                    var jobImage = CosmicHelper.JobIconDict[agendaInfo.SelectedJob];
+                                    var jobImage = CosmicHelper.ClassInfoDict[agendaInfo.SelectedJob].JobIcon;
                                     float zoom = 0.15f;
 
                                     ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(20, 20), new Vector2(zoom, zoom), new Vector2(1 - zoom, 1 - zoom));
@@ -401,7 +401,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         _dragDrop.DrawButtonDummy(agendaInfo, C.Cosmic_Agenda, i);
 
                         ImGui.TableNextColumn();
-                        var jobImage = CosmicHelper.JobIconDict[agendaInfo.SelectedJob];
+                        var jobImage = CosmicHelper.ClassInfoDict[agendaInfo.SelectedJob].JobIcon;
                         float zoom = 0.15f;
 
                         if (ImGui.ImageButton(jobImage.GetWrapOrEmpty().Handle,new Vector2(20, 20), new Vector2(zoom, zoom), new Vector2(1 - zoom, 1 - zoom)))
@@ -417,8 +417,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                                 foreach (var jobId in JobOptions)
                                 {
-                                    var jobIcon = CosmicHelper.JobIconDict[jobId];
-                                    var jobName = CosmicHelper.GetJobName(jobId);
+                                    var jobIcon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
+                                    var jobName = CosmicHelper.ClassInfoDict[jobId].JobName;
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();

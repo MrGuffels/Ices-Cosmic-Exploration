@@ -59,11 +59,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ImGui.TableSetupColumn("Icon");
                 ImGui.TableSetupColumn("Name");
 
-                foreach (var icon in CosmicHelper.JobIconDict.OrderBy(x => x.Key))
+                foreach (var icon in CosmicHelper.ClassInfoDict.OrderBy(x => x.Key))
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Image(icon.Value.GetWrapOrEmpty().Handle, new(24, 24));
+                    ImGui.Image(icon.Value.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
 
                     ImGui.TableNextColumn();
                     string name = CosmicHelper.GetJobName(icon.Key);
@@ -113,8 +113,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                 if (SelectedJob != 0)
                 {
-                    var classIcon = CosmicHelper.JobIconDict[SelectedJob];
-                    DrawImageTabButton("Class Progress", ExpeditionTabs.Progress, ref selectedTab, classIcon.GetWrapOrEmpty());
+                    var classIcon = CosmicHelper.ClassInfoDict[SelectedJob];
+                    DrawImageTabButton("Class Progress", ExpeditionTabs.Progress, ref selectedTab, classIcon.JobIcon.GetWrapOrEmpty());
                 }
                 else
                 {
@@ -307,8 +307,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         ImGui.TableNextColumn();
                         if (missionInfo.Jobs.Count > 1)
                         {
-                            ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
-                            ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.Last()];
+                            ISharedImmediateTexture? job1Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.First()].JobIcon;
+                            ISharedImmediateTexture? job2Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.Last()].JobIcon;
                             Vector2 imageSize = new Vector2(23, 23);
 
                             ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
@@ -317,7 +317,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                         else
                         {
-                            ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
+                            ISharedImmediateTexture? job1Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.First()].JobIcon;
                             Vector2 imageSize = new Vector2(23, 23);
                             ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
                         }
@@ -886,8 +886,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                             if (notesCount > 0)
                                 ImGui.SameLine(0, 2);
 
-                            ISharedImmediateTexture? job1Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.First()];
-                            ISharedImmediateTexture? job2Icon = CosmicHelper.JobIconDict[missionInfo.Jobs.Last()];
+                            ISharedImmediateTexture? job1Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.First()].JobIcon;
+                            ISharedImmediateTexture? job2Icon = CosmicHelper.ClassInfoDict[missionInfo.Jobs.Last()].JobIcon;
                             Vector2 imageSize = new Vector2(23, 23);
 
                             ImGui.Image(job1Icon.GetWrapOrEmpty().Handle, imageSize);
@@ -972,12 +972,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                     ImGui.TableHeadersRow();
 
-                    foreach (var job in CosmicHelper.JobIconDict.OrderBy(x => x.Key))
+                    foreach (var job in CosmicHelper.ClassInfoDict.OrderBy(x => x.Key))
                     {
                         ImGui.TableNextRow();
                         ImGui.TableSetColumnIndex(0);
                         var icon = job.Value;
-                        ImGui.Image(icon.GetWrapOrEmpty().Handle, new(24, 24));
+                        ImGui.Image(icon.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
 
                         if (expInfo.TryGetValue(job.Key, out var jobInfo))
                         {

@@ -160,7 +160,7 @@ namespace ICE.Ui
                     ImGui.TableNextColumn();
                     foreach (var job in mission.Jobs)
                     {
-                        ISharedImmediateTexture? icon = CosmicHelper.JobIconDict[job];
+                        ISharedImmediateTexture? icon = CosmicHelper.ClassInfoDict[job].JobIcon;
                         Vector2 size = new Vector2(20, 20);
                         ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
                         ImGui.SameLine();

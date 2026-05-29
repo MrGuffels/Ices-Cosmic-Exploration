@@ -767,7 +767,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2(tightSpacing, 0));
                 foreach (var job in jobs)
                 {
-                    var icon = CosmicHelper.JobIconDict[job];
+                    var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
                     ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
                     ImGui.SameLine();
                 }

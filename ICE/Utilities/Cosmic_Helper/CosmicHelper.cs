@@ -25,29 +25,28 @@ public static unsafe partial class CosmicHelper
     public static readonly List<uint> GatheringJobList = [16, 17, 18];
     public static readonly List<uint> SupportedJobs = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 
-    public static Dictionary<uint, ISharedImmediateTexture> JobIconDict = new Dictionary<uint, ISharedImmediateTexture>();
     public static Dictionary<CosmicWeather, ISharedImmediateTexture> WeatherIconDict = new();
 
     public class JobClass
     {
-        public JobFilter job { get; set; } = JobFilter.None;
-        public string jobName { get; set; } = "???";
+        public JobFilter JobFlag { get; set; } = JobFilter.None;
+        public string JobName { get; set; } = "???";
         public string shortName { get; set; } = "???";
         public ISharedImmediateTexture JobIcon { get; set; }
     }
-    public static Dictionary<uint, JobClass> JobInfo = new()
+    public static Dictionary<uint, JobClass> ClassInfoDict = new()
     {
-        [8] = new() { job = JobFilter.CRP },
-        [9] = new() { job = JobFilter.BSM },
-        [10] = new() { job = JobFilter.ARM },
-        [11] = new() { job = JobFilter.GSM },
-        [12] = new() { job = JobFilter.LTW },
-        [13] = new() { job = JobFilter.WVR },
-        [14] = new() { job = JobFilter.ALC },
-        [15] = new() { job = JobFilter.CUL },
-        [16] = new() { job = JobFilter.MIN },
-        [17] = new() { job = JobFilter.BTN },
-        [18] = new() { job = JobFilter.FSH },
+        [8] = new() { JobFlag = JobFilter.CRP },
+        [9] = new() { JobFlag = JobFilter.BSM },
+        [10] = new() { JobFlag = JobFilter.ARM },
+        [11] = new() { JobFlag = JobFilter.GSM },
+        [12] = new() { JobFlag = JobFilter.LTW },
+        [13] = new() { JobFlag = JobFilter.WVR },
+        [14] = new() { JobFlag = JobFilter.ALC },
+        [15] = new() { JobFlag = JobFilter.CUL },
+        [16] = new() { JobFlag = JobFilter.MIN },
+        [17] = new() { JobFlag = JobFilter.BTN },
+        [18] = new() { JobFlag = JobFilter.FSH },
     };
 
     public static string GetJobName(uint jobId)

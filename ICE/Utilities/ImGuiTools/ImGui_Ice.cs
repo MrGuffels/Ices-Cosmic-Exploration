@@ -3,6 +3,7 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using ICE.Ui.MainUi.ModeSelect_Modes;
 using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
@@ -449,13 +450,13 @@ public static partial class ImGui_Ice
 
         return isExpanded;
     }
-    public static void DrawJobButtons(uint jobId, string tooltip)
+    public static void DrawJobButtons(uint jobId, CosmicHelper.JobClass classInfo)
     {
         float scale = ImGuiHelpers.GlobalScale;
 
         uint selectedJob = C.SelectedJob;
-        bool state = selectedJob == jobId;
-        var iconEnabled = CosmicHelper.JobIconDict[jobId];
+        bool state = C.JobFilter.HasFlag(classInfo.JobFlag);
+        var iconEnabled = classInfo.JobIcon;
         var iconDisabled = GetGreyscaleJob(jobId);
         Vector2 size = new Vector2(26 * scale, 26 * scale);
         bool autoPickCurrentJob = C.AutoPickCurrentJob;
@@ -470,8 +471,13 @@ public static partial class ImGui_Ice
                     C.AutoPickCurrentJob = autoPickCurrentJob;
                 }
 
-                C.SelectedJob = jobId;
+                C.JobFilter = state
+                    ? C.JobFilter & ~classInfo.JobFlag
+                    : C.JobFilter | classInfo.JobFlag;
                 C.Save();
+
+                if (Mission_Setup.MissionTable != null)
+                    Mission_Setup.MissionTable.SetFilterDirty();
             }
         }
         else if (!state)
@@ -484,14 +490,19 @@ public static partial class ImGui_Ice
                     C.AutoPickCurrentJob = autoPickCurrentJob;
                 }
 
-                C.SelectedJob = jobId;
+                C.JobFilter = state
+                    ? C.JobFilter & ~classInfo.JobFlag
+                    : C.JobFilter | classInfo.JobFlag;
                 C.Save();
+
+                if (Mission_Setup.MissionTable != null)
+                    Mission_Setup.MissionTable.SetFilterDirty();
             }
         }
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text(tooltip);
+            ImGui.Text(classInfo.shortName);
             ImGui.EndTooltip();
         }
     }

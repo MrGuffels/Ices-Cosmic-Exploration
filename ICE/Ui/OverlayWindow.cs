@@ -317,9 +317,9 @@ namespace ICE.Ui
                     {
                         foreach (var jobId in mission.Value.Jobs)
                         {
-                            if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                            if (CosmicHelper.ClassInfoDict.TryGetValue(jobId, out var jobIcon))
                             {
-                                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(18, 18));
+                                ImGui.Image(jobIcon.JobIcon.GetWrapOrEmpty().Handle, new Vector2(18, 18));
                                 ImGui.SameLine(0, 4);
                             }
                         }
@@ -357,7 +357,7 @@ namespace ICE.Ui
                                 ImGui.TableSetColumnIndex(0);
                                 foreach (var job in sheetInfo.Jobs)
                                 {
-                                    var icon = CosmicHelper.JobIconDict[job];
+                                    var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
                                     ImGui.Image(icon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
                                     ImGui.SameLine();
                                 }
@@ -464,10 +464,10 @@ namespace ICE.Ui
                 if (i > 0) ImGui.SameLine(0, 2);
 
                 var mission = currentHourMissions[i];
-                if (CosmicHelper.JobIconDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
+                if (CosmicHelper.ClassInfoDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
                 {
                     var imageSize = new Vector2(23, 23);
-                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                    ImGui.Image(jobIcon.JobIcon.GetWrapOrEmpty().Handle, imageSize);
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
@@ -487,10 +487,10 @@ namespace ICE.Ui
                 if (i > 0) ImGui.SameLine(0, 2);
 
                 var mission = nextHourMissions[i];
-                if (CosmicHelper.JobIconDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
+                if (CosmicHelper.ClassInfoDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
                 {
                     var imageSize = new Vector2(23, 23);
-                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                    ImGui.Image(jobIcon.JobIcon.GetWrapOrEmpty().Handle, imageSize);
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
@@ -509,9 +509,9 @@ namespace ICE.Ui
         }
         private static readonly (uint TerritoryId, string Asset, string Name, Func<bool> IsEnabled)[] Planets = new[]
         {
-            ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", "Sinus Ardorum", new Func<bool>(() => C.ShowSinusMissions)),
-            ((uint)1291, "ICE.Resources.Phaenna.png", "Phaenna", new Func<bool>(() => C.ShowPhaennaMissions)),
-            ((uint)1310, "ICE.Resources.Oizys.png", "Oizys", new Func<bool>(() => C.ShowOizysMissions)),
+            ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", "Sinus Ardorum", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Sinus))),
+            ((uint)1291, "ICE.Resources.Phaenna.png", "Phaenna", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Phaenna))),
+            ((uint)1310, "ICE.Resources.Oizys.png", "Oizys", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Oizys))),
         };
         private void DrawMoonAndIcon(string moonAsset, FontAwesomeIcon icon)
         {
@@ -577,9 +577,9 @@ namespace ICE.Ui
                     {
                         if (ScoreInfo.TryGetValue(job, out var classInfo))
                         {
-                            if (CosmicHelper.JobIconDict.TryGetValue(job, out var icon))
+                            if (CosmicHelper.ClassInfoDict.TryGetValue(job, out var icon))
                             {
-                                ImGui.Image(icon.GetWrapOrEmpty().Handle, new(25, 25));
+                                ImGui.Image(icon.JobIcon.GetWrapOrEmpty().Handle, new(25, 25));
                                 ImGui.SameLine();
                                 ImGui.AlignTextToFramePadding();
                             }
@@ -593,9 +593,9 @@ namespace ICE.Ui
                     var job = (uint)Player.Job;
                     if (ScoreInfo.TryGetValue(job, out var classInfo))
                     {
-                        if (CosmicHelper.JobIconDict.TryGetValue(job, out var icon))
+                        if (CosmicHelper.ClassInfoDict.TryGetValue(job, out var icon))
                         {
-                            ImGui.Image(icon.GetWrapOrEmpty().Handle, new(25, 25));
+                            ImGui.Image(icon.JobIcon.GetWrapOrEmpty().Handle, new(25, 25));
                             ImGui.SameLine();
                             ImGui.AlignTextToFramePadding();
                         }
@@ -636,8 +636,8 @@ namespace ICE.Ui
                     {
                         var jobIdInfo = job.Key;
                         var jobScore = job.Value.Score;
-                        var jobImage = CosmicHelper.JobIconDict[jobIdInfo];
-                        ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(23, 23));
+                        var jobImage = CosmicHelper.ClassInfoDict[jobIdInfo];
+                        ImGui.Image(jobImage.JobIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
                         ImGui.SameLine();
                         ImGui.AlignTextToFramePadding();
                         ImGui.Text($"Score: {jobScore:N0}");

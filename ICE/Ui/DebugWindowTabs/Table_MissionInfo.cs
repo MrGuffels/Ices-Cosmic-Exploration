@@ -219,7 +219,7 @@ namespace ICE.Ui.DebugWindowTabs
                     int index = 0;
                     foreach (var jobId in entry.Value.Jobs)
                     {
-                        ISharedImmediateTexture? icon = CosmicHelper.JobIconDict[jobId];
+                        ISharedImmediateTexture? icon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
                         ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
 
                         if (index < entry.Value.Jobs.Count - 1) // Not the only job, adding a sameline for it
