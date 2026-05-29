@@ -5,6 +5,7 @@ using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.WKS;
+using ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable;
 using ICE.Utilities.Cosmic_Helper;
 using ICE.Utilities.GatheringHelper;
 using ICE.Utilities.ImGuiTools;
@@ -774,7 +775,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 ImGui.SameLine();
                                 ImGui.Text($"Mission: {missionInfo.Name}");
 
-                                modeSelect_TableInfo.CrafterManagement(missionInfo, entry);
+                                Mission_Table.CrafterManagement(missionInfo, entry);
 
                                 ImGui.EndPopup();
                             }

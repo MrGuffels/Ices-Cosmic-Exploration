@@ -43,26 +43,13 @@ public static partial class ImGui_Ice
 
         return Svc.Texture.GetFromManifestResource(Assembly.GetExecutingAssembly(), greyJobIcon).GetWrapOrEmpty();
     }
-    public static bool Sidebar_CollaspableHeader(string label, FontAwesomeIcon? icon = null, IDalamudTextureWrap? imageTexture = null)
+    public static bool Sidebar_CollaspableHeader(string label, SidebarTabs tab, FontAwesomeIcon? icon = null, IDalamudTextureWrap? imageTexture = null)
     {
         float scale = ImGuiHelpers.GlobalScale;
 
         // Default Colors for Theming. This is really here to make sure it's formatted as I want it to be
         var headerColor = ImGui.GetColorU32(ImGuiCol.Header);
         var textColor = ImGui.GetColorU32(ImGuiCol.Text);
-
-        // This is here to make sure that
-        // A: If it doesn't already exist, add it and just make it false (This makes it to where it's not expanded by default)
-        //    - Could absolutely change that to true if I want to make it shown on inital creation
-        // B: Returns the state in a form to where if that's true, then I could display the elements below it properly
-        string categoryId = label;
-        if (!C.MainUi_CustomHeader.ContainsKey(categoryId))
-        {
-            C.MainUi_CustomHeader[categoryId] = false;
-            C.SaveDebounced();
-        }
-
-        bool isExpanded = C.MainUi_CustomHeader[categoryId];
 
         // Need these here for two reasons:
         // 1: drawList allows me to create un-conventional things that isn't included in the Imgui Library
@@ -79,12 +66,17 @@ public static partial class ImGui_Ice
         // Check for click, nice little rectangle area where it can be clicked at. This takes in account the above things to make sure it's only clicking within this area
         bool isHovered = ImGui.IsMouseHoveringRect(cursorPos, new Vector2(cursorPos.X + width, cursorPos.Y + height));
         bool isClicked = isHovered && ImGui.IsMouseClicked(ImGuiMouseButton.Left);
+        bool isExpanded = C.ExpandedTabs.HasFlag(tab);
 
         if (isClicked)
         {
-            C.MainUi_CustomHeader[categoryId] = !C.MainUi_CustomHeader[categoryId];
-            isExpanded = C.MainUi_CustomHeader[categoryId];
+            // I hate fucking ? statments lol
+            C.ExpandedTabs = isExpanded
+                ? C.ExpandedTabs & ~tab  // was on → turn off 
+                : C.ExpandedTabs | tab;  // was off → turn on
             C.SaveDebounced();
+
+            isExpanded = C.ExpandedTabs.HasFlag(tab);
         }
 
         // Change header color slightly on hover, just a nice QOL
@@ -156,9 +148,9 @@ public static partial class ImGui_Ice
 
         return isExpanded;
     }
-    public static void DrawSelectable_Icon(FontAwesomeIcon icon, string label, string id)
+    public static void DrawSelectable_Icon(FontAwesomeIcon icon, string label, WindowSelection tab)
     {
-        bool isSelected = C.MainUi_SelectedWindow == id;
+        bool isSelected = C.SelectedTab == tab;
         float scale = ImGuiHelpers.GlobalScale;
 
         // Change background color if selected
@@ -173,9 +165,9 @@ public static partial class ImGui_Ice
         float width = ImGui.GetContentRegionAvail().X;
 
         // Invisible selectable as the clickable area (scaled height)
-        if (ImGui.Selectable($"##{id}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25 * scale)))
+        if (ImGui.Selectable($"##{label}_{tab.ToString()}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25 * scale)))
         {
-            C.MainUi_SelectedWindow = id;
+            C.SelectedTab = tab;
             C.SaveDebounced();
         }
 
@@ -209,9 +201,9 @@ public static partial class ImGui_Ice
         // Add small spacing between items (scaled)
         ImGui.Dummy(new Vector2(0, 2 * scale));
     }
-    public static void DrawSelectable_Image(uint iconId, string label, string id)
+    public static void DrawSelectable_Image(uint iconId, string label, WindowSelection tab)
     {
-        bool isSelected = C.MainUi_SelectedWindow == id;
+        bool isSelected = C.SelectedTab == tab;
         float scale = ImGuiHelpers.GlobalScale;
 
         // Change background color if selected
@@ -226,9 +218,9 @@ public static partial class ImGui_Ice
         float width = ImGui.GetContentRegionAvail().X;
 
         // Invisible selectable as the clickable area (scaled height)
-        if (ImGui.Selectable($"##{id}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25 * scale)))
+        if (ImGui.Selectable($"##{label}_{tab.ToString()}", isSelected, ImGuiSelectableFlags.None, new Vector2(width, 25 * scale)))
         {
-            C.MainUi_SelectedWindow = id;
+            C.SelectedTab = tab;
             C.SaveDebounced();
         }
 
@@ -325,6 +317,50 @@ public static partial class ImGui_Ice
 
         Vector2 uv0 = enabled ? new Vector2(0, 0) : new Vector2(cropAmount, cropAmount);
         Vector2 uv1 = enabled ? new Vector2(1, 1) : new Vector2(1 - cropAmount, 1 - cropAmount);
+
+        // Applies the custom code
+        ImGui.PushStyleColor(ImGuiCol.Button, buttonColor);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, buttonColor * 1.1f); // Slightly brighter on hover
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, buttonColor * 0.9f);  // Slightly darker when pressed
+        ImGui.PushStyleColor(ImGuiCol.Border, borderColor);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, borderSize);
+
+        bool clicked = ImGui.ImageButton(icon.GetWrapOrEmpty().Handle, size, uv0, uv1);
+
+        // Restore original styling
+        ImGui.PopStyleVar(); // FrameBorderSize
+        ImGui.PopStyleColor(4); // Button, ButtonHovered, ButtonActive, Border
+
+        return clicked;
+    }
+    public static bool DrawStyledImageButton(ISharedImmediateTexture? icon, ItemFilter planetFilter)
+    {
+        Vector4 buttonColor, borderColor;
+        float borderSize;
+        bool enabled = C.MissionFilter.HasFlag(planetFilter);
+
+        if (enabled)
+        {
+            buttonColor = new Vector4(0.3f, 0.3f, 0.35f, 0.7f);
+            borderColor = new Vector4(0.898f, 0.8f, 0.501f, 1f);
+            borderSize = 1.0f;
+        }
+        else
+        {
+            buttonColor = new Vector4(0.2f, 0.2f, 0.2f, 0.1f);
+            borderColor = new Vector4(0.4f, 0.4f, 0.4f, 0.5f);
+            borderSize = 0.5f;
+        }
+
+        float zoomFactor = 0.25f; // 25% zoom-in
+        float cropAmount = zoomFactor / 2; // Crop equally from all sides
+
+        Vector2 uv0 = enabled ? new Vector2(0, 0) : new Vector2(cropAmount, cropAmount);
+        Vector2 uv1 = enabled ? new Vector2(1, 1) : new Vector2(1 - cropAmount, 1 - cropAmount);
+
+
+        float scale = ImGuiHelpers.GlobalScale;
+        Vector2 size = new(24 * scale);
 
         // Applies the custom code
         ImGui.PushStyleColor(ImGuiCol.Button, buttonColor);

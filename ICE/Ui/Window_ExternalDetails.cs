@@ -15,7 +15,6 @@ namespace ICE.Ui
 {
     internal class Window_ExternalDetails : Window
     {
-        private int focusDelayFrames = 0;
         public static uint SelectedMission = 0;
 
         public static List<string> JokeList = new()
@@ -50,7 +49,13 @@ namespace ICE.Ui
             "What do you a dinosaur that only has one eye?" +
             "A \"Doyouthinkheseemesaurs\"",
 
-            "So... you're telling me a shrimp fried this rice?"
+            "So... you're telling me a shrimp fried this rice?",
+
+            "Thank you everyone who's helped make this possible.\n" +
+            "Strife special shoutout to you for doing what I didn't want to with fishing\n" +
+            "(Sorry for making you start big fish #NotSorry#MuchLove)\n" +
+            "Wah thank you for the UI, this is fucking beautiful as always\n" +
+            "Puni.sh in general for each one of your help my dumb questions"
         };
         public static int jokeId = 0;
 
@@ -67,6 +72,13 @@ namespace ICE.Ui
         public void Dispose()
         {
             P.windowSystem.RemoveWindow(this);
+        }
+
+        public override void OnOpen()
+        {
+            Collapsed = false;
+            BringToFront();
+            CollapsedCondition = ImGuiCond.Appearing;
         }
 
         public override void Draw()

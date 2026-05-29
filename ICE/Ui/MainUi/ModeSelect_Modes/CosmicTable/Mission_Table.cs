@@ -210,6 +210,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override void DrawColumn(MissionInfo item, int _)
             {
                 ImGui.PushID(item.Id);
+
                 bool disabled = C.SelectedMode == ModeSelect.MissionGoldMode
                              || C.SelectedMode == ModeSelect.LevelMode
                              || (C.SelectedMode == ModeSelect.RelicMode && !C.XPRelicOnlyEnabled);
@@ -228,7 +229,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             }
                         }
 
-                        C.Save();
+                        C.SaveDebounced();
                         _table.SetFilterDirty();
                     }
                     if (ImGui.IsItemClicked())
@@ -250,18 +251,17 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public override string ToName(MissionInfo mission) => mission.SheetInfo.Name;
             public override void DrawColumn(MissionInfo mission, int _)
             {
-                ImGui.PushID(mission.Id);
-
                 if (ImGui.Button(mission.SheetInfo.Name))
                 {
+                    IceLogging.Verbose("Testing... if this fires off multiple times", "DEBUG TEST");
                     Window_ExternalDetails.SelectedMission = mission.Id;
                     P.externalDetails.IsOpen = true;
-                    P.externalDetails.Collapsed = false;
+                    IceLogging.Verbose($"Collasped condition: {P.externalDetails.CollapsedCondition.ToString()}");
                 }
                 if (mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Gather) || mission.SheetInfo.Attributes.HasFlag(MissionAttributes.Fish))
                 {
                     ImGui.SameLine();
-                    if (ImGuiEx.IconButton(FontAwesomeIcon.Flag))
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.Flag, $"Flag_{mission.Id}"))
                     {
                         Window_ExternalDetails.SelectedMission = mission.Id;
                         Utils.SetGatheringRing(mission.SheetInfo.TerritoryId, (int)mission.SheetInfo.MapPosition.X, (int)mission.SheetInfo.MapPosition.Y, mission.SheetInfo.Radius, mission.SheetInfo.Name);
@@ -270,13 +270,11 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 if (CosmicHelper.CriticalLocations.TryGetValue(mission.Id, out var criticalLoc))
                 {
                     ImGui.SameLine();
-                    if (ImGuiEx.IconButton(FontAwesomeIcon.FlagCheckered))
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.FlagCheckered, $"CriticalFlag_{mission.Id}"))
                     {
                         Utils.SetFlagForNPC(mission.SheetInfo.TerritoryId, criticalLoc.MapInfo.X, criticalLoc.MapInfo.Y);
                     }
                 }
-
-                ImGui.PopID();
             }
         }
         public sealed class IdColumn : VerticalCenterColumnString

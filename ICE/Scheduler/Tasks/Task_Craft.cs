@@ -1,10 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons.Automation.NeoTaskManager.Tasks;
 using ICE.Utilities.Cosmic_Helper;
 using System.Collections.Generic;
-using System.Windows.Forms;
-using TerraFX.Interop.Windows;
-using TerraFX.Interop.WinRT;
 using static ECommons.UIHelpers.AddonMasterImplementations.AddonMaster;
 
 namespace ICE.Scheduler.Tasks
@@ -64,98 +60,12 @@ namespace ICE.Scheduler.Tasks
 
         private static bool? ThrottleArtisanTaskV2(KeyValuePair<ushort, CosmicHelper.CraftingInfo> item, int amount)
         {
-            void ApplyArtisanSettings(uint recipeId, ArtisanCraftType type, uint foodId, bool foodHQ, uint potionId, bool PotionHQ, uint manualId, uint squadronManualId, string macroName = "", int skillUsage = -1, int miracleSteps = -1)
-            {
-                if (type != ArtisanCraftType.Default)
-                {
-                    string ArtisanType = type switch
-                    {
-                        ArtisanCraftType.Standard => "Standard Recipe Solver",
-                        ArtisanCraftType.ProgressOnly => "Progress Only Solver",
-                        ArtisanCraftType.Raphael => "Raphael Recipe Solver",
-                        ArtisanCraftType.Macro => $"Macro: {macroName}",
-                        ArtisanCraftType.Expert => "Expert Recipe Solver",
-                        _ => "Standard Recipe Solver",
-                    };
-                    P.Artisan.ChangeSolver(recipeId, ArtisanType, true);
-                }
-                else
-                {
-                    P.Artisan.SetTempSolverBackToNormal(recipeId);
-                }
-
-                if (P.Artisan.UpdatedArtisan())
-                {
-
-                    if (foodId != 0)
-                        P.Artisan.ChangeFood(recipeId, foodId, foodHQ, true);
-                    else
-                        P.Artisan.SetTempFoodBackToNormal(recipeId);
-
-                    if (potionId != 0)
-                        P.Artisan.ChangePotion(recipeId, potionId, PotionHQ, true);
-                    else
-                        P.Artisan.SetTempPotionBackToNormal(recipeId);
-
-                    if (manualId != 0)
-                        P.Artisan.ChangeManual(recipeId, manualId, true);
-                    else
-                        P.Artisan.SetTempManualBackToNormal(recipeId);
-
-                    if (squadronManualId != 0)
-                        P.Artisan.ChangeSquadronManual(recipeId, squadronManualId, true);
-                    else
-                        P.Artisan.SetTempSquadronManualBackToNormal(recipeId);
-
-                    if (item.Value.ExpertCraft)
-                    {
-                        if (skillUsage != -1)
-                        {
-                            P.Artisan.ChangeExpertMaxSteadyUses(recipeId, (uint)skillUsage, true);
-                            P.Artisan.ChangeExpertMaxMaterialMiracleUses(recipeId, (uint)skillUsage, true);
-                        }
-                        else
-                        {
-                            P.Artisan.SetTempExpertMaxSteadyUsesBackToNormal(recipeId);
-                            P.Artisan.SetTempExpertMaxMaterialMiracleUsesBackToNormal(recipeId);
-                        }
-
-                        if (miracleSteps != -1)
-                            P.Artisan.ChangeExpertMinimumStepsBeforeMiracle(recipeId, (uint)miracleSteps, true);
-                        else
-                            P.Artisan.SetTempExpertMinimumStepsBeforeMiracleBackToNormal(recipeId);
-                    }
-                    else
-                    {
-                        if (skillUsage != -1)
-                        {
-                            P.Artisan.ChangeStandardMaxMaterialMiracleUses((uint)skillUsage, true);
-                        }
-                        else
-                        {
-                            P.Artisan.SetTempStandardMaxMaterialMiracleUsesBackToNormal();
-                        }
-
-                        if (miracleSteps != 1)
-                        {
-                            P.Artisan.ChangeStandardMinimumStepsBeforeMiracle((uint)miracleSteps, true);
-                        }
-                        else
-                        {
-                            P.Artisan.SetTempStandardMinimumStepsBeforeMiracleBackToNormal();
-                        }
-                    }
-                }
-            }
-
             int delay = C.DelayCraft ? C.DelayCraftIncrease : 25;
 
             var craftId = item.Key;
             var recipeId = item.Value.RecipeId;
             var itemId = item.Value.ItemId;
             var expert = item.Value.ExpertCraft;
-            var expertRaph = C.Artisan_RaphaelMaster;
-
 
             var missionId = CosmicHelper.CurrentLunarMission;
             var missionConfig = C.MissionConfig[missionId];
@@ -165,43 +75,7 @@ namespace ICE.Scheduler.Tasks
                 if (EzThrottler.Throttle("Applying Config States", 1000))
                 {
                     IceLogging.Info($"Applying config states for the following recipeID: {recipeId}");
-                    if (Mission_Settings.Mode == ModeSelect.LevelMode)
-                    {
-                        var globalSettings = Char_Info.Artisan_GlobalStandard;
-
-                        IceLogging.Debug($"Setting {recipeId} to progress only. ItemID: {itemId}");
-                        ApplyArtisanSettings(recipeId,
-                                             ArtisanCraftType.ProgressOnly,
-                                             globalSettings.FoodId, globalSettings.FoodHQ,
-                                             globalSettings.PotionId, globalSettings.PotionHQ,
-                                             globalSettings.ManualId,
-                                             globalSettings.SquadronManual);
-
-                        P.Artisan.ChangeSolver(recipeId, "Progress Only Solver", true);
-                    }
-                    else if (recipeConfig.UseGlobal)
-                    {
-                        var globalSettings = expert ? Char_Info.Artisan_GlobalExpert : Char_Info.Artisan_GlobalStandard;
-
-                        ApplyArtisanSettings(recipeId,
-                                             globalSettings.SolverType,
-                                             globalSettings.FoodId, globalSettings.FoodHQ,
-                                             globalSettings.PotionId, globalSettings.PotionHQ,
-                                             globalSettings.ManualId,
-                                             globalSettings.SquadronManual);
-                    }
-                    else
-                    {
-                        ApplyArtisanSettings(recipeId, 
-                                             recipeConfig.ArtisanSolverType, 
-                                             recipeConfig.FoodId, recipeConfig.FoodHQ, 
-                                             recipeConfig.PotionId, recipeConfig.PotionHQ, 
-                                             recipeConfig.ManualId, 
-                                             recipeConfig.SquadronManualId,
-                                             recipeConfig.MacroName,
-                                             recipeConfig.SkillUsageAmount,
-                                             recipeConfig.MinStepsForMiracle);
-                    }
+                    P.Artisan.CheckArtisanSettings((ushort)recipeId, CosmicHelper.CurrentLunarMission, expert, Mission_Settings.Mode == ModeSelect.LevelMode);
                 }
             }
             else
@@ -212,7 +86,6 @@ namespace ICE.Scheduler.Tasks
 
             if (EzThrottler.Throttle("Waiting X Amount of seconds for artisan", delay))
             {
-
                 throttleCounter += 1;
             }
 

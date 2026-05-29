@@ -57,51 +57,34 @@ namespace ICE.Ui
             }
         }
 
-        private static readonly Dictionary<string, Action> SelectedView = new()
+        private static readonly Dictionary<WindowSelection, Action> SelectedView = new()
         {
             // Cosmic Helper
-            ["modeSelect_MissionSetup"] = () =>
-            {
-                if (C.ShowCompletionWindow)
-                {
-                    C.ShowCompletionWindow = false;
-                    C.Save();
-                }
-                modeSelect_Standard.Draw();
-            },
-            ["modeSelect_Completion"] = () =>
-            {
-                if (!C.ShowCompletionWindow)
-                {
-                    C.ShowCompletionWindow = true;
-                    C.Save();
-                }
-                modeSelect_Standard.Draw();
-            },
-            ["modeSelect_CosmicAgenda"] = () => modeSelect_Agenda.Draw(),
-            ["modeSelect_ExpeditionLogs"] = () => Expedition_Log.Draw(),
+            [WindowSelection.MissionSetup] = () =>  Mission_Setup.Draw(),
+            [WindowSelection.CosmicAgenda] = () => modeSelect_Agenda.Draw(),
+            [WindowSelection.ExpeditionLogs] = () => Expedition_Log.Draw(),
 
             // Settings
-            ["setting_StopWhen"] = () => StopWhen.Draw(),
-            ["setting_GatheringProfile"] = () => GatherSettings.Draw(),
-            ["setting_MissionPriority"] = () => Priority_Settings.Draw(),
-            ["setting_Character"] = () => Character_Settings.Draw(),
-            ["setting_Misc"] = () => Misc_Settings.Draw(),
-            ["setting_Travel"] = () => TravelSettings.Draw(),
+            [WindowSelection.StopWhen] = () => StopWhen.Draw(),
+            [WindowSelection.GatheringProfiles] = () => GatherSettings.Draw(),
+            [WindowSelection.MissionPriority] = () => Priority_Settings.Draw(),
+            [WindowSelection.CharacterSettings] = () => Character_Settings.Draw(),
+            [WindowSelection.MiscSettings] = () => Misc_Settings.Draw(),
+            [WindowSelection.TravelSettings] = () => TravelSettings.Draw(),
 
             // Hub Activities
-            ["hubActivities_CreditShopping"] = () => ShoppingTab.Draw(),
-            ["hubActivites_GambaSetting"] = () => GambaWheel.Draw(),
-            ["hubActivies_DroneSetting"] = () => Shop_Dronebit.Draw(),
+            [WindowSelection.CreditShopping] = () => ShoppingTab.Draw(),
+            [WindowSelection.GambaShopping] = () => GambaWheel.Draw(),
+            [WindowSelection.DroneShopping] = () => Shop_Dronebit.Draw(),
 
             // Help Section
-            ["help_PluginInstall"] = () => helpSelect_Required.Draw(),
-            ["help_PluginLogs"] = () => helpSelect_Logs.Draw_Helper(),
+            [WindowSelection.Plugin_Install] = () => helpSelect_Required.Draw(),
+            [WindowSelection.Plugin_Logs] = () => helpSelect_Logs.Draw_Helper(),
         };
 
         private static void MainBody()
         {
-            var selectedWindow = C.MainUi_SelectedWindow;
+            var selectedWindow = C.SelectedTab;
 
             if (SelectedView.TryGetValue(selectedWindow, out var drawAction))
             {

@@ -558,7 +558,7 @@ namespace ICE.Scheduler.Tasks
         {
             [1237] = 15,
             [1291] = 15,
-            [1310] = 0,
+            [1310] = 17,
         };
 
         private static bool? CalculateAethernet(Vector3 destination)

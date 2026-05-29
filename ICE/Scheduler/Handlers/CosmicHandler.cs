@@ -99,7 +99,6 @@ namespace ICE.Utilities
                 
             return allMissions;
         }
-
         internal unsafe static List<uint> Basic_AvailableMissions()
         {
             List<uint> allMissions = new();
