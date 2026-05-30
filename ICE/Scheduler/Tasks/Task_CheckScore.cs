@@ -120,7 +120,7 @@ namespace ICE.Scheduler.Tasks
 
                     if (rank != MissionRank.None || sheetInfo.Attributes.HasFlag(MissionAttributes.Critical))
                     {
-                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
                             IceLogging.Debug("We're in a mission where we're just meeting the minimum score. Turning in", tag);
                             SchedulerMain.State = IceState.TurninMission;
@@ -366,7 +366,7 @@ namespace ICE.Scheduler.Tasks
                             IceLogging.Debug("We're in Leveling Mode, and we only need a bronze. So we're setting turnin to true", tag);
                             shouldTurnin = true;
                         }
-                        else if (sheet.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        else if (sheet.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
                             IceLogging.Debug("Score is based on time remaining, and we have some sort of rank. Turning in", tag);
                             shouldTurnin = true;

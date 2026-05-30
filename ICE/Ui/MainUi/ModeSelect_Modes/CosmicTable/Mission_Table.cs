@@ -648,7 +648,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             }
             public override void DrawColumn(MissionInfo item, int idx)
             {
-                if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining) || item.SheetInfo.IsCritical)
+                if (item.SheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining) || item.SheetInfo.IsCritical)
                     ImGuiUtil.Center("Auto");
                 else
                 {
@@ -834,7 +834,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
                 if (sheetInfo.Jobs.Count > 1)
                 {
-                    ImGui.SameLine();
+                    // ImGui.SameLine();
                 }
 
                 if (gatherProfile)
@@ -849,7 +849,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                                 profileName = profileSetting.Name;
                             }
 
-                            if (ImGui.Button($"{profileName}"))
+                            if (ImGui.Button($"{profileName}##{item.Id}_{item.SheetInfo.Name}"))
                             {
                                 ImGui.OpenPopup($"Select Gather Profile");
                             }
@@ -857,8 +857,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                             {
                                 ImGui.SetTooltip("Select gathering profile");
                             }
-                            if (ImGui.BeginPopup("Selecting Gathering Profile"))
+                            if (ImGui.BeginPopup($"Select Gather Profile"))
                             {
+                                ImGui.Text($"Mission: [{item.Id}] {item.SheetInfo.Name}");
                                 ImGui.Text($"Currently Selected: {profileName}");
                                 ImGui.Separator();
 
@@ -989,7 +990,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                         var size = new Vector2(frameHeight);
                         if (tex.TryGetWrap(out var wrap, out var exc))
                         {
-                            ImGui.Image(wrap.Handle, size);
+                            ImGui.Image(wrap.Handle, size, new Vector2(0.2347f, 0.3500f), new Vector2(0.2959f, 0.6500f));
                         }
                     }
                     if (ImGui.IsItemHovered())

@@ -243,7 +243,7 @@ public static class Settings_TableColumns
                         if (ApplyToSpecicClass && !sheetInfo.Jobs.Contains((uint)SpecificClass))
                             continue;
 
-                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        if (sheetInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                             continue;
 
                         if (C.MissionConfig.TryGetValue(mission.Key, out var config))

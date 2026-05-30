@@ -59,18 +59,18 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 ImGui.TableSetupColumn("Icon");
                 ImGui.TableSetupColumn("Name");
 
-                foreach (var icon in CosmicHelper.ClassInfoDict.OrderBy(x => x.Key))
+                foreach (var jobInfo in CosmicHelper.ClassInfoDict.OrderBy(x => x.Key))
                 {
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
-                    ImGui.Image(icon.Value.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
+                    ImGui.Image(jobInfo.Value.JobIcon.GetWrapOrEmpty().Handle, new(24, 24));
 
                     ImGui.TableNextColumn();
-                    string name = CosmicHelper.GetJobName(icon.Key);
+                    string name = jobInfo.Value.JobName;
                     ImGui.AlignTextToFramePadding();
-                    if (ImGui.Selectable(name, SelectedJob == icon.Key, ImGuiSelectableFlags.SpanAllColumns))
+                    if (ImGui.Selectable(name, SelectedJob == jobInfo.Key, ImGuiSelectableFlags.SpanAllColumns))
                     {
-                        SelectedJob = icon.Key;
+                        SelectedJob = jobInfo.Key;
                     }
                 }
 
@@ -377,7 +377,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
 
                         ImGui.TableNextColumn();
-                        if (missionInfo.Attributes.HasFlag(MissionAttributes.ScoreTimeRemaining))
+                        if (missionInfo.Attributes.HasFlag(MissionAttributes.Score_TimeRemaining))
                         {
                             ImGui_Ice.Table_FullCenterText("Auto");
                             if (missionConfig.TurninGoal != TurninState.Gold)

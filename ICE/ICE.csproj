@@ -55,7 +55,7 @@
 	<ItemGroup>
 		<PackageReference Include="NAudio" Version="2.3.0" />
 		<PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
-		<PackageReference Include="YamlDotNet" Version="17.1.0" />
+		<PackageReference Include="YamlDotNet" Version="18.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

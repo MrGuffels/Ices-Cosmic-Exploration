@@ -63,8 +63,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                                 foreach (var jobId in JobOptions)
                                 {
-                                    var jobIcon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
-                                    var jobName = CosmicHelper.GetJobName(jobId);
+                                    var classInfo = CosmicHelper.ClassInfoDict[jobId];
+                                    var jobIcon = classInfo.JobIcon;
+                                    var jobName = classInfo.JobName;
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();

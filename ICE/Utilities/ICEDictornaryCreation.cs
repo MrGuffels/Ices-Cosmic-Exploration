@@ -177,21 +177,21 @@ public sealed partial class ICE
                 attributes = missionToDo.WKSMissionText.RowId switch
                 {
                     103 => MissionAttributes.Gather | MissionAttributes.Limited,
-                    104 => MissionAttributes.Gather | MissionAttributes.ScoreTimeRemaining,
+                    104 => MissionAttributes.Gather | MissionAttributes.Score_TimeRemaining,
                     105 => MissionAttributes.Gather,
-                    106 => MissionAttributes.Gather | MissionAttributes.ScoreChains,
-                    107 => MissionAttributes.Gather | MissionAttributes.ScoreGatherersBoon,
-                    108 => MissionAttributes.Gather | MissionAttributes.ScoreChains | MissionAttributes.ScoreGatherersBoon,
+                    106 => MissionAttributes.Gather | MissionAttributes.Score_Chain,
+                    107 => MissionAttributes.Gather | MissionAttributes.Score_Boon,
+                    108 => MissionAttributes.Gather | MissionAttributes.Score_Chain | MissionAttributes.Score_Boon,
                     109 or 111 => MissionAttributes.Gather | MissionAttributes.Collectables,
-                    110 => MissionAttributes.Gather | MissionAttributes.ReducedItems | MissionAttributes.ScoreTimeRemaining,
+                    110 => MissionAttributes.Gather | MissionAttributes.ReducedItems | MissionAttributes.Score_TimeRemaining,
                     112 => MissionAttributes.Gather | MissionAttributes.ReducedItems,
-                    113 => MissionAttributes.Fish | MissionAttributes.ScoreVariety | MissionAttributes.ScoreTimeRemaining,
-                    114 or 115 => MissionAttributes.Fish | MissionAttributes.ScoreTimeRemaining,
-                    116 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.ScoreVariety,
-                    117 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.ScoreLargestSize,
+                    113 => MissionAttributes.Fish | MissionAttributes.Score_Variety | MissionAttributes.Score_TimeRemaining,
+                    114 or 115 => MissionAttributes.Fish | MissionAttributes.Score_TimeRemaining,
+                    116 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_Variety,
+                    117 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Score_LargestSize,
                     118 => MissionAttributes.Fish | MissionAttributes.Limited | MissionAttributes.Collectables,
                     119 or 121 => MissionAttributes.Fish,
-                    120 => MissionAttributes.Fish | MissionAttributes.ScoreLargestSize,
+                    120 => MissionAttributes.Fish | MissionAttributes.Score_LargestSize,
                     122 => MissionAttributes.Fish | MissionAttributes.Collectables,
                     139 => jobs.Contains(18) ? MissionAttributes.Fish : MissionAttributes.Gather, // Critical
                     141 => MissionAttributes.Fish,
@@ -488,12 +488,23 @@ public sealed partial class ICE
                 IceLogging.Verbose($"Temp ActionId: {tempActionId} | MissionID: {keyId}", debugOnly: true);
             if (tempActionId == 42060)
             {
-                if (attributes.HasFlag(MissionAttributes.ScoreGatherersBoon))
-                    attributes |= MissionAttributes.GreaterReachBoon;
-                else if (attributes.HasFlag(MissionAttributes.ScoreChains))
-                    attributes |= MissionAttributes.GreaterReachChain;
+                if (attributes.HasFlag(MissionAttributes.Score_Boon) && attributes.HasFlag(MissionAttributes.Score_Chain))
+                {
+                    attributes &= ~(MissionAttributes.Score_Boon | MissionAttributes.Score_Chain);
+                    attributes |= MissionAttributes.GreaterReach_Boon_Chain;
+                }
+                else if (attributes.HasFlag(MissionAttributes.Score_Boon))
+                {
+                    attributes &= ~MissionAttributes.Score_Boon;
+                    attributes |= MissionAttributes.GreaterReach_Boon;
+                }
+                else if (attributes.HasFlag(MissionAttributes.Score_Chain))
+                {
+                    attributes &= ~MissionAttributes.Score_Chain;
+                    attributes |= MissionAttributes.GreaterReach_Chain;
+                }
                 else
-                    attributes |= MissionAttributes.GreaterReachGather;
+                    attributes |= MissionAttributes.GreaterReach_GatherX;
             }
 
             // - - - Fisher - - - //
@@ -790,6 +801,7 @@ public sealed partial class ICE
         }
 
         EnsureAllMission();
+        GatheringUtil.RegisterPresets();
 
         #region Config Stuff
 
