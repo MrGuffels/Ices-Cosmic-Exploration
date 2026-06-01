@@ -96,39 +96,7 @@ namespace ICE.Ui
         {
             if (ImGui.BeginPopup(popupId))
             {
-                ImGui.Text("Select Mode");
-                ImGui.Separator();
-
-                bool standard = C.SelectedMode == ModeSelect.Standard;
-                bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
-                bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
-                bool goldMode = C.SelectedMode == ModeSelect.MissionGoldMode;
-                bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
-
-                if (ImGui.RadioButton("Standard", standard))
-                {
-                    C.SelectedMode = ModeSelect.Standard;
-                    C.Save();
-                }
-                if (ImGui.RadioButton("Relic Grind", relicMode))
-                {
-                    C.SelectedMode = ModeSelect.RelicMode;
-                    C.Save();
-                }
-                if (ImGui.RadioButton("Leveling Grind", xpLeveling))
-                {
-                    C.SelectedMode = ModeSelect.LevelMode;
-                    C.Save();
-                }
-                if (ImGui.RadioButton("Gold Completion Mode", goldMode))
-                {
-                    C.SelectedMode = ModeSelect.MissionGoldMode;
-                }
-                if (ImGui.RadioButton("Agenda Mode", agendaMode))
-                {
-                    C.SelectedMode = ModeSelect.AgendaMode;
-                    C.Save();
-                }
+                MainWindow.ModeSelection();
 
                 ImGui.EndPopup();
             }

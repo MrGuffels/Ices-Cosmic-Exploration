@@ -23,7 +23,7 @@ public static partial class CosmicHelper
                 if (manager == null)
                     return 0; // or some default value
 
-                return manager->CurrentMissionUnitRowId;
+                return manager->State.CurrentMissionUnitRowId;
             }
             catch (AccessViolationException)
             {

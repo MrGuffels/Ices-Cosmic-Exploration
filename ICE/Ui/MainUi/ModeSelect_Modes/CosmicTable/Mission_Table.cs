@@ -284,7 +284,13 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
             public override void DrawColumn(MissionInfo item, int _)
             {
-                if (CosmicHandler.All_AvailableMissions().Contains(item.Id))
+                var mission = CosmicHelper.CurrentLunarMission;
+
+                if (mission != 0 && mission == item.Id)
+                {
+                    ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
+                }
+                else if (CosmicHandler.All_AvailableMissions().Contains(item.Id))
                 {
                     ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(new Vector4(0.0f, 1.0f, 0.2f, 0.25f)));
                 }

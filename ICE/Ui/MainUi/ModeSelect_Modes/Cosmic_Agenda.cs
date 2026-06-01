@@ -10,7 +10,7 @@ using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes
 {
-    internal class modeSelect_Agenda
+    internal class Cosmic_Agenda
     {
         public static List<uint> JobOptions = new() { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
 
@@ -560,6 +560,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                         agendaInfo.SelectedMode = option;
                                         C.Save();
                                     }
+                                    ImGuiEx.HelpMarker(MainWindow.HelpInfoText(option));
 
                                     if (isSelected)
                                     {
