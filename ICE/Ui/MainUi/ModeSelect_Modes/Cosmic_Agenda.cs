@@ -10,7 +10,7 @@ using static ICE.ConfigFiles.Config;
 
 namespace ICE.Ui.MainUi.ModeSelect_Modes
 {
-    internal class modeSelect_Agenda
+    internal class Cosmic_Agenda
     {
         public static List<uint> JobOptions = new() { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
 
@@ -45,8 +45,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
             {
                 if (ImGui.BeginTabItem("Current Agenda"))
                 {
-                    var selectedJobIcon = CosmicHelper.JobIconDict[SelectedJob];
-                    var selectedJobName = CosmicHelper.GetJobName(SelectedJob);
+                    var selectedJobIcon = CosmicHelper.ClassInfoDict[SelectedJob].JobIcon;
+                    var selectedJobName = CosmicHelper.ClassInfoDict[SelectedJob].JobName;
 
                     ImGui.Image(selectedJobIcon.GetWrapOrEmpty().Handle, new Vector2(20, 20));
                     ImGui.SameLine();
@@ -63,8 +63,9 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                                 foreach (var jobId in JobOptions)
                                 {
-                                    var jobIcon = CosmicHelper.JobIconDict[jobId];
-                                    var jobName = CosmicHelper.GetJobName(jobId);
+                                    var classInfo = CosmicHelper.ClassInfoDict[jobId];
+                                    var jobIcon = classInfo.JobIcon;
+                                    var jobName = classInfo.JobName;
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();
@@ -294,7 +295,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                     ImGui.TableNextRow();
 
                                     ImGui.TableSetColumnIndex(0);
-                                    var jobImage = CosmicHelper.JobIconDict[agendaInfo.SelectedJob];
+                                    var jobImage = CosmicHelper.ClassInfoDict[agendaInfo.SelectedJob].JobIcon;
                                     float zoom = 0.15f;
 
                                     ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(20, 20), new Vector2(zoom, zoom), new Vector2(1 - zoom, 1 - zoom));
@@ -401,7 +402,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         _dragDrop.DrawButtonDummy(agendaInfo, C.Cosmic_Agenda, i);
 
                         ImGui.TableNextColumn();
-                        var jobImage = CosmicHelper.JobIconDict[agendaInfo.SelectedJob];
+                        var jobImage = CosmicHelper.ClassInfoDict[agendaInfo.SelectedJob].JobIcon;
                         float zoom = 0.15f;
 
                         if (ImGui.ImageButton(jobImage.GetWrapOrEmpty().Handle,new Vector2(20, 20), new Vector2(zoom, zoom), new Vector2(1 - zoom, 1 - zoom)))
@@ -417,8 +418,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
 
                                 foreach (var jobId in JobOptions)
                                 {
-                                    var jobIcon = CosmicHelper.JobIconDict[jobId];
-                                    var jobName = CosmicHelper.GetJobName(jobId);
+                                    var jobIcon = CosmicHelper.ClassInfoDict[jobId].JobIcon;
+                                    var jobName = CosmicHelper.ClassInfoDict[jobId].JobName;
                                     bool isSelected = jobId == SelectedJob;
 
                                     ImGui.TableNextRow();
@@ -559,6 +560,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                         agendaInfo.SelectedMode = option;
                                         C.Save();
                                     }
+                                    ImGuiEx.HelpMarker(MainWindow.HelpInfoText(option));
 
                                     if (isSelected)
                                     {
@@ -592,23 +594,33 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 .Where(x => x.Value.Rank < 6)
                                 .Count();
 
+                            var AuxesiaStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1317)
+                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
+                                .Where(x => C.MissionConfig[x.Key].Enabled)
+                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
+                                .Where(x => x.Value.Rank < 6)
+                                .Count();
+
                             bool sinusWarning = PlayerHelper.IsInSinusArdorum() && SinusStandard == 0;
                             bool phaennaWarning = PlayerHelper.IsInPhaenna() && PhaennaStandard == 0;
                             bool oizysWarning = PlayerHelper.IsInOizys() && OizysStandard == 0;
+                            bool auxesiaWarning = PlayerHelper.IsInAuxesia() && AuxesiaStandard == 0;
 
                             if (sinusWarning || phaennaWarning || oizysWarning)
                             {
                                 string tooltip = "Hey! You seem to not have any standardard missions enabled on the planet/moon you're currently on.\n" +
                                     "Please make sure to do so for this job if you don't want it to stall out when there is no timed/weather missions.\n" +
                                     "Currently enabled on the planet you're on:";
-                                    
+
 
                                 if (PlayerHelper.IsInSinusArdorum())
-                                    tooltip += "\nSinus = {SinusStandard}";
+                                    tooltip += $"\nSinus = {SinusStandard}";
                                 else if (PlayerHelper.IsInPhaenna())
                                     tooltip += $"\nPhaenna = {PhaennaStandard}";
                                 else if (PlayerHelper.IsInOizys())
                                     tooltip += $"\nOizys = {OizysStandard}";
+                                else if (PlayerHelper.IsInAuxesia())
+                                    tooltip += $"\nAuxesia = {AuxesiaStandard}";
 
                                 ImGui.SameLine();
                                 ImGui.AlignTextToFramePadding();

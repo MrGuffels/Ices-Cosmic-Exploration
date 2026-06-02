@@ -96,39 +96,7 @@ namespace ICE.Ui
         {
             if (ImGui.BeginPopup(popupId))
             {
-                ImGui.Text("Select Mode");
-                ImGui.Separator();
-
-                bool standard = C.SelectedMode == ModeSelect.Standard;
-                bool relicMode = C.SelectedMode == ModeSelect.RelicMode;
-                bool xpLeveling = C.SelectedMode == ModeSelect.LevelMode;
-                bool goldMode = C.SelectedMode == ModeSelect.MissionGoldMode;
-                bool agendaMode = C.SelectedMode == ModeSelect.AgendaMode;
-
-                if (ImGui.RadioButton("Standard", standard))
-                {
-                    C.SelectedMode = ModeSelect.Standard;
-                    C.Save();
-                }
-                if (ImGui.RadioButton("Relic Grind", relicMode))
-                {
-                    C.SelectedMode = ModeSelect.RelicMode;
-                    C.Save();
-                }
-                if (ImGui.RadioButton("Leveling Grind", xpLeveling))
-                {
-                    C.SelectedMode = ModeSelect.LevelMode;
-                    C.Save();
-                }
-                if (ImGui.RadioButton("Gold Completion Mode", goldMode))
-                {
-                    C.SelectedMode = ModeSelect.MissionGoldMode;
-                }
-                if (ImGui.RadioButton("Agenda Mode", agendaMode))
-                {
-                    C.SelectedMode = ModeSelect.AgendaMode;
-                    C.Save();
-                }
+                MainWindow.ModeSelection();
 
                 ImGui.EndPopup();
             }
@@ -162,7 +130,7 @@ namespace ICE.Ui
                 ImGui.EndTooltip();
             }
             DrawModeSelectPopup("Overlay Mode Select");
-            if (PlayerHelper.IsInOizys())
+            if (PlayerHelper.IsInOizys() || PlayerHelper.IsInAuxesia())
             {
                 ImGui.SameLine();
                 bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
@@ -274,7 +242,7 @@ namespace ICE.Ui
                 if (mission.TerritoryId == territoryId
                     && mission.Rank >= 6
                     && mission.Weather != CosmicWeather.None
-                    && mission.RewardItem != 0
+                    && mission.TokenItemId != 0
                     && (jobFilter == null || mission.Jobs.Any(j => jobFilter.Contains(j)))
                     && CosmicHelper.WeatherIds.TryGetValue(mission.Weather, out var iconId))
                 {
@@ -317,14 +285,14 @@ namespace ICE.Ui
                     {
                         foreach (var jobId in mission.Value.Jobs)
                         {
-                            if (CosmicHelper.JobIconDict.TryGetValue(jobId, out var jobIcon))
+                            if (CosmicHelper.ClassInfoDict.TryGetValue(jobId, out var jobIcon))
                             {
-                                ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, new Vector2(18, 18));
+                                ImGui.Image(jobIcon.JobIcon.GetWrapOrEmpty().Handle, new Vector2(18, 18));
                                 ImGui.SameLine(0, 4);
                             }
                         }
                         ImGui.AlignTextToFramePadding();
-                        ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.RewardItemAmount}x tokens)");
+                        ImGui.Text($"[{mission.Key}] {mission.Value.Name} ({mission.Value.TokenItemAmount}x tokens)");
                     }
                 }
                 if (C.Overlay_WeatherSelected)
@@ -357,7 +325,7 @@ namespace ICE.Ui
                                 ImGui.TableSetColumnIndex(0);
                                 foreach (var job in sheetInfo.Jobs)
                                 {
-                                    var icon = CosmicHelper.JobIconDict[job];
+                                    var icon = CosmicHelper.ClassInfoDict[job].JobIcon;
                                     ImGui.Image(icon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
                                     ImGui.SameLine();
                                 }
@@ -464,10 +432,10 @@ namespace ICE.Ui
                 if (i > 0) ImGui.SameLine(0, 2);
 
                 var mission = currentHourMissions[i];
-                if (CosmicHelper.JobIconDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
+                if (CosmicHelper.ClassInfoDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
                 {
                     var imageSize = new Vector2(23, 23);
-                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                    ImGui.Image(jobIcon.JobIcon.GetWrapOrEmpty().Handle, imageSize);
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
@@ -487,10 +455,10 @@ namespace ICE.Ui
                 if (i > 0) ImGui.SameLine(0, 2);
 
                 var mission = nextHourMissions[i];
-                if (CosmicHelper.JobIconDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
+                if (CosmicHelper.ClassInfoDict.TryGetValue(mission.Value.Jobs[0], out var jobIcon))
                 {
                     var imageSize = new Vector2(23, 23);
-                    ImGui.Image(jobIcon.GetWrapOrEmpty().Handle, imageSize);
+                    ImGui.Image(jobIcon.JobIcon.GetWrapOrEmpty().Handle, imageSize);
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.BeginTooltip();
@@ -509,9 +477,10 @@ namespace ICE.Ui
         }
         private static readonly (uint TerritoryId, string Asset, string Name, Func<bool> IsEnabled)[] Planets = new[]
         {
-            ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", "Sinus Ardorum", new Func<bool>(() => C.ShowSinusMissions)),
-            ((uint)1291, "ICE.Resources.Phaenna.png", "Phaenna", new Func<bool>(() => C.ShowPhaennaMissions)),
-            ((uint)1310, "ICE.Resources.Oizys.png", "Oizys", new Func<bool>(() => C.ShowOizysMissions)),
+            ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", "Sinus Ardorum", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Sinus))),
+            ((uint)1291, "ICE.Resources.Phaenna.png", "Phaenna", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Phaenna))),
+            ((uint)1310, "ICE.Resources.Oizys.png", "Oizys", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Oizys))),
+            ((uint)1319, "ICE.Resources.Auxesia.png", "Auxesia", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Auxesia)))
         };
         private void DrawMoonAndIcon(string moonAsset, FontAwesomeIcon icon)
         {
@@ -577,9 +546,9 @@ namespace ICE.Ui
                     {
                         if (ScoreInfo.TryGetValue(job, out var classInfo))
                         {
-                            if (CosmicHelper.JobIconDict.TryGetValue(job, out var icon))
+                            if (CosmicHelper.ClassInfoDict.TryGetValue(job, out var icon))
                             {
-                                ImGui.Image(icon.GetWrapOrEmpty().Handle, new(25, 25));
+                                ImGui.Image(icon.JobIcon.GetWrapOrEmpty().Handle, new(25, 25));
                                 ImGui.SameLine();
                                 ImGui.AlignTextToFramePadding();
                             }
@@ -593,9 +562,9 @@ namespace ICE.Ui
                     var job = (uint)Player.Job;
                     if (ScoreInfo.TryGetValue(job, out var classInfo))
                     {
-                        if (CosmicHelper.JobIconDict.TryGetValue(job, out var icon))
+                        if (CosmicHelper.ClassInfoDict.TryGetValue(job, out var icon))
                         {
-                            ImGui.Image(icon.GetWrapOrEmpty().Handle, new(25, 25));
+                            ImGui.Image(icon.JobIcon.GetWrapOrEmpty().Handle, new(25, 25));
                             ImGui.SameLine();
                             ImGui.AlignTextToFramePadding();
                         }
@@ -636,8 +605,8 @@ namespace ICE.Ui
                     {
                         var jobIdInfo = job.Key;
                         var jobScore = job.Value.Score;
-                        var jobImage = CosmicHelper.JobIconDict[jobIdInfo];
-                        ImGui.Image(jobImage.GetWrapOrEmpty().Handle, new Vector2(23, 23));
+                        var jobImage = CosmicHelper.ClassInfoDict[jobIdInfo];
+                        ImGui.Image(jobImage.JobIcon.GetWrapOrEmpty().Handle, new Vector2(23, 23));
                         ImGui.SameLine();
                         ImGui.AlignTextToFramePadding();
                         ImGui.Text($"Score: {jobScore:N0}");

@@ -158,6 +158,15 @@ namespace ICE.Ui.MainUi.Settings.Settings_Table
                 C.DisableHub_Critical = DisableHubActivies_RE;
                 C.Save();
             }
+
+            bool delayAether = C.Delay_Aethernet;
+            if (ImGui.Checkbox("Add delay to athernet / npc travel", ref delayAether))
+            {
+                C.Delay_Aethernet = delayAether;
+                C.Save();
+            }
+            ImGuiEx.HelpMarker("Adds a random delay before interacting with the aethershard / red alert npc travel.\n" +
+                "The delays will be before, and a little bit inbetween interacting with menus");
         }
         private static void StuckSettings()
         {
