@@ -54,7 +54,7 @@ namespace ICE.Enums
         All = Enabled + Disabled 
             + NotCompleted + Completed + Gold
             + NoTokens + HasTokens
-            + HasI + HasII + HasIII + HasIV + HasVI + HasVII
+            + HasI + HasII + HasIII + HasIV + HasV + HasVI + HasVII
             + Sinus + Phaenna + Oizys + Auxesia
             + TurninGold + TurninSilver + TurninBronze
             + CrafterProfile + GatherProfile + FisherProfile

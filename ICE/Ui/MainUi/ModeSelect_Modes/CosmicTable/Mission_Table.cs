@@ -143,6 +143,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
 
     internal class Mission_Table : Table<MissionInfo>, IDisposable
     {
+        // TODO: Create default width's for all of these...
+
         public readonly EnabledColumn _enabledColumn;
         public readonly NameColumn _nameColumn = new() { Label = "Name" };
         public readonly IdColumn _idColumn = new() { Label = "ID" };
@@ -160,7 +162,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         public readonly ProfileColumn _profileColumn = new() { Label = "Profile" };
         public readonly NotesColumn _notesColumn = new() { Label = "Notes" };
 
-        public Mission_Table(List<MissionInfo> itemList) : base("Item_Table_V1", itemList)
+        public Mission_Table(List<MissionInfo> itemList) : base("Item_Table_V2", itemList)
         {
             _enabledColumn = new EnabledColumn(this) { Label = "Enabled" };
 
@@ -186,7 +188,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             this.Headers = [.. headers];
 
             Sortable = true;
-            Flags |= ImGuiTableFlags.Hideable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Resizable | ImGuiTableFlags.Borders;
+            Flags |= ImGuiTableFlags.Hideable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Resizable | ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit;
         }
 
         public void Dispose()
