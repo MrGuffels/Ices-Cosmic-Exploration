@@ -70,7 +70,8 @@ namespace ICE.Ui.MainUi
                     {
                             ("Sinus Ardorum", "ICE.Resources.Sinus_Ardorum.png", ItemFilter.Sinus),
                             ("Phaenna", "ICE.Resources.Phaenna.png", ItemFilter.Phaenna),
-                            ("Oizys", "ICE.Resources.Oizys.png", ItemFilter.Oizys)
+                            ("Oizys", "ICE.Resources.Oizys.png", ItemFilter.Oizys), 
+                            ("Auxesia", "ICE.Resources.Auxesia.png", ItemFilter.Auxesia)
                     };
 
                     for (int i = 0; i < moons.Length; i++)
@@ -153,6 +154,7 @@ namespace ICE.Ui.MainUi
                 }
                 if (ImGui_Ice.Sidebar_CollaspableHeader("Need Help?", SidebarTabs.HelpInfo, FontAwesomeIcon.QuestionCircle))
                 {
+                 // ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.HandHoldingHand, "Plugin Tips", WindowSelection.Plugin_Tips);
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.QuestionCircle, "Plugin Requirements", WindowSelection.Plugin_Install);
                     ImGui_Ice.DrawSelectable_Icon(FontAwesomeIcon.Book, "Plugin Logs", WindowSelection.Plugin_Logs);
                     if (ImGuiEx.IconButtonWithText(FontAwesomeIcon.Toolbox, "Refresh Class info", size: new(ImGui.GetContentRegionAvail().X, 30)))
@@ -213,9 +215,10 @@ namespace ICE.Ui.MainUi
                 (PlayerHelper.IsInSinusArdorum, ItemFilter.Sinus),
                 (PlayerHelper.IsInPhaenna,      ItemFilter.Phaenna),
                 (PlayerHelper.IsInOizys,        ItemFilter.Oizys),
+                (PlayerHelper.IsInAuxesia,      ItemFilter.Auxesia)
             };
 
-            var planetFlags = ItemFilter.Sinus | ItemFilter.Phaenna | ItemFilter.Oizys;
+            var planetFlags = ItemFilter.Sinus | ItemFilter.Phaenna | ItemFilter.Oizys | ItemFilter.Auxesia;
 
             foreach (var (IsInZone, Flag) in moonFlags)
             {

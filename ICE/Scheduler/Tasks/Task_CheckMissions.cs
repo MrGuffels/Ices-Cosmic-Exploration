@@ -403,6 +403,7 @@ namespace ICE.Scheduler.Tasks
                                     }
                                 }
                                 P.TaskManager.Enqueue(() => CheckMissions(basicMissions, type, Mission_Settings.SelectedJob));
+                                /*
                                 foreach (var job in C.JobPrio)
                                 {
                                     if (job == Mission_Settings.SelectedJob)
@@ -410,6 +411,7 @@ namespace ICE.Scheduler.Tasks
                                     else
                                         P.TaskManager.Enqueue(() => CheckMissions(basicMissions, type, job));
                                 }
+                                */
                                 break;
                             }
                             else
@@ -433,6 +435,7 @@ namespace ICE.Scheduler.Tasks
                         }
                         case MissionTypes.DroneSearch:
                         {
+                            // TODO: Add Auxesia Support
                             if (C.Cosmodrone_Run && PlayerHelper.IsInOizys())
                             {
                                 P.TaskManager.Enqueue(() => Task_ArtifactSearch.RefreshMapInfo(), "Inserting Drone Task");
@@ -786,13 +789,6 @@ namespace ICE.Scheduler.Tasks
 
                             IceLogging.Info("No missions were found for the critical missions, so continuing on", tag);
                             return true;
-                        }
-                    }
-                    else if (mode is ModeSelect.MissionGoldMode)
-                    {
-                        if (type is MissionTypes.Standard)
-                        {
-
                         }
                     }
                     else

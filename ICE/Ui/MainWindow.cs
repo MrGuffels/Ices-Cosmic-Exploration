@@ -81,6 +81,7 @@ namespace ICE.Ui
             // Help Section
             [WindowSelection.Plugin_Install] = () => helpSelect_Required.Draw(),
             [WindowSelection.Plugin_Logs] = () => helpSelect_Logs.Draw_Helper(),
+            [WindowSelection.Plugin_Tips] = () => helpSelect_Tips.Draw(),
         };
 
         private static void MainBody()

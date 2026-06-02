@@ -160,7 +160,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
         public readonly ProfileColumn _profileColumn = new() { Label = "Profile" };
         public readonly NotesColumn _notesColumn = new() { Label = "Notes" };
 
-        public Mission_Table(List<MissionInfo> itemList) : base("Item_Table", itemList)
+        public Mission_Table(List<MissionInfo> itemList) : base("Item_Table_V1", itemList)
         {
             _enabledColumn = new EnabledColumn(this) { Label = "Enabled" };
 
@@ -174,11 +174,12 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             {
                 (1, ItemFilter.HasI),   (2, ItemFilter.HasII),  (3, ItemFilter.HasIII),
                 (4, ItemFilter.HasIV),  (5, ItemFilter.HasV),   (6, ItemFilter.HasVI),
+                (7, ItemFilter.HasVII)
             };
 
             foreach (var (tier, flag) in tierFlags)
             {
-                string tierName = tier switch { 1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V", 6 => "VI", _ => "?" };
+                string tierName = tier switch { 1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V", 6 => "VI", 7 => "VII", _ => "?" };
                 headers.Add(new RelicExpColumn(tier, flag) { Label = $"Exp {tierName}" });
             }
             headers.Add(_profileColumn, _notesColumn);
@@ -413,8 +414,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                 Flags = ImGuiTableColumnFlags.None;
                 _tier = tier;
                 _flag = flag;
-                SetFlags(ItemFilter.HasI, ItemFilter.HasII, ItemFilter.HasIII, ItemFilter.HasIV, ItemFilter.HasV, ItemFilter.HasVI);
-                SetNames("I", "II", "III", "IV", "V", "VI");
+                SetFlags(ItemFilter.HasI, ItemFilter.HasII, ItemFilter.HasIII, ItemFilter.HasIV, ItemFilter.HasV, ItemFilter.HasVI, ItemFilter.HasVII);
+                SetNames("I", "II", "III", "IV", "V", "VI", "VII");
             }
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs)
@@ -711,8 +712,8 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
             public PlanetColumn()
             {
                 Flags = ImGuiTableColumnFlags.None;
-                SetFlags(ItemFilter.Sinus, ItemFilter.Phaenna, ItemFilter.Oizys);
-                SetNames("Sinus", "Phaenna", "Oizys");
+                SetFlags(ItemFilter.Sinus, ItemFilter.Phaenna, ItemFilter.Oizys, ItemFilter.Auxesia);
+                SetNames("Sinus", "Phaenna", "Oizys", "Auxesia");
             }
 
             public override int Compare(MissionInfo lhs, MissionInfo rhs) => lhs.SheetInfo.TerritoryId.CompareTo(rhs.SheetInfo.TerritoryId);
@@ -730,6 +731,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     1237 => "ICE.Resources.Sinus_Ardorum.png",
                     1291 => "ICE.Resources.Phaenna.png",
                     1310 => "ICE.Resources.Oizys.png",
+                    1319 => "ICE.Resources.Auxesia.png",
                     _ => "ICE.Resources.Sinus_Ardorum.png",
                 };
 
@@ -743,6 +745,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes.CosmicTable
                     1237 => FilterValue.HasFlag(ItemFilter.Sinus),
                     1291 => FilterValue.HasFlag(ItemFilter.Phaenna),
                     1310 => FilterValue.HasFlag(ItemFilter.Oizys),
+                    1319 => FilterValue.HasFlag(ItemFilter.Auxesia),
                     _ => false
                 };
             }

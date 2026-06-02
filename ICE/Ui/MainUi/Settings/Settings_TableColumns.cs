@@ -43,32 +43,12 @@ public static class Settings_TableColumns
             C.Save();
         }
 
-        bool grindAllProvisionals = C.GrindAllProvisionals;
-        if (ImGui.Checkbox("Allow All Provisional Kinds", ref grindAllProvisionals))
-        {
-            C.GrindAllProvisionals = grindAllProvisionals;
-            C.Save();
-        }
-        ImGuiEx.HelpMarker("Enabling this will show you all weather/timed/sequence missions that you can grind, \n" +
-                           "ON TOP OF doing the normal missions for whichever class you start on.\n" +
-                           "If you just want to focus one specific class, set this to false\n" +
-                           "Do note: this replaced provisional grinding, due to just being built into the standard mode now (finally)");
-
         bool autoShowToken = C.Auto_ShowTokens;
         if (ImGui.Checkbox("Auto Hide/Show Planet Tokens", ref autoShowToken))
         {
             C.Auto_ShowTokens = autoShowToken;
             C.Save();
         }
-
-        bool allowCriticalsAllClass = C.GrindOffClassRedAlert;
-        if (ImGui.Checkbox("Allow Criticals for all Classes", ref allowCriticalsAllClass))
-        {
-            C.GrindOffClassRedAlert = allowCriticalsAllClass;
-            C.Save();
-        }
-        ImGui_Ice.IconWithTooltip(Dalamud.Interface.FontAwesomeIcon.InfoCircle,
-            $"This will allow you to grind other classes for criticals/red alerts. (So if you're on crp, but a bsm red alert pops up)");
 
         bool showManualMode = C.ShowManualMode;
         if (!showManualMode)
@@ -155,41 +135,6 @@ public static class Settings_TableColumns
 
     public static void GeneralMissionSettings()
     {
-        bool removeGold = C.RemoveAfterGold;
-        if (ImGui.Checkbox("Remove Mission Upon Gold Completion", ref removeGold))
-        {
-            C.RemoveAfterGold = removeGold;
-            C.Save();
-        }
-        using (ImRaii.Disabled(!removeGold))
-        {
-            bool keepARanks = C.KeepARanks;
-            if (ImGui.Checkbox("Keep \"A Rank\" missions and below", ref keepARanks))
-            {
-                C.KeepARanks = keepARanks;
-                C.Save();
-            }
-        }
-
-        ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
-        bool relicTurnin = C.TurninRelic;
-        if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_GeneralSetting", ref relicTurnin))
-        {
-            C.TurninRelic = relicTurnin;
-            C.Save();
-        }
-        ImGui.SameLine();
-        ImGui.TextDisabled("?");
-        if (ImGui.IsItemHovered())
-        {
-            ImGui.SetTooltip("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
-                             "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
-                             "2: You must not have the tool eqipped for this to run full auto. \n" +
-                             "\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n" +
-                             "3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
-                             "4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
-                             "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
-        }
         if (ImGui.Button("Quick Apply Turnins"))
         {
             ImGui.OpenPopup("Quick Apply_Mission Turnins");

@@ -594,23 +594,33 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                                 .Where(x => x.Value.Rank < 6)
                                 .Count();
 
+                            var AuxesiaStandard = CosmicHelper.SheetMissionDict.Where(x => x.Value.TerritoryId == 1317)
+                                .Where(x => C.MissionConfig.ContainsKey(x.Key))
+                                .Where(x => C.MissionConfig[x.Key].Enabled)
+                                .Where(x => x.Value.Jobs.Contains(agendaInfo.SelectedJob))
+                                .Where(x => x.Value.Rank < 6)
+                                .Count();
+
                             bool sinusWarning = PlayerHelper.IsInSinusArdorum() && SinusStandard == 0;
                             bool phaennaWarning = PlayerHelper.IsInPhaenna() && PhaennaStandard == 0;
                             bool oizysWarning = PlayerHelper.IsInOizys() && OizysStandard == 0;
+                            bool auxesiaWarning = PlayerHelper.IsInAuxesia() && AuxesiaStandard == 0;
 
                             if (sinusWarning || phaennaWarning || oizysWarning)
                             {
                                 string tooltip = "Hey! You seem to not have any standardard missions enabled on the planet/moon you're currently on.\n" +
                                     "Please make sure to do so for this job if you don't want it to stall out when there is no timed/weather missions.\n" +
                                     "Currently enabled on the planet you're on:";
-                                    
+
 
                                 if (PlayerHelper.IsInSinusArdorum())
-                                    tooltip += "\nSinus = {SinusStandard}";
+                                    tooltip += $"\nSinus = {SinusStandard}";
                                 else if (PlayerHelper.IsInPhaenna())
                                     tooltip += $"\nPhaenna = {PhaennaStandard}";
                                 else if (PlayerHelper.IsInOizys())
                                     tooltip += $"\nOizys = {OizysStandard}";
+                                else if (PlayerHelper.IsInAuxesia())
+                                    tooltip += $"\nAuxesia = {AuxesiaStandard}";
 
                                 ImGui.SameLine();
                                 ImGui.AlignTextToFramePadding();

@@ -122,7 +122,7 @@ public sealed partial class ICE
             }
             else if (keyId < 1703)
             {
-                territoryId = 1321;
+                territoryId = 1319;
             }
 
             // Map Marker Information

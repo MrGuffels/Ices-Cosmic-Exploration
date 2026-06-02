@@ -160,6 +160,7 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                 bool unsupportedArtisan = false; // xpLeveling && CosmicHelper.CrafterJobList.Contains((uint)Player.Job);
                 bool unsupportedMoon = false; // PlayerHelper.IsInOizys() && xpLeveling;
 
+                // TODO: Make sure to disable new moon for leveling / gathering. . . 
                 using (ImRaii.Disabled(SchedulerMain.State != IceState.Idle || !usingSupportedJob || unsupportedMoon))
                 {
                     if (ImGui.Button("Start", new Vector2(150 * scale, 0)))
@@ -210,279 +211,90 @@ namespace ICE.Ui.MainUi.ModeSelect_Modes
                         }
                     }
                 }
-            }
 
-            if (ImGui.BeginTable("modeSelect_TableHeader", 5, ImGuiTableFlags.SizingFixedFit, Vector2.Zero))
-            {
-                ImGui.TableSetupColumn("Class Selector");
-                ImGui.TableSetupColumn("Other Settings");
+                ImGui.SameLine(0, 10 * scale);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-
-                bool tableSettingExpanded = ImGui_Ice.DrawCompactCategoryHeader("Table Settings", FontAwesomeIcon.Table);
-
-                ImGui.TableNextColumn();
-                bool missionSettingExpanded = ImGui_Ice.DrawCompactCategoryHeader("Mission Settings", FontAwesomeIcon.UserCog);
-
-                bool relicGrindExpanded = false;
-                if (C.SelectedMode == ModeSelect.RelicMode)
+                if (ImGui.Button("Mission Settings"))
                 {
-                    ImGui.TableNextColumn();
-                    relicGrindExpanded = ImGui_Ice.DrawCompactCategoryHeader("Relic Grind Settings", FontAwesomeIcon.ArrowUpRightDots);
+                    ImGui.OpenPopup("Mission Settings: Popup");
                 }
-
-                bool completionExpanded = false;
-                if (completionExpanded)
+                if (ImGui.BeginPopup("Mission Settings: Popup"))
                 {
-                    ImGui.TableNextColumn();
-                    completionExpanded = ImGui_Ice.DrawCompactCategoryHeader("Completion Table Settings", FontAwesomeIcon.Trophy);
-                }
-
-                bool showPlaylistExpanded = false;
-                bool standard = C.SelectedMode == ModeSelect.Standard;
-                if (standard)
-                {
-                    ImGui.TableNextColumn();
-                    showPlaylistExpanded = ImGui_Ice.DrawCompactCategoryHeader("Mission Presets", FontAwesomeIcon.PlayCircle);
-                }
-
-                bool showJobSwapExpanded = false;
-                bool relicJobSwap = C.TurninRelic;
-
-                if (relicJobSwap)
-                {
-                    ImGui.TableNextColumn();
-                    showJobSwapExpanded = ImGui_Ice.DrawCompactCategoryHeader("Relic Job Swap", FontAwesomeIcon.Hammer);
-                }
-
-                bool showNextColumn = tableSettingExpanded || missionSettingExpanded || (relicGrindExpanded && C.SelectedMode == ModeSelect.RelicMode) || showPlaylistExpanded || showJobSwapExpanded;
-
-                if (showNextColumn)
-                {
-                    ImGui.TableNextRow();
-                    ImGui.TableSetColumnIndex(0);
-                    if (tableSettingExpanded)
+                    // TODO: Mission Settings
+                    bool grindAllProvisionals = C.GrindAllProvisionals;
+                    if (ImGui.Checkbox("Provisional: Allow All Classes", ref grindAllProvisionals))
                     {
-                        Settings_TableColumns.ColumnSettings();
+                        C.GrindAllProvisionals = grindAllProvisionals;
+                        C.Save();
                     }
+                    ImGuiEx.HelpMarker("Enabling this will show you all weather/timed/sequence missions that you can grind,\n" +
+                                       "ON TOP OF doing the normal missions for whichever class you start on.\n" +
+                                       "If you just want to focus one specific class, set this to false");
 
-                    ImGui.TableNextColumn();
-                    if (missionSettingExpanded)
+                    bool allowCriticalsAllClass = C.GrindOffClassRedAlert;
+                    if (ImGui.Checkbox("Critical: Allow All Classes", ref allowCriticalsAllClass))
                     {
-                        Settings_TableColumns.GeneralMissionSettings();
+                        C.GrindOffClassRedAlert = allowCriticalsAllClass;
+                        C.Save();
                     }
+                    ImGuiEx.HelpMarker($"This will allow you to grind other classes for criticals/red alerts. " +
+                        $"(So if you're on crp, but a bsm red alert pops up)");
 
-                    if (C.SelectedMode == ModeSelect.RelicMode)
+                    bool removeGold = C.RemoveAfterGold;
+                    if (ImGui.Checkbox("Remove Mission Upon Gold Completion", ref removeGold))
                     {
-                        ImGui.TableNextColumn();
-                        if (relicGrindExpanded)
+                        C.RemoveAfterGold = removeGold;
+                        C.Save();
+                    }
+                    using (ImRaii.Disabled(!removeGold))
+                    {
+                        bool keepARanks = C.KeepARanks;
+                        if (ImGui.Checkbox("Keep \"A Rank\" missions and below", ref keepARanks))
                         {
-                            bool relicTurnin = C.TurninRelic;
-                            if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_RelicGrind", ref relicTurnin))
-                            {
-                                C.TurninRelic = relicTurnin;
-                                C.Save();
-                            }
-                            ImGui.SameLine();
-                            ImGui.TextDisabled("?");
-                            if (ImGui.IsItemHovered())
-                            {
-                                ImGui.SetTooltip("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
-                                                 "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
-                                                 "2: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
-                                                 "3: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
-                                                 "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
-                            }
-
-                            ImGui.Separator();
-                            bool relic_AllowRedAlert = C.Relic_IncludeCriticals;
-                            if (ImGui.Checkbox("Allow Red Alerts for Relic", ref relic_AllowRedAlert))
-                            {
-                                C.Relic_IncludeCriticals = relic_AllowRedAlert;
-                                C.Save();
-                            }
-                            
-                            bool OnlySelected = C.XPRelicOnlyEnabled;
-                            if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
-                            {
-                                C.XPRelicOnlyEnabled = OnlySelected;
-                                C.Save();
-                            }
-                            if (C.ShowManualMode)
-                            {
-                                bool IgnoreManual = C.XPRelicIgnoreManual;
-                                if (ImGui.Checkbox("Ignore Manual Mode Missions", ref IgnoreManual))
-                                {
-                                    C.XPRelicIgnoreManual = IgnoreManual;
-                                    C.Save();
-                                }
-                            }
+                            C.KeepARanks = keepARanks;
+                            C.Save();
                         }
                     }
 
-                    if (C.SelectedMode == ModeSelect.Standard)
+                    ImGui.Checkbox("Stop after current mission", ref Mission_Settings.StopAfterCurrent);
+                    bool relicTurnin = C.TurninRelic;
+                    if (ImGui.Checkbox($"Turnin if relic is complete##RelicTurnin_GeneralSetting", ref relicTurnin))
                     {
-                        ImGui.TableNextColumn();
-
-                        if (showPlaylistExpanded)
-                        {
-                            if (ImGui.Button("Save Current Mission Preset"))
-                            {
-                                ImGui.OpenPopup("Preset Save Editor");
-                            }
-
-                            if (ImGui.BeginPopup("Preset Save Editor"))
-                            {
-                                ImGui.InputText($"Playlist Name", ref newListName);
-                                using (ImRaii.Disabled(string.IsNullOrEmpty(newListName)))
-                                {
-                                    if (ImGui.Button("Save New List"))
-                                    {
-                                        List<uint> new_Playlist = new();
-                                        foreach (var mission in C.MissionConfig.Where(x => x.Value.Enabled))
-                                        {
-                                            new_Playlist.Add(mission.Key);
-                                        }
-                                        if (C.Mission_Playlist.ContainsKey(newListName))
-                                        {
-                                            C.Mission_Playlist[newListName] = new_Playlist;
-                                        }
-                                        else
-                                        {
-                                            C.Mission_Playlist.Add(newListName, new_Playlist);
-                                        }
-                                        C.Save();
-                                        ImGui.CloseCurrentPopup();
-                                    }
-                                }
-
-                                ImGui.EndPopup();
-                            }
-
-                            if (C.Mission_Playlist.Count > 0)
-                            {
-                                if (ImGui.Button("View All Presets"))
-                                {
-                                    ImGui.OpenPopup("Preset: List Viewer");
-                                }
-
-                                if (ImGui.BeginPopup("Preset: List Viewer"))
-                                {
-                                    ImGui.Text($"Load Mission Preset");
-
-                                    if (ImGui.BeginTable($"Preset: TableViewer", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders))
-                                    {
-                                        ImGui.TableSetupColumn("Name");
-                                        ImGui.TableSetupColumn("Amount Enabled");
-
-                                        ImGui.TableHeadersRow();
-
-                                        ImGui.TableNextRow();
-                                        ImGui.TableSetColumnIndex(0);
-                                        ImGui.AlignTextToFramePadding();
-                                        ImGui.Text($"Clear All");
-                                        ImGui.SameLine();
-                                        if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"FreshPreset_Button"))
-                                        {
-                                            foreach (var mission in C.MissionConfig)
-                                            {
-                                                mission.Value.Enabled = false;
-                                            }
-                                            C.Save();
-                                            ImGui.CloseCurrentPopup();
-                                        }
-
-                                        foreach (var item in C.Mission_Playlist)
-                                        {
-                                            ImGui.TableNextRow();
-                                            ImGui.TableSetColumnIndex(0);
-                                            ImGui.AlignTextToFramePadding();
-                                            ImGui.Text($"{item.Key}");
-                                            ImGui.SameLine();
-                                            if (ImGuiEx.IconButton(FontAwesomeIcon.ArrowUpRightFromSquare, $"{item.Key}_Button"))
-                                            {
-                                                foreach (var mission in C.MissionConfig)
-                                                {
-                                                    if (item.Value.Contains(mission.Key))
-                                                        mission.Value.Enabled = true;
-                                                    else
-                                                        mission.Value.Enabled = false;
-                                                }
-                                                C.Save();
-                                                ImGui.CloseCurrentPopup();
-                                            }
-                                            if (ImGui.IsItemHovered())
-                                            {
-                                                ImGui.SetTooltip("Import Missions");
-                                            }
-
-                                            ImGui.TableNextColumn();
-                                            ImGui.AlignTextToFramePadding();
-                                            ImGui.Text($"{item.Value.Count}");
-
-                                            ImGui.TableNextColumn();
-                                            if (ImGuiEx.IconButton(FontAwesomeIcon.Trash, $"{item.Key}_Remove"))
-                                            {
-                                                C.Mission_Playlist.Remove(item);
-                                                C.Save();
-                                            }
-                                            if (ImGui.IsItemHovered())
-                                            {
-                                                ImGui.SetTooltip("Remove from list");
-                                            }
-                                        }
-
-                                        ImGui.EndTable();
-                                    }
-
-                                    ImGui.EndPopup();
-                                }
-                            }
-                        }
+                        C.TurninRelic = relicTurnin;
+                        C.Save();
+                    }
+                    ImGui.SameLine();
+                    ImGui.TextDisabled("?");
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("THIS IS YOUR HEADS UP ON HOW THIS WORKS. If I change this in the future, this tooltip will also change.\n" +
+                                         "1: This will check for your current CLASS [not menu class, actual current class] for relic turnin.\n" +
+                                         "2: You must not have the tool eqipped for this to run full auto. \n" +
+                                         "\t- This is due to the fact that I cba coding this in at this time. (might change my mind in the future *shrugs*)\n" +
+                                         "3: This will take prio over \"Stop @ Relic Turnin\", in the sense that if you have both enabled, it will turnin vs stop. And continue about it's day\n" +
+                                         "4: If you're on a crafting class, it will return you back to the stop you were crafting post turnin. \n" +
+                                         "\t- This is optional, you can disable it at your own free will, I just like this so I can just go back to an isolated area of my choosing");
                     }
 
-                    if (C.TurninRelic)
+                    ImGui.Separator();
+                    bool relic_AllowRedAlert = C.Relic_IncludeCriticals;
+                    if (ImGui.Checkbox("Allow Red Alerts for Relic", ref relic_AllowRedAlert))
                     {
-                        ImGui.TableNextColumn();
-                        if (showJobSwapExpanded)
-                        {
-                            bool swapJobs = C.Relic_SwapJob;
-                            if (ImGui.Checkbox("Swap jobs when turning in relic", ref swapJobs))
-                            {
-                                C.Relic_SwapJob = swapJobs;
-                                C.Save();
-                            }
-
-                            string currentJobName = BattleJobs.FirstOrDefault(x => x.Value == C.Relic_BattleJob).Key ?? "None";
-
-                            if (ImGui.BeginCombo("Battle Job", currentJobName))
-                            {
-                                foreach (var job in BattleJobs)
-                                {
-                                    bool isSelected = C.Relic_BattleJob == job.Value;
-                                    if (ImGui.Selectable(job.Key, isSelected))
-                                    {
-                                        C.Relic_BattleJob = job.Value;
-                                        C.Save();
-                                    }
-                                    if (isSelected)
-                                        ImGui.SetItemDefaultFocus();
-                                }
-                                ImGui.EndCombo();
-                            }
-
-                            bool useStylist = C.Relic_Stylist;
-                            if (ImGui.Checkbox($"Use Stylist to re-equip tools", ref useStylist))
-                            {
-                                C.Relic_Stylist = useStylist;
-                                C.Save();
-                            }
-                        }
+                        C.Relic_IncludeCriticals = relic_AllowRedAlert;
+                        C.Save();
                     }
+
+                    bool OnlySelected = C.XPRelicOnlyEnabled;
+                    if (ImGui.Checkbox("Only selected missions", ref OnlySelected))
+                    {
+                        C.XPRelicOnlyEnabled = OnlySelected;
+                        C.Save();
+                    }
+
+
+                    ImGui.EndPopup();
                 }
-
-                ImGui.EndTable();
             }
 
             using (var bodyChild = ImRaii.Child("##modeSelect_Body", new Vector2(0, -1), true, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))

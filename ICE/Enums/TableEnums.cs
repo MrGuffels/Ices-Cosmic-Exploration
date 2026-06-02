@@ -29,13 +29,13 @@ namespace ICE.Enums
         HasIV = 1 << 10,
         HasV = 1 << 11,
         HasVI = 1 << 12,
-        // HasVII = 1 << 13
+        HasVII = 1 << 13,
 
         // Planets
         Sinus = 1 << 14,
         Phaenna = 1 << 15,
         Oizys = 1 << 16,
-        // Last Planet = 1 << 17
+        Auxesia = 1 << 17,
 
         // Turnin Level
         TurninGold = 1 << 18,
@@ -54,8 +54,8 @@ namespace ICE.Enums
         All = Enabled + Disabled 
             + NotCompleted + Completed + Gold
             + NoTokens + HasTokens
-            + HasI + HasII + HasIII + HasIV + HasVI // + HasVIi
-            + Sinus + Phaenna + Oizys // + Planet#4
+            + HasI + HasII + HasIII + HasIV + HasVI + HasVII
+            + Sinus + Phaenna + Oizys + Auxesia
             + TurninGold + TurninSilver + TurninBronze
             + CrafterProfile + GatherProfile + FisherProfile
             + BestSPM + Sequence + Unlock + NoNotes

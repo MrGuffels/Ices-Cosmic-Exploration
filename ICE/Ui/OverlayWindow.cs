@@ -130,7 +130,7 @@ namespace ICE.Ui
                 ImGui.EndTooltip();
             }
             DrawModeSelectPopup("Overlay Mode Select");
-            if (PlayerHelper.IsInOizys())
+            if (PlayerHelper.IsInOizys() || PlayerHelper.IsInAuxesia())
             {
                 ImGui.SameLine();
                 bool droneActive = SchedulerMain.State == IceState.ArtifactSearch;
@@ -480,6 +480,7 @@ namespace ICE.Ui
             ((uint)1237, "ICE.Resources.Sinus_Ardorum.png", "Sinus Ardorum", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Sinus))),
             ((uint)1291, "ICE.Resources.Phaenna.png", "Phaenna", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Phaenna))),
             ((uint)1310, "ICE.Resources.Oizys.png", "Oizys", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Oizys))),
+            ((uint)1319, "ICE.Resources.Auxesia.png", "Auxesia", new Func<bool>(() => C.ItemFilter.HasFlag(ItemFilter.Auxesia)))
         };
         private void DrawMoonAndIcon(string moonAsset, FontAwesomeIcon icon)
         {
